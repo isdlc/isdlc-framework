@@ -66,6 +66,63 @@ Claude:  Detects that analysis is complete, picks up where it left off,
 
 Each verb is a natural escalation: **add** captures the idea, **analyze** deepens understanding, **build** executes the work.
 
+### Lifecycle: Discovery → Analyze → Build
+
+```mermaid
+flowchart TD
+    START["User starts a project"] --> DETECT{"New or Existing?"}
+    
+    DETECT -->|"New project"| NEW_FLOW
+    DETECT -->|"Existing codebase"| EXISTING_FLOW
+    
+    subgraph NEW_FLOW["🟢 /discover --new"]
+        N1["D7: Vision Elicitation\n(interactive: problem, users, features)"] --> N2["D3: Parallel Research\n(4 agents: best practices, compliance, perf, testing)"]
+        N2 --> N3["Tech Stack Selection\n(interactive confirmation)"]
+        N3 --> N4["D7: PRD Generation\n(functional/NFR/MVP scope)"]
+        N4 --> N5["D8: Architecture Blueprint\n(components, data model, APIs, dirs)"]
+        N5 --> N6["D3: Constitution Generation\n(interactive article review)"]
+        N6 --> N7["D4: Scaffold Project\n(src/, tests/, skills)"]
+    end
+
+    subgraph EXISTING_FLOW["🔵 /discover --existing"]
+        E1["Phase 1: Parallel Analysis\n(D1: Architecture, D2: Tests,\nD5: Data Model, D6: Features+AC)"]
+        E1 --> E1b["Phase 1b: Characterization Tests\n(test.skip scaffolds from AC)"]
+        E1b --> E1c["Phase 1c: Artifact Integration\n(traceability matrix)"]
+        E1c --> E2["Phase 2: Discovery Report"]
+        E2 --> E3["Phase 3: Constitution"]
+        E3 --> E4["Phase 4: Skills Install"]
+        E4 --> E5["Phase 5: Testing Gaps"]
+        E5 --> E6["Phase 6: Interactive Walkthrough"]
+    end
+
+    N7 --> HANDOVER
+    E6 --> HANDOVER
+
+    HANDOVER["📦 Handover Artifacts"]
+
+    HANDOVER --> BACKLOG["User adds items\nto BACKLOG.md"]
+    
+    BACKLOG --> ANALYZE
+
+    subgraph ANALYZE["🟡 analyze #N"]
+        A1["Resolve item\n(add if missing)"] --> A2["Roundtable Analysis\n(Maya, Alex, Jordan)"]
+        A2 --> A3["Progressive Artifacts\n(requirements, architecture, design)"]
+        A3 --> A4["Sizing\n(light/standard/epic)"]
+    end
+
+    ANALYZE --> BUILD
+
+    subgraph BUILD["🔴 build / feature"]
+        B1["Phase 01: Requirements"] --> B2["Phase 02: Impact Analysis"]
+        B2 --> B3["Phase 03: Architecture"]
+        B3 --> B4["Phase 04: Design"]
+        B4 --> B5["Phase 05: Test Strategy"]
+        B5 --> B6["Phase 06: Implementation"]
+        B6 --> B7["Phase 16: Quality Loop"]
+        B7 --> B8["Phase 08: Code Review"]
+    end
+```
+
 ### Slash commands
 
 For users who prefer explicit control, slash commands are available:

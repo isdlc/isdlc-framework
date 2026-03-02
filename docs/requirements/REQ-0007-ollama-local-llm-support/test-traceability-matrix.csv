@@ -1,0 +1,47 @@
+Requirement ID,Acceptance Criteria,Test Case ID,Test Description,Test File,Priority,Status
+REQ-001,AC-003-01,TC-M3-07,provider.md has user_invocable: true,provider-config-validation.test.cjs,P0,Designed
+REQ-001,AC-003-01,TC-M4-06,CLAUDE.md.template mentions /provider command,provider-documentation.test.js,P2,Designed
+REQ-001,AC-003-02,TC-M3-07,provider.md enabled (precondition for /provider status),provider-config-validation.test.cjs,P1,Designed
+REQ-002,AC-004-01,TC-M3-01,All Ollama models have context_window >= 65536,provider-config-validation.test.cjs,P0,Designed
+REQ-002,AC-004-01,TC-M3-02,All Ollama models include 'coding' capability,provider-config-validation.test.cjs,P0,Designed
+REQ-002,AC-004-01,TC-M3-03,Model IDs are valid Ollama tags,provider-config-validation.test.cjs,P1,Designed
+REQ-002,AC-004-01,TC-M3-04,Model aliases are unique and valid,provider-config-validation.test.cjs,P1,Designed
+REQ-002,AC-004-01,TC-M3-05,Ollama models have required fields,provider-config-validation.test.cjs,P0,Designed
+REQ-002,AC-004-01,TC-M3-06,Recommended models present / deprecated removed,provider-config-validation.test.cjs,P0,Designed
+REQ-002,AC-004-01,TC-M3-08,Ollama health check config is correct,provider-config-validation.test.cjs,P1,Designed
+REQ-003,AC-004-02,TC-M4-01,CLAUDE.md.template contains Ollama quick-start,provider-documentation.test.js,P0,Designed
+REQ-003,AC-004-02,TC-M4-02,CLAUDE.md.template contains env var examples,provider-documentation.test.js,P0,Designed
+REQ-003,AC-004-02,TC-M4-03,CLAUDE.md.template contains models table,provider-documentation.test.js,P0,Designed
+REQ-003,AC-004-02,TC-M4-05,CLAUDE.md.template contains auto-detection docs,provider-documentation.test.js,P1,Designed
+REQ-004,AC-001-01,TC-M2-06,install.sh contains 2-option provider selection,installer-provider-selection.test.js,P0,Designed
+REQ-004,AC-001-01,TC-M2-10,install.ps1 contains 2-option provider selection,installer-provider-selection.test.js,P1,Designed
+REQ-004,AC-001-02,TC-M2-01,Ollama selection creates providers.yaml,installer-provider-selection.test.js,P0,Designed
+REQ-004,AC-001-02,TC-M2-05,providers.yaml preserves valid YAML structure,installer-provider-selection.test.js,P1,Designed
+REQ-004,AC-001-03,TC-M2-07,install.sh contains Ollama Next Steps,installer-provider-selection.test.js,P0,Designed
+REQ-004,AC-001-04,TC-M2-08,install.sh contains Anthropic Next Steps,installer-provider-selection.test.js,P1,Designed
+REQ-004,AC-001-04,TC-M2-02,Anthropic selection does NOT create providers.yaml,installer-provider-selection.test.js,P0,Designed
+REQ-004,AC-001-05,TC-M2-09,install.sh does NOT install Ollama,installer-provider-selection.test.js,P0,Designed
+REQ-004,AC-001-05,TC-ERR-05,No installer file installs Ollama,installer-provider-selection.test.js,P0,Designed
+REQ-005,AC-004-03,TC-M4-04,CLAUDE.md.template contains known limitations,provider-documentation.test.js,P0,Designed
+REQ-006,AC-002-01,TC-M1-01,Tier 1: env var localhost:11434 detects Ollama,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-01,TC-M1-04,Tier 2: config says ollama + healthy,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-01,TC-M1-18,autoDetectProvider is exported,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-02,TC-M1-02,Tier 1: ANTHROPIC_API_KEY detects Anthropic,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-02,TC-M1-06,Tier 2: config says anthropic,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-02,TC-M1-07,Tier 4: no config defaults to Anthropic,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-02,TC-BC-01,Guard clause in router is preserved,provider-config-validation.test.cjs,P0,Designed
+REQ-006,AC-002-02,TC-BC-02,No providers.yaml means autoDetect never called,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-03,TC-M1-05,Tier 2: config says ollama + unhealthy,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-03,TC-M1-09,Health probe timeout bounded at 2000ms,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-03,TC-ERR-03,Connection refused handled gracefully,provider-utils-autodetect.test.cjs,P0,Designed
+REQ-006,AC-002-03,TC-ERR-04,Timeout bounded and returns result,provider-utils-autodetect.test.cjs,P0,Designed
+NFR-001,AC-002-01,TC-M1-04,Config-based detection (no env vars),provider-utils-autodetect.test.cjs,P0,Designed
+NFR-002,AC-002-02,TC-BC-01,Guard clause preserved in router,provider-config-validation.test.cjs,P0,Designed
+NFR-002,AC-002-02,TC-BC-02,hasProvidersConfig false without yaml,provider-utils-autodetect.test.cjs,P0,Designed
+NFR-002,AC-002-02,TC-BC-03,--force defaults to claude-code,installer-provider-selection.test.js,P0,Designed
+NFR-002,AC-002-02,TC-BC-04,All existing tests pass,CI verification,P0,Designed
+NFR-003,AC-002-03,TC-M1-09,Health probe timeout,provider-utils-autodetect.test.cjs,P0,Designed
+NFR-003,AC-002-03,TC-M1-11,Exception catch-all returns fallback,provider-utils-autodetect.test.cjs,P0,Designed
+NFR-003,AC-002-03,TC-ERR-01,Null config handled,provider-utils-autodetect.test.cjs,P0,Designed
+NFR-003,AC-002-03,TC-ERR-02,Undefined config handled,provider-utils-autodetect.test.cjs,P1,Designed
+NFR-003,AC-002-03,TC-ERR-06,Missing defaults file handled,installer-provider-selection.test.js,P1,Designed

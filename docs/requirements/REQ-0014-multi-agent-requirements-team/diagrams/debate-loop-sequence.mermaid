@@ -1,0 +1,60 @@
+%% Debate Loop Sequence Diagram
+%% Shows the full Creator -> Critic -> Refiner loop managed by the Orchestrator
+%% Covers: FR-004 (orchestration), FR-001 (creator), FR-002 (critic), FR-003 (refiner)
+
+sequenceDiagram
+    participant U as User
+    participant CMD as isdlc.md
+    participant O as Orchestrator
+    participant SJ as state.json
+    participant CR as Creator<br/>(requirements-analyst)
+    participant CT as Critic<br/>(requirements-critic)
+    participant RF as Refiner<br/>(requirements-refiner)
+    participant FS as Artifact Folder
+
+    U->>CMD: /isdlc feature "description" [--debate]
+    CMD->>O: Delegate with flags + description
+
+    Note over O: Resolve debate_mode<br/>(flag > sizing > default)
+    O->>SJ: Write debate_mode = true
+    O->>SJ: Write debate_state = {round: 0, converged: false}
+
+    rect rgb(230, 245, 255)
+        Note over O,FS: ROUND 1
+        O->>CR: Delegate with DEBATE_CONTEXT {mode: creator, round: 1}
+        CR->>U: Conversational opening + A/R/C menus
+        U->>CR: Requirements input (3+ menu interactions)
+        CR->>FS: Write Round 1 artifacts
+        CR->>O: Return (artifacts written)
+
+        O->>CT: Delegate with artifacts + round: 1
+        CT->>FS: Read artifacts
+        CT->>FS: Write round-1-critique.md
+        CT->>O: Return (3 BLOCKING, 2 WARNING)
+    end
+
+    O->>SJ: Update debate_state {round: 1, blocking: 3}
+
+    alt BLOCKING > 0 AND round < max_rounds
+        rect rgb(255, 245, 230)
+            Note over O,FS: ROUND 2 (Refine + Re-critique)
+            O->>RF: Delegate with artifacts + round-1-critique.md
+            RF->>FS: Read artifacts + critique
+            RF->>FS: Write updated artifacts
+            RF->>O: Return (3 BLOCKING addressed)
+
+            O->>CT: Delegate with updated artifacts + round: 2
+            CT->>FS: Read updated artifacts
+            CT->>FS: Write round-2-critique.md
+            CT->>O: Return (0 BLOCKING, 1 WARNING)
+        end
+
+        O->>SJ: Update debate_state {round: 2, blocking: 0, converged: true}
+    end
+
+    Note over O: Convergence: 0 BLOCKING findings
+
+    O->>FS: Save final artifacts (overwrite standard names)
+    O->>FS: Generate debate-summary.md
+    O->>SJ: Update Phase 01 status = completed
+    O->>O: Proceed to GATE-01

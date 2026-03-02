@@ -1,0 +1,11 @@
+Requirement,User Story,Acceptance Criteria,Priority,Component,Test Type
+FR-01,US-001,"AC-01.1,AC-01.2,AC-01.3,AC-01.4",P0,orchestrator-agent,unit+integration
+FR-02,US-002,"AC-02.1,AC-02.2,AC-02.3,AC-02.4,AC-02.5,AC-02.6",P0,orchestrator-agent,integration+e2e
+FR-03,US-003,"AC-03.1,AC-03.2,AC-03.3",P1,orchestrator-agent,unit+integration
+FR-04,US-004,"AC-04.1,AC-04.2,AC-04.3,AC-04.4",P0,orchestrator-agent,unit
+FR-05,US-005,"AC-05.1,AC-05.2,AC-05.3,AC-05.4",P0,orchestrator-agent,unit+integration
+FR-06,US-006,"AC-06.1,AC-06.2,AC-06.3,AC-06.4,AC-06.5,AC-06.6,AC-06.7",P0,orchestrator-agent,unit+integration
+FR-07,US-007,"AC-07.1,AC-07.2,AC-07.3,AC-07.4",P1,state-json+installer,unit
+FR-08,US-008,"AC-08.1,AC-08.2,AC-08.3,AC-08.4,AC-08.5",P1,installer.js,unit+integration
+FR-09,US-009,"AC-09.1,AC-09.2,AC-09.3,AC-09.4",P1,state-json+updater,unit
+FR-10,US-010,"AC-10.1,AC-10.2,AC-10.3,AC-10.4,AC-10.5,AC-10.6",P1,review-reminder-hook,unit+integration

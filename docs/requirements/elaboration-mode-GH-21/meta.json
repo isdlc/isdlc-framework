@@ -1,0 +1,9 @@
+{
+  "source": "github",
+  "source_id": "GH-21",
+  "slug": "elaboration-mode-GH-21",
+  "created_at": "2026-02-19T00:00:00.000Z",
+  "analysis_status": "partial",
+  "phases_completed": ["00-quick-scan"],
+  "codebase_hash": "0f5fde6"
+}

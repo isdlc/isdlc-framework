@@ -1,0 +1,64 @@
+AC_ID,Domain,Description,Priority,Test_ID,Test_File,Test_Type,Status
+AC-WO-001,Workflow Orchestration,CLI Command Routing,Critical,TC-WO-001a-d,tests/characterization/workflow-orchestration.test.js,Unit,Scaffold
+AC-WO-002,Workflow Orchestration,CLI Argument Parsing,High,TC-WO-002a-d,tests/characterization/workflow-orchestration.test.js,Unit,Scaffold
+AC-WO-003,Workflow Orchestration,Provider Mode Validation,High,TC-WO-003a-c,tests/characterization/workflow-orchestration.test.js,Unit,Scaffold
+AC-WO-004,Workflow Orchestration,Background Update Check,Medium,TC-WO-004a,tests/characterization/workflow-orchestration.test.js,Unit,Uncovered
+AC-WO-009,Workflow Orchestration,Setup Command Bypass,High,TC-WO-009a,tests/characterization/workflow-orchestration.test.js,Unit,Uncovered
+AC-IL-001,Installation & Lifecycle,Existing Installation Detection,Critical,TC-IL-001a-b,tests/characterization/installation-lifecycle.test.js,Unit,Scaffold
+AC-IL-002,Installation & Lifecycle,Project Type Detection,Critical,TC-IL-002a-c,tests/characterization/installation-lifecycle.test.js,Unit,Scaffold
+AC-IL-005,Installation & Lifecycle,Settings.json Deep Merge,High,TC-IL-005a-b,tests/characterization/installation-lifecycle.test.js,Unit,Uncovered
+AC-IL-007,Installation & Lifecycle,Eight-Step Update Flow,Critical,TC-IL-007a-b,tests/characterization/installation-lifecycle.test.js,Unit,Partial
+AC-IL-009,Installation & Lifecycle,Obsolete File Cleanup,High,TC-IL-009a,tests/characterization/installation-lifecycle.test.js,Unit,Partial
+AC-IL-013,Installation & Lifecycle,Doctor Health Validation,High,TC-IL-013a-b,tests/characterization/installation-lifecycle.test.js,Unit,Partial
+AC-IL-014,Installation & Lifecycle,Dry-Run Mode,Medium,TC-IL-014a,tests/characterization/installation-lifecycle.test.js,Integration,Uncovered
+AC-IL-016,Installation & Lifecycle,Installation Manifest,High,TC-IL-016a,tests/characterization/installation-lifecycle.test.js,Unit,Uncovered
+AC-IE-001,Iteration Enforcement,Gate Advancement Detection,Critical,TC-IE-001a-c,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-002,Iteration Enforcement,Four-Check Gate Validation,Critical,TC-IE-002a-d,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-004,Iteration Enforcement,Test Command Pattern Recognition,High,TC-IE-004a-e,tests/characterization/iteration-enforcement.test.js,Unit,Partial
+AC-IE-005,Iteration Enforcement,Test Result Parsing,High,TC-IE-005a-d,tests/characterization/iteration-enforcement.test.js,Unit,Partial
+AC-IE-006,Iteration Enforcement,Circuit Breaker,Critical,TC-IE-006a,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-007,Iteration Enforcement,Max Iteration Escalation,Critical,TC-IE-007a,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-008,Iteration Enforcement,TEST_CORRIDOR,Critical,TC-IE-008a-b,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-009,Iteration Enforcement,CONST_CORRIDOR,High,TC-IE-009a,tests/characterization/iteration-enforcement.test.js,Unit,Uncovered
+AC-IE-012,Iteration Enforcement,Menu Interaction Tracking,Medium,TC-IE-012a-b,tests/characterization/iteration-enforcement.test.js,Unit,Scaffold
+AC-IE-015,Iteration Enforcement,ATDD Skipped Test Detection,Medium,TC-IE-015a,tests/characterization/iteration-enforcement.test.js,Unit,Uncovered
+AC-SO-001,Skill Observability,Task Tool Call Interception,Critical,TC-SO-001a-c,tests/characterization/skill-observability.test.js,Unit,Scaffold
+AC-SO-002,Skill Observability,Agent Name Normalization,High,TC-SO-002a-e,tests/characterization/skill-observability.test.js,Unit,Uncovered
+AC-SO-003,Skill Observability,Never-Block Model,Critical,TC-SO-003a-c,tests/characterization/skill-observability.test.js,Unit,Scaffold
+AC-SO-006,Skill Observability,Skill Usage Logging,High,TC-SO-006a-c,tests/characterization/skill-observability.test.js,Unit,Scaffold
+AC-SO-007,Skill Observability,Cross-Phase Categorization,High,TC-SO-007a-c,tests/characterization/skill-observability.test.js,Unit,Uncovered
+AC-SO-010,Skill Observability,Fail-Open on All Errors,Critical,TC-SO-010a-c,tests/characterization/skill-observability.test.js,Unit,Scaffold
+AC-PR-001,Multi-Provider LLM Routing,Task-Only Interception,Critical,TC-PR-001a-b,tests/characterization/provider-routing.test.js,Unit,Scaffold
+AC-PR-002,Multi-Provider LLM Routing,Five-Level Provider Selection,Critical,TC-PR-002a-c,tests/characterization/provider-routing.test.js,Unit,Uncovered
+AC-PR-003,Multi-Provider LLM Routing,Health Check and Fallback,Critical,TC-PR-003a-b,tests/characterization/provider-routing.test.js,Unit,Uncovered
+AC-PR-005,Multi-Provider LLM Routing,Environment Override Injection,High,TC-PR-005a-b,tests/characterization/provider-routing.test.js,Unit,Scaffold
+AC-PR-007,Multi-Provider LLM Routing,YAML Parser Edge Cases,Medium,TC-PR-007a-d,tests/characterization/provider-routing.test.js,Unit,Uncovered
+AC-PR-009,Multi-Provider LLM Routing,Fail-Open,Critical,TC-PR-009a-b,tests/characterization/provider-routing.test.js,Unit,Scaffold
+AC-CM-001,Constitution Management,Phase Completion Interception,Critical,TC-CM-001a-d,tests/characterization/constitution-management.test.js,Unit,Partial
+AC-CM-002,Constitution Management,Validation Status Check,Critical,TC-CM-002a-e,tests/characterization/constitution-management.test.js,Unit,Scaffold
+AC-CM-003,Constitution Management,Validation Loop Message,High,TC-CM-003a-c,tests/characterization/constitution-management.test.js,Unit,Uncovered
+AC-CM-005,Constitution Management,Starter Constitution Generation,High,TC-CM-005a-c,tests/characterization/constitution-management.test.js,Unit,Scaffold
+AC-CM-006,Constitution Management,Constitution Path Resolution,High,TC-CM-006a-c,tests/characterization/constitution-management.test.js,Unit,Uncovered
+AC-MD-001,Monorepo & Project Detection,Workspace File Detection,Critical,TC-MD-001a-d,tests/characterization/monorepo-detection.test.js,Unit,Partial
+AC-MD-002,Monorepo & Project Detection,Directory Structure Detection,High,TC-MD-002a-b,tests/characterization/monorepo-detection.test.js,Unit,Scaffold
+AC-MD-004,Monorepo & Project Detection,Project Discovery,High,TC-MD-004a-c,tests/characterization/monorepo-detection.test.js,Unit,Uncovered
+AC-MD-006,Monorepo & Project Detection,CWD-Based Project Resolution,High,TC-MD-006a-b,tests/characterization/monorepo-detection.test.js,Unit,Uncovered
+AC-MD-007,Monorepo & Project Detection,Three-Level Project Resolution,High,TC-MD-007a-c,tests/characterization/monorepo-detection.test.js,Unit,Uncovered
+AC-MD-008,Monorepo & Project Detection,Project-Scoped State Routing,Critical,TC-MD-008a-b,tests/characterization/monorepo-detection.test.js,Unit,Scaffold
+AC-MD-009,Monorepo & Project Detection,Path Resolution Functions,High,TC-MD-009a-c,tests/characterization/monorepo-detection.test.js,Unit,Uncovered
+AC-MD-012,Monorepo & Project Detection,Updater Monorepo Propagation,High,TC-MD-012a-b,tests/characterization/monorepo-detection.test.js,Integration,Uncovered
+E2E-001,Cross-cutting,Full CLI Lifecycle,Critical,E2E-001,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-002,Cross-cutting,Init Idempotency,Critical,E2E-002,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-003,Cross-cutting,Update from Stale Installation,High,E2E-003,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-004,Cross-cutting,Doctor Detects Problems,High,E2E-004,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-005,Cross-cutting,Uninstall Is Clean,High,E2E-005,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-006,Cross-cutting,Monorepo Init,Medium,E2E-006,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-007,Cross-cutting,Dry-Run Safety,Medium,E2E-007,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-008,Cross-cutting,Force Flag Bypass,Medium,E2E-008,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-009,Cross-cutting,Version Command,Low,E2E-009,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-010,Cross-cutting,Help Command,Low,E2E-010,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-011,Cross-cutting,Unknown Command Error,Medium,E2E-011,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-012,Cross-cutting,Provider Mode Options,High,E2E-012,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-013,Cross-cutting,Update --force,Medium,E2E-013,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-014,Cross-cutting,Uninstall --purge,Medium,E2E-014,tests/e2e/cli-lifecycle.test.js,E2E,New
+E2E-015,Cross-cutting,Error Exit Codes,High,E2E-015,tests/e2e/cli-lifecycle.test.js,E2E,New

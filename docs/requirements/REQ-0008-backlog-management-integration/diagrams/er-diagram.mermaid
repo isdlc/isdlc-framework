@@ -1,0 +1,55 @@
+%% Entity Relationship Diagram: Backlog Management Data Model
+
+erDiagram
+    BACKLOG_MD ||--o{ BACKLOG_ITEM : contains
+    BACKLOG_ITEM ||--o| JIRA_METADATA : "has (optional)"
+    JIRA_METADATA ||--o{ CONFLUENCE_LINK : "links to"
+
+    BACKLOG_ITEM {
+        string number PK "e.g. 7.7"
+        boolean checked "[ ] or [x]"
+        string title "Item title"
+        string description "Optional description after --"
+        string section "Open or Completed"
+    }
+
+    JIRA_METADATA {
+        string ticket_id PK "e.g. PROJ-1234"
+        string priority "High, Medium, Low"
+        string status "Jira status text"
+    }
+
+    CONFLUENCE_LINK {
+        string url PK "Full Confluence page URL"
+    }
+
+    STATE_JSON ||--o| ACTIVE_WORKFLOW : "has at most one"
+    ACTIVE_WORKFLOW ||--o| JIRA_CONTEXT : "has (optional)"
+
+    ACTIVE_WORKFLOW {
+        string type "feature or fix"
+        string description "Workflow description"
+        string artifact_folder "REQ-NNNN-name"
+        string current_phase "Current phase key"
+        int current_phase_index "Phase array index"
+    }
+
+    JIRA_CONTEXT {
+        string jira_ticket_id "PROJ-1234 or null"
+        string_array confluence_urls "Linked pages or null"
+    }
+
+    STATE_JSON ||--o{ WORKFLOW_HISTORY : "archives completed"
+    WORKFLOW_HISTORY ||--o| JIRA_AUDIT : "has (optional)"
+
+    WORKFLOW_HISTORY {
+        string type "feature, fix, cancelled"
+        string status "completed, cancelled"
+        string completed_at "ISO timestamp"
+        string merged_commit "Git commit hash"
+    }
+
+    JIRA_AUDIT {
+        string jira_ticket_id "PROJ-1234 or null"
+        string jira_sync_status "synced, failed, or null"
+    }

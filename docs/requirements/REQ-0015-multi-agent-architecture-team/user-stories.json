@@ -1,0 +1,59 @@
+{
+  "feature": "REQ-0015: Multi-agent Architecture Team",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Architecture quality review via Critic agent",
+      "as_a": "Framework developer",
+      "i_want": "an architecture critic agent that reviews Phase 03 artifacts for NFR misalignment, incomplete STRIDE threat models, database design flaws, weak tech stack justification, single points of failure, missing observability, and coupling contradictions",
+      "so_that": "architecture defects are caught during Phase 03 before downstream phases build on flawed foundations",
+      "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05", "AC-001-06", "AC-001-07", "AC-001-08"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-002",
+      "title": "Architecture improvement via Refiner agent",
+      "as_a": "Framework developer",
+      "i_want": "an architecture refiner agent that addresses Critic findings by producing complete ADRs with trade-offs, security hardening, HA adjustments, cost optimization, and observability architecture",
+      "so_that": "architecture artifacts improve iteratively through structured debate rather than single-pass creation",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-04", "AC-002-05", "AC-002-06", "AC-002-07", "AC-002-08"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-003",
+      "title": "Generalized debate loop supporting Phase 01 and Phase 03",
+      "as_a": "Orchestrator agent",
+      "i_want": "the debate loop in the orchestrator to be generalized from Phase 01-only to support both Phase 01 and Phase 03 with phase-specific agent routing",
+      "so_that": "the debate pattern scales to additional phases without per-phase hard-coding in the orchestrator",
+      "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-03", "AC-003-04", "AC-003-05", "AC-005-01", "AC-005-02", "AC-005-03", "AC-005-04"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-004",
+      "title": "Creator role awareness for solution architect",
+      "as_a": "Framework developer",
+      "i_want": "the solution-architect agent to recognize when it is operating as the Creator in a debate loop and include a self-assessment section",
+      "so_that": "the Critic has explicit uncertainty signals to evaluate rather than having to infer them",
+      "acceptance_criteria": ["AC-004-01", "AC-004-02"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-005",
+      "title": "Debate artifacts stored correctly for Phase 03",
+      "as_a": "Framework developer",
+      "i_want": "debate artifacts (critique reports, debate summary) to be stored in the correct artifact folder with Phase 03-specific content",
+      "so_that": "the audit trail of architecture debate rounds is preserved alongside requirements debate artifacts",
+      "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-006",
+      "title": "Robust edge case handling for architecture debate",
+      "as_a": "Orchestrator agent",
+      "i_want": "architecture debate edge cases (missing artifacts, malformed critique, unconverged debate) to be handled gracefully following Article X fail-safe defaults",
+      "so_that": "the debate loop never blocks the workflow due to infrastructure failures",
+      "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03"],
+      "priority": "P0"
+    }
+  ]
+}

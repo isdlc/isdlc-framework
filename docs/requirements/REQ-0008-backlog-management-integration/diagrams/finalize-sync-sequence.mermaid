@@ -1,0 +1,43 @@
+%% Sequence Diagram: Status Sync on Workflow Completion (FR-006)
+
+sequenceDiagram
+    participant Orch as Orchestrator (Finalize)
+    participant Git as Git
+    participant State as state.json
+    participant MCP as Atlassian MCP
+    participant Jira as Jira Cloud
+    participant BL as BACKLOG.md
+
+    Note over Orch: STEP 4: FINALIZE
+
+    Orch->>Orch: Human Review Checkpoint (if enabled)
+
+    Orch->>Git: Merge feature branch to main
+    Git-->>Orch: Merge successful
+
+    Note over Orch: NEW: Jira Status Sync
+    Orch->>State: Read active_workflow.jira_ticket_id
+    State-->>Orch: "PROJ-1234"
+
+    alt jira_ticket_id is null/missing
+        Note over Orch: Local-only workflow, skip Jira sync
+    else jira_ticket_id exists
+        Orch->>MCP: updateStatus("PROJ-1234", "Done")
+        alt Sync Successful
+            MCP->>Jira: POST transition PROJ-1234 to Done
+            Jira-->>MCP: 200 OK
+            MCP-->>Orch: success
+            Note over Orch: Log: "Jira ticket PROJ-1234 transitioned to Done"
+        else Sync Failed
+            MCP-->>Orch: error (permissions/workflow rules/network)
+            Note over Orch: WARNING: Jira sync failed<br/>(non-blocking, continue finalize)
+        end
+
+        Orch->>BL: Mark item [x], move to Completed section
+    end
+
+    Note over Orch: Continue normal finalize
+    Orch->>State: Collect phase snapshots
+    Orch->>State: Prune state
+    Orch->>State: Move to workflow_history<br/>(includes jira_ticket_id, jira_sync_status)
+    Orch->>State: Clear active_workflow

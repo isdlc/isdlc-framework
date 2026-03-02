@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "feature": "REQ-0003-hooks-api-contract",
+  "user_stories": [
+    {
+      "id": "US-01",
+      "title": "Schema files define hook contracts",
+      "as_a": "framework developer",
+      "i_want": "JSON schema files that define the exact structure of each state.json subsystem",
+      "so_that": "hooks and agents have a single source of truth for field names, types, and required fields",
+      "acceptance_criteria": [
+        "AC-01: 8 schema files exist in src/claude/hooks/config/schemas/",
+        "AC-01a: Each schema uses JSON Schema draft-07 format",
+        "AC-01b: Each schema has $id, title, description, type, properties, required fields"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "US-02",
+      "title": "Gate-blocker uses canonical field names",
+      "as_a": "SDLC orchestrator agent",
+      "i_want": "gate-blocker.cjs to read the canonical field names that I write to state.json",
+      "so_that": "gates are not falsely blocked when I write valid constitutional validation and elicitation data",
+      "acceptance_criteria": [
+        "AC-02: gate-blocker reads constitutional_validation.completed (boolean) and iterations_used (number)",
+        "AC-02a: gate-blocker reads interactive_elicitation.final_selection (string)",
+        "AC-02b: gate-blocker does NOT read final_status or total_iterations (removed)",
+        "AC-02c: Tests verify gate passes with canonical fields and blocks with missing fields"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "US-03",
+      "title": "Shared schema validator in common.cjs",
+      "as_a": "hook developer",
+      "i_want": "a validateSchema(data, schemaId) function in common.cjs",
+      "so_that": "all hooks can validate state data against schemas without duplicating validation logic",
+      "acceptance_criteria": [
+        "AC-03: validateSchema returns { valid: true } for valid data",
+        "AC-03a: validateSchema returns { valid: false, errors: [...] } for invalid data",
+        "AC-03b: validateSchema returns { valid: true } when schema file is missing (fail-open)",
+        "AC-03c: validateSchema uses no external npm dependencies",
+        "AC-03d: validateSchema completes in < 5ms"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "US-04",
+      "title": "Hooks validate state before processing",
+      "as_a": "framework user",
+      "i_want": "hooks to validate state data against schemas before making decisions",
+      "so_that": "malformed state data is detected early and hooks fail-open rather than crash",
+      "acceptance_criteria": [
+        "AC-04: gate-blocker validates constitutional_validation, interactive_elicitation, test_iteration",
+        "AC-04a: constitution-validator validates constitutional_validation",
+        "AC-04b: iteration-corridor validates test_iteration and constitutional_validation",
+        "AC-04c: menu-tracker validates interactive_elicitation",
+        "AC-04d: test-watcher validates test_iteration",
+        "AC-04e: All hooks log validation errors via debugLog",
+        "AC-04f: All hooks fail-open on validation errors (allow action)"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "US-05",
+      "title": "Documentation for hook API contracts",
+      "as_a": "contributor or agent author",
+      "i_want": "a documentation file listing every hook's stdin/stdout contract and state.json fields",
+      "so_that": "I know exactly what JSON to write to state.json for hooks to work correctly",
+      "acceptance_criteria": [
+        "AC-07: docs/isdlc/hooks-api-contract.md exists",
+        "AC-07a: Documents all 11 hooks with trigger type, matcher, stdin schema, stdout behavior",
+        "AC-07b: Documents all state.json subsystem schemas with field descriptions",
+        "AC-07c: Includes valid examples for each subsystem"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "US-06",
+      "title": "Agent instructions use canonical field names",
+      "as_a": "phase agent (LLM)",
+      "i_want": "orchestrator and phase agent instructions to reference the canonical field names",
+      "so_that": "I write the correct fields to state.json and gates pass without false blocks",
+      "acceptance_criteria": [
+        "AC-08: sdlc.md references canonical field names in state.json examples",
+        "AC-08a: No references to final_status or total_iterations remain in agent markdown files",
+        "AC-08b: constitution-validator.cjs block message shows canonical field names"
+      ],
+      "priority": "P1"
+    },
+    {
+      "id": "US-07",
+      "title": "All existing tests still pass",
+      "as_a": "framework maintainer",
+      "i_want": "all 641 existing tests to continue passing after the changes",
+      "so_that": "the field name cleanup does not introduce regressions",
+      "acceptance_criteria": [
+        "AC-05: npm test passes with 0 failures",
+        "AC-05a: ESM test suite (302 tests) passes",
+        "AC-05b: CJS test suite (284+ tests) passes",
+        "AC-05c: Characterization tests (42 tests) pass",
+        "AC-05d: E2E tests (13 tests) pass"
+      ],
+      "priority": "P0"
+    },
+    {
+      "id": "US-08",
+      "title": "New tests for schema validation",
+      "as_a": "framework maintainer",
+      "i_want": "new tests that cover the schema validation logic and canonical field usage",
+      "so_that": "future changes to field names or schemas are caught by tests",
+      "acceptance_criteria": [
+        "AC-06: Tests for validateSchema function (valid, invalid, missing schema, type mismatches)",
+        "AC-06a: Tests for each schema file (one valid fixture, one invalid fixture per schema)",
+        "AC-06b: Tests for gate-blocker with canonical fields (pass scenario)",
+        "AC-06c: Tests for gate-blocker with missing required fields (fail-open scenario)",
+        "AC-06d: Tests for gate-blocker with old field names (should fail, not recognized)"
+      ],
+      "priority": "P0"
+    }
+  ]
+}

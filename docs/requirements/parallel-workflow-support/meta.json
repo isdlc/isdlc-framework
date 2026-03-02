@@ -1,0 +1,28 @@
+{
+  "source": "github",
+  "source_id": "GH-30",
+  "slug": "parallel-workflow-support",
+  "created_at": "2026-02-21T00:00:00.000Z",
+  "analysis_status": "partial",
+  "phases_completed": ["00-quick-scan"],
+  "codebase_hash": "1ed003f",
+  "steps_completed": ["00-01", "00-02", "00-03", "01-01"],
+  "quick_scan": {
+    "scope": "large",
+    "complexity": "high",
+    "estimated_files": 64,
+    "confidence": "medium"
+  },
+  "depth_overrides": {
+    "01-requirements": "deep"
+  },
+  "elaborations": [
+    {
+      "step_id": "01-01",
+      "turn_count": 9,
+      "personas_active": ["business-analyst", "solutions-architect", "system-designer"],
+      "timestamp": "2026-02-21T00:00:00.000Z",
+      "synthesis_summary": "Scoped blast radius awareness as Should Have within GH-30: file-level detection, once per phase start, read-only sibling check with null fallback for missing data"
+    }
+  ]
+}

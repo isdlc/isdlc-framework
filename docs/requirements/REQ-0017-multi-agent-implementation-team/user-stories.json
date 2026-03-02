@@ -1,0 +1,54 @@
+{
+  "feature": "REQ-0017 Multi-agent Implementation Team",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Per-file code review during implementation",
+      "story": "As a framework developer, I want each file reviewed immediately after it's written during Phase 06, so that issues are caught while context is hot rather than cold-reviewing in Phase 16/08.",
+      "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05", "AC-001-06", "AC-001-07", "AC-001-08", "AC-003-01", "AC-003-02"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-002",
+      "title": "Immediate fix cycle for flagged files",
+      "story": "As a framework developer, I want files flagged by the Reviewer to be immediately fixed by the Updater and re-reviewed, so that each file is clean before the Writer moves on.",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-04", "AC-002-05", "AC-002-06", "AC-003-03", "AC-003-04", "AC-003-05"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-003",
+      "title": "Orchestrator per-file loop management",
+      "story": "As the orchestrator agent, I want a per-file loop protocol that delegates to Writer, Reviewer, and Updater in sequence per file, so that I can manage the implementation team without a new phase.",
+      "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-03", "AC-003-04", "AC-003-05", "AC-003-06", "AC-003-07", "AC-006-01", "AC-006-02", "AC-006-03", "AC-007-01", "AC-007-02", "AC-007-03"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-004",
+      "title": "Writer role awareness",
+      "story": "As the software-developer agent in Writer role, I want to know when the per-file loop is active so I produce files one at a time and wait for review before continuing.",
+      "acceptance_criteria": ["AC-004-01", "AC-004-02", "AC-004-03"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-005",
+      "title": "Phase restructuring (16 and 08)",
+      "story": "As a framework developer, I want Phase 16 to become a batch-only final sweep and Phase 08 to become human-review-only after per-file reviews happen in Phase 06, so that there's no redundant checking.",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-04"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-006",
+      "title": "Backward compatibility when debate is off",
+      "story": "As a framework developer using --no-debate or light mode, I want Phase 06/16/08 to behave exactly as they do today, so that the per-file loop is opt-in not forced.",
+      "acceptance_criteria": ["AC-004-02", "AC-006-04"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-007",
+      "title": "Implementation routing in orchestrator",
+      "story": "As the orchestrator, I want a separate IMPLEMENTATION_ROUTING table for Phase 06 because the per-file loop pattern is fundamentally different from the per-artifact debate loop used in Phases 01/03/04.",
+      "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04"],
+      "priority": "P0"
+    }
+  ]
+}

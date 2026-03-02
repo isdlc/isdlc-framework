@@ -1,0 +1,56 @@
+{
+  "gate": "GATE-06",
+  "phase": "06-implementation",
+  "workflow": "fix",
+  "artifact_folder": "BUG-0028-agents-ignore-injected-gate-requirements",
+  "external_id": "GH-64",
+  "validated_at": "2026-02-22T11:30:00.000Z",
+  "validated_by": "software-developer",
+  "result": "PASS",
+  "checklist": {
+    "all_features_implemented": true,
+    "unit_test_coverage_80_percent": true,
+    "all_tests_passing": true,
+    "code_follows_standards": true,
+    "type_checking_passes": "N/A (JavaScript, no TypeScript)",
+    "implementation_matches_design": true,
+    "database_migrations_created": "N/A (no database)",
+    "code_documentation_complete": true
+  },
+  "test_summary": {
+    "total_tests": 108,
+    "passing": 108,
+    "failing": 0,
+    "new_tests": 18,
+    "pre_existing_fixes": 3,
+    "test_command": "node --test src/claude/hooks/tests/gate-requirements-injector.test.cjs src/claude/hooks/tests/branch-guard.test.cjs",
+    "duration_ms": 2764
+  },
+  "files_modified": [
+    "src/claude/hooks/lib/gate-requirements-injector.cjs",
+    "src/claude/hooks/tests/gate-requirements-injector.test.cjs",
+    "src/claude/commands/isdlc.md",
+    "src/claude/agents/05-software-developer.md",
+    "src/claude/agents/16-quality-loop-engineer.md",
+    "src/claude/agents/06-integration-tester.md",
+    "src/claude/hooks/branch-guard.cjs",
+    "src/claude/hooks/tests/branch-guard.test.cjs"
+  ],
+  "requirements_implemented": {
+    "FR-001": "Strengthen injection block format (CRITICAL CONSTRAINTS + REMINDER)",
+    "FR-002": "Phase-specific prohibition lines (git commit, test coverage, constitutional, artifacts, workflow modifiers)",
+    "FR-003": "Constraint acknowledgment instruction in isdlc.md STEP 3d",
+    "FR-004": "Agent file audit (3 files fixed, 1 verified adequate)",
+    "FR-005": "Post-hook block feedback (branch-guard message improved)",
+    "FR-006": "Regression tests (18 new tests in 3 suites)"
+  },
+  "constitutional_validation": {
+    "status": "compliant",
+    "articles_validated": ["I", "II", "III", "V", "VI", "VII", "VIII", "IX", "X"],
+    "violations": []
+  },
+  "phase_timing": {
+    "debate_rounds_used": 0,
+    "fan_out_chunks": 0
+  }
+}

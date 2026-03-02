@@ -1,0 +1,86 @@
+[
+  {
+    "id": "US-001",
+    "title": "Review requirements before closing analysis",
+    "story": "As a framework user, I want to see a summary of the captured requirements after analysis so that I can confirm they match my intent before implementation begins.",
+    "acceptance_criteria": [
+      "Requirements summary is presented with FR IDs, titles, priorities, and key ACs",
+      "I can choose Accept to confirm or Amend to make changes",
+      "The summary includes the core problem statement and user types"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-002"]
+  },
+  {
+    "id": "US-002",
+    "title": "Review architecture before closing analysis",
+    "story": "As a framework user, I want to see a summary of the architecture decisions after analysis so that I can verify the technical approach is sound before implementation begins.",
+    "acceptance_criteria": [
+      "Architecture summary shows key decisions with chosen option and rationale",
+      "Integration points are visible",
+      "I can choose Accept or Amend"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-003"]
+  },
+  {
+    "id": "US-003",
+    "title": "Review design with data flow before closing analysis",
+    "story": "As a framework user, I want to see a summary of the design including data flow and sequence of operations so that I can verify the system will work as I expect.",
+    "acceptance_criteria": [
+      "Design summary includes module responsibilities, data flow, and operation sequence",
+      "I can choose Accept or Amend",
+      "References to detailed design artifacts are included"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-004"]
+  },
+  {
+    "id": "US-004",
+    "title": "Amend analysis output with full team",
+    "story": "As a framework user, I want to amend any part of the analysis and have all three personas help me make changes so that amendments are consistent across requirements, architecture, and design.",
+    "acceptance_criteria": [
+      "All three personas participate in the amendment conversation",
+      "After amendment, the full confirmation sequence restarts from requirements",
+      "Updated summaries reflect the amended artifact content"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-005",
+    "title": "Appropriate confirmation for my analysis tier",
+    "story": "As a framework user, I want the confirmation experience to match the depth of my analysis so that trivial changes don't require formal acceptance and light changes skip irrelevant domains.",
+    "acceptance_criteria": [
+      "Standard/epic: requirements, architecture, and design summaries with Accept/Amend",
+      "Light: requirements and design summaries only, architecture skipped",
+      "Trivial: brief mention of changes, no formal acceptance"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-006",
+    "title": "Fast revisit of previously accepted analysis",
+    "story": "As a framework user, I want summaries to be saved after I accept them so that I can quickly review what was decided when I come back to the same item later.",
+    "acceptance_criteria": [
+      "Summaries are persisted as markdown files in the artifact folder",
+      "Persisted summaries are available on revisit without regeneration",
+      "Summary files are standalone and reference detailed artifacts"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-007",
+    "title": "Provenance of acceptance",
+    "story": "As a framework user, I want a record of when I accepted the analysis output so that there is provenance for the analysis decision.",
+    "acceptance_criteria": [
+      "Meta.json includes acceptance timestamp and accepted domains",
+      "Amendment cycle count is recorded",
+      "Acceptance state does not gate the build flow"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-008"]
+  }
+]

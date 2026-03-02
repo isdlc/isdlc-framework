@@ -1,0 +1,98 @@
+[
+  {
+    "id": "US-001",
+    "role": "framework user",
+    "want": "to have a seamless conversation with three analyst personas during analysis without seeing phase boundaries, step headers, or menus",
+    "so_that": "the analysis feels like a productive discussion with experts rather than navigating a structured questionnaire",
+    "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05", "AC-001-06"],
+    "traces": ["FR-001", "FR-016", "FR-017"]
+  },
+  {
+    "id": "US-002",
+    "role": "framework user",
+    "want": "the codebase scan to happen silently while I start discussing the problem with Maya",
+    "so_that": "I'm immediately engaged in conversation without waiting for a scanning phase to complete",
+    "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-04"],
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "role": "framework user",
+    "want": "all analysis artifacts (requirements, impact analysis, architecture, design) to be produced progressively during the conversation",
+    "so_that": "by the end of the conversation all phases are complete and I don't have to wait for sequential agent-driven phases to run",
+    "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-03", "AC-003-04"],
+    "traces": ["FR-003", "FR-004"]
+  },
+  {
+    "id": "US-004",
+    "role": "framework user",
+    "want": "Alex and Jordan to present options with recommendations and reasoning rather than asking me open-ended technical questions",
+    "so_that": "I can make informed decisions without needing deep technical expertise, and the analysis progresses even if I defer to their recommendations",
+    "acceptance_criteria": ["AC-010-01", "AC-010-02", "AC-010-03", "AC-010-04", "AC-010-05"],
+    "traces": ["FR-010"]
+  },
+  {
+    "id": "US-005",
+    "role": "product owner",
+    "want": "the system to produce strong requirements artifacts from my business input and reasonable architecture/design artifacts from codebase analysis alone",
+    "so_that": "I can prepare work for implementation even though I don't have the technical depth to answer architecture and design questions",
+    "acceptance_criteria": ["AC-015-01", "AC-015-03", "AC-015-04"],
+    "traces": ["FR-015", "FR-011"]
+  },
+  {
+    "id": "US-006",
+    "role": "architect",
+    "want": "Alex and Jordan to engage with me at a deep technical level from the start of the conversation",
+    "so_that": "I can validate my own thinking against the system's analysis and provide technical direction early",
+    "acceptance_criteria": ["AC-001-06", "AC-015-02"],
+    "traces": ["FR-001", "FR-015"]
+  },
+  {
+    "id": "US-007",
+    "role": "framework user",
+    "want": "each functional requirement in the produced artifacts to have a confidence indicator (high/medium/low)",
+    "so_that": "the build verb and reviewers know which requirements are well-established and which are assumptions that need validation",
+    "acceptance_criteria": ["AC-011-01", "AC-011-02", "AC-011-03", "AC-011-04", "AC-011-05"],
+    "traces": ["FR-011"]
+  },
+  {
+    "id": "US-008",
+    "role": "framework user",
+    "want": "to end the analysis conversation at any time and get usable partial artifacts",
+    "so_that": "I'm not forced to complete a long analysis session to get any value, and my partial progress is preserved",
+    "acceptance_criteria": ["AC-013-02", "AC-013-04", "AC-003-03"],
+    "traces": ["FR-013", "FR-003"]
+  },
+  {
+    "id": "US-009",
+    "role": "framework user",
+    "want": "the system to verify artifact consistency across all phases before finalizing",
+    "so_that": "I can trust that the requirements, architecture, and design artifacts agree with each other",
+    "acceptance_criteria": ["AC-012-01", "AC-012-02", "AC-012-03", "AC-012-04"],
+    "traces": ["FR-012"]
+  },
+  {
+    "id": "US-010",
+    "role": "framework user",
+    "want": "to optionally enable agent teams mode for faster and deeper analysis",
+    "so_that": "I can trade token cost for speed and depth when the analysis warrants it",
+    "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04", "AC-006-05"],
+    "traces": ["FR-006", "FR-007"]
+  },
+  {
+    "id": "US-011",
+    "role": "framework user",
+    "want": "the analysis to cover all relevant topics without me having to know what topics exist",
+    "so_that": "I get a thorough analysis without needing to prompt the system to cover specific areas like security or error handling",
+    "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-04"],
+    "traces": ["FR-005", "FR-009"]
+  },
+  {
+    "id": "US-012",
+    "role": "framework user",
+    "want": "to request deeper exploration of specific topics after the system suggests completion",
+    "so_that": "I can get additional depth on areas I care most about without restarting the analysis",
+    "acceptance_criteria": ["AC-013-03"],
+    "traces": ["FR-013"]
+  }
+]

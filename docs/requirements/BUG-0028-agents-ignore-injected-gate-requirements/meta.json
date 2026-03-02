@@ -1,0 +1,33 @@
+{
+  "source": "github",
+  "source_id": "GH-64",
+  "slug": "BUG-0028-agents-ignore-injected-gate-requirements",
+  "created_at": "2026-02-22T07:40:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "codebase_hash": "9309b6b",
+  "sizing_decision": {
+    "intensity": "standard",
+    "effective_intensity": "standard",
+    "recommended_intensity": "standard",
+    "decided_at": "2026-02-22T08:00:00.000Z",
+    "reason": "user_accepted",
+    "user_prompted": true,
+    "forced_by_flag": false,
+    "overridden": false,
+    "overridden_to": null,
+    "file_count": 10,
+    "module_count": 3,
+    "risk_score": "low-medium",
+    "coupling": "low",
+    "coverage_gaps": 0,
+    "fallback_source": null,
+    "fallback_attempted": false,
+    "light_skip_phases": null,
+    "epic_deferred": false,
+    "context": "analyze"
+  },
+  "recommended_tier": "light",
+  "build_started_at": "2026-02-22T10:00:00.000Z",
+  "workflow_type": "fix"
+}

@@ -1,0 +1,169 @@
+{
+  "feature": "REQ-0007-ollama-local-llm-support",
+  "phase": "04-design",
+  "created": "2026-02-14",
+  "validation_rules": [
+    {
+      "id": "VR-001",
+      "scope": "autoDetectProvider()",
+      "field": "config",
+      "rule": "config parameter must be a non-null object",
+      "type": "precondition",
+      "on_failure": "Return default fallback { provider: 'anthropic', healthy: true, source: 'default_fallback' }",
+      "traces": ["REQ-006", "NFR-003"]
+    },
+    {
+      "id": "VR-002",
+      "scope": "autoDetectProvider() tier 1",
+      "field": "process.env.ANTHROPIC_BASE_URL",
+      "rule": "If set, check if it contains 'localhost:11434' (case-insensitive match on 'localhost')",
+      "type": "detection",
+      "on_failure": "Continue to tier 2",
+      "traces": ["REQ-006", "ADR-0001"]
+    },
+    {
+      "id": "VR-003",
+      "scope": "autoDetectProvider() tier 3",
+      "field": "health probe response",
+      "rule": "HTTP response must have status code 200-399 within 2000ms",
+      "type": "health_check",
+      "on_failure": "Return { provider: 'ollama', healthy: false, reason: '...' }",
+      "traces": ["REQ-006", "NFR-003", "ADR-0001"]
+    },
+    {
+      "id": "VR-004",
+      "scope": "provider-defaults.yaml",
+      "field": "ollama.models[*].context_window",
+      "rule": "All Ollama models must have context_window >= 65536 (64k minimum)",
+      "type": "config_constraint",
+      "on_failure": "Model should not be listed as recommended",
+      "traces": ["REQ-002", "REQ-005"]
+    },
+    {
+      "id": "VR-005",
+      "scope": "provider-defaults.yaml",
+      "field": "ollama.models[*].capabilities",
+      "rule": "All Ollama models must include 'coding' in capabilities array",
+      "type": "config_constraint",
+      "on_failure": "Model should not be listed",
+      "traces": ["REQ-002"]
+    },
+    {
+      "id": "VR-006",
+      "scope": "provider-defaults.yaml",
+      "field": "ollama.models[*].id",
+      "rule": "Model ID must be a valid Ollama tag: /^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/",
+      "type": "format",
+      "on_failure": "Reject model entry",
+      "traces": ["REQ-002"]
+    },
+    {
+      "id": "VR-007",
+      "scope": "provider-defaults.yaml",
+      "field": "ollama.models[*].alias",
+      "rule": "Alias must be unique across all providers, lowercase alphanumeric with hyphens: /^[a-z0-9][a-z0-9-]*$/",
+      "type": "uniqueness",
+      "on_failure": "Reject duplicate alias",
+      "traces": ["REQ-002"]
+    },
+    {
+      "id": "VR-008",
+      "scope": "installer.js provider selection",
+      "field": "providerMode",
+      "rule": "Must be one of: 'claude-code', 'ollama'",
+      "type": "enum",
+      "on_failure": "Default to 'claude-code'",
+      "traces": ["REQ-004", "AC-001-01"]
+    },
+    {
+      "id": "VR-009",
+      "scope": "install.sh provider selection",
+      "field": "PROVIDER_CHOICE",
+      "rule": "Must be '1' or '2'. Empty input defaults to '1'",
+      "type": "enum",
+      "on_failure": "Default to '1' (claude-code)",
+      "traces": ["REQ-004", "AC-001-01"]
+    },
+    {
+      "id": "VR-010",
+      "scope": "install.ps1 provider selection",
+      "field": "$ProviderChoice",
+      "rule": "Must be '1' or '2'. Empty input defaults to '1'",
+      "type": "enum",
+      "on_failure": "Default to '1' (claude-code)",
+      "traces": ["REQ-004", "AC-001-01"]
+    },
+    {
+      "id": "VR-011",
+      "scope": "writeProviderConfig()",
+      "field": "provider",
+      "rule": "Must be 'anthropic' or 'ollama'",
+      "type": "enum",
+      "on_failure": "Skip providers.yaml creation",
+      "traces": ["REQ-004", "ADR-0003"]
+    },
+    {
+      "id": "VR-012",
+      "scope": "writeProviderConfig()",
+      "field": "projectRoot",
+      "rule": "Must be an absolute path to an existing directory",
+      "type": "precondition",
+      "on_failure": "Throw error (caught by installer)",
+      "traces": ["REQ-004"]
+    },
+    {
+      "id": "VR-013",
+      "scope": "providers.yaml (generated)",
+      "field": "defaults.provider",
+      "rule": "Must be 'anthropic' or 'ollama' after regex replacement",
+      "type": "postcondition",
+      "on_failure": "File retains template defaults",
+      "traces": ["REQ-004", "ADR-0002"]
+    },
+    {
+      "id": "VR-014",
+      "scope": "providers.yaml (generated)",
+      "field": "active_mode",
+      "rule": "Must be one of: 'quality', 'local', 'budget', 'hybrid', 'claude-code'",
+      "type": "postcondition",
+      "on_failure": "File retains template defaults",
+      "traces": ["REQ-004", "ADR-0002"]
+    },
+    {
+      "id": "VR-015",
+      "scope": "provider.md frontmatter",
+      "field": "user_invocable",
+      "rule": "Must be boolean true after toggle",
+      "type": "postcondition",
+      "on_failure": "/provider command remains hidden",
+      "traces": ["REQ-001", "AC-003-01"]
+    },
+    {
+      "id": "VR-016",
+      "scope": "CLAUDE.md.template",
+      "field": "Ollama section",
+      "rule": "Must contain: quick-start instructions, env var examples, recommended models table, known limitations",
+      "type": "content_presence",
+      "on_failure": "Documentation incomplete",
+      "traces": ["REQ-003", "REQ-005", "AC-004-02", "AC-004-03"]
+    },
+    {
+      "id": "VR-017",
+      "scope": "backward compatibility",
+      "field": "hasProvidersConfig() guard clause",
+      "rule": "model-provider-router.cjs line 54 guard clause must NOT be modified",
+      "type": "invariant",
+      "on_failure": "Backward compatibility broken (NFR-002 violated)",
+      "traces": ["NFR-002", "ADR-0004", "AC-002-02"]
+    },
+    {
+      "id": "VR-018",
+      "scope": "installer",
+      "field": "installer behavior",
+      "rule": "Installer must NOT execute: ollama install, ollama pull, ollama serve, or any system-level software installation",
+      "type": "negative_test",
+      "on_failure": "Violates CON-001 and AC-001-05",
+      "traces": ["CON-001", "AC-001-05"]
+    }
+  ]
+}

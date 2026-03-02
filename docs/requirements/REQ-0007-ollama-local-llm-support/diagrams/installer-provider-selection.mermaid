@@ -1,0 +1,26 @@
+%% Installer Provider Selection Flow (REQ-004)
+%% Shows the new Step 3.5 in the installation process
+
+flowchart TD
+    A[Step 3: Claude Code Detection] --> B[Step 3.5: Provider Selection]
+
+    B --> C{Display prompt:<br/>'Which LLM provider?'}
+    C --> D["[1] Claude Code<br/>(Anthropic API) - Recommended"]
+    C --> E["[2] Ollama<br/>(local/free models)"]
+
+    D --> F[Write .isdlc/providers.yaml<br/>defaults.provider: anthropic<br/>active_mode: quality]
+    E --> G[Write .isdlc/providers.yaml<br/>defaults.provider: ollama<br/>active_mode: local]
+
+    F --> H[Step 4: Copy Framework Files]
+    G --> H
+
+    H --> I[Step 5-6: Configure hooks, Generate CLAUDE.md]
+
+    I --> J{Which provider was selected?}
+
+    J -- Anthropic --> K["Next Steps:<br/>1. export ANTHROPIC_API_KEY=sk-ant-...<br/>2. claude"]
+    J -- Ollama --> L["Next Steps:<br/>1. Install Ollama: https://ollama.ai<br/>2. ollama pull qwen3-coder<br/>3. ollama serve<br/>4. claude"]
+
+    style B fill:#ff9,stroke:#333
+    style K fill:#9cf
+    style L fill:#9cf

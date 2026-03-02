@@ -1,0 +1,65 @@
+{
+  "gate": "GATE-06",
+  "phase": "06-implementation",
+  "requirement": "REQ-0034",
+  "artifact_folder": "REQ-0034-free-text-intake-reverse-lookup-github-issues",
+  "validated_at": "2026-02-22T16:00:00.000Z",
+  "status": "passed",
+  "checklist": {
+    "all_features_implemented": true,
+    "unit_test_coverage_above_80": true,
+    "all_tests_passing": true,
+    "code_follows_linting_standards": true,
+    "implementation_matches_design": true,
+    "code_documentation_complete": true
+  },
+  "test_results": {
+    "total": 306,
+    "passing": 306,
+    "failing": 0,
+    "skipped": 0,
+    "coverage": {
+      "line": 96.83,
+      "branch": 93.01,
+      "function": 97.67
+    },
+    "new_tests_added": 13,
+    "test_command": "node --test src/claude/hooks/tests/test-three-verb-utils.test.cjs",
+    "parallel_execution": {
+      "enabled": false,
+      "framework": "node:test",
+      "reason": "Suite runs in ~120ms, parallelism not needed"
+    }
+  },
+  "tdd_iterations": {
+    "total": 2,
+    "history": [
+      {
+        "iteration": 1,
+        "action": "RED: Wrote 13 failing tests, functions not yet exported",
+        "result": "FAILED",
+        "failures": 13,
+        "errors": ["TypeError: checkGhAvailability is not a function"]
+      },
+      {
+        "iteration": 2,
+        "action": "GREEN: Implemented 3 functions, used childProcess.execSync for mockability",
+        "result": "PASSED",
+        "failures": 0,
+        "fix_applied": "Used childProcess.execSync instead of destructured execSync for t.mock.method compatibility"
+      }
+    ]
+  },
+  "files_changed": [
+    "src/claude/hooks/lib/three-verb-utils.cjs",
+    "src/claude/hooks/tests/test-three-verb-utils.test.cjs",
+    "src/claude/commands/isdlc.md"
+  ],
+  "constitutional_validation": {
+    "status": "compliant",
+    "iterations_used": 1,
+    "completed": true,
+    "articles_checked": ["I", "II", "III", "V", "VII", "VIII", "IX", "X"],
+    "violations_found": []
+  }
+}

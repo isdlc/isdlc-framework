@@ -1,0 +1,230 @@
+%% Data Flow Diagrams: Backlog Management Integration
+%% Feature: REQ-0008-backlog-management-integration
+%% Phase: 04-design
+
+%% ============================================================
+%% DIAGRAM 1: Add Jira Ticket to Backlog (FR-002)
+%% ============================================================
+
+%% Flow: User -> Intent Detection -> MCP Check -> Jira Pull -> BACKLOG.md Write
+
+graph TD
+    subgraph "Add Jira Ticket to Backlog"
+        A1["User: 'Add PROJ-1234 to the backlog'"]
+        A2["CLAUDE.md Intent Detection<br/>Intent: backlog-add"]
+        A3{"MCP Prerequisite<br/>Check"}
+        A4["BLG-E001: Display<br/>MCP setup instructions"]
+        A5["Atlassian MCP:<br/>jira_get_issue(PROJ-1234)"]
+        A6{"MCP Response?"}
+        A7["BLG-E010: Ticket<br/>not found"]
+        A8["BLG-E002: Auth<br/>expired"]
+        A9["Parse Response:<br/>title, desc (truncate 200),<br/>priority, confluence URLs"]
+        A10["Read BACKLOG.md"]
+        A11{"Ticket already<br/>in backlog?"}
+        A12["BLG-E012: Ticket<br/>already exists"]
+        A13["Append entry to<br/>## Open section with<br/>Jira metadata sub-bullets"]
+        A14["Write BACKLOG.md"]
+        A15["Confirm: Added PROJ-1234<br/>to the backlog"]
+
+        A1 --> A2
+        A2 --> A3
+        A3 -->|"Not configured"| A4
+        A3 -->|"Configured"| A5
+        A5 --> A6
+        A6 -->|"404"| A7
+        A6 -->|"Auth error"| A8
+        A6 -->|"Success"| A9
+        A9 --> A10
+        A10 --> A11
+        A11 -->|"Yes"| A12
+        A11 -->|"No"| A13
+        A13 --> A14
+        A14 --> A15
+    end
+
+%% ============================================================
+%% DIAGRAM 2: Refresh Backlog from Jira (FR-003)
+%% ============================================================
+
+%% Flow: User -> Intent Detection -> MCP Check -> Per-item Jira Pull -> BACKLOG.md Update
+
+graph TD
+    subgraph "Refresh Backlog from Jira"
+        B1["User: 'Refresh the backlog'"]
+        B2["CLAUDE.md Intent Detection<br/>Intent: backlog-refresh"]
+        B3{"MCP Prerequisite<br/>Check"}
+        B4["BLG-E001: Display<br/>MCP setup instructions"]
+        B5["Read BACKLOG.md<br/>Parse all Jira-backed items"]
+        B6{"Any Jira-backed<br/>items?"}
+        B7["No Jira-backed items<br/>to refresh"]
+        B8["For each Jira-backed item:<br/>Call jira_get_issue(ticket_id)"]
+        B9{"Per-item<br/>result?"}
+        B10["Record failure<br/>(ticket_id, reason)"]
+        B11["Update item in-place:<br/>title, desc, priority,<br/>status, confluence URLs"]
+        B12{"More items?"}
+        B13{"Any failures?"}
+        B14["BLG-E040: Report<br/>partial results"]
+        B15["Write BACKLOG.md"]
+        B16["Report: Updated N/N items"]
+
+        B1 --> B2
+        B2 --> B3
+        B3 -->|"Not configured"| B4
+        B3 -->|"Configured"| B5
+        B5 --> B6
+        B6 -->|"No"| B7
+        B6 -->|"Yes"| B8
+        B8 --> B9
+        B9 -->|"Error"| B10
+        B9 -->|"Success"| B11
+        B10 --> B12
+        B11 --> B12
+        B12 -->|"Yes"| B8
+        B12 -->|"No"| B13
+        B13 -->|"Yes"| B14
+        B13 -->|"No"| B15
+        B14 --> B15
+        B15 --> B16
+    end
+
+%% ============================================================
+%% DIAGRAM 3: Kick Off Workflow with Confluence Context (FR-005)
+%% ============================================================
+
+%% Flow: User -> Find in Backlog -> Determine Type -> Init Workflow -> Confluence Pull -> Requirements
+
+graph TD
+    subgraph "Kick Off Workflow from Jira-Backed Item"
+        C1["User: 'Let's work on PROJ-1234'"]
+        C2["CLAUDE.md Intent Detection<br/>Intent: backlog-work"]
+        C3["Search BACKLOG.md<br/>for PROJ-1234"]
+        C4{"Found in<br/>BACKLOG.md?"}
+        C5["BLG-E036: Not found<br/>'Add it first?'"]
+        C6["Read item entry:<br/>title, desc, jira_ticket_id,<br/>confluence_urls"]
+        C7{"Jira issue type?"}
+        C8["Suggest: fix workflow"]
+        C9["Suggest: feature workflow"]
+        C10["Ask user: feature or fix?"]
+        C11["Invoke /isdlc feature|fix"]
+        C12["Orchestrator init:<br/>Create active_workflow with<br/>jira_ticket_id + confluence_urls"]
+        C13["Phase 01: Requirements Analyst"]
+        C14{"confluence_urls<br/>present?"}
+        C15["Skip Confluence context<br/>(local-only or no links)"]
+        C16["For each URL:<br/>Call confluence_get_page(url)"]
+        C17{"MCP call<br/>result?"}
+        C18["Log warning,<br/>skip this page"]
+        C19["Store: title + content<br/>(truncate 5000 chars)"]
+        C20["Display Confluence<br/>Context banner"]
+        C21["Inject context into<br/>Stages 1.1-1.5"]
+        C22["Requirements capture<br/>(augmented with Confluence data)"]
+
+        C1 --> C2
+        C2 --> C3
+        C3 --> C4
+        C4 -->|"No"| C5
+        C4 -->|"Yes"| C6
+        C6 --> C7
+        C7 -->|"Bug/Defect"| C8
+        C7 -->|"Story/Task"| C9
+        C7 -->|"Ambiguous"| C10
+        C8 --> C11
+        C9 --> C11
+        C10 --> C11
+        C11 --> C12
+        C12 --> C13
+        C13 --> C14
+        C14 -->|"No"| C15
+        C14 -->|"Yes"| C16
+        C15 --> C22
+        C16 --> C17
+        C17 -->|"Error"| C18
+        C17 -->|"Success"| C19
+        C18 --> C22
+        C19 --> C20
+        C20 --> C21
+        C21 --> C22
+    end
+
+%% ============================================================
+%% DIAGRAM 4: Status Sync on Workflow Completion (FR-006)
+%% ============================================================
+
+%% Flow: Finalize -> Check Jira -> MCP Sync -> BACKLOG.md Update -> Continue
+
+graph TD
+    subgraph "Status Sync on Workflow Completion"
+        D1["Orchestrator: STEP 4 FINALIZE"]
+        D2["Step 2: Merge branch to main"]
+        D3{"active_workflow<br/>.jira_ticket_id<br/>present?"}
+        D4["Skip Jira sync<br/>(local-only workflow)"]
+        D5{"MCP Prerequisite<br/>Check"}
+        D6["BLG-E041: Log warning<br/>Continue finalize"]
+        D7["Call updateStatus<br/>(ticket_id, 'Done')"]
+        D8{"Transition<br/>result?"}
+        D9["Log: Jira PROJ-1234<br/>transitioned to Done<br/>Set sync_status = 'synced'"]
+        D10["BLG-E041: Log warning<br/>Set sync_status = 'failed'<br/>Continue finalize"]
+        D11["Update BACKLOG.md:<br/>Mark item [x]<br/>Move to ## Completed<br/>Add **Completed:** date"]
+        D12{"BACKLOG.md<br/>update result?"}
+        D13["BLG-E042: Log warning<br/>Continue finalize"]
+        D14["Step 3: Collect phase snapshots"]
+        D15["Step 4-6: Prune, archive,<br/>clear active_workflow"]
+        D16["Set workflow_history:<br/>jira_ticket_id + jira_sync_status"]
+
+        D1 --> D2
+        D2 --> D3
+        D3 -->|"No"| D4
+        D3 -->|"Yes"| D5
+        D4 --> D14
+        D5 -->|"Not configured"| D6
+        D5 -->|"Configured"| D7
+        D6 --> D11
+        D7 --> D8
+        D8 -->|"Success"| D9
+        D8 -->|"Error"| D10
+        D9 --> D11
+        D10 --> D11
+        D11 --> D12
+        D12 -->|"Error"| D13
+        D12 -->|"Success"| D14
+        D13 --> D14
+        D14 --> D15
+        D15 --> D16
+    end
+
+%% ============================================================
+%% DIAGRAM 5: Graceful Degradation (NFR-003)
+%% ============================================================
+
+%% Shows decision tree for MCP availability
+
+graph TD
+    subgraph "Graceful Degradation Decision Tree"
+        E1["User requests<br/>backlog operation"]
+        E2{"Operation type?"}
+        E3["Local operation:<br/>view, reorder"]
+        E4["MCP-dependent:<br/>add, refresh, sync"]
+        E5["Execute immediately<br/>No MCP needed"]
+        E6{"MCP configured?"}
+        E7["BLG-E001:<br/>Show setup instructions<br/>Fall back to local-only"]
+        E8{"MCP auth valid?"}
+        E9["BLG-E002:<br/>Show re-auth instructions<br/>Fall back to local-only"]
+        E10{"Network<br/>reachable?"}
+        E11["BLG-E003:<br/>Show network error<br/>Fall back to local-only"]
+        E12["Execute MCP<br/>operation normally"]
+        E13["Local backlog<br/>fully functional"]
+
+        E1 --> E2
+        E2 -->|"Local"| E3
+        E2 -->|"MCP-dependent"| E4
+        E3 --> E5
+        E4 --> E6
+        E6 -->|"No"| E7
+        E6 -->|"Yes"| E8
+        E7 --> E13
+        E8 -->|"No"| E9
+        E8 -->|"Yes"| E10
+        E9 --> E13
+        E10 -->|"No"| E11
+        E10 -->|"Yes"| E12
+        E11 --> E13
+    end

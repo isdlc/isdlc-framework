@@ -1,0 +1,26 @@
+%% Flag Precedence Resolution Flowchart
+%% Shows how debate_mode is resolved from flags and sizing
+%% Covers: FR-005 (configuration), ADR-0003
+
+flowchart TD
+    A[Start: Resolve debate_mode] --> B{--no-debate flag?}
+    B -->|Yes| C[debate_mode = false]
+    B -->|No| D{--debate flag?}
+    D -->|Yes| E[debate_mode = true]
+    D -->|No| F{-light flag?}
+    F -->|Yes| G[debate_mode = false]
+    F -->|No| H{sizing?}
+    H -->|standard| I[debate_mode = true]
+    H -->|epic| J[debate_mode = true]
+    H -->|other/unknown| K[debate_mode = true<br/>fallback default]
+
+    C --> L[Write to state.json:<br/>active_workflow.debate_mode]
+    E --> L
+    G --> L
+    I --> L
+    J --> L
+    K --> L
+
+    L --> M{debate_mode?}
+    M -->|true| N[Run debate loop:<br/>Creator -> Critic -> Refiner]
+    M -->|false| O[Run single agent:<br/>requirements-analyst<br/>current behavior unchanged]

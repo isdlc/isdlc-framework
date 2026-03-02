@@ -1,0 +1,55 @@
+FR_ID,AC_ID,User_Story_ID,Confidence,Source
+FR-001,AC-001-01,US-001,High,User-confirmed
+FR-001,AC-001-02,US-001,High,User-confirmed
+FR-001,AC-001-03,US-004,High,User-confirmed
+FR-001,AC-001-04,US-001,High,User-confirmed + research
+FR-001,AC-001-05,US-006,Medium,Inferred from research
+FR-002,AC-002-01,US-001,High,User-confirmed
+FR-002,AC-002-02,US-001,Medium,Inferred from architecture
+FR-002,AC-002-03,US-002,High,User-confirmed
+FR-002,AC-002-04,US-004,High,User-confirmed
+FR-003,AC-003-01,US-002,High,User-confirmed
+FR-003,AC-003-02,US-002,Medium,Inferred from 500K target
+FR-003,AC-003-03,US-002,High,User-confirmed
+FR-003,AC-003-04,US-002,High,User-confirmed
+FR-004,AC-004-01,US-003,High,User-confirmed
+FR-004,AC-004-02,US-003,High,User-confirmed
+FR-004,AC-004-03,US-003,High,User-confirmed
+FR-004,AC-004-04,US-003,High,User-confirmed
+FR-004,AC-004-05,US-007,High,User-confirmed
+FR-005,AC-005-01,US-003,High,Inferred from architecture
+FR-005,AC-005-02,US-003,High,User-confirmed
+FR-005,AC-005-03,US-003,Medium,Inferred from architecture
+FR-005,AC-005-04,US-007,High,User-confirmed
+FR-006,AC-006-01,US-004,High,User-confirmed
+FR-006,AC-006-02,US-004,High,User-confirmed
+FR-006,AC-006-03,US-004,High,User-confirmed
+FR-006,AC-006-04,US-004,High,User-confirmed
+FR-007,AC-007-01,US-005,Medium,Inferred from research
+FR-007,AC-007-02,US-005,Medium,Inferred from research
+FR-007,AC-007-03,US-005,Medium,Inferred from research
+FR-007,AC-007-04,US-005,Medium,Inferred from research
+FR-008,AC-008-01,US-005,Medium,Inferred from research
+FR-008,AC-008-02,US-005,Medium,Inferred from research
+FR-008,AC-008-03,US-006,Medium,Inferred from research
+FR-008,AC-008-04,US-004,High,User-confirmed
+FR-009,AC-009-01,US-008,High,Inferred from architecture
+FR-009,AC-009-02,US-008,Medium,Inferred from architecture
+FR-009,AC-009-03,US-008,Medium,Inferred from codebase analysis
+FR-009,AC-009-04,US-008,Medium,Inferred from architecture
+FR-010,AC-010-01,US-007,Medium,Inferred from user requirements
+FR-010,AC-010-02,US-007,Medium,Inferred from user requirements
+FR-010,AC-010-03,US-002,Medium,Inferred from user requirements
+FR-010,AC-010-04,US-007,High,User-confirmed
+FR-011,AC-011-01,US-006,Medium,Inferred from research
+FR-011,AC-011-02,US-006,Medium,Inferred from research
+FR-011,AC-011-03,US-006,Medium,Inferred from research
+FR-011,AC-011-04,US-006,Medium,Inferred from research
+FR-012,AC-012-01,US-009,Low,Extrapolated from research
+FR-012,AC-012-02,US-009,Low,Extrapolated from research
+FR-012,AC-012-03,US-009,Low,Extrapolated from research
+FR-012,AC-012-04,US-009,Low,Extrapolated from research
+FR-013,AC-013-01,US-010,Low,Extrapolated from research
+FR-013,AC-013-02,US-010,Low,Extrapolated from research
+FR-013,AC-013-03,US-010,Low,Extrapolated from 500K target
+FR-013,AC-013-04,US-010,Low,Extrapolated from research

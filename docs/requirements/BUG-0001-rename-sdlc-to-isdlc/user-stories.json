@@ -1,0 +1,24 @@
+{
+  "bug_id": "BUG-0001",
+  "title": "Rename /sdlc command to /isdlc for naming consistency",
+  "user_stories": [
+    {
+      "id": "US-BUG-001",
+      "story": "As a developer using the iSDLC framework, I want the slash command to be /isdlc (not /sdlc) so that the command name matches the project brand.",
+      "acceptance_criteria": ["AC-01", "AC-02", "AC-03", "AC-04", "AC-05", "AC-06", "AC-07"],
+      "priority": "high"
+    },
+    {
+      "id": "US-BUG-002",
+      "story": "As a framework installer, I want the init process to copy isdlc.md (not sdlc.md) so that new projects get the correctly named command.",
+      "acceptance_criteria": ["AC-08"],
+      "priority": "high"
+    },
+    {
+      "id": "US-BUG-003",
+      "story": "As a framework maintainer, I want zero stale /sdlc references remaining so that the rename is complete and auditable.",
+      "acceptance_criteria": ["AC-09", "AC-10"],
+      "priority": "high"
+    }
+  ]
+}

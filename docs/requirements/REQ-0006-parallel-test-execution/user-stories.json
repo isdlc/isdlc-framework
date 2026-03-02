@@ -1,0 +1,199 @@
+{
+  "feature": "REQ-0006-parallel-test-execution",
+  "user_stories": [
+    {
+      "id": "US-01",
+      "title": "Parallel test execution with framework detection",
+      "story": "As an iSDLC user, I want test execution phases to automatically detect my test framework and run tests in parallel, so that my CI feedback loop is 2-5x faster.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-01.1",
+          "given": "A project with a recognized test framework (Jest, Vitest, pytest, Go test, node:test, Cargo test, JUnit)",
+          "when": "An agent (05, 06, 10, or 16) executes the test suite",
+          "then": "The agent detects the framework and applies the correct parallel flag"
+        },
+        {
+          "id": "AC-01.2",
+          "given": "A project with a recognized test framework",
+          "when": "The agent constructs the test command",
+          "then": "The parallel flag matches the lookup table in the requirements spec"
+        },
+        {
+          "id": "AC-01.3",
+          "given": "A project with an unrecognized test framework",
+          "when": "The agent attempts to detect the framework",
+          "then": "The agent falls back to sequential execution with an informational message"
+        }
+      ],
+      "priority": "high",
+      "effort": "low"
+    },
+    {
+      "id": "US-02",
+      "title": "Agent prompt updates for parallel execution",
+      "story": "As the iSDLC framework maintainer, I want all test-executing agents to include parallel execution instructions, so that parallel testing is consistently applied across all workflow phases.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-02.1",
+          "given": "Agent 10 (environment-builder) prompt",
+          "when": "The agent runs tests during build verification",
+          "then": "The prompt instructs parallel flag usage with the lookup table"
+        },
+        {
+          "id": "AC-02.2",
+          "given": "Agent 06 (integration-tester) prompt",
+          "when": "The agent runs integration/E2E tests",
+          "then": "The prompt instructs parallel flag usage with the lookup table"
+        },
+        {
+          "id": "AC-02.3",
+          "given": "Agent 16 (quality-loop-engineer) prompt",
+          "when": "Track A runs the test suite",
+          "then": "The prompt instructs parallel flag usage with the lookup table"
+        },
+        {
+          "id": "AC-02.4",
+          "given": "Agent 05 (software-developer) prompt",
+          "when": "The agent runs tests during TDD iteration",
+          "then": "The prompt instructs parallel flag usage with the lookup table"
+        },
+        {
+          "id": "AC-02.5",
+          "given": "Any test-executing agent prompt",
+          "when": "Reviewed for parallel execution instructions",
+          "then": "The framework detection lookup table is present in the prompt"
+        }
+      ],
+      "priority": "high",
+      "effort": "low"
+    },
+    {
+      "id": "US-03",
+      "title": "CPU core-aware parallelism",
+      "story": "As an iSDLC user, I want the parallelism level to be automatically tuned to my machine's CPU cores, so that tests run as fast as possible without starving the system.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-03.1",
+          "given": "A test-executing agent on any machine",
+          "when": "Determining parallelism level",
+          "then": "CPU core count is detected via os.cpus().length or equivalent"
+        },
+        {
+          "id": "AC-03.2",
+          "given": "A machine with N CPU cores",
+          "when": "Default parallelism is computed",
+          "then": "Parallelism is set to max(1, N-1)"
+        },
+        {
+          "id": "AC-03.3",
+          "given": "A node:test project",
+          "when": "Parallel flag is applied",
+          "then": "--test-concurrency=<N> is used with computed core count"
+        },
+        {
+          "id": "AC-03.4",
+          "given": "A framework with auto mode (pytest, Jest)",
+          "when": "Parallel flag is applied",
+          "then": "Auto mode is preferred over manual core count"
+        }
+      ],
+      "priority": "medium",
+      "effort": "low"
+    },
+    {
+      "id": "US-04",
+      "title": "Sequential fallback for flaky tests",
+      "story": "As an iSDLC user, I want failed parallel tests to be retried sequentially before being reported as failures, so that flaky parallelism issues do not block my workflow.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-04.1",
+          "given": "A parallel test run with some test failures",
+          "when": "The agent processes the results",
+          "then": "Only the failing tests are retried sequentially"
+        },
+        {
+          "id": "AC-04.2",
+          "given": "Tests that fail in parallel but pass sequentially",
+          "when": "The retry completes",
+          "then": "A flakiness warning is logged"
+        },
+        {
+          "id": "AC-04.3",
+          "given": "Flakiness was detected",
+          "when": "Phase test results are written to state.json",
+          "then": "The flakiness warnings are included in the test_results"
+        },
+        {
+          "id": "AC-04.4",
+          "given": "A parallel test run with failures",
+          "when": "The fallback retry executes",
+          "then": "Only failing tests are retried, not the entire suite"
+        }
+      ],
+      "priority": "high",
+      "effort": "low"
+    },
+    {
+      "id": "US-05",
+      "title": "Parallel test creation for large codebases",
+      "story": "As the iSDLC framework maintainer, I want the test-design agent to spawn parallel sub-agents for large codebases, so that test generation for 10+ modules completes faster.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-05.1",
+          "given": "A codebase with 10+ modules/domains",
+          "when": "Agent 04 (test-design-engineer) is generating tests",
+          "then": "The agent prompt instructs Task tool usage for parallel sub-agents"
+        },
+        {
+          "id": "AC-05.2",
+          "given": "Parallel test creation is active",
+          "when": "Sub-agents are spawned",
+          "then": "Each sub-agent generates tests for one module/domain independently"
+        },
+        {
+          "id": "AC-05.3",
+          "given": "Sub-agents have completed",
+          "when": "The parent agent consolidates results",
+          "then": "Cross-module test conflicts are resolved and test files are consolidated"
+        },
+        {
+          "id": "AC-05.4",
+          "given": "The parallel threshold",
+          "when": "Reviewed in the agent prompt",
+          "then": "The threshold (10+ modules) is documented in the prompt, not in a hook"
+        }
+      ],
+      "priority": "medium",
+      "effort": "medium"
+    },
+    {
+      "id": "US-06",
+      "title": "State tracking for parallel execution",
+      "story": "As the iSDLC framework maintainer, I want test execution results to capture parallel execution metadata, so that I can audit performance gains and flakiness trends.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-06.1",
+          "given": "A test phase completes",
+          "when": "Test results are written to state.json",
+          "then": "A parallel_execution field is included with enabled, framework, flag, and workers"
+        },
+        {
+          "id": "AC-06.2",
+          "given": "A fallback from parallel to sequential occurred",
+          "when": "Test results are written to state.json",
+          "then": "parallel_execution includes fallback_triggered: true and flaky_tests list"
+        },
+        {
+          "id": "AC-06.3",
+          "given": "Agent 16 quality loop completes",
+          "when": "quality-report.md is generated",
+          "then": "A Parallel Execution section is included with mode, speedup, and flakiness summary"
+        }
+      ],
+      "priority": "low",
+      "effort": "low"
+    }
+  ],
+  "total_stories": 6,
+  "total_acceptance_criteria": 22
+}

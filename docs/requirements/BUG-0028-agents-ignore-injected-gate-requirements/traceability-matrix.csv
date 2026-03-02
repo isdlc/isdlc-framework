@@ -1,0 +1,32 @@
+Requirement,AC,Test Case,Test Type,Priority,Validation Method,Status
+FR-001,AC-001-01,TC-12-01,positive,P0,Unit test,Pending
+FR-001,AC-001-02,TC-12-02,positive,P0,Unit test,Pending
+FR-001,AC-001-03,TC-12-03,positive,P0,Unit test,Pending
+FR-001,AC-001-04,TC-12-06,positive,P1,Unit test,Pending
+FR-002,AC-002-01,TC-12-04,positive,P0,Unit test,Pending
+FR-002,AC-002-01,TC-12-05,negative,P1,Unit test,Pending
+FR-002,AC-002-01,TC-13-01,positive,P0,Unit test,Pending
+FR-002,AC-002-01,TC-13-02,negative,P1,Unit test,Pending
+FR-002,AC-002-02,TC-13-05,positive,P1,Unit test,Pending
+FR-002,AC-002-03,TC-13-06,positive,P1,Unit test,Pending
+FR-003,AC-003-01,N/A,N/A,P0,Code review,Pending
+FR-003,AC-003-02,N/A,N/A,P2,Observation,Pending
+FR-004,AC-004-01,N/A,N/A,P0,Code review,Pending
+FR-004,AC-004-02,N/A,N/A,P0,Code review,Pending
+FR-004,AC-004-03,N/A,N/A,P1,Code review,Pending
+FR-005,AC-005-01,N/A,N/A,P1,Code review,Pending
+FR-005,AC-005-02,N/A,N/A,P2,Code review (verify-only),Pending
+FR-006,AC-006-01,TC-12-01,positive,P0,Unit test,Pending
+FR-006,AC-006-02,TC-12-02,positive,P0,Unit test,Pending
+FR-006,AC-006-03,TC-12-03,positive,P0,Unit test,Pending
+NFR-001,AC-001-04,TC-12-06,positive,P1,Unit test,Pending
+NFR-002,fail-open,TC-13-08,negative,P0,Unit test,Pending
+NFR-002,fail-open,TC-14-02,negative,P1,Unit test,Pending
+NFR-002,fail-open,TC-14-03,negative,P1,Unit test,Pending
+NFR-002,fail-open,TC-14-04,negative,P1,Unit test,Pending
+NFR-003,size-budget,TC-12-06,positive,P1,Unit test (indirect),Pending
+CON-003,unconstrained-phases,TC-12-05,negative,P1,Unit test,Pending
+CON-003,unconstrained-phases,TC-13-07,negative,P1,Unit test,Pending
+FR-001,AC-001-02,TC-14-01,positive,P0,Unit test,Pending
+FR-001,constraint-derivation,TC-13-03,positive,P0,Unit test,Pending
+FR-001,constraint-derivation,TC-13-04,positive,P0,Unit test,Pending

@@ -1,0 +1,39 @@
+Requirement,AC,Test Case,Test File,Priority,Type,Status
+0.13,AC-0013-1,TC-13.01: PHASE_PREFIXES constant exists and is exported,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-1,TC-13.02: PHASE_PREFIXES is frozen,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-1,TC-13.03: PHASE_PREFIXES values match original inline strings,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-2,TC-13.04: test-adequacy-blocker isUpgradeDelegation uses constant,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-2,TC-13.05: test-adequacy-blocker isUpgradePhaseActive uses constant,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-6,TC-13.06: isUpgradePhaseActive returns false for non-upgrade,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-3,TC-13.07: pre-task-dispatcher test-adequacy shouldActivate,batch-d-phase-prefixes.test.cjs,P0,Unit,Pending
+0.13,AC-0013-3,TC-13.08: pre-task-dispatcher blast-radius shouldActivate,batch-d-phase-prefixes.test.cjs,P1,Unit,Pending
+0.13,AC-0013-4,TC-13.09: skill-validator default phase fallback,batch-d-phase-prefixes.test.cjs,P1,Unit,Pending
+0.13,AC-0013-5,TC-13.10: plan-surfacer implementation phase check,batch-d-phase-prefixes.test.cjs,P1,Unit,Pending
+0.14,AC-0014-1,TC-14.01: gate-blocker null-check consistency (covered by regression),npm run test:hooks,P0,Regression,Pending
+0.14,AC-0014-2,TC-14.09: skill-validator null-check consistency (covered by regression),npm run test:hooks,P0,Regression,Pending
+0.14,AC-0014-3,TC-14.01: isUpgradePhaseActive with null active_workflow,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-3,TC-14.02: isUpgradePhaseActive with undefined active_workflow,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-3,TC-14.03: isUpgradePhaseActive with present active_workflow,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-3,TC-14.04: coverage check with null discovery_context,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-3,TC-14.05: coverage check with present discovery_context,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-4,TC-14.06: validatePhaseIntegrity with null iteration_requirements,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-4,TC-14.07: validatePhaseIntegrity with present interactive_elicitation,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-4,TC-14.08: checkVersionLock with null incomingState,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-4,TC-14.09: checkVersionLock with null diskState active_workflow,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-4,TC-14.10: checkVersionLock with both present,batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.14,AC-0014-5,TC-14.01-10: No behavioral changes (all null-check tests verify identical outputs),batch-d-null-checks.test.cjs,P0,Unit,Pending
+0.15,AC-0015-1,TC-15.01: JSDoc contains @example block,batch-d-jsdoc-documentation.test.cjs,P1,Content,Pending
+0.15,AC-0015-2,TC-15.02: JSDoc documents return shape,batch-d-jsdoc-documentation.test.cjs,P1,Content,Pending
+0.15,AC-0015-1,TC-15.03: JSDoc contains @see references to callers,batch-d-jsdoc-documentation.test.cjs,P1,Content,Pending
+0.15,AC-0015-3,TC-15.04: JSDoc documents never-throws behavior,batch-d-jsdoc-documentation.test.cjs,P1,Content,Pending
+0.15,AC-0015-3,TC-15.05: JSDoc documents edge cases,batch-d-jsdoc-documentation.test.cjs,P1,Content,Pending
+0.15,AC-0015-4,TC-15.06: No code changes - function signature unchanged,batch-d-jsdoc-documentation.test.cjs,P0,Unit,Pending
+0.16,AC-0016-2,TC-16.01: Resolves currentPhase from active_workflow.current_phase,batch-d-dead-code-removal.test.cjs,P0,Unit,Pending
+0.16,AC-0016-2,TC-16.02: Resolves currentPhase from state.current_phase when no active_workflow,batch-d-dead-code-removal.test.cjs,P0,Unit,Pending
+0.16,AC-0016-2,TC-16.03: Allows when no active_workflow and no current_phase,batch-d-dead-code-removal.test.cjs,P0,Unit,Pending
+0.16,AC-0016-1,TC-16.04: else branch no longer references redundant optional chaining,batch-d-dead-code-removal.test.cjs,P0,Content,Pending
+0.16,AC-0016-2,TC-16.05: Fallback preserves flow for active_workflow missing current_phase,batch-d-dead-code-removal.test.cjs,P1,Unit,Pending
+0.16,AC-0016-3,TC-16.01-05: No behavioral changes (all dead code tests verify identical outputs),batch-d-dead-code-removal.test.cjs,P0,Unit,Pending
+NFR-1,NFR-1,Regression: All existing hook tests pass,npm run test:hooks,P0,Regression,Pending
+NFR-2,NFR-2,No new runtime dependencies,package.json check,P1,Verification,Pending
+NFR-3,NFR-3,Backward-compatible with hook protocol,Existing integration tests,P0,Regression,Pending

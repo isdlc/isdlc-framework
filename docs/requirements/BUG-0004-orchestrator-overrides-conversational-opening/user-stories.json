@@ -1,0 +1,72 @@
+{
+  "bug_id": "BUG-0004",
+  "title": "Orchestrator Overrides Conversational Opening with Old 3-Question Protocol",
+  "user_stories": [
+    {
+      "id": "US-1",
+      "story": "As a developer using /isdlc feature with a detailed description, I want the requirements analyst to reflect back my description and ask targeted follow-ups, so that I don't have to re-explain what I already wrote.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1.1",
+          "description": "The text 'Your FIRST response must ONLY contain these 3 questions' does NOT appear in 00-sdlc-orchestrator.md",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-1.2",
+          "description": "The text 'What problem are you solving? 2. Who will use this? 3. How will you know this project succeeded?' does NOT appear in 00-sdlc-orchestrator.md",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-1.3",
+          "description": "The replacement text includes mode detection (DEBATE_CONTEXT check)",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-1.4",
+          "description": "The replacement text includes the conversational opening with rich/minimal description branching",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-1.5",
+          "description": "The replacement text includes organic lens integration guidance",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-1.6",
+          "description": "The replacement text includes the A/R/C menu pattern",
+          "priority": "P0",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-2",
+      "story": "As the iSDLC framework maintainer, I want the orchestrator's Phase 01 delegation protocol to stay in sync with the requirements analyst's own INVOCATION PROTOCOL, so that protocol updates in one place are not silently overridden by stale copies.",
+      "acceptance_criteria": [
+        {
+          "id": "AC-2.1",
+          "description": "The orchestrator's Phase 01 protocol and the requirements analyst's INVOCATION PROTOCOL block are semantically equivalent",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-2.2",
+          "description": "Both contain the same mode detection logic (DEBATE_CONTEXT present vs absent)",
+          "priority": "P0",
+          "testable": true
+        },
+        {
+          "id": "AC-2.3",
+          "description": "Both contain the same conversational opening rules (rich >50 words vs minimal)",
+          "priority": "P0",
+          "testable": true
+        }
+      ]
+    }
+  ]
+}

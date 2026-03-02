@@ -1,0 +1,244 @@
+[
+  {
+    "id": "US-001",
+    "role": "orchestrator agent (MODE: finalize)",
+    "want": "call all 4 prune functions after collectPhaseSnapshots and before moving the workflow to workflow_history",
+    "so_that": "state.json is pruned on the primary path at every workflow completion, keeping the file lean",
+    "acceptance_criteria": [
+      "AC-001-01: pruneSkillUsageLog(state, 50) called after snapshots, before history move",
+      "AC-001-02: pruneCompletedPhases(state, []) called with empty protected-phases",
+      "AC-001-03: pruneHistory(state, 100, 200) called",
+      "AC-001-04: pruneWorkflowHistory(state, 50, 200) called",
+      "AC-001-05: workflow_history entry contains snapshots/metrics collected BEFORE pruning"
+    ],
+    "traces": ["FR-001"],
+    "priority": "Must Have",
+    "depends_on": ["US-003", "US-010"]
+  },
+  {
+    "id": "US-002",
+    "role": "orchestrator agent (MODE: finalize)",
+    "want": "reset all transient runtime fields to their null/empty state at workflow completion",
+    "so_that": "stale data from prior workflows does not leak into subsequent runs and confuse hooks",
+    "acceptance_criteria": [
+      "AC-002-01: pending_escalations set to []",
+      "AC-002-02: pending_delegation set to null",
+      "AC-002-03: current_phase set to null",
+      "AC-002-04: active_agent set to null",
+      "AC-002-05: phases set to {}",
+      "AC-002-06: blockers set to []"
+    ],
+    "traces": ["FR-002"],
+    "priority": "Must Have",
+    "depends_on": ["US-003"]
+  },
+  {
+    "id": "US-003",
+    "role": "framework library (common.cjs)",
+    "want": "provide a single clearTransientFields(state) function that resets all transient fields in one call",
+    "so_that": "cleanup logic is centralized and callable from both the orchestrator finalize path and the enforcer fallback",
+    "acceptance_criteria": [
+      "AC-003-01: pending_escalations set to []",
+      "AC-003-02: pending_delegation set to null",
+      "AC-003-03: current_phase set to null",
+      "AC-003-04: active_agent set to null",
+      "AC-003-05: phases set to {}",
+      "AC-003-06: blockers set to []",
+      "AC-003-07: returns the mutated state object",
+      "AC-003-08: durable fields are NOT modified"
+    ],
+    "traces": ["FR-003"],
+    "priority": "Must Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-004",
+    "role": "framework developer",
+    "want": "FIFO retention limits updated to match real-world usage patterns (50/100/50)",
+    "so_that": "pruning keeps an adequate history window without over-retaining stale data",
+    "acceptance_criteria": [
+      "AC-004-01: pruneSkillUsageLog default is 50 (up from 20)",
+      "AC-004-02: pruneHistory default is 100 (up from 50)",
+      "AC-004-03: pruneWorkflowHistory default is 50 (unchanged)",
+      "AC-004-04: arrays at or below cap are not modified"
+    ],
+    "traces": ["FR-004"],
+    "priority": "Should Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-005",
+    "role": "workflow-completion-enforcer hook",
+    "want": "call clearTransientFields(state) after its existing prune function calls",
+    "so_that": "the fallback path is as comprehensive as the orchestrator primary path, ensuring transient fields are always cleaned",
+    "acceptance_criteria": [
+      "AC-005-01: clearTransientFields called after pruning on completed workflow detection",
+      "AC-005-02: all 6 transient fields are reset in the written state"
+    ],
+    "traces": ["FR-005"],
+    "priority": "Should Have",
+    "depends_on": ["US-003"]
+  },
+  {
+    "id": "US-006",
+    "role": "orchestrator agent prompt (00-sdlc-orchestrator.md)",
+    "want": "have explicit instructions in MODE: finalize telling me to invoke pruning with specific function names and retention limits",
+    "so_that": "the prompt-driven agent knows exactly what to call and in what order, since the orchestrator is not executable code",
+    "acceptance_criteria": [
+      "AC-006-01: explicit step listing all 5 function calls (4 prune + clearTransientFields)",
+      "AC-006-02: order specified: collectPhaseSnapshots FIRST, then prune, then workflow_history move",
+      "AC-006-03: retention limits specified: skill_usage_log 50, history 100, workflow_history 50"
+    ],
+    "traces": ["FR-006"],
+    "priority": "Must Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-007",
+    "role": "framework developer",
+    "want": "older workflow_history entries (beyond most recent 10) to have phase_snapshots compacted to phase+summary only",
+    "so_that": "state.json stays lean over time by reducing per-entry size for historical records rarely inspected in detail",
+    "acceptance_criteria": [
+      "AC-007-01: entries beyond most recent 10 have phase_snapshots compacted to [{phase, summary}]",
+      "AC-007-02: most recent 10 entries preserve full phase_snapshots",
+      "AC-007-03: compacted entries have _compacted: true flag"
+    ],
+    "traces": ["FR-007"],
+    "priority": "Could Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-008",
+    "role": "framework developer",
+    "want": "older workflow_history entries (beyond most recent 5) to have git_branch compacted to {name, status} only",
+    "so_that": "recent entries keep full git detail while older entries shed unused metadata",
+    "acceptance_criteria": [
+      "AC-008-01: entries beyond most recent 5 have git_branch compacted to {name, status}",
+      "AC-008-02: most recent 5 entries preserve full git_branch"
+    ],
+    "traces": ["FR-008"],
+    "priority": "Could Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-009",
+    "role": "orchestrator agent (MODE: init)",
+    "want": "run a one-time migration on first workflow init after deployment that seeds the archive from existing workflow_history and then prunes state.json",
+    "so_that": "the archive has a complete picture from day one and state.json is immediately brought under control without waiting for the next finalize",
+    "acceptance_criteria": [
+      "AC-009-01: migration runs on first workflow init after deployment",
+      "AC-009-02: seedArchiveFromHistory called BEFORE FIFO pruning",
+      "AC-009-03: legacy git_branch objects transformed to branch+outcome",
+      "AC-009-04: full phase_snapshots compacted to phase_summary format",
+      "AC-009-05: missing source_id/slug handled gracefully (no error)",
+      "AC-009-06: FIFO caps applied after seeding (50/100/50)",
+      "AC-009-07: stale transient fields cleared if active_workflow is null",
+      "AC-009-08: migration is idempotent (pruning_migration_completed flag)"
+    ],
+    "traces": ["FR-009"],
+    "priority": "Should Have",
+    "depends_on": ["US-011", "US-013"]
+  },
+  {
+    "id": "US-010",
+    "role": "workflow-completion-enforcer hook",
+    "want": "archive completed and cancelled workflow records to state-archive.json with a multi-key index whenever active_workflow becomes null",
+    "so_that": "workflow data moves out of state.json into a separate archive, enabling the hot/cold data split that keeps state.json lean",
+    "acceptance_criteria": [
+      "AC-010-01: compact record appended to state-archive.json on finalize",
+      "AC-010-02: index updated with both source_id and slug entries",
+      "AC-010-03: archive file created with version 1 on first write",
+      "AC-010-04: archive write failure logs warning, does not roll back state.json",
+      "AC-010-05: re-work scenario maps identifier to multiple record positions",
+      "AC-010-06: cancelled workflows get outcome 'cancelled' with reason from cancellation_reason",
+      "AC-010-07: completed workflows get reason null"
+    ],
+    "traces": ["FR-010"],
+    "priority": "Must Have",
+    "depends_on": ["US-011", "US-014"]
+  },
+  {
+    "id": "US-011",
+    "role": "framework library (common.cjs)",
+    "want": "provide an appendToArchive(record, projectId) function that reads/creates the archive file, appends a record, updates the multi-key index, and writes the file",
+    "so_that": "archive writes are encapsulated in a single function with fail-safe behavior that any caller can use",
+    "acceptance_criteria": [
+      "AC-011-01: record appended and index updated when archive exists",
+      "AC-011-02: new archive created with version 1 when file does not exist",
+      "AC-011-03: both source_id and slug added as index keys",
+      "AC-011-04: file read/write errors caught, warning logged, no throw",
+      "AC-011-05: function exported as appendToArchive"
+    ],
+    "traces": ["FR-011"],
+    "priority": "Must Have",
+    "depends_on": ["US-014"]
+  },
+  {
+    "id": "US-012",
+    "role": "orchestrator agent",
+    "want": "look up past workflow records by issue identifier in the archive",
+    "so_that": "I can supplement GitHub/BACKLOG answers with internal process data like workflow duration, phases completed, and branch name",
+    "acceptance_criteria": [
+      "AC-012-01: exact match on index returns {found: true, records: [...]}",
+      "AC-012-02: no match returns {found: false, records: []}",
+      "AC-012-03: missing archive file returns {found: false, records: []}",
+      "AC-012-04: multiple matches sorted by completed_at descending",
+      "AC-012-05: any error returns {found: false, records: []} without throwing"
+    ],
+    "traces": ["FR-012"],
+    "priority": "Could Have (Deferred)",
+    "depends_on": ["US-014"],
+    "notes": "Deferred: GitHub/BACKLOG already answers the basic question. Archive data accumulates via write path; read path built later."
+  },
+  {
+    "id": "US-013",
+    "role": "orchestrator agent (MODE: init)",
+    "want": "detect an orphaned active_workflow from a previous session and archive it with outcome 'abandoned' before initializing the new workflow",
+    "so_that": "stale transient fields do not leak into new workflows (correctness fix) and a record of what happened is preserved",
+    "acceptance_criteria": [
+      "AC-013-01: orphaned active_workflow detected before new init proceeds",
+      "AC-013-02: archive record has outcome 'abandoned'",
+      "AC-013-03: phase_summary reflects progress; incomplete phases get status 'abandoned'",
+      "AC-013-04: metrics.total_duration_minutes calculated from started_at to now",
+      "AC-013-05: clearTransientFields called after archive write (or failure)",
+      "AC-013-06: one-line notification displayed: 'Archived abandoned workflow for {source_id}'",
+      "AC-013-07: archive failure does not block cleanup (fail-open)"
+    ],
+    "traces": ["FR-013"],
+    "priority": "Must Have",
+    "depends_on": ["US-003", "US-011"]
+  },
+  {
+    "id": "US-014",
+    "role": "framework library (common.cjs)",
+    "want": "provide a resolveArchivePath(projectId) function that resolves the absolute path to state-archive.json, mirroring resolveStatePath() for monorepo support",
+    "so_that": "archive files are routed to the correct per-project directory in monorepo mode, preventing cross-project contamination",
+    "acceptance_criteria": [
+      "AC-015-01: single-project mode returns {projectRoot}/.isdlc/state-archive.json",
+      "AC-015-02: monorepo mode with explicit projectId returns correct project path",
+      "AC-015-03: monorepo mode without projectId auto-detects from cwd",
+      "AC-015-04: resolveArchivePath produces same directory as resolveStatePath, different filename",
+      "AC-015-05: uses cached getProjectRoot() (no redundant filesystem traversal)",
+      "AC-015-06: exported as resolveArchivePath"
+    ],
+    "traces": ["FR-015"],
+    "priority": "Must Have",
+    "depends_on": []
+  },
+  {
+    "id": "US-015",
+    "role": "framework library (common.cjs)",
+    "want": "provide a seedArchiveFromHistory(workflowHistory) function that transforms legacy workflow_history entries to archive record format and appends each via appendToArchive()",
+    "so_that": "the one-time migration can seed the archive with all 18 historical workflows, giving a complete picture from day one",
+    "acceptance_criteria": [
+      "AC-014-01: legacy git_branch objects transformed to branch name + outcome status",
+      "AC-014-02: full phase_snapshots compacted to phase_summary format",
+      "AC-014-03: missing source_id entries still appended, indexed by slug only",
+      "AC-014-04: entries missing both source_id and slug appended with no index entries",
+      "AC-014-05: individual entry failures skipped, processing continues"
+    ],
+    "traces": ["FR-014"],
+    "priority": "Should Have",
+    "depends_on": ["US-011"]
+  }
+]

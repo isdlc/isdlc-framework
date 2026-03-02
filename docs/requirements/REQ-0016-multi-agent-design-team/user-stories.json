@@ -1,0 +1,59 @@
+{
+  "feature": "REQ-0016: Multi-agent Design Team",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Design quality review via Critic agent",
+      "as_a": "Framework developer",
+      "i_want": "a design critic agent that reviews Phase 04 artifacts for incomplete API specs, inconsistent module patterns, module overlap, validation gaps, missing idempotency, accessibility issues, error taxonomy holes, and data flow bottlenecks",
+      "so_that": "design defects are caught during Phase 04 before implementation builds on flawed specifications",
+      "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05", "AC-001-06", "AC-001-07", "AC-001-08", "AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04", "AC-006-05"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-002",
+      "title": "Design improvement via Refiner agent",
+      "as_a": "Framework developer",
+      "i_want": "a design refiner agent that addresses Critic findings by producing complete OpenAPI contracts, unified error taxonomies, validation rules at every boundary, idempotency keys, and consistent module patterns",
+      "so_that": "design artifacts improve iteratively through structured debate rather than single-pass creation",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-04", "AC-002-05", "AC-002-06", "AC-002-07", "AC-002-08", "AC-002-09"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-003",
+      "title": "DEBATE_ROUTING extension for Phase 04",
+      "as_a": "Orchestrator agent",
+      "i_want": "the DEBATE_ROUTING table in the orchestrator to include a Phase 04 entry mapping to system-designer (Creator), design-critic (Critic), and design-refiner (Refiner)",
+      "so_that": "Phase 04 debate follows the same generalized protocol as Phase 01 and Phase 03",
+      "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-03", "AC-003-04"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-004",
+      "title": "Creator role awareness for system designer",
+      "as_a": "Framework developer",
+      "i_want": "the system-designer agent to recognize when it is operating as the Creator in a debate loop and include a self-assessment section",
+      "so_that": "the Critic has explicit uncertainty signals to evaluate rather than having to infer them",
+      "acceptance_criteria": ["AC-004-01", "AC-004-02"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-005",
+      "title": "Debate artifacts stored correctly for Phase 04",
+      "as_a": "Framework developer",
+      "i_want": "debate artifacts (critique reports, debate summary) to be stored in the correct artifact folder with Phase 04-specific metrics",
+      "so_that": "the audit trail of design debate rounds is preserved alongside requirements and architecture debate artifacts",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03"],
+      "priority": "P0"
+    },
+    {
+      "id": "US-006",
+      "title": "Robust edge case handling for design debate",
+      "as_a": "Orchestrator agent",
+      "i_want": "design debate edge cases (missing artifacts, malformed critique, unconverged debate, non-REST interfaces) to be handled gracefully following Article X fail-safe defaults",
+      "so_that": "the debate loop never blocks the workflow due to infrastructure failures or assumption mismatches",
+      "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03", "AC-007-04"],
+      "priority": "P0"
+    }
+  ]
+}

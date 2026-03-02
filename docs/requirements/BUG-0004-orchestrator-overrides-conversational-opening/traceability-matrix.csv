@@ -1,0 +1,18 @@
+Requirement,Type,Test Case,Test Name,Priority,Test File,Status
+FR-1,Functional,TC-01.1,Old 3-question text absent (AC-1.1),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-01.2,Old 3 specific questions absent (AC-1.2),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-01.3,Old ONLY ask 3 questions absent (AC-1.1),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-02.1,DEBATE_CONTEXT mode detection present (AC-1.3),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+FR-1,Functional,TC-02.2,Both debate and single-agent paths (AC-1.3),P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-03.1,Rich description threshold 50 words (AC-1.4),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-03.2,Reflection instruction present (AC-1.4),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+FR-1,Functional,TC-03.3,Minimal description path (AC-1.4),P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-04.1,Discovery lenses referenced (AC-1.5),P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-04.2,Organic weaving instruction (AC-1.5),P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-1,Functional,TC-05.1,A/R/C menu pattern present (AC-1.6),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+FR-2,Functional,TC-06.1,Both files share DEBATE_CONTEXT (AC-2.1 AC-2.2),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+FR-2,Functional,TC-06.2,Both files share 50-word threshold (AC-2.1 AC-2.3),P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,RED
+FR-2,Functional,TC-06.3,Both files share A/R/C pattern (AC-2.1),P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+NFR-1,Non-Functional,TC-07.1,Requirements analyst INVOCATION PROTOCOL unchanged,P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+NFR-2,Non-Functional,TC-07.2,Other orchestrator sections intact,P0,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN
+NFR-2,Non-Functional,TC-07.3,Orchestrator delegation table references Phase 01,P1,tests/prompt-verification/orchestrator-conversational-opening.test.js,GREEN

@@ -1,0 +1,14 @@
+Requirement ID,User Story ID,Epic,Priority,Status
+FR-001,US-001,Debate Loop Core,Must Have,Draft
+FR-002,US-002,Debate Loop Core,Must Have,Draft
+FR-003,US-003,Debate Loop Core,Must Have,Draft
+FR-004,US-004,Debate Loop Core,Must Have,Draft
+FR-005,US-005,Configuration,Must Have,Draft
+FR-006,US-004,Debate Loop Core,Should Have,Draft
+FR-007,US-007,Quality,Should Have,Draft
+FR-008,US-006,Orchestration,Must Have,Draft
+NFR-001,,Performance,Should Have,Draft
+NFR-002,,Compatibility,Must Have,Draft
+NFR-003,,Compatibility,Must Have,Draft
+NFR-004,,Reliability,Must Have,Draft
+NFR-005,,Maintainability,Should Have,Draft

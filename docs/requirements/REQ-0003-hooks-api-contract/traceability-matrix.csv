@@ -1,0 +1,12 @@
+Requirement,User Story,Acceptance Criteria,Hook/File,Test File
+FR-01,US-01,"AC-01, AC-01a, AC-01b",src/claude/hooks/config/schemas/*.json,schema-validation.test.cjs
+FR-02,US-02,"AC-02, AC-02a, AC-02b, AC-02c",src/claude/hooks/gate-blocker.cjs,gate-blocker.test.cjs
+FR-03,US-03,"AC-03, AC-03a, AC-03b, AC-03c, AC-03d",src/claude/hooks/lib/common.cjs,schema-validation.test.cjs
+FR-04,US-04,"AC-04, AC-04a-f",gate-blocker/constitution-validator/iteration-corridor/menu-tracker/test-watcher,schema-validation.test.cjs
+FR-05,US-04,"AC-04",model-provider-router/delegation-gate/review-reminder,schema-validation.test.cjs
+FR-06,US-06,"AC-08, AC-08a, AC-08b",src/claude/agents/sdlc/sdlc.md,manual-review
+FR-07,US-05,"AC-07, AC-07a-c",docs/isdlc/hooks-api-contract.md,manual-review
+NFR-01,US-03,AC-03c,src/claude/hooks/lib/common.cjs,schema-validation.test.cjs
+NFR-02,US-03,AC-03d,src/claude/hooks/lib/common.cjs,schema-validation.test.cjs
+NFR-03,US-04,AC-04f,all hooks,gate-blocker.test.cjs
+NFR-05,US-08,"AC-06, AC-06a-d",all schema tests,schema-validation.test.cjs

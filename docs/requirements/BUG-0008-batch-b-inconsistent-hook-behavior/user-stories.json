@@ -1,0 +1,62 @@
+{
+  "bug_id": "BUG-0008",
+  "title": "Batch B: Inconsistent Hook Behavior in gate-blocker.cjs",
+  "bugs": [
+    {
+      "id": "0.4",
+      "title": "Phase index bounds not validated",
+      "severity": "high",
+      "file": "src/claude/hooks/gate-blocker.cjs",
+      "lines": "588-604",
+      "root_cause": "No bounds checking on phaseIndex and no array validation on workflowPhases before indexing",
+      "acceptance_criteria": [
+        { "id": "AC-04a", "description": "Negative phaseIndex triggers fail-safe allow", "priority": "P0" },
+        { "id": "AC-04b", "description": "Non-finite phaseIndex triggers fail-safe allow", "priority": "P0" },
+        { "id": "AC-04c", "description": "Non-array workflowPhases skips sequence validation", "priority": "P0" },
+        { "id": "AC-04d", "description": "Empty workflowPhases array skips sequence validation", "priority": "P0" },
+        { "id": "AC-04e", "description": "Out-of-bounds phaseIndex does not throw", "priority": "P0" },
+        { "id": "AC-04f", "description": "Valid combinations work as before (no regression)", "priority": "P0" }
+      ]
+    },
+    {
+      "id": "0.5",
+      "title": "Empty workflows object prevents fallback loading",
+      "severity": "high",
+      "file": "src/claude/hooks/gate-blocker.cjs",
+      "lines": "581-584",
+      "root_cause": "Truthy empty object {} bypasses || fallback chain",
+      "acceptance_criteria": [
+        { "id": "AC-05a", "description": "Empty ctx.workflows {} triggers fallback loaders", "priority": "P0" },
+        { "id": "AC-05b", "description": "ctx.workflows with valid .workflows sub-object is used directly", "priority": "P0" },
+        { "id": "AC-05c", "description": "Null/undefined ctx.workflows triggers fallback loaders", "priority": "P0" },
+        { "id": "AC-05d", "description": "Valid ctx.workflows with .workflows is used directly", "priority": "P0" },
+        { "id": "AC-05e", "description": "All sources failing results in graceful skip", "priority": "P1" }
+      ]
+    },
+    {
+      "id": "0.8",
+      "title": "Supervised review doesn't coordinate with gate-blocker",
+      "severity": "high",
+      "file": "src/claude/hooks/gate-blocker.cjs",
+      "lines": "736-740",
+      "root_cause": "Gate-blocker explicitly ignores supervised review status, allowing advancement during review",
+      "acceptance_criteria": [
+        { "id": "AC-08a", "description": "Reviewing status blocks gate advancement", "priority": "P0" },
+        { "id": "AC-08b", "description": "Block message includes supervised review and phase", "priority": "P0" },
+        { "id": "AC-08c", "description": "Approved status does not block", "priority": "P0" },
+        { "id": "AC-08d", "description": "Absent/null supervised_review does not block", "priority": "P0" },
+        { "id": "AC-08e", "description": "Rejected status blocks with rejection message", "priority": "P0" },
+        { "id": "AC-08f", "description": "Supervised review check is early exit (before iteration reqs)", "priority": "P1" }
+      ]
+    }
+  ],
+  "nfr": [
+    { "id": "NFR-01", "description": "Fail-safe behavior maintained (Article X)" },
+    { "id": "NFR-02", "description": "All fixes in gate-blocker.cjs only" },
+    { "id": "NFR-03", "description": "Zero regressions in existing tests" },
+    { "id": "NFR-04", "description": "TDD with test coverage for each fix (Article II)" }
+  ],
+  "total_acceptance_criteria": 17,
+  "total_bugs": 3,
+  "files_affected": ["src/claude/hooks/gate-blocker.cjs"]
+}

@@ -1,0 +1,31 @@
+{
+  "source": "github",
+  "source_id": "GH-22",
+  "slug": "REQ-0035-transparent-critic-refiner-at-step-bounds",
+  "created_at": "2026-02-22T12:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification"
+  ],
+  "steps_completed": [
+    "00-01", "00-02", "00-03",
+    "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08",
+    "02-01", "02-02", "02-03", "02-04",
+    "03-01", "03-02", "03-03", "03-04",
+    "04-01", "04-02", "04-03", "04-04", "04-05"
+  ],
+  "codebase_hash": "78be7ed",
+  "build_started_at": "2026-02-22T18:30:00.000Z",
+  "workflow_type": "feature"
+}

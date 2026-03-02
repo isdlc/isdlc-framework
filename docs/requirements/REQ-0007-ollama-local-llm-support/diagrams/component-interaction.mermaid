@@ -1,0 +1,49 @@
+%% Component Interaction Diagram
+%% Shows how provider-related components interact at runtime
+
+flowchart LR
+    subgraph "Claude Code"
+        CC[Claude Code CLI]
+    end
+
+    subgraph "iSDLC Hooks (CJS)"
+        MPR[model-provider-router.cjs<br/>PreToolUse hook]
+        PU[provider-utils.cjs<br/>Selection engine]
+        CMN[common.cjs<br/>State/IO helpers]
+    end
+
+    subgraph "Configuration (YAML/JSON)"
+        PD[provider-defaults.yaml<br/>Framework defaults]
+        PY[.isdlc/providers.yaml<br/>User config]
+        SJ[.isdlc/state.json<br/>Runtime state]
+    end
+
+    subgraph "LLM Providers"
+        ANT[Anthropic API<br/>api.anthropic.com]
+        OLL[Ollama<br/>localhost:11434]
+    end
+
+    subgraph "User Facing"
+        CMD[/provider command<br/>provider.md]
+        INST[Installer<br/>installer.js / install.sh / install.ps1]
+        TMPL[CLAUDE.md.template<br/>Documentation]
+    end
+
+    CC -->|"stdin JSON"| MPR
+    MPR -->|"imports"| PU
+    MPR -->|"imports"| CMN
+    PU -->|"reads"| PD
+    PU -->|"reads (priority)"| PY
+    PU -->|"reads/writes"| SJ
+    PU -->|"health check"| ANT
+    PU -->|"health check"| OLL
+    MPR -->|"stdout JSON"| CC
+    CC -->|"connects"| ANT
+    CC -->|"connects"| OLL
+    INST -->|"creates"| PY
+    INST -->|"copies"| TMPL
+    CMD -->|"reads/writes"| PY
+
+    style PY fill:#ff9,stroke:#333
+    style MPR fill:#9cf,stroke:#333
+    style PU fill:#9cf,stroke:#333

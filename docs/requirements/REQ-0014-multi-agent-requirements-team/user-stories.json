@@ -1,0 +1,252 @@
+{
+  "feature_id": "REQ-0014",
+  "feature_name": "Multi-Agent Requirements Team",
+  "stories": [
+    {
+      "id": "US-001",
+      "epic": "Debate Loop Core",
+      "persona": "Framework Developer",
+      "title": "Creator produces initial requirements draft",
+      "goal": "have the requirements-analyst produce a labeled Round 1 draft when debate mode is active",
+      "benefit": "the Critic has a concrete artifact to review rather than reviewing nothing",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-001-01",
+          "given": "debate mode is ON and the user has provided a feature description",
+          "when": "Phase 01 begins",
+          "then": "the Creator (requirements-analyst) produces requirements-spec.md, user-stories.json, nfr-matrix.md, and traceability-matrix.csv labeled as Round 1 Draft"
+        },
+        {
+          "id": "AC-001-02",
+          "given": "debate mode is OFF",
+          "when": "Phase 01 begins",
+          "then": "the requirements-analyst produces artifacts using the current single-agent flow unchanged"
+        },
+        {
+          "id": "AC-001-03",
+          "given": "the user provided a rich feature description from BACKLOG.md",
+          "when": "the Creator starts",
+          "then": "the Creator reflects back the description and asks ONE targeted follow-up question instead of 3 generic questions"
+        }
+      ],
+      "linked_requirements": ["FR-001", "FR-007"]
+    },
+    {
+      "id": "US-002",
+      "epic": "Debate Loop Core",
+      "persona": "Framework Developer",
+      "title": "Critic reviews and challenges requirements",
+      "goal": "have a dedicated Critic agent review Creator's output and identify defects",
+      "benefit": "vague ACs, unmeasured NFRs, and missing edge cases are caught before they propagate to later phases",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-002-01",
+          "given": "the Creator has produced Round N artifacts",
+          "when": "the Critic reviews them",
+          "then": "the Critic produces a structured critique with findings classified as BLOCKING or WARNING, each referencing a specific requirement/AC/NFR ID"
+        },
+        {
+          "id": "AC-002-02",
+          "given": "an AC uses vague language (e.g., 'should handle errors appropriately')",
+          "when": "the Critic reviews it",
+          "then": "the Critic flags it as BLOCKING with a specific recommendation for Given/When/Then rewrite"
+        },
+        {
+          "id": "AC-002-03",
+          "given": "an NFR has no quantified metric (e.g., 'system should be fast')",
+          "when": "the Critic reviews it",
+          "then": "the Critic flags it as BLOCKING with a recommendation for specific measurable target"
+        },
+        {
+          "id": "AC-002-04",
+          "given": "a requirement has no linked user story",
+          "when": "the Critic reviews the traceability matrix",
+          "then": "the Critic flags it as BLOCKING (orphan requirement)"
+        },
+        {
+          "id": "AC-002-05",
+          "given": "two requirements contradict each other",
+          "when": "the Critic reviews the requirements set",
+          "then": "the Critic flags both as BLOCKING with an explanation of the contradiction"
+        }
+      ],
+      "linked_requirements": ["FR-002"]
+    },
+    {
+      "id": "US-003",
+      "epic": "Debate Loop Core",
+      "persona": "Framework Developer",
+      "title": "Refiner addresses Critic findings",
+      "goal": "have a Refiner agent take the Critic's findings and produce improved artifacts",
+      "benefit": "all blocking defects are resolved before artifacts are finalized",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-003-01",
+          "given": "the Critic produced N BLOCKING findings",
+          "when": "the Refiner processes them",
+          "then": "the Refiner produces updated artifacts with all N BLOCKING findings addressed and documented in a change log"
+        },
+        {
+          "id": "AC-003-02",
+          "given": "a BLOCKING finding is 'vague AC'",
+          "when": "the Refiner addresses it",
+          "then": "the AC is rewritten in Given/When/Then format with specific, testable conditions"
+        },
+        {
+          "id": "AC-003-03",
+          "given": "a BLOCKING finding is 'unmeasured NFR'",
+          "when": "the Refiner addresses it",
+          "then": "the NFR is rewritten with a quantified metric (e.g., 'p95 < 200ms', '>= 80% coverage')"
+        },
+        {
+          "id": "AC-003-04",
+          "given": "the Refiner cannot resolve a finding without user input",
+          "when": "it encounters such a finding",
+          "then": "the finding is escalated with [NEEDS CLARIFICATION] marker per Article IV"
+        }
+      ],
+      "linked_requirements": ["FR-003"]
+    },
+    {
+      "id": "US-004",
+      "epic": "Debate Loop Core",
+      "persona": "Framework Developer",
+      "title": "Debate loop converges within max rounds",
+      "goal": "have the debate loop terminate when the Critic finds zero blocking issues or after max 3 rounds",
+      "benefit": "I get high-quality requirements without infinite processing",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-004-01",
+          "given": "the debate loop is running",
+          "when": "the Critic produces zero BLOCKING findings (warnings allowed)",
+          "then": "the debate converges and final artifacts are saved as the standard artifact names"
+        },
+        {
+          "id": "AC-004-02",
+          "given": "the debate loop reaches round 3",
+          "when": "the Critic still has BLOCKING findings",
+          "then": "the loop terminates, latest artifacts are saved, and a warning is appended noting unconverged findings"
+        },
+        {
+          "id": "AC-004-03",
+          "given": "the debate converges at round N",
+          "when": "artifacts are saved",
+          "then": "a debate-summary.md is created showing round count, findings per round, and changes made"
+        },
+        {
+          "id": "AC-004-04",
+          "given": "a debate round completes",
+          "when": "the round's critique is saved",
+          "then": "a round-N-critique.md file is saved in the artifact folder for audit trail visibility"
+        }
+      ],
+      "linked_requirements": ["FR-004", "FR-006"]
+    },
+    {
+      "id": "US-005",
+      "epic": "Configuration",
+      "persona": "Framework Developer",
+      "title": "Control debate mode via flags",
+      "goal": "enable or disable debate mode using CLI flags and workflow settings",
+      "benefit": "I can choose the right level of rigor for each feature",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-005-01",
+          "given": "a standard feature workflow without flags",
+          "when": "Phase 01 begins",
+          "then": "debate mode is ON by default"
+        },
+        {
+          "id": "AC-005-02",
+          "given": "a feature workflow with `-light` flag",
+          "when": "Phase 01 begins",
+          "then": "debate mode is OFF (single-agent, current behavior)"
+        },
+        {
+          "id": "AC-005-03",
+          "given": "a feature workflow with `--no-debate` flag",
+          "when": "Phase 01 begins",
+          "then": "debate mode is OFF regardless of sizing"
+        },
+        {
+          "id": "AC-005-04",
+          "given": "a `-light` feature workflow with `--debate` flag",
+          "when": "Phase 01 begins",
+          "then": "debate mode is ON (explicit override takes precedence)"
+        },
+        {
+          "id": "AC-005-05",
+          "given": "debate mode is configured",
+          "when": "the workflow initializes",
+          "then": "active_workflow.debate_mode is set in state.json (true or false)"
+        }
+      ],
+      "linked_requirements": ["FR-005"]
+    },
+    {
+      "id": "US-006",
+      "epic": "Orchestration",
+      "persona": "Framework Developer",
+      "title": "Orchestrator manages debate delegation",
+      "goal": "have the orchestrator route between Creator, Critic, and Refiner correctly based on debate mode",
+      "benefit": "debate mode integrates seamlessly into the existing phase lifecycle",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-006-01",
+          "given": "debate mode is ON",
+          "when": "the orchestrator delegates Phase 01",
+          "then": "the orchestrator runs Creator -> Critic -> Refiner loop (up to 3 rounds) before marking Phase 01 complete"
+        },
+        {
+          "id": "AC-006-02",
+          "given": "debate mode is OFF",
+          "when": "the orchestrator delegates Phase 01",
+          "then": "the orchestrator delegates to requirements-analyst as a single agent (current behavior)"
+        },
+        {
+          "id": "AC-006-03",
+          "given": "the debate loop is running",
+          "when": "each round completes",
+          "then": "active_workflow.debate_state is updated with round_number, convergence_status, and blocking_findings_count"
+        }
+      ],
+      "linked_requirements": ["FR-008"]
+    },
+    {
+      "id": "US-007",
+      "epic": "Quality",
+      "persona": "Framework Developer",
+      "title": "Conversational context-aware Creator",
+      "goal": "have the Creator use the feature description as context instead of starting with cold generic questions",
+      "benefit": "requirements capture is faster and more engaging, reducing wasted turns on already-known information",
+      "priority": "Should Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-007-01",
+          "given": "the user provided a feature description in the /isdlc feature command",
+          "when": "the Creator begins requirements capture",
+          "then": "the Creator's first response acknowledges and summarizes the provided description"
+        },
+        {
+          "id": "AC-007-02",
+          "given": "the feature description already covers problem, users, and success criteria",
+          "when": "the Creator begins requirements capture",
+          "then": "the Creator skips the 3 generic opening questions and asks a targeted follow-up about what's missing"
+        },
+        {
+          "id": "AC-007-03",
+          "given": "discovery_context exists in state.json and is fresh (< 24h)",
+          "when": "the Creator discusses technical context",
+          "then": "the Creator uses discovery data (tech stack, test coverage, architecture) as known baseline and only asks about what's new"
+        }
+      ],
+      "linked_requirements": ["FR-007"]
+    }
+  ]
+}

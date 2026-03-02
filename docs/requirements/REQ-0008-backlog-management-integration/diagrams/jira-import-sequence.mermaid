@@ -1,0 +1,33 @@
+%% Sequence Diagram: Add Jira Ticket to Backlog (FR-002)
+
+sequenceDiagram
+    participant Dev as Developer
+    participant CC as Claude Code
+    participant TMpl as CLAUDE.md (Intent Detection)
+    participant MCP as Atlassian MCP
+    participant Jira as Jira Cloud
+    participant BL as BACKLOG.md
+
+    Dev->>CC: "Add PROJ-1234 to the backlog"
+    CC->>TMpl: Match intent: backlog-add
+
+    Note over TMpl: MCP Prerequisite Check
+    TMpl->>CC: Check if atlassian MCP configured
+
+    alt MCP Not Configured
+        CC-->>Dev: "Atlassian MCP not configured.<br/>Run: claude mcp add --transport sse<br/>atlassian https://mcp.atlassian.com/v1/sse"
+    else MCP Configured
+        CC->>MCP: getTicket("PROJ-1234")
+        MCP->>Jira: GET /rest/api/3/issue/PROJ-1234
+        Jira-->>MCP: { summary, description, priority, status, issuelinks }
+        MCP-->>CC: { title, description, priority, status, linkedDocs }
+
+        alt Ticket Not Found
+            CC-->>Dev: "Ticket PROJ-1234 not found in Jira"
+        else Ticket Found
+            CC->>BL: Read current content
+            BL-->>CC: Markdown content
+            CC->>BL: Append new entry with Jira metadata
+            CC-->>Dev: "Added PROJ-1234: {title} to the backlog"
+        end
+    end

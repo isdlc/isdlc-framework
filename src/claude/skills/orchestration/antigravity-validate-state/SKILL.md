@@ -5,7 +5,7 @@ skill_id: ORCH-014
 owner: sdlc-orchestrator
 collaborators: []
 project: sdlc-framework
-version: 1.0.0
+version: 2.0.0
 when_to_use: After state-modifying actions in Antigravity to verify integrity.
 dependencies: []
 ---
@@ -13,13 +13,24 @@ dependencies: []
 # Antigravity Validate State
 
 ## Purpose
-This skill ensures the structural integrity and logical consistency of `state.json` in an Antigravity environment. It detects suspicious writes, phase regressions, and version conflicts.
+Validates `.isdlc/state.json` integrity: suspicious write patterns, structural issues, cross-location consistency, version lock, and phase regression protection.
 
 ## Usage
-Calling this skill will perform a deterministic audit of the `state.json` file. It should be invoked after any tool that modifies the state to ensure the changes are valid.
+```bash
+node src/antigravity/validate-state.cjs
+```
 
-## Process
-1. Load shared `state-logic.cjs`.
-2. Analyze the current `state.json` on disk.
-3. Compare against versioning rules and phase transition logic.
-4. Return a result indicating if the state is VALID or if WARNINGS/BLOCKS are necessary.
+## Output
+```json
+{ "result": "VALID" }
+{ "result": "VALID", "warnings": ["..."] }
+{ "result": "INVALID", "errors": ["..."] }
+```
+
+## Exit Codes
+- `0` = VALID (state is consistent)
+- `1` = INVALID (state has issues that must be fixed)
+- `2` = ERROR (validation could not run)
+
+## Implementation
+Script: `src/antigravity/validate-state.cjs` — wraps `src/claude/hooks/lib/state-logic.cjs`.

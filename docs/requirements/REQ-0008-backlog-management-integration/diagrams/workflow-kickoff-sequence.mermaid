@@ -1,0 +1,42 @@
+%% Sequence Diagram: Workflow Kick-Off from Jira-Backed Item (FR-005)
+
+sequenceDiagram
+    participant Dev as Developer
+    participant CC as Claude Code
+    participant Orch as Orchestrator (Backlog Picker)
+    participant MCP as Atlassian MCP
+    participant Conf as Confluence Cloud
+    participant RA as Requirements Analyst
+    participant State as state.json
+    participant BL as BACKLOG.md
+
+    Dev->>CC: "Let's work on PROJ-1234"
+    CC->>BL: Search for PROJ-1234
+    BL-->>CC: Found: item 7.7 with Jira metadata
+
+    Note over CC: Determine workflow type
+    CC->>MCP: Get ticket type for PROJ-1234
+    MCP-->>CC: type: "Story"
+    CC-->>Dev: "Starting feature workflow for PROJ-1234: {title}"
+
+    CC->>Orch: /isdlc feature "{title}"
+
+    Note over Orch: Init workflow
+    Orch->>State: Create active_workflow with<br/>jira_ticket_id: "PROJ-1234"<br/>confluence_urls: ["https://wiki..."]
+
+    Note over Orch: Phase 01: Requirements
+    Orch->>RA: Delegate Phase 01
+
+    Note over RA: Check for Confluence context
+    RA->>State: Read confluence_urls
+    State-->>RA: ["https://wiki.example.com/pages/spec-123"]
+
+    RA->>MCP: getLinkedDocument("https://wiki...")
+    MCP->>Conf: GET page content
+    Conf-->>MCP: { title, body }
+    MCP-->>RA: { title: "Feature Spec", content: "..." }
+
+    Note over RA: Display Confluence Context Banner
+    Note over RA: Inject content into<br/>requirements elicitation stages 1.1-1.5
+
+    RA-->>Orch: Phase 01 complete (informed by Confluence context)

@@ -1,0 +1,577 @@
+{
+  "feature": "REQ-0016-multi-agent-design-team",
+  "phase": "04-design",
+  "created": "2026-02-15",
+  "description": "Validation rules for the multi-agent design team feature. Each rule specifies a string pattern that must be present (or absent) in a target file. Tests read the .md files and assert these patterns.",
+
+  "modules": {
+    "M1": {
+      "name": "Orchestrator DEBATE_ROUTING Extension",
+      "file": "src/claude/agents/00-sdlc-orchestrator.md",
+      "rules": [
+        {
+          "id": "M1-V01",
+          "description": "Routing table contains Phase 04 entry",
+          "type": "contains",
+          "pattern": "04-design",
+          "scope": "DEBATE_ROUTING table in Section 7.5",
+          "traces": ["AC-003-01"]
+        },
+        {
+          "id": "M1-V02",
+          "description": "Phase 04 creator maps to system-designer",
+          "type": "contains",
+          "pattern": "03-system-designer.md",
+          "scope": "routing table, 04-design row",
+          "traces": ["AC-003-01"]
+        },
+        {
+          "id": "M1-V03",
+          "description": "Phase 04 critic maps to design-critic",
+          "type": "contains",
+          "pattern": "03-design-critic.md",
+          "scope": "routing table, 04-design row",
+          "traces": ["AC-003-01"]
+        },
+        {
+          "id": "M1-V04",
+          "description": "Phase 04 refiner maps to design-refiner",
+          "type": "contains",
+          "pattern": "03-design-refiner.md",
+          "scope": "routing table, 04-design row",
+          "traces": ["AC-003-01"]
+        },
+        {
+          "id": "M1-V05",
+          "description": "Phase 04 artifacts include interface-spec.yaml",
+          "type": "contains",
+          "pattern": "interface-spec.yaml",
+          "scope": "routing table, 04-design artifacts column",
+          "traces": ["AC-003-02"]
+        },
+        {
+          "id": "M1-V06",
+          "description": "Phase 04 artifacts include module-designs/",
+          "type": "contains",
+          "pattern": "module-designs/",
+          "scope": "routing table, 04-design artifacts column",
+          "traces": ["AC-003-02"]
+        },
+        {
+          "id": "M1-V07",
+          "description": "Phase 04 artifacts include error-taxonomy.md",
+          "type": "contains",
+          "pattern": "error-taxonomy.md",
+          "scope": "routing table, 04-design artifacts column",
+          "traces": ["AC-003-02"]
+        },
+        {
+          "id": "M1-V08",
+          "description": "Phase 04 artifacts include validation-rules.json",
+          "type": "contains",
+          "pattern": "validation-rules.json",
+          "scope": "routing table, 04-design artifacts column",
+          "traces": ["AC-003-02"]
+        },
+        {
+          "id": "M1-V09",
+          "description": "Existing Phase 01 routing row preserved",
+          "type": "contains",
+          "pattern": "01-requirements",
+          "scope": "DEBATE_ROUTING table",
+          "traces": ["NFR-003"]
+        },
+        {
+          "id": "M1-V10",
+          "description": "Existing Phase 03 routing row preserved",
+          "type": "contains",
+          "pattern": "03-architecture",
+          "scope": "DEBATE_ROUTING table",
+          "traces": ["NFR-003"]
+        }
+      ]
+    },
+
+    "M2": {
+      "name": "Design Critic Agent",
+      "file": "src/claude/agents/03-design-critic.md",
+      "rules": [
+        {
+          "id": "M2-V01",
+          "description": "Agent name is design-critic",
+          "type": "contains",
+          "pattern": "name: design-critic",
+          "scope": "frontmatter",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M2-V02",
+          "description": "Model is opus",
+          "type": "contains",
+          "pattern": "model: opus",
+          "scope": "frontmatter",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M2-V03",
+          "description": "Agent is debate-only (not user-invokable)",
+          "type": "contains",
+          "pattern": "ONLY invoked by the orchestrator during debate mode",
+          "scope": "frontmatter description",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M2-V04",
+          "description": "DC-01 Incomplete API specs check documented",
+          "type": "contains_all",
+          "patterns": ["DC-01", "Incomplete API"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-01"]
+        },
+        {
+          "id": "M2-V05",
+          "description": "DC-02 Inconsistent patterns check documented",
+          "type": "contains_all",
+          "patterns": ["DC-02", "Inconsistent Patterns"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-02"]
+        },
+        {
+          "id": "M2-V06",
+          "description": "DC-03 Module overlap check documented",
+          "type": "contains_all",
+          "patterns": ["DC-03", "Module Overlap"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-03"]
+        },
+        {
+          "id": "M2-V07",
+          "description": "DC-04 Validation gaps check documented",
+          "type": "contains_all",
+          "patterns": ["DC-04", "Validation Gaps"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-04"]
+        },
+        {
+          "id": "M2-V08",
+          "description": "DC-05 Missing idempotency check documented",
+          "type": "contains_all",
+          "patterns": ["DC-05", "Idempotency"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-05"]
+        },
+        {
+          "id": "M2-V09",
+          "description": "DC-06 Accessibility check documented",
+          "type": "contains_all",
+          "patterns": ["DC-06", "Accessibility"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-06"]
+        },
+        {
+          "id": "M2-V10",
+          "description": "DC-07 Error taxonomy holes check documented",
+          "type": "contains_all",
+          "patterns": ["DC-07", "Error Taxonomy"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-07"]
+        },
+        {
+          "id": "M2-V11",
+          "description": "DC-08 Data flow bottlenecks check documented",
+          "type": "contains_all",
+          "patterns": ["DC-08", "Data Flow"],
+          "scope": "mandatory checks table",
+          "traces": ["AC-001-08"]
+        },
+        {
+          "id": "M2-V12",
+          "description": "Output file is round-N-critique.md",
+          "type": "contains",
+          "pattern": "round-{N}-critique.md",
+          "scope": "output format section",
+          "traces": ["FR-001", "AC-005-01"]
+        },
+        {
+          "id": "M2-V13",
+          "description": "BLOCKING and WARNING sections in output",
+          "type": "contains_all",
+          "patterns": ["## BLOCKING Findings", "## WARNING Findings"],
+          "scope": "output format section",
+          "traces": ["FR-001"]
+        },
+        {
+          "id": "M2-V14",
+          "description": "Summary table with finding counts",
+          "type": "contains_all",
+          "patterns": ["Total Findings", "BLOCKING", "WARNING"],
+          "scope": "output format summary table",
+          "traces": ["FR-001"]
+        },
+        {
+          "id": "M2-V15",
+          "description": "API Endpoint Count metric in summary",
+          "type": "contains",
+          "pattern": "API Endpoint Count",
+          "scope": "output format summary table",
+          "traces": ["AC-005-03"]
+        },
+        {
+          "id": "M2-V16",
+          "description": "Validation Rule Count metric in summary",
+          "type": "contains",
+          "pattern": "Validation Rule Count",
+          "scope": "output format summary table",
+          "traces": ["AC-005-03"]
+        },
+        {
+          "id": "M2-V17",
+          "description": "Error Code Count metric in summary",
+          "type": "contains",
+          "pattern": "Error Code Count",
+          "scope": "output format summary table",
+          "traces": ["AC-005-03"]
+        },
+        {
+          "id": "M2-V18",
+          "description": "Module Count metric in summary",
+          "type": "contains",
+          "pattern": "Module Count",
+          "scope": "output format summary table",
+          "traces": ["AC-005-03"]
+        },
+        {
+          "id": "M2-V19",
+          "description": "Pattern Consistency Score metric in summary",
+          "type": "contains",
+          "pattern": "Pattern Consistency Score",
+          "scope": "output format summary table",
+          "traces": ["AC-005-03"]
+        },
+        {
+          "id": "M2-V20",
+          "description": "Rule: do not modify input artifacts",
+          "type": "contains",
+          "pattern": "do not modify any input artifacts",
+          "scope": "rules section",
+          "traces": ["FR-001"]
+        },
+        {
+          "id": "M2-V21",
+          "description": "Article I (Specification Primacy) check documented",
+          "type": "contains_all",
+          "patterns": ["Article I", "Specification Primacy"],
+          "scope": "constitutional compliance checks",
+          "traces": ["AC-006-01"]
+        },
+        {
+          "id": "M2-V22",
+          "description": "Article IV (Explicit Over Implicit) check documented",
+          "type": "contains_all",
+          "patterns": ["Article IV", "Explicit Over Implicit"],
+          "scope": "constitutional compliance checks",
+          "traces": ["AC-006-02"]
+        },
+        {
+          "id": "M2-V23",
+          "description": "Article V (Simplicity First) check documented",
+          "type": "contains_all",
+          "patterns": ["Article V", "Simplicity First"],
+          "scope": "constitutional compliance checks",
+          "traces": ["AC-006-03"]
+        },
+        {
+          "id": "M2-V24",
+          "description": "Article VII (Artifact Traceability) check documented",
+          "type": "contains_all",
+          "patterns": ["Article VII", "Artifact Traceability"],
+          "scope": "constitutional compliance checks",
+          "traces": ["AC-006-04"]
+        },
+        {
+          "id": "M2-V25",
+          "description": "Article IX (Quality Gate Integrity) check documented",
+          "type": "contains_all",
+          "patterns": ["Article IX", "Quality Gate Integrity"],
+          "scope": "constitutional compliance checks",
+          "traces": ["AC-006-05"]
+        },
+        {
+          "id": "M2-V26",
+          "description": "Structural consistency with Phase 03 critic (has matching sections)",
+          "type": "contains_all",
+          "patterns": ["## IDENTITY", "## INPUT", "## CRITIQUE PROCESS", "## OUTPUT FORMAT", "## RULES"],
+          "scope": "top-level sections",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M2-V27",
+          "description": "Interface type detection documented for non-REST projects",
+          "type": "contains_all",
+          "patterns": ["Interface Type", "REST", "CLI", "Library"],
+          "scope": "Step 2 interface type detection",
+          "traces": ["AC-007-04"]
+        },
+        {
+          "id": "M2-V28",
+          "description": "DC-06 skip documented for non-UI projects",
+          "type": "contains_any",
+          "patterns": ["DC-06: Not applicable", "non-UI project", "skip DC-06"],
+          "scope": "rules or interface type section",
+          "traces": ["AC-007-04"]
+        }
+      ]
+    },
+
+    "M3": {
+      "name": "Design Refiner Agent",
+      "file": "src/claude/agents/03-design-refiner.md",
+      "rules": [
+        {
+          "id": "M3-V01",
+          "description": "Agent name is design-refiner",
+          "type": "contains",
+          "pattern": "name: design-refiner",
+          "scope": "frontmatter",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M3-V02",
+          "description": "Model is opus",
+          "type": "contains",
+          "pattern": "model: opus",
+          "scope": "frontmatter",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M3-V03",
+          "description": "Agent is debate-only (not user-invokable)",
+          "type": "contains",
+          "pattern": "ONLY invoked by the orchestrator during debate mode",
+          "scope": "frontmatter description",
+          "traces": ["NFR-002"]
+        },
+        {
+          "id": "M3-V04",
+          "description": "API completion fix strategy documented (DC-01)",
+          "type": "contains_any",
+          "patterns": ["OpenAPI", "complete", "request/response", "schema"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-01"]
+        },
+        {
+          "id": "M3-V05",
+          "description": "Pattern unification fix strategy documented (DC-02)",
+          "type": "contains_any",
+          "patterns": ["Unify patterns", "consistent naming", "unified"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-02"]
+        },
+        {
+          "id": "M3-V06",
+          "description": "Module boundary fix strategy documented (DC-03)",
+          "type": "contains_any",
+          "patterns": ["module boundaries", "responsibility declarations", "dependency direction"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-03"]
+        },
+        {
+          "id": "M3-V07",
+          "description": "Validation gap fix strategy documented (DC-04)",
+          "type": "contains_all",
+          "patterns": ["validation", "min/max"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-04"]
+        },
+        {
+          "id": "M3-V08",
+          "description": "Idempotency fix strategy documented (DC-05)",
+          "type": "contains_all",
+          "patterns": ["idempotency", "retry-safe"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-05"]
+        },
+        {
+          "id": "M3-V09",
+          "description": "Error taxonomy fix strategy documented (DC-07)",
+          "type": "contains_any",
+          "patterns": ["error taxonomy", "error code", "retry guidance"],
+          "scope": "fix strategies table",
+          "traces": ["AC-002-06"]
+        },
+        {
+          "id": "M3-V10",
+          "description": "WARNING handling documented (straightforward or NEEDS CLARIFICATION)",
+          "type": "contains_all",
+          "patterns": ["WARNING", "NEEDS CLARIFICATION"],
+          "scope": "Step 3 section",
+          "traces": ["AC-002-07"]
+        },
+        {
+          "id": "M3-V11",
+          "description": "Never-remove rule present",
+          "type": "contains",
+          "pattern": "NEVER remove existing design decisions",
+          "scope": "rules section",
+          "traces": ["AC-002-08"]
+        },
+        {
+          "id": "M3-V12",
+          "description": "Change log format documented with required columns",
+          "type": "contains_all",
+          "patterns": ["Changes in Round", "Finding", "Severity", "Action", "Target", "Description"],
+          "scope": "Step 6 change log section",
+          "traces": ["AC-002-09"]
+        },
+        {
+          "id": "M3-V13",
+          "description": "Escalation with NEEDS CLARIFICATION documented",
+          "type": "contains",
+          "pattern": "NEEDS CLARIFICATION",
+          "scope": "Step 4 escalation section",
+          "traces": ["AC-002-07"]
+        },
+        {
+          "id": "M3-V14",
+          "description": "Input includes critique file reference",
+          "type": "contains",
+          "pattern": "round-{N}-critique.md",
+          "scope": "input section",
+          "traces": ["FR-002"]
+        },
+        {
+          "id": "M3-V15",
+          "description": "Never-introduce-scope rule present",
+          "type": "contains",
+          "pattern": "NEVER introduce new scope",
+          "scope": "rules section",
+          "traces": ["FR-002"]
+        },
+        {
+          "id": "M3-V16",
+          "description": "Preserve module names rule present",
+          "type": "contains_any",
+          "patterns": ["preserve module names", "Module-A.md stays Module-A.md"],
+          "scope": "rules section",
+          "traces": ["FR-002"]
+        },
+        {
+          "id": "M3-V17",
+          "description": "Structural consistency with Phase 03 refiner (has matching sections)",
+          "type": "contains_all",
+          "patterns": ["## IDENTITY", "## INPUT", "## REFINEMENT PROCESS", "## RULES"],
+          "scope": "top-level sections",
+          "traces": ["NFR-002"]
+        }
+      ]
+    },
+
+    "M4": {
+      "name": "System Designer Creator Awareness",
+      "file": "src/claude/agents/03-system-designer.md",
+      "rules": [
+        {
+          "id": "M4-V01",
+          "description": "DEBATE_CONTEXT mode detection documented",
+          "type": "contains_all",
+          "patterns": ["DEBATE_CONTEXT", "creator"],
+          "scope": "invocation protocol or debate mode section",
+          "traces": ["AC-004-01"]
+        },
+        {
+          "id": "M4-V02",
+          "description": "Self-assessment section specified with required subsections",
+          "type": "contains_all",
+          "patterns": ["Self-Assessment", "Known Trade-offs", "Areas of Uncertainty", "Open Questions"],
+          "scope": "debate mode behavior section",
+          "traces": ["AC-004-01"]
+        },
+        {
+          "id": "M4-V03",
+          "description": "No-debate fallback preserves current behavior",
+          "type": "contains_all",
+          "patterns": ["DEBATE_CONTEXT is NOT present", "current behavior preserved"],
+          "scope": "invocation protocol or mode detection",
+          "traces": ["AC-004-02"]
+        },
+        {
+          "id": "M4-V04",
+          "description": "Round labeling documented",
+          "type": "contains",
+          "pattern": "Round {N} Draft",
+          "scope": "debate mode behavior section",
+          "traces": ["FR-004"]
+        },
+        {
+          "id": "M4-V05",
+          "description": "Skip final menu documented",
+          "type": "contains_any",
+          "patterns": ["DO NOT present the final", "Skip Final Menu"],
+          "scope": "debate mode behavior section",
+          "traces": ["FR-004"]
+        },
+        {
+          "id": "M4-V06",
+          "description": "Round > 1 behavior documented (use Refiner output as baseline)",
+          "type": "contains_all",
+          "patterns": ["Round > 1", "Refiner"],
+          "scope": "debate mode behavior section",
+          "traces": ["FR-004"]
+        }
+      ]
+    },
+
+    "M5": {
+      "name": "isdlc.md Command Description Updates",
+      "file": "src/claude/commands/isdlc.md",
+      "rules": [
+        {
+          "id": "M5-V01",
+          "description": "Debate-enabled phases lists Phase 04 (Design)",
+          "type": "contains_all",
+          "patterns": ["Phase 04", "Design"],
+          "scope": "debate-enabled phases description",
+          "traces": ["FR-003"]
+        },
+        {
+          "id": "M5-V02",
+          "description": "Phase 01 still listed in debate-enabled phases",
+          "type": "contains",
+          "pattern": "Phase 01",
+          "scope": "debate-enabled phases description",
+          "traces": ["NFR-003"]
+        },
+        {
+          "id": "M5-V03",
+          "description": "Phase 03 still listed in debate-enabled phases",
+          "type": "contains",
+          "pattern": "Phase 03",
+          "scope": "debate-enabled phases description",
+          "traces": ["NFR-003"]
+        }
+      ]
+    }
+  },
+
+  "summary": {
+    "total_rules": 64,
+    "by_module": {
+      "M1": 10,
+      "M2": 28,
+      "M3": 17,
+      "M4": 6,
+      "M5": 3
+    },
+    "by_type": {
+      "contains": 30,
+      "not_contains": 0,
+      "contains_all": 24,
+      "contains_any": 10
+    },
+    "requirements_covered": {
+      "FRs": ["FR-001", "FR-002", "FR-003", "FR-004", "FR-005", "FR-006", "FR-007"],
+      "NFRs": ["NFR-002", "NFR-003", "NFR-004"],
+      "total_ACs": 34
+    }
+  }
+}

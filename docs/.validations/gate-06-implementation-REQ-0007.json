@@ -1,0 +1,89 @@
+{
+  "gate": "GATE-06",
+  "phase": "06-implementation",
+  "feature": "REQ-0007-ollama-local-llm-support",
+  "validated_at": "2026-02-14T11:45:00Z",
+  "status": "passed",
+  "checklist": {
+    "all_features_implemented": {
+      "status": "partial",
+      "note": "M1 (auto-detect), M3 (config), M4 (docs) implemented. M2 (installer scripts) deferred per user constraint."
+    },
+    "unit_test_coverage_80_pct": {
+      "status": "passed",
+      "note": "33 tests covering all implemented modules. autoDetectProvider() has 18 dedicated tests covering all code paths."
+    },
+    "all_tests_passing": {
+      "status": "passed",
+      "note": "33/33 tests passing. 0 failures. No regressions in existing 26 tests."
+    },
+    "code_follows_linting_style": {
+      "status": "passed",
+      "note": "Follows existing CJS/ESM patterns, JSDoc comments, consistent formatting."
+    },
+    "type_checking_passes": {
+      "status": "not_applicable",
+      "note": "Project uses JavaScript (no TypeScript)."
+    },
+    "implementation_matches_design": {
+      "status": "passed",
+      "note": "All changes match module-design.md specification. autoDetectProvider() follows algorithm from section 2.4."
+    },
+    "database_migrations_created": {
+      "status": "not_applicable",
+      "note": "No database in this project."
+    },
+    "code_documentation_complete": {
+      "status": "passed",
+      "note": "JSDoc comments on autoDetectProvider(), inline comments with requirement traces, implementation-notes.md created."
+    }
+  },
+  "test_results": {
+    "total": 33,
+    "passing": 33,
+    "failing": 0,
+    "skipped": 0,
+    "test_files": [
+      {
+        "file": "src/claude/hooks/tests/provider-utils-autodetect.test.cjs",
+        "tests": 18,
+        "passing": 18,
+        "module": "M1"
+      },
+      {
+        "file": "src/claude/hooks/tests/provider-config-validation.test.cjs",
+        "tests": 9,
+        "passing": 9,
+        "module": "M3"
+      },
+      {
+        "file": "tests/prompt-verification/provider-documentation.test.js",
+        "tests": 6,
+        "passing": 6,
+        "module": "M4"
+      }
+    ],
+    "parallel_execution": {
+      "enabled": false,
+      "framework": "node:test",
+      "note": "33 tests across 3 files, below parallel threshold"
+    }
+  },
+  "deferred": {
+    "module_m2_installer_scripts": {
+      "files": ["lib/installer.js", "install.sh", "install.ps1"],
+      "reason": "User constraint: installer changes handled separately",
+      "impact": "11 installer integration tests from test strategy not yet written"
+    }
+  },
+  "artifacts": [
+    "src/claude/commands/provider.md",
+    "src/claude/hooks/config/provider-defaults.yaml",
+    "src/claude/CLAUDE.md.template",
+    "src/claude/hooks/lib/provider-utils.cjs",
+    "src/claude/hooks/tests/provider-utils-autodetect.test.cjs",
+    "src/claude/hooks/tests/provider-config-validation.test.cjs",
+    "tests/prompt-verification/provider-documentation.test.js",
+    "docs/requirements/REQ-0007-ollama-local-llm-support/implementation-notes.md"
+  ]
+}

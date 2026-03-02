@@ -1,0 +1,86 @@
+{
+  "feature": "REQ-0019-preparation-pipeline",
+  "version": "1.0",
+  "created": "2026-02-16",
+  "status": "approved",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Prepare requirements during implementation",
+      "as_a": "developer",
+      "i_want_to": "prepare requirements for the next work item while implementation runs on the current one",
+      "so_that": "I stay productive during the 10-30 minute autonomous execution window",
+      "priority": "P0",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-04", "AC-NFR-002-01", "AC-NFR-002-02", "AC-NFR-002-03"],
+      "functional_requirements": ["FR-002", "NFR-002"]
+    },
+    {
+      "id": "US-002",
+      "title": "Natural language ticket intake",
+      "as_a": "developer",
+      "i_want_to": "say 'add Jira-1250 to the backlog' and have the system pull the ticket content and create a draft",
+      "so_that": "I don't manually copy-paste between tools",
+      "priority": "P0",
+      "acceptance_criteria": ["AC-001-01", "AC-003-01", "AC-003-02", "AC-003-03", "AC-004-01", "AC-008-01"],
+      "functional_requirements": ["FR-001", "FR-003", "FR-004", "FR-008"]
+    },
+    {
+      "id": "US-003",
+      "title": "Start from prepared requirements",
+      "as_a": "developer",
+      "i_want_to": "say 'start Jira-1250' and have the system find the prepared requirements and begin implementation from Phase 02",
+      "so_that": "I skip redundant requirements capture",
+      "priority": "P0",
+      "acceptance_criteria": ["AC-005-01", "AC-005-06", "AC-006-01", "AC-006-02", "AC-008-03"],
+      "functional_requirements": ["FR-005", "FR-006", "FR-008"]
+    },
+    {
+      "id": "US-004",
+      "title": "Staleness warning",
+      "as_a": "developer",
+      "i_want_to": "be warned if requirements are stale (codebase changed since Phase A)",
+      "so_that": "I don't implement against outdated assumptions",
+      "priority": "P0",
+      "acceptance_criteria": ["AC-005-04", "AC-005-05", "AC-NFR-001-04"],
+      "functional_requirements": ["FR-005", "NFR-001"]
+    },
+    {
+      "id": "US-005",
+      "title": "Scannable backlog index",
+      "as_a": "developer",
+      "i_want_to": "have BACKLOG.md be a scannable index rather than a 650-line spec repository",
+      "so_that": "I can quickly find and prioritize work items",
+      "priority": "P1",
+      "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03"],
+      "functional_requirements": ["FR-007"]
+    },
+    {
+      "id": "US-006",
+      "title": "Documentation for preparation pipeline",
+      "as_a": "developer",
+      "i_want_to": "have framework docs updated to explain the preparation pipeline",
+      "so_that": "future users (and my future self) understand the new workflow",
+      "priority": "P1",
+      "acceptance_criteria": ["AC-009-01", "AC-009-02"],
+      "functional_requirements": ["FR-009"]
+    },
+    {
+      "id": "US-007",
+      "title": "Phase A isolation from workflow machinery",
+      "as_a": "developer",
+      "i_want_to": "have Phase A run without state.json or hooks",
+      "so_that": "it never conflicts with an active Phase B workflow",
+      "priority": "P0",
+      "acceptance_criteria": ["AC-002-04", "AC-NFR-002-01", "AC-NFR-002-02", "AC-NFR-002-03"],
+      "functional_requirements": ["FR-002", "NFR-002"]
+    }
+  ],
+  "summary": {
+    "total_stories": 7,
+    "p0_count": 5,
+    "p1_count": 2,
+    "total_acceptance_criteria_referenced": 35,
+    "functional_requirements_covered": ["FR-001", "FR-002", "FR-003", "FR-004", "FR-005", "FR-006", "FR-007", "FR-008", "FR-009"],
+    "nfr_covered": ["NFR-001", "NFR-002", "NFR-003", "NFR-004"]
+  }
+}

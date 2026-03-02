@@ -1,0 +1,41 @@
+Requirement,AC,Test Case ID,Test Name,Test File,Priority,Status
+FR-001,AC-001,TC-02,Two Task tool calls in single response,quality-loop-parallelism.test.cjs,P0,Designed
+FR-001,AC-002,TC-03,Track A Task call includes full prompt,quality-loop-parallelism.test.cjs,P0,Designed
+FR-001,AC-002,TC-04,Track B Task call includes full prompt,quality-loop-parallelism.test.cjs,P0,Designed
+FR-001,"AC-003,AC-004",TC-05,Wait for both results before consolidation,quality-loop-parallelism.test.cjs,P0,Designed
+FR-002,AC-005,TC-06,Track A MAY split work into sub-groups,quality-loop-parallelism.test.cjs,P1,Designed
+FR-002,AC-006,TC-07,Track B MAY split work into sub-groups,quality-loop-parallelism.test.cjs,P1,Designed
+FR-002,AC-007,TC-08,Internal parallelism is guidance not enforcement,quality-loop-parallelism.test.cjs,P1,Designed
+FR-002,AC-008,TC-09,Sub-groups report independently,quality-loop-parallelism.test.cjs,P1,Designed
+FR-002,AC-008,TC-10,Parent track consolidates sub-group results,quality-loop-parallelism.test.cjs,P1,Designed
+FR-003,AC-009,TC-11,Two grouping modes defined,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-010,TC-12,Group A1 contains build + lint + type-check,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-010,TC-13,Group A2 contains test execution + coverage,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-010,TC-14,Group A3 contains mutation testing,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-010,TC-15,Group B1 contains SAST + dependency audit,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-010,TC-16,Group B2 contains code review + traceability,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-011,TC-17,Grouping is a lookup table in prompt,quality-loop-parallelism.test.cjs,P0,Designed
+FR-003,AC-012,TC-18,Unconfigured checks skipped within group,quality-loop-parallelism.test.cjs,P1,Designed
+FR-004,AC-013,TC-19,Pass/fail for every check by track and group,quality-loop-parallelism.test.cjs,P0,Designed
+FR-004,AC-014,TC-20,ANY failure marks result as FAILED,quality-loop-parallelism.test.cjs,P0,Designed
+FR-004,AC-015,TC-21,Quality report includes Parallel Execution Summary,quality-loop-parallelism.test.cjs,P1,Designed
+FR-004,AC-015,TC-22,Summary shows group composition and elapsed time,quality-loop-parallelism.test.cjs,P1,Designed
+FR-005,AC-016,TC-23,ALL failures consolidated from both tracks,quality-loop-parallelism.test.cjs,P0,Designed
+FR-005,AC-017,TC-24,Both tracks re-run in parallel after fixes,quality-loop-parallelism.test.cjs,P0,Designed
+FR-005,AC-018,TC-25,Circuit breaker reference,quality-loop-parallelism.test.cjs,P1,Designed
+FR-005,AC-018,TC-26,Max iterations and circuit breaker threshold values,quality-loop-parallelism.test.cjs,P1,Designed
+FR-006,AC-019,TC-27,FINAL SWEEP exclusions preserved with parallelism,quality-loop-parallelism.test.cjs,P0,Designed
+FR-006,AC-020,TC-28,FINAL SWEEP uses same grouping strategy,quality-loop-parallelism.test.cjs,P1,Designed
+FR-006,AC-021,TC-29,FULL SCOPE includes all checks,quality-loop-parallelism.test.cjs,P1,Designed
+FR-006,"AC-019,AC-021",TC-30,Both FINAL SWEEP and FULL SCOPE documented,quality-loop-parallelism.test.cjs,P1,Designed
+FR-007,AC-022,TC-31,50+ test files threshold for parallel execution,quality-loop-parallelism.test.cjs,P1,Designed
+FR-007,AC-023,TC-32,Small project sub-grouping guidance,quality-loop-parallelism.test.cjs,P2,Designed
+FR-007,AC-022,TC-33,Scope detection is Track A specific,quality-loop-parallelism.test.cjs,P2,Designed
+NFR-002,-,TC-34,Prompt-only change verified,quality-loop-parallelism.test.cjs,P0,Designed
+NFR-003,-,TC-35,Backward compatibility for projects without QA tools,quality-loop-parallelism.test.cjs,P1,Designed
+NFR-004,-,TC-36,Parallel execution state tracking with track timing,quality-loop-parallelism.test.cjs,P1,Designed
+NFR-001,-,TC-37,Performance improvement referenced,quality-loop-parallelism.test.cjs,P2,Designed
+NFR-003,-,TC-38,Agent frontmatter unchanged,quality-loop-parallelism.test.cjs,P0,Designed
+NFR-003,-,TC-39,GATE-16 checklist still present,quality-loop-parallelism.test.cjs,P0,Designed
+NFR-003,-,TC-40,Tool Discovery Protocol preserved,quality-loop-parallelism.test.cjs,P0,Designed
+-,-,TC-01,Agent file exists,quality-loop-parallelism.test.cjs,P0,Designed

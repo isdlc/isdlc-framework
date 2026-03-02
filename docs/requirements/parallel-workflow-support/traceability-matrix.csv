@@ -1,0 +1,10 @@
+FR_ID,Title,AC_Count,Priority,User_Stories,Risks,Success_Metrics
+FR-001,Per-Workflow State Isolation,4,Must Have,"US-001,US-002,US-006","R1",SM-001
+FR-002,Workflow Index Management,5,Must Have,"US-003,US-010","R6",SM-001
+FR-003,Branch-to-Workflow Resolution,4,Must Have,"US-004,US-006,US-007,US-010","R5",SM-002
+FR-004,Dispatcher State Injection,4,Must Have,"US-004,US-006,US-007","R3",SM-001/SM-002
+FR-005,Root State Separation,3,Must Have,"US-008","",SM-001
+FR-006,Session Binding (Workflow Picker),4,Should Have,"US-003","",SM-004
+FR-007,Backward-Compatible Migration,4,Must Have,"US-005","R2",SM-003/SM-004
+FR-008,Workflow Rules Update,2,Must Have,"US-001","",SM-001
+FR-009,Monorepo Compatibility,2,Should Have,"US-009","R4",""

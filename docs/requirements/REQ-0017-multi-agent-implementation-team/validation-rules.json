@@ -1,0 +1,330 @@
+{
+  "metadata": {
+    "feature": "REQ-0017-multi-agent-implementation-team",
+    "phase": "04-design",
+    "created": "2026-02-15",
+    "total_rules": 32
+  },
+  "rules": [
+    {
+      "id": "VR-001",
+      "module": "M1-reviewer",
+      "name": "reviewer_verdict_format",
+      "description": "Reviewer output MUST contain exactly one of: 'Verdict: PASS' or 'Verdict: REVISE'",
+      "type": "format",
+      "validation": "output matches /\\*\\*Verdict:\\*\\* (PASS|REVISE)/",
+      "on_failure": "IMPL-300: Treat as PASS (fail-open)",
+      "traces": ["AC-001-08"]
+    },
+    {
+      "id": "VR-002",
+      "module": "M1-reviewer",
+      "name": "reviewer_summary_counts",
+      "description": "Reviewer summary MUST include BLOCKING, WARNING, and INFO counts that match actual findings",
+      "type": "consistency",
+      "validation": "count(B-NNN findings) == summary.BLOCKING AND count(W-NNN findings) == summary.WARNING",
+      "on_failure": "IMPL-304: Use parsed counts, not summary",
+      "traces": ["AC-001-08"]
+    },
+    {
+      "id": "VR-003",
+      "module": "M1-reviewer",
+      "name": "reviewer_finding_structure",
+      "description": "Each finding MUST have: ID (B/W/I-NNN), category (IC-01..IC-08), line reference, issue description, recommendation",
+      "type": "format",
+      "validation": "each finding has id, category, line, issue, recommendation fields",
+      "on_failure": "Reviewer self-corrects via IC-08",
+      "traces": ["AC-001-08"]
+    },
+    {
+      "id": "VR-004",
+      "module": "M1-reviewer",
+      "name": "reviewer_category_coverage",
+      "description": "Reviewer MUST check all applicable categories for the file type (see M1 Section 8 applicability matrix)",
+      "type": "completeness",
+      "validation": "categories_checked includes all applicable IC-NN for file type",
+      "on_failure": "IMPL-305: Logged as INFO",
+      "traces": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05", "AC-001-06", "AC-001-07"]
+    },
+    {
+      "id": "VR-005",
+      "module": "M1-reviewer",
+      "name": "reviewer_severity_mapping",
+      "description": "Finding severity MUST match the severity mapping defined for each check category in M1",
+      "type": "consistency",
+      "validation": "each finding severity matches defined mapping for its category and condition",
+      "on_failure": "Reviewer self-corrects",
+      "traces": ["AC-001-08"]
+    },
+    {
+      "id": "VR-006",
+      "module": "M1-reviewer",
+      "name": "reviewer_file_read",
+      "description": "Reviewer MUST read the actual file content from disk before reviewing",
+      "type": "behavioral",
+      "validation": "Reviewer uses Read tool on file_path before producing findings",
+      "on_failure": "IMPL-301: Skip file with ERROR",
+      "traces": ["AC-001-01"]
+    },
+    {
+      "id": "VR-007",
+      "module": "M1-reviewer",
+      "name": "reviewer_read_only",
+      "description": "Reviewer MUST NOT modify the reviewed file",
+      "type": "constraint",
+      "validation": "Reviewer does not use Write/Edit tools on file_path",
+      "on_failure": "Constitutional violation (prompt-enforced, not hook-enforced)",
+      "traces": ["FR-001"]
+    },
+    {
+      "id": "VR-008",
+      "module": "M1-reviewer",
+      "name": "reviewer_cycle_awareness",
+      "description": "On re-review (cycle > 1), Reviewer SHOULD focus on whether previous BLOCKING findings are resolved",
+      "type": "behavioral",
+      "validation": "Re-review does not introduce entirely new category findings unless Updater changes introduced new defects",
+      "on_failure": "INFO only (soft rule)",
+      "traces": ["AC-001-08"]
+    },
+    {
+      "id": "VR-009",
+      "module": "M2-updater",
+      "name": "updater_blocking_addressed",
+      "description": "Updater MUST address ALL BLOCKING findings in the update report (fixed, deferred, or disputed)",
+      "type": "completeness",
+      "validation": "count(findings addressed) >= count(BLOCKING findings received)",
+      "on_failure": "Reviewer re-review catches unaddressed findings",
+      "traces": ["AC-002-01"]
+    },
+    {
+      "id": "VR-010",
+      "module": "M2-updater",
+      "name": "updater_warning_triage",
+      "description": "WARNING findings MUST be triaged as fixed, deferred, or disputed in the update report",
+      "type": "completeness",
+      "validation": "each WARNING finding has a disposition in the report",
+      "on_failure": "INFO (soft rule)",
+      "traces": ["AC-002-02"]
+    },
+    {
+      "id": "VR-011",
+      "module": "M2-updater",
+      "name": "updater_test_rerun",
+      "description": "Updater MUST re-run tests after fixes and report pass/fail",
+      "type": "behavioral",
+      "validation": "Update report contains 'Tests:' line with pass/fail count",
+      "on_failure": "IMPL-404: Noted in report",
+      "traces": ["AC-002-03"]
+    },
+    {
+      "id": "VR-012",
+      "module": "M2-updater",
+      "name": "updater_report_structure",
+      "description": "Update report MUST contain: findings table, changes made, test results",
+      "type": "format",
+      "validation": "Report contains '## Findings Addressed' and '## Changes Made' and '## Test Results' sections",
+      "on_failure": "IMPL-400: Proceed without report",
+      "traces": ["AC-002-04"]
+    },
+    {
+      "id": "VR-013",
+      "module": "M2-updater",
+      "name": "updater_dispute_rationale_length",
+      "description": "Dispute rationale MUST be >= 20 characters",
+      "type": "constraint",
+      "validation": "each dispute rationale string length >= 20",
+      "on_failure": "IMPL-403: Dispute rejected",
+      "traces": ["AC-002-05"]
+    },
+    {
+      "id": "VR-014",
+      "module": "M2-updater",
+      "name": "updater_minimal_fix",
+      "description": "Updater fixes MUST be minimal and targeted -- no scope creep",
+      "type": "constraint",
+      "validation": "Changes limited to lines referenced by findings (prompt-enforced)",
+      "on_failure": "IMPL-402: Reviewer catches in re-review",
+      "traces": ["AC-002-06"]
+    },
+    {
+      "id": "VR-015",
+      "module": "M2-updater",
+      "name": "updater_single_file",
+      "description": "Updater MUST only modify the file specified in UPDATE_CONTEXT.file_path",
+      "type": "constraint",
+      "validation": "Write/Edit tool calls only target file_path (prompt-enforced)",
+      "on_failure": "IMPL-402: Not detectable by orchestrator",
+      "traces": ["AC-002-06"]
+    },
+    {
+      "id": "VR-016",
+      "module": "M3-orchestrator",
+      "name": "loop_per_file_delegation",
+      "description": "Orchestrator MUST delegate to Reviewer for each file BEFORE Writer proceeds to next",
+      "type": "behavioral",
+      "validation": "Each FILE_PRODUCED is followed by Reviewer delegation before next Writer delegation",
+      "on_failure": "Test verifies orchestrator prompt contains per-file loop instructions",
+      "traces": ["AC-003-01"]
+    },
+    {
+      "id": "VR-017",
+      "module": "M3-orchestrator",
+      "name": "loop_pass_proceed",
+      "description": "When Reviewer verdict is PASS, orchestrator MUST proceed to next file",
+      "type": "behavioral",
+      "validation": "PASS verdict leads to Writer re-delegation, not Updater",
+      "on_failure": "Test verifies flow logic in orchestrator prompt",
+      "traces": ["AC-003-02"]
+    },
+    {
+      "id": "VR-018",
+      "module": "M3-orchestrator",
+      "name": "loop_revise_updater",
+      "description": "When Reviewer verdict is REVISE, orchestrator MUST delegate to Updater",
+      "type": "behavioral",
+      "validation": "REVISE verdict leads to Updater delegation with findings",
+      "on_failure": "Test verifies flow logic in orchestrator prompt",
+      "traces": ["AC-003-03"]
+    },
+    {
+      "id": "VR-019",
+      "module": "M3-orchestrator",
+      "name": "loop_re_review_after_update",
+      "description": "After Updater returns, orchestrator MUST delegate back to Reviewer",
+      "type": "behavioral",
+      "validation": "Updater completion leads to Reviewer re-delegation with incremented cycle",
+      "on_failure": "Test verifies flow logic in orchestrator prompt",
+      "traces": ["AC-003-04"]
+    },
+    {
+      "id": "VR-020",
+      "module": "M3-orchestrator",
+      "name": "loop_max_iterations",
+      "description": "After max_cycles (3) with REVISE verdict, orchestrator MUST accept with MAX_ITERATIONS",
+      "type": "constraint",
+      "validation": "cycle >= max_cycles AND verdict == REVISE -> accept with warning",
+      "on_failure": "Infinite loop (prevented by max_cycles bound)",
+      "traces": ["AC-003-05"]
+    },
+    {
+      "id": "VR-021",
+      "module": "M3-orchestrator",
+      "name": "loop_summary_generation",
+      "description": "Orchestrator MUST produce per-file-loop-summary.md with metrics when loop completes",
+      "type": "artifact",
+      "validation": "per-file-loop-summary.md exists in artifact folder with required metrics",
+      "on_failure": "GATE check for artifact presence",
+      "traces": ["AC-003-06"]
+    },
+    {
+      "id": "VR-022",
+      "module": "M3-orchestrator",
+      "name": "loop_file_ordering",
+      "description": "Files MUST be processed in task plan order with test files reviewed alongside production files",
+      "type": "behavioral",
+      "validation": "WRITER_CONTEXT instructs task plan ordering; TDD pairing respected",
+      "on_failure": "IMPL-205: Info-level log if order violated",
+      "traces": ["AC-003-07"]
+    },
+    {
+      "id": "VR-023",
+      "module": "M3-orchestrator",
+      "name": "routing_agent_mapping",
+      "description": "IMPLEMENTATION_ROUTING must map: Writer->05-software-developer.md, Reviewer->05-implementation-reviewer.md, Updater->05-implementation-updater.md",
+      "type": "data",
+      "validation": "Routing table contains exact agent paths",
+      "on_failure": "Test verifies routing table content in orchestrator",
+      "traces": ["AC-006-01"]
+    },
+    {
+      "id": "VR-024",
+      "module": "M3-orchestrator",
+      "name": "loop_state_creation",
+      "description": "Orchestrator MUST create implementation_loop_state in active_workflow when debate_mode=true for Phase 06",
+      "type": "behavioral",
+      "validation": "state.json contains active_workflow.implementation_loop_state after Phase 06 init",
+      "on_failure": "IMPL-102: Fall back to single-agent",
+      "traces": ["AC-006-02"]
+    },
+    {
+      "id": "VR-025",
+      "module": "M3-orchestrator",
+      "name": "routing_separate_from_debate",
+      "description": "IMPLEMENTATION_ROUTING MUST be a separate mechanism from DEBATE_ROUTING",
+      "type": "constraint",
+      "validation": "Section 7.6 exists separately from Section 7.5; Phase 06 not in DEBATE_ROUTING table",
+      "on_failure": "Test verifies DEBATE_ROUTING does not contain 06-implementation",
+      "traces": ["AC-006-03"]
+    },
+    {
+      "id": "VR-026",
+      "module": "M3-orchestrator",
+      "name": "no_debate_single_agent",
+      "description": "When debate_mode=false for Phase 06, orchestrator MUST delegate to software-developer only (no loop)",
+      "type": "behavioral",
+      "validation": "debate_mode=false -> single delegation, no WRITER_CONTEXT, no implementation_loop_state",
+      "on_failure": "Regression (test verifies)",
+      "traces": ["AC-006-04"]
+    },
+    {
+      "id": "VR-027",
+      "module": "M4-writer",
+      "name": "writer_context_detection",
+      "description": "Software-developer MUST detect WRITER_CONTEXT in Task prompt and enter Writer mode",
+      "type": "behavioral",
+      "validation": "Agent prompt contains WRITER MODE DETECTION section with IF/ELSE logic",
+      "on_failure": "Writer operates in standard mode (AC-004-02)",
+      "traces": ["AC-004-01"]
+    },
+    {
+      "id": "VR-028",
+      "module": "M4-writer",
+      "name": "writer_standard_mode_unchanged",
+      "description": "Without WRITER_CONTEXT, software-developer MUST behave exactly as today",
+      "type": "constraint",
+      "validation": "No behavioral changes outside WRITER_CONTEXT conditional section",
+      "on_failure": "NFR-002 regression (test verifies)",
+      "traces": ["AC-004-02"]
+    },
+    {
+      "id": "VR-029",
+      "module": "M4-writer",
+      "name": "writer_tdd_ordering",
+      "description": "In Writer mode with TDD, test file MUST be produced before production file",
+      "type": "behavioral",
+      "validation": "WRITER_CONTEXT section instructs test-first ordering",
+      "on_failure": "IMPL-205: Info-level log",
+      "traces": ["AC-004-03"]
+    },
+    {
+      "id": "VR-030",
+      "module": "M5-scope",
+      "name": "phase16_final_sweep",
+      "description": "Phase 16 MUST run batch-only checks when implementation_loop_state.status == 'completed'",
+      "type": "behavioral",
+      "validation": "Agent prompt contains scope detection logic and INCLUDE/EXCLUDE lists",
+      "on_failure": "Full scope (NFR-002 safe fallback)",
+      "traces": ["AC-005-01"]
+    },
+    {
+      "id": "VR-031",
+      "module": "M5-scope",
+      "name": "phase16_no_per_file_review",
+      "description": "Phase 16 MUST NOT re-review individual file logic/quality in Final Sweep mode",
+      "type": "constraint",
+      "validation": "EXCLUDE list in agent prompt contains individual file checks",
+      "on_failure": "Unnecessary work (but not harmful)",
+      "traces": ["AC-005-02"]
+    },
+    {
+      "id": "VR-032",
+      "module": "M5-scope",
+      "name": "phase08_human_review_only",
+      "description": "Phase 08 MUST focus on architecture, business logic, design coherence in Human Review Only mode",
+      "type": "behavioral",
+      "validation": "Agent prompt contains modified checklist for reduced scope",
+      "on_failure": "Full scope (NFR-002 safe fallback)",
+      "traces": ["AC-005-03", "AC-005-04"]
+    }
+  ]
+}

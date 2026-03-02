@@ -1,0 +1,36 @@
+AC_ID,FR_ID,User_Story,Description,Priority,Constitutional_Articles,Test_Required,Test_File,Test_Cases
+AC-001-01,FR-001,US-001,Reviewer checks logic correctness,P0,"I,V",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-05,TC-M1-13,TC-M1-18"
+AC-001-02,FR-001,US-001,Reviewer checks error handling,P0,"III,X",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-06,TC-M1-13,TC-M1-18"
+AC-001-03,FR-001,US-001,Reviewer checks security,P0,"III",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-07,TC-M1-13,TC-M1-18"
+AC-001-04,FR-001,US-001,Reviewer checks code quality,P0,"V",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-08,TC-M1-13,TC-M1-18"
+AC-001-05,FR-001,US-001,Reviewer checks test quality,P0,"II,XI",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-09,TC-M1-13,TC-M1-18"
+AC-001-06,FR-001,US-001,Reviewer checks tech-stack alignment,P0,"XII",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-10,TC-M1-13,TC-M1-18"
+AC-001-07,FR-001,US-001,Reviewer checks constitutional compliance,P0,"I,II,V,VII",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-11,TC-M1-13,TC-M1-18"
+AC-001-08,FR-001,US-001,Reviewer structured output format,P0,"IV",Yes,implementation-debate-reviewer.test.cjs,"TC-M1-12,TC-M1-13,TC-M1-14,TC-M1-15,TC-M1-16,TC-M1-17,TC-M1-19"
+AC-002-01,FR-002,US-002,Updater addresses all BLOCKING findings,P0,"I",Yes,implementation-debate-updater.test.cjs,TC-M2-05
+AC-002-02,FR-002,US-002,Updater handles WARNING findings,P1,"V",Yes,implementation-debate-updater.test.cjs,TC-M2-06
+AC-002-03,FR-002,US-002,Updater re-runs unit tests,P0,"II",Yes,implementation-debate-updater.test.cjs,TC-M2-07
+AC-002-04,FR-002,US-002,Updater produces update report,P0,"IV,VII",Yes,implementation-debate-updater.test.cjs,"TC-M2-08,TC-M2-09,TC-M2-15"
+AC-002-05,FR-002,US-002,Updater dispute mechanism,P1,"IV",Yes,implementation-debate-updater.test.cjs,"TC-M2-10,TC-M2-11"
+AC-002-06,FR-002,US-002,Updater minimal targeted fixes,P0,"V",Yes,implementation-debate-updater.test.cjs,"TC-M2-12,TC-M2-13,TC-M2-14"
+AC-003-01,FR-003,US-003,File reviewed before Writer proceeds,P0,"IX",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-05,TC-M3-06"
+AC-003-02,FR-003,US-003,PASS verdict advances to next file,P0,"IX,XVI",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-07
+AC-003-03,FR-003,US-003,REVISE verdict triggers Updater,P0,"IX,XVI",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-08
+AC-003-04,FR-003,US-003,Fixed file returns to Reviewer,P0,"IX,XVI",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-09
+AC-003-05,FR-003,US-003,Max 3 cycles per file with warning,P0,"IX,X",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-10
+AC-003-06,FR-003,US-003,Per-file-loop-summary.md generated,P0,"IV,VII",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-11
+AC-003-07,FR-003,US-003,Files processed in task plan order,P0,"I",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-12
+AC-004-01,FR-004,US-004,Writer announces file and waits for review,P0,"IV",Yes,implementation-debate-writer.test.cjs,"TC-M4-01,TC-M4-02,TC-M4-03,TC-M4-04,TC-M4-05,TC-M4-06,TC-M4-08"
+AC-004-02,FR-004,US-006,No regression when WRITER_CONTEXT absent,P0,"X",Yes,implementation-debate-writer.test.cjs,"TC-M4-09,TC-M4-10"
+AC-004-03,FR-004,US-004,TDD: test file first then production,P0,"II",Yes,implementation-debate-writer.test.cjs,TC-M4-07
+AC-005-01,FR-005,US-005,Phase 16 batch-only final sweep,P1,"V,IX",Yes,implementation-debate-integration.test.cjs,"TC-M5-01,TC-M5-02,TC-M5-03,TC-M5-05"
+AC-005-02,FR-005,US-005,Phase 16 no individual file re-review,P1,"V",Yes,implementation-debate-integration.test.cjs,TC-M5-04
+AC-005-03,FR-005,US-005,Phase 08 human-review-only scope,P1,"VI",Yes,implementation-debate-integration.test.cjs,"TC-M5-06,TC-M5-07,TC-M5-08,TC-M5-09"
+AC-005-04,FR-005,US-005,Phase 08 no redundant quality checks,P1,"V",Yes,implementation-debate-integration.test.cjs,TC-M5-10
+AC-006-01,FR-006,US-007,IMPLEMENTATION_ROUTING agent mapping,P0,"IV",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-02,TC-M3-03,TC-M3-04"
+AC-006-02,FR-006,US-007,implementation_loop_state in state.json,P0,"XVI",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-14,TC-M3-15,TC-M3-16"
+AC-006-03,FR-006,US-007,Separate routing from DEBATE_ROUTING,P0,"V",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-01,TC-M3-20,TC-M3-21"
+AC-006-04,FR-006,US-007,No regression when team disabled,P0,"X",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-22
+AC-007-01,FR-007,US-003,Option A: separate Task delegations,P0,"V",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-06,TC-M3-19"
+AC-007-02,FR-007,US-003,Orchestrator manages loop state,P0,"XVI",Yes,implementation-debate-orchestrator.test.cjs,TC-M3-15
+AC-007-03,FR-007,US-003,Error handling for sub-agent failures,P0,"X",Yes,implementation-debate-orchestrator.test.cjs,"TC-M3-17,TC-M3-18"

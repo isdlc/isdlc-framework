@@ -1,0 +1,9 @@
+{
+  "source": "github",
+  "source_id": "GH-51",
+  "slug": "bug-0051-sizing-consent",
+  "created_at": "2026-02-19T20:00:00Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "codebase_hash": "31db7d4"
+}

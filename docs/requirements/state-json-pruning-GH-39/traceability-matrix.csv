@@ -1,0 +1,80 @@
+Requirement,Title,AC,Test_Case,Test_Type,Priority,Test_File,Coverage_Status
+FR-001,Wire prune functions into orchestrator finalize path,AC-001-01,ENF-01,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-001,Wire prune functions into orchestrator finalize path,AC-001-02,ENF-02,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-001,Wire prune functions into orchestrator finalize path,AC-001-03,ENF-02,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-001,Wire prune functions into orchestrator finalize path,AC-001-04,ENF-02,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-001,Wire prune functions into orchestrator finalize path,AC-001-05,INT-05,positive,Must Have,archive-integration.test.cjs,Covered via enforcer fallback
+FR-002,Clear transient fields at finalize,AC-002-01,CTF-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-002,Clear transient fields at finalize,AC-002-02,CTF-02,positive,Must Have,archive-functions.test.cjs,Covered
+FR-002,Clear transient fields at finalize,AC-002-03,CTF-03,positive,Must Have,archive-functions.test.cjs,Covered
+FR-002,Clear transient fields at finalize,AC-002-04,CTF-04,positive,Must Have,archive-functions.test.cjs,Covered
+FR-002,Clear transient fields at finalize,AC-002-05,CTF-05,positive,Must Have,archive-functions.test.cjs,Covered
+FR-002,Clear transient fields at finalize,AC-002-06,CTF-06,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-01,CTF-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-02,CTF-02,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-03,CTF-03,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-04,CTF-04,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-05,CTF-05,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-06,CTF-06,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-07,CTF-07,positive,Must Have,archive-functions.test.cjs,Covered
+FR-003,Add clearTransientFields() to common.cjs,AC-003-08,CTF-08,positive,Must Have,archive-functions.test.cjs,Covered
+FR-004,Update retention limits,AC-004-01,PF-06,positive,Should Have,prune-functions.test.cjs,Covered
+FR-004,Update retention limits,AC-004-02,PF-15,positive,Should Have,prune-functions.test.cjs,Covered
+FR-004,Update retention limits,AC-004-03,PF-16,positive,Should Have,prune-functions.test.cjs,Covered
+FR-004,Update retention limits,AC-004-04,"PF-02,PF-03,PF-11,PF-16",positive,Should Have,prune-functions.test.cjs,Covered
+FR-005,Update enforcer to call clearTransientFields,AC-005-01,ENF-01,positive,Should Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-005,Update enforcer to call clearTransientFields,AC-005-02,ENF-01,positive,Should Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-006,Add orchestrator finalize instructions,AC-006-01,ENF-01,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-006,Add orchestrator finalize instructions,AC-006-02,INT-05,positive,Must Have,archive-integration.test.cjs,Covered via enforcer fallback
+FR-006,Add orchestrator finalize instructions,AC-006-03,ENF-02,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered via enforcer fallback
+FR-007,Compact workflow_history entries,AC-007-01 to AC-007-03,--,--,Could Have,--,Deferred
+FR-008,Compact git_branch in workflow_history,AC-008-01 to AC-008-02,--,--,Could Have,--,Deferred
+FR-009,One-time migration,AC-009-01,INT-06,positive,Should Have,archive-integration.test.cjs,Covered
+FR-009,One-time migration,AC-009-02,INT-06,positive,Should Have,archive-integration.test.cjs,Covered
+FR-009,One-time migration,AC-009-03,SAH-09,positive,Should Have,archive-functions.test.cjs,Covered
+FR-009,One-time migration,AC-009-04,SAH-10,positive,Should Have,archive-functions.test.cjs,Covered
+FR-009,One-time migration,AC-009-05,SAH-02,positive,Should Have,archive-functions.test.cjs,Covered
+FR-009,One-time migration,AC-009-06,INT-06,positive,Should Have,archive-integration.test.cjs,Covered
+FR-009,One-time migration,AC-009-07,INT-01,positive,Should Have,archive-integration.test.cjs,Covered
+FR-009,One-time migration,AC-009-08,INT-07,positive,Should Have,archive-integration.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-01,ENF-03,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-02,ENF-09,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-03,ATA-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-04,ENF-06,negative,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-05,ATA-12,positive,Must Have,archive-functions.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-06,ENF-04,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-010,Archive completed workflows,AC-010-07,ENF-05,positive,Must Have,workflow-completion-enforcer-archive.test.cjs,Covered
+FR-011,Add appendToArchive() to common.cjs,AC-011-01,ATA-02,positive,Must Have,archive-functions.test.cjs,Covered
+FR-011,Add appendToArchive() to common.cjs,AC-011-02,ATA-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-011,Add appendToArchive() to common.cjs,AC-011-03,ATA-03,positive,Must Have,archive-functions.test.cjs,Covered
+FR-011,Add appendToArchive() to common.cjs,AC-011-04,ATA-07,negative,Must Have,archive-functions.test.cjs,Covered
+FR-011,Add appendToArchive() to common.cjs,AC-011-05,ATA-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-012,Add lookupArchive() to common.cjs,AC-012-01 to AC-012-05,--,--,Could Have,--,Deferred
+FR-013,Archive abandoned workflows at init,AC-013-01,"CTF-01 to CTF-11,ATA-01 to ATA-13",positive,Must Have,"archive-functions.test.cjs",Covered via unit tests
+FR-013,Archive abandoned workflows at init,AC-013-02,ATA-03,positive,Must Have,archive-functions.test.cjs,Covered via unit tests
+FR-013,Archive abandoned workflows at init,AC-013-03,SAH-10,positive,Must Have,archive-functions.test.cjs,Covered via unit tests
+FR-013,Archive abandoned workflows at init,AC-013-04,SAH-01,positive,Must Have,archive-functions.test.cjs,Covered via unit tests
+FR-013,Archive abandoned workflows at init,AC-013-05,"CTF-01 to CTF-11,INT-08",positive,Must Have,"archive-functions.test.cjs,archive-integration.test.cjs",Covered via unit tests
+FR-013,Archive abandoned workflows at init,AC-013-06,--,--,Must Have,--,Prompt-driven (not testable as code)
+FR-013,Archive abandoned workflows at init,AC-013-07,INT-08,negative,Must Have,archive-integration.test.cjs,Covered via unit tests
+FR-014,Add seedArchiveFromHistory() to common.cjs,AC-014-01,SAH-01,positive,Should Have,archive-functions.test.cjs,Covered
+FR-014,Add seedArchiveFromHistory() to common.cjs,AC-014-02,SAH-10,positive,Should Have,archive-functions.test.cjs,Covered
+FR-014,Add seedArchiveFromHistory() to common.cjs,AC-014-03,SAH-02,positive,Should Have,archive-functions.test.cjs,Covered
+FR-014,Add seedArchiveFromHistory() to common.cjs,AC-014-04,SAH-03,negative,Should Have,archive-functions.test.cjs,Covered
+FR-014,Add seedArchiveFromHistory() to common.cjs,AC-014-05,SAH-05,negative,Should Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-01,RAP-01,positive,Must Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-02,RAP-02,positive,Must Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-03,RAP-03,positive,Must Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-04,RAP-04,positive,Must Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-05,RAP-05,positive,Must Have,archive-functions.test.cjs,Covered
+FR-015,Add resolveArchivePath() to common.cjs,AC-015-06,ATA-01,positive,Must Have,archive-functions.test.cjs,Covered
+NFR-001,Pruning must not block workflow finalize,--,"INT-04,INT-08,ENF-06",negative,Must Have,"archive-integration.test.cjs,workflow-completion-enforcer-archive.test.cjs",Covered
+NFR-002,Pruning performance budget (50ms),--,INT-09,positive,Must Have,archive-integration.test.cjs,Covered
+NFR-003,No data loss for durable fields,--,"CTF-08,INT-03",positive,Must Have,"archive-functions.test.cjs,archive-integration.test.cjs",Covered
+NFR-004,Backward compatibility,--,"CTF-09,CTF-10,ATA-06,SAH-07",negative,Must Have,"archive-functions.test.cjs",Covered
+NFR-005,State.json size target (30 KB),--,INT-10,positive,Should Have,archive-integration.test.cjs,Covered
+NFR-006,Idempotent pruning,--,"CTF-11,INT-02,SAH-11",positive,Must Have,"archive-functions.test.cjs,archive-integration.test.cjs",Covered
+NFR-007,Archive write non-blocking,--,"ATA-07,INT-08,ENF-06",negative,Must Have,"archive-functions.test.cjs,archive-integration.test.cjs,workflow-completion-enforcer-archive.test.cjs",Covered
+NFR-008,Archive file parseable after append,--,ATA-13,positive,Must Have,archive-functions.test.cjs,Covered
+NFR-009,Monorepo archive isolation,--,INT-12,positive,Must Have,archive-integration.test.cjs,Covered
+NFR-010,Archive append performance (100ms),--,INT-11,positive,Should Have,archive-integration.test.cjs,Covered

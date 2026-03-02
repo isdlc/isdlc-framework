@@ -1,0 +1,48 @@
+{
+  "gate": "GATE-08",
+  "phase": "08-code-review",
+  "workflow": "fix",
+  "artifact_folder": "bug-0051-sizing-consent",
+  "bug_id": "BUG-0051-GH-51",
+  "timestamp": "2026-02-19T22:00:00Z",
+  "status": "PASS",
+  "reviewer": "qa-engineer",
+  "scope": "human-review-only",
+  "checklist": {
+    "code_review_completed": true,
+    "no_critical_issues_open": true,
+    "static_analysis_passing": true,
+    "code_coverage_meets_threshold": true,
+    "coding_standards_followed": true,
+    "performance_acceptable": true,
+    "security_review_complete": true,
+    "qa_sign_off_obtained": true
+  },
+  "findings": {
+    "critical": 0,
+    "major": 0,
+    "minor": 1,
+    "informational": 2
+  },
+  "tests_verified": {
+    "total": 17,
+    "passing": 17,
+    "failed": 0,
+    "regressions": 0
+  },
+  "constitutional_validation": {
+    "completed": true,
+    "iterations_used": 1,
+    "max_iterations": 5,
+    "status": "compliant",
+    "articles_validated": ["V", "VI", "VII", "VIII", "IX"],
+    "violations_found": []
+  },
+  "artifacts_produced": [
+    "docs/requirements/bug-0051-sizing-consent/code-review-report.md"
+  ],
+  "phase_timing": {
+    "debate_rounds_used": 0,
+    "fan_out_chunks": 0
+  }
+}

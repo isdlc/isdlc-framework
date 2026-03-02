@@ -1,0 +1,10 @@
+Requirement ID,User Story ID,Acceptance Criteria,Epic,Priority,Status
+REQ-001,US-003,"AC-003-01, AC-003-02",Ollama Provider Enablement,Must Have,Draft
+REQ-002,US-004,AC-004-01,Ollama Provider Enablement,Must Have,Draft
+REQ-003,US-004,"AC-004-02, AC-004-03",Ollama Provider Enablement,Must Have,Draft
+REQ-004,US-001,"AC-001-01, AC-001-02, AC-001-03, AC-001-04, AC-001-05",Ollama Provider Enablement,Must Have,Draft
+REQ-005,US-004,"AC-004-02, AC-004-03",Ollama Provider Enablement,Must Have,Draft
+REQ-006,US-002,"AC-002-01, AC-002-02, AC-002-03",Ollama Provider Enablement,Must Have,Draft
+NFR-001,US-002,AC-002-01,Ollama Provider Enablement,Must Have,Draft
+NFR-002,US-002,AC-002-02,Ollama Provider Enablement,Must Have,Draft
+NFR-003,US-002,AC-002-03,Ollama Provider Enablement,Must Have,Draft

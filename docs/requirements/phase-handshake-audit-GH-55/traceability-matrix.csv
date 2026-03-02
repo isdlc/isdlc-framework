@@ -1,0 +1,33 @@
+REQ_ID,AC_ID,Test_ID,Test_File,Test_Name,Verification_Method,Priority
+REQ-001,AC-001a,T-V9-02,v9-cross-location-consistency.test.cjs,Warn when phases[N].status diverges from phase_status[N],Automated,Must Have
+REQ-001,AC-001b,T-V9-04,v9-cross-location-consistency.test.cjs,Warn when current_phase diverges from aw.current_phase,Automated,Must Have
+REQ-001,AC-001c,T-V9-05,v9-cross-location-consistency.test.cjs,No warning for intermediate state (V9-C suppression),Automated,Must Have
+REQ-001,AC-001c,T-V9-06,v9-cross-location-consistency.test.cjs,Warn for genuine V9-C mismatch,Automated,Must Have
+REQ-001,AC-001d,T-V9-07,v9-cross-location-consistency.test.cjs,No warning when active_workflow missing,Automated,Must Have
+REQ-001,AC-001d,T-V9-08,v9-cross-location-consistency.test.cjs,No warning when phases missing,Automated,Must Have
+REQ-001,AC-001e,T-V9-09,v9-cross-location-consistency.test.cjs,V9 runs on Edit events (reads from disk),Automated,Must Have
+REQ-001,AC-001f,T-V9-10,v9-cross-location-consistency.test.cjs,Fail-open on malformed JSON content,Automated,Must Have
+REQ-001,--,T-V9-01,v9-cross-location-consistency.test.cjs,No warning when phases[N].status matches phase_status[N],Automated,Must Have
+REQ-001,--,T-V9-03,v9-cross-location-consistency.test.cjs,No warning when current_phase matches aw.current_phase,Automated,Must Have
+REQ-002,AC-002a,T-SR-04,supervised-review-redo-timing.test.cjs,V8 blocks non-redo status regression,Automated,Must Have
+REQ-002,AC-002b,T-SR-01,supervised-review-redo-timing.test.cjs,Redo preserves started_at (V8 allows with redo marker),Automated,Must Have
+REQ-002,AC-002c,T-MP-03,multi-phase-boundary.test.cjs,Forward transition pending to in_progress allowed by V8,Automated,Must Have
+REQ-002,AC-002d,--,--,Deprecation comments in isdlc.md,Manual verification,Must Have
+REQ-003,AC-003a,T-SR-01,supervised-review-redo-timing.test.cjs,Redo preserves started_at (redo_pending allows regression),Automated,Must Have
+REQ-003,AC-003b,T-SR-04,supervised-review-redo-timing.test.cjs,V8 blocks non-redo status regression,Automated,Must Have
+REQ-003,AC-003c,T-SR-02,supervised-review-redo-timing.test.cjs,Redo increments retries (redo_count > 0 triggers exception),Automated,Must Have
+REQ-003,AC-003d,T-SR-04,supervised-review-redo-timing.test.cjs,Block completed -> pending even with redo,Automated,Must Have
+REQ-004,AC-004a,T-SR-01,supervised-review-redo-timing.test.cjs,Redo preserves started_at,Automated,Must Have
+REQ-004,AC-004a,T-SR-02,supervised-review-redo-timing.test.cjs,Redo increments retries,Automated,Must Have
+REQ-004,AC-004a,T-SR-03,supervised-review-redo-timing.test.cjs,Redo clears completed_at,Automated,Must Have
+REQ-004,AC-004b,T-MP-01,multi-phase-boundary.test.cjs,Phase N completed N+1 pending blocks delegation,Automated,Must Have
+REQ-004,AC-004c,T-DW-01,dual-write-error-recovery.test.cjs,Phase stuck in_progress allows re-delegation,Automated,Must Have
+REQ-004,AC-004d,T-ER-02,escalation-retry-flow.test.cjs,Escalation contains required fields,Automated,Must Have
+REQ-005,AC-005a,--,gate-blocker-phase-status-bypass.test.cjs,Existing tests verify dispatcher and common.cjs loading,Regression,Should Have
+REQ-005,AC-005b,--,gate-blocker-phase-status-bypass.test.cjs,Standalone execution test,Regression,Should Have
+REQ-005,AC-005c,--,--,Local functions removed,Code review,Should Have
+REQ-005,AC-005d,--,gate-blocker-*.test.cjs,All existing gate-blocker tests pass,Regression,Should Have
+REQ-006,AC-006a,--,--,Stale warning displayed when elapsed > 2x timeout,Manual verification,Should Have
+REQ-006,AC-006b,--,--,No warning when elapsed within timeout,Manual verification,Should Have
+REQ-006,AC-006c,--,--,Same Retry/Skip/Cancel options,Manual verification,Should Have
+REQ-006,AC-006d,--,--,No warning for completed phases,Manual verification,Should Have

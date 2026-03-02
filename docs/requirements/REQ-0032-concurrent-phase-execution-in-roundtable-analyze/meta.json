@@ -1,0 +1,15 @@
+{
+  "source": "github",
+  "source_id": "GH-63",
+  "slug": "REQ-0032-concurrent-phase-execution-in-roundtable-analyze",
+  "created_at": "2026-02-21T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "steps_completed": ["00-01", "00-02", "00-03", "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-01", "02-02", "02-03", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-03", "04-04", "04-05"],
+  "codebase_hash": "37a1501",
+  "depth_overrides": {
+    "01-requirements": "deep"
+  },
+  "build_started_at": "2026-02-21T18:10:00.000Z",
+  "workflow_type": "feature"
+}

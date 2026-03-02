@@ -1,0 +1,52 @@
+%% Component Interaction Diagram (C4 Level 2 - Container)
+%% Shows all components involved in the debate loop and their interactions
+%% Covers: All FRs, system architecture overview
+
+graph TB
+    subgraph UserInterface["User Interface"]
+        U[Developer]
+    end
+
+    subgraph CommandLayer["Command Layer"]
+        CMD["isdlc.md<br/>(command spec)<br/>--debate / --no-debate flags"]
+    end
+
+    subgraph OrchestrationLayer["Orchestration Layer"]
+        ORCH["00-sdlc-orchestrator.md<br/>- Debate mode resolution<br/>- Debate loop controller<br/>- Convergence detection<br/>- Round tracking"]
+    end
+
+    subgraph AgentLayer["Phase 01 Agent Layer"]
+        CREATOR["01-requirements-analyst.md<br/>(Creator Role)<br/>- Conversational opening<br/>- Round N artifact production<br/>- Debate-mode awareness"]
+
+        CRITIC["01-requirements-critic.md<br/>(Critic Role) [NEW]<br/>- Structured critique<br/>- BLOCKING/WARNING classification<br/>- Mandatory checks"]
+
+        REFINER["01-requirements-refiner.md<br/>(Refiner Role) [NEW]<br/>- BLOCKING finding resolution<br/>- Given/When/Then enforcement<br/>- NFR quantification"]
+    end
+
+    subgraph StateLayer["State & Artifact Layer"]
+        SJ["state.json<br/>- active_workflow.debate_mode<br/>- active_workflow.debate_state<br/>- Phase 01 iteration state"]
+
+        AF["Artifact Folder<br/>- requirements-spec.md<br/>- user-stories.json<br/>- nfr-matrix.md<br/>- traceability-matrix.csv<br/>- round-N-critique.md<br/>- debate-summary.md"]
+    end
+
+    subgraph HookLayer["Hook Layer (Unchanged)"]
+        MT["menu-tracker.cjs<br/>(tracks Creator A/R/C)"]
+        GB["gate-blocker.cjs<br/>(validates Phase 01 gate)"]
+        IR["iteration-requirements.json<br/>(Phase 01 config)"]
+    end
+
+    U -->|"/isdlc feature ... --debate"| CMD
+    CMD -->|"flags + description"| ORCH
+    ORCH -->|"resolve debate_mode"| SJ
+    ORCH -->|"DEBATE_CONTEXT"| CREATOR
+    ORCH -->|"artifacts + round N"| CRITIC
+    ORCH -->|"artifacts + critique"| REFINER
+    CREATOR -->|"A/R/C menus"| U
+    CREATOR -->|"Round N artifacts"| AF
+    CRITIC -->|"round-N-critique.md"| AF
+    REFINER -->|"updated artifacts"| AF
+    ORCH -->|"debate-summary.md"| AF
+    ORCH -->|"debate_state updates"| SJ
+    MT -->|"menu_interactions count"| SJ
+    GB -->|"reads iteration state"| SJ
+    GB -->|"reads requirements"| IR

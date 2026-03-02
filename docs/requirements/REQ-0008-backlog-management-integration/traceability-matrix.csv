@@ -1,0 +1,70 @@
+Requirement,AC,Test Case ID,Test File,Module,Priority,Type,Error Code,Validation Rule
+FR-001,AC-006-01,TC-M1-03,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,VR-001
+FR-001,AC-006-01,TC-M1-04,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-001,AC-006-02,TC-M2a-01,backlog-orchestrator.test.cjs,M2a,P0,Content Verification,,
+FR-001,AC-006-02,TC-M2a-02,backlog-orchestrator.test.cjs,M2a,P0,Content Verification,,
+FR-001,AC-006-02,TC-M2a-06,backlog-orchestrator.test.cjs,M2a,P1,Content Verification,,VR-001
+FR-001,,TC-VR-001,backlog-validation-rules.test.cjs,VR,P0,Validation,BLG-E033,VR-001
+FR-001,,TC-VR-002,backlog-validation-rules.test.cjs,VR,P0,Validation,BLG-E034,VR-002
+FR-001,,TC-VR-008,backlog-validation-rules.test.cjs,VR,P0,Validation,"BLG-E031,BLG-E032",VR-008
+FR-001,,TC-VR-009,backlog-validation-rules.test.cjs,VR,P2,Validation,BLG-E035,VR-009
+FR-001,,TC-VR-010,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-010
+FR-002,AC-001-01,TC-M1-06,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-002,AC-001-01,TC-M2a-03,backlog-orchestrator.test.cjs,M2a,P0,Content Verification,,
+FR-002,AC-001-01,TC-M2a-04,backlog-orchestrator.test.cjs,M2a,P1,Content Verification,,
+FR-002,AC-001-01,TC-M5-01,menu-halt-enforcer.test.cjs,M5,P0,Unit,,
+FR-002,AC-001-02,TC-M1-04,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-002,AC-001-03,TC-M1-10,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,BLG-E001,
+FR-002,AC-001-03,TC-M1-11,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,"BLG-E001,BLG-E002",
+FR-002,AC-001-04,TC-ERR-04,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,BLG-E010,
+FR-002,,TC-VR-003,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-003
+FR-003,AC-002-01,TC-M1-07,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-003,AC-002-02,TC-VR-016,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-016
+FR-003,AC-002-03,TC-ERR-08,backlog-orchestrator.test.cjs,M2,P0,Content Verification,BLG-E040,
+FR-003,,TC-VR-003,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-003
+FR-004,AC-003-01,TC-M1-08,backlog-claudemd-template.test.cjs,M1,P1,Content Verification,,
+FR-004,AC-003-02,TC-VR-017,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-017
+FR-005,AC-004-01,TC-M1-09,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-005,AC-004-01,TC-M2b-01,backlog-orchestrator.test.cjs,M2b,P0,Content Verification,,
+FR-005,AC-004-01,TC-M4-01,backlog-command-spec.test.cjs,M4,P0,Content Verification,,
+FR-005,AC-004-02,TC-M3-01,backlog-requirements-analyst.test.cjs,M3,P0,Content Verification,,
+FR-005,AC-004-02,TC-M3-02,backlog-requirements-analyst.test.cjs,M3,P0,Content Verification,,
+FR-005,AC-004-02,TC-M3-03,backlog-requirements-analyst.test.cjs,M3,P0,Content Verification,,
+FR-005,AC-004-02,TC-M3-04,backlog-requirements-analyst.test.cjs,M3,P1,Content Verification,,
+FR-005,AC-004-02,TC-M3-06,backlog-requirements-analyst.test.cjs,M3,P2,Content Verification,,
+FR-005,AC-004-02,TC-M2b-02,backlog-orchestrator.test.cjs,M2b,P0,Content Verification,,
+FR-005,AC-004-03,TC-M3-05,backlog-requirements-analyst.test.cjs,M3,P0,Content Verification,"BLG-E020,BLG-E021",
+FR-005,AC-004-04,TC-VR-018,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-018
+FR-005,,TC-VR-004,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-004
+FR-005,,TC-VR-007,backlog-validation-rules.test.cjs,VR,P1,Validation,BLG-E022,VR-007
+FR-005,,TC-VR-011,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-011
+FR-006,AC-005-01,TC-M2c-01,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,,
+FR-006,AC-005-01,TC-M2c-02,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,,
+FR-006,AC-005-01,TC-M4-02,backlog-command-spec.test.cjs,M4,P0,Content Verification,,
+FR-006,AC-005-02,TC-M2c-04,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,"BLG-E013,BLG-E014,BLG-E041",
+FR-006,AC-005-03,TC-M2c-05,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,,
+FR-006,AC-005-03,TC-VR-015,backlog-validation-rules.test.cjs,VR,P0,Validation,,VR-015
+FR-006,,TC-M2c-03,backlog-orchestrator.test.cjs,M2c,P1,Content Verification,,VR-012
+FR-006,,TC-VR-012,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-012
+FR-006,,TC-VR-013,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-013
+FR-007,AC-007-01,TC-M1-01,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-007,AC-007-01,TC-M1-02,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-007,AC-007-01,TC-M1-05,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-007,AC-007-02,TC-M1-06,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-007,AC-007-02,TC-M1-07,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-007,AC-007-02,TC-M1-08,backlog-claudemd-template.test.cjs,M1,P1,Content Verification,,
+FR-007,AC-007-02,TC-M1-09,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+FR-008,AC-001-03,TC-M1-10,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,BLG-E001,
+FR-008,AC-001-03,TC-M1-11,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,"BLG-E001,BLG-E002",
+FR-008,AC-001-03,TC-M1-12,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,BLG-E003,
+FR-009,,TC-M1-13,backlog-claudemd-template.test.cjs,M1,P2,Content Verification,,
+FR-006,AC-006-03,TC-M2b-03,backlog-orchestrator.test.cjs,M2b,P0,Content Verification,,
+FR-006,AC-006-03,TC-M2c-01,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,,
+NFR-001,,TC-M1-14,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,,
+NFR-002,,TC-M2a-05,backlog-orchestrator.test.cjs,M2a,P0,Content Verification,,
+NFR-003,AC-006-01,TC-M1-12,backlog-claudemd-template.test.cjs,M1,P0,Content Verification,BLG-E003,
+NFR-003,AC-006-01,TC-M2b-03,backlog-orchestrator.test.cjs,M2b,P0,Content Verification,,
+NFR-003,AC-004-03,TC-M3-05,backlog-requirements-analyst.test.cjs,M3,P0,Content Verification,,
+NFR-004,,TC-M1-16,backlog-claudemd-template.test.cjs,M1,P1,Content Verification,,
+NFR-005,AC-005-02,TC-M2c-04,backlog-orchestrator.test.cjs,M2c,P0,Content Verification,"BLG-E041",
+NFR-005,,TC-VR-005,backlog-validation-rules.test.cjs,VR,P1,Validation,,VR-005

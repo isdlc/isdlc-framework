@@ -52,3 +52,8 @@ scripts/migrate-docs.sh
 src/isdlc/scripts/generate-report.sh
 src/isdlc/scripts/validate-state.sh
 src/isdlc/checklists/update-agents.txt
+ 
+ # =============================================================================
+ # RESEARCH DOCUMENTS (internal only)
+ # =============================================================================
+ research-docs/

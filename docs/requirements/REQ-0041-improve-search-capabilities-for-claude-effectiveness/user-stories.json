@@ -1,0 +1,132 @@
+[
+  {
+    "id": "US-001",
+    "title": "Agent searches through abstraction layer",
+    "story": "As an iSDLC agent, I want to search the codebase through a unified abstraction layer so that I get the best available search results without knowing which backend is active.",
+    "acceptance_criteria": [
+      "Agent calls search() with intent and modality hint",
+      "Search router selects the best available backend",
+      "Results are returned in a uniform format regardless of backend",
+      "Agent code does not reference specific search tools (Grep, ast-grep, etc.)"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-002"]
+  },
+  {
+    "id": "US-002",
+    "title": "Search tools detected during project setup",
+    "story": "As an iSDLC user, I want the framework to automatically detect available search tools during project setup so that I get optimal search performance without manual configuration.",
+    "acceptance_criteria": [
+      "Framework scans system for search tools during isdlc init",
+      "Project file count is assessed for scale tier classification",
+      "User is informed of detected tools and recommendations",
+      "Existing MCP server configurations are preserved"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-003",
+    "title": "Missing search tools installed with consent",
+    "story": "As an iSDLC user, I want the framework to offer to install recommended search tools that are missing from my system so that I get enhanced search without manual installation, while remaining informed and in control.",
+    "acceptance_criteria": [
+      "Framework presents recommended tools with explanation",
+      "User can accept all, select specific tools, or decline",
+      "Installation failures are reported clearly",
+      "Failed installations do not block project setup"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004", "FR-005"]
+  },
+  {
+    "id": "US-004",
+    "title": "Graceful fallback when enhanced search unavailable",
+    "story": "As an iSDLC user, I want the framework to fall back to standard search when enhanced backends are unavailable so that my workflow is never blocked, while being informed about reduced precision.",
+    "acceptance_criteria": [
+      "Backend health is checked before routing",
+      "Unhealthy backends fall back to next in priority order",
+      "User notified once per session on degradation",
+      "Workflow continues without interruption"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-005",
+    "title": "AST-aware structural search for code patterns",
+    "story": "As an iSDLC agent, I want to search for code structures (function definitions, class hierarchies, decorator patterns) so that I can find relevant code by its syntactic structure rather than text matching alone.",
+    "acceptance_criteria": [
+      "Structural queries route to ast-grep when available",
+      "Results include AST context (node type, parent scope)",
+      "Supports JavaScript, TypeScript, and Python",
+      "Falls back to lexical search when ast-grep unavailable"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-006",
+    "title": "Ranked and token-bounded search results",
+    "story": "As an iSDLC agent, I want search results ranked by relevance and bounded by a token budget so that I receive the most relevant results without overflowing my context window.",
+    "acceptance_criteria": [
+      "Results ranked by relevance score",
+      "Agent can specify maximum token budget",
+      "Results exceeding budget truncated from lowest relevance",
+      "Duplicates removed across multiple search passes"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-011"]
+  },
+  {
+    "id": "US-007",
+    "title": "Opt out of enhanced search",
+    "story": "As an iSDLC user in a restricted environment, I want to opt out of enhanced search setup so that I can use the framework without installing additional tools.",
+    "acceptance_criteria": [
+      "A --no-search-setup flag skips detection and installation",
+      "User can disable enhanced search after initial setup",
+      "Framework functions normally with Grep/Glob baseline",
+      "Opt-out decision is persisted in project configuration"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004", "FR-010"]
+  },
+  {
+    "id": "US-008",
+    "title": "Incremental agent migration to search abstraction",
+    "story": "As an iSDLC developer, I want to migrate agents to the search abstraction incrementally so that I can validate the new approach on high-impact agents before committing to a full migration.",
+    "acceptance_criteria": [
+      "Grep/Glob wrapped as baseline backend from day one",
+      "Non-migrated agents continue using Grep/Glob directly",
+      "High-impact agents migrated first (quick-scan, impact analysis)",
+      "Migration guide documents conversion process"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-009"]
+  },
+  {
+    "id": "US-009",
+    "title": "Semantic code search with natural language queries",
+    "story": "As an iSDLC agent, I want to search for code using natural language queries (e.g., 'where do we handle authentication') so that I can find relevant code even when specific keywords are not present.",
+    "acceptance_criteria": [
+      "Local embedding model supported as default",
+      "Optional cloud embedding providers configurable",
+      "Natural language queries return ranked results",
+      "Index built locally and persisted between sessions"
+    ],
+    "priority": "Won't Have (Phase 2)",
+    "traces": ["FR-012"]
+  },
+  {
+    "id": "US-010",
+    "title": "Sub-second indexed search for large codebases",
+    "story": "As an iSDLC user with a 500K file codebase, I want indexed search that returns results in sub-second time so that analysis workflows complete in reasonable time.",
+    "acceptance_criteria": [
+      "Trigram index built during setup or first search",
+      "Index incrementally updated on file changes",
+      "Sub-second query execution on 500K file codebases",
+      "Resource-aware index storage"
+    ],
+    "priority": "Won't Have (Phase 2)",
+    "traces": ["FR-013"]
+  }
+]

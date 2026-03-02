@@ -1,0 +1,10 @@
+FR_ID,US_ID,AC_ID,File,Test
+FR-01,US-01,AC-01,src/claude/commands/isdlc.md,manual-verification
+FR-01,US-01,AC-05,src/claude/commands/isdlc.md,manual-verification
+FR-01,US-01,AC-06,src/claude/commands/isdlc.md,manual-verification
+FR-02,US-02,AC-02,src/claude/commands/isdlc.md,manual-verification
+FR-02,US-02,AC-03,src/claude/commands/isdlc.md,manual-verification
+FR-03,US-02,AC-02,src/claude/commands/isdlc.md,manual-verification
+FR-04,US-04,AC-04,src/claude/commands/isdlc.md,manual-verification
+FR-05,US-02,AC-03,src/claude/commands/isdlc.md,manual-verification
+FR-05,US-03,AC-07,src/claude/commands/isdlc.md,manual-verification

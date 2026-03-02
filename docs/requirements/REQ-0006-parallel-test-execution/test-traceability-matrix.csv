@@ -1,0 +1,41 @@
+FR,AC,Test Case,Test Type,Agent File,Priority,Test File
+FR-01,AC-01.1,TC-01.1,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.1,TC-01.1,Prompt Verification,06-integration-tester.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.1,TC-01.1,Prompt Verification,10-dev-environment-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.1,TC-01.1,Prompt Verification,16-quality-loop-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.2,TC-01.2,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.2,TC-01.2,Prompt Verification,06-integration-tester.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.2,TC-01.2,Prompt Verification,10-dev-environment-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.2,TC-01.2,Prompt Verification,16-quality-loop-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-01,AC-01.3,TC-01.3,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.1,TC-02.1,Prompt Verification,10-dev-environment-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.2,TC-02.2,Prompt Verification,06-integration-tester.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.3,TC-02.3,Prompt Verification,16-quality-loop-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.4,TC-02.4,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.5,TC-01.1,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.5,TC-01.1,Prompt Verification,06-integration-tester.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.5,TC-01.1,Prompt Verification,10-dev-environment-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-02,AC-02.5,TC-01.1,Prompt Verification,16-quality-loop-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-03,AC-03.1,TC-03.1,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-03,AC-03.2,TC-03.2,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-03,AC-03.3,TC-03.3,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-03,AC-03.4,TC-03.4,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.1,TC-04.1,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.1,TC-04.1,Prompt Verification,06-integration-tester.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.1,TC-04.1,Prompt Verification,16-quality-loop-engineer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.2,TC-04.2,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.3,TC-04.3,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-04,AC-04.4,TC-04.4,Prompt Verification,05-software-developer.md,P0,tests/prompt-verification/parallel-execution.test.js
+FR-05,AC-05.1,TC-05.1,Prompt Verification,04-test-design-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-05,AC-05.2,TC-05.2,Prompt Verification,04-test-design-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-05,AC-05.3,TC-05.3,Prompt Verification,04-test-design-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-05,AC-05.4,TC-05.4,Prompt Verification,04-test-design-engineer.md,P2,tests/prompt-verification/parallel-execution.test.js
+FR-06,AC-06.1,TC-06.1,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-06,AC-06.1,TC-06.1,Prompt Verification,06-integration-tester.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-06,AC-06.1,TC-06.1,Prompt Verification,16-quality-loop-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-06,AC-06.2,TC-06.2,Prompt Verification,05-software-developer.md,P1,tests/prompt-verification/parallel-execution.test.js
+FR-06,AC-06.3,TC-06.3,Prompt Verification,16-quality-loop-engineer.md,P1,tests/prompt-verification/parallel-execution.test.js
+N/A,Cross-cutting,TC-07.1,Cross-Agent Consistency,05/06/10/16,P0,tests/prompt-verification/cross-agent-consistency.test.js
+N/A,Article XII,TC-07.2,Regression,hooks/ directory,P2,tests/prompt-verification/cross-agent-consistency.test.js
+N/A,Article V,TC-07.3,Regression,package.json,P2,tests/prompt-verification/cross-agent-consistency.test.js
+N/A,Risk Mitigation,TC-08.1,Prompt Verification,05/06,P1,tests/prompt-verification/parallel-execution.test.js

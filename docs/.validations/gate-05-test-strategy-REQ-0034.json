@@ -1,0 +1,54 @@
+{
+  "gate": "GATE-05",
+  "phase": "05-test-strategy",
+  "workflow": "feature",
+  "artifact_folder": "REQ-0034-free-text-intake-reverse-lookup-github-issues",
+  "validated_at": "2026-02-22T15:00:00Z",
+  "validated_by": "test-design-engineer",
+  "status": "PASSED",
+  "checklist": {
+    "test_strategy_covers_unit": true,
+    "test_strategy_covers_integration": "N/A (leaf-node utility functions with no cross-module interactions; rationale documented in test-strategy.md)",
+    "test_strategy_covers_e2e": "N/A (UX flow in isdlc.md is markdown instructions, not programmatic code; validated via manual acceptance testing in Phase 16)",
+    "test_strategy_covers_security": true,
+    "test_strategy_covers_performance": "N/A (timeouts enforced by execSync parameters; tested via mock error simulation in TC-SEARCH-03)",
+    "test_cases_exist_for_all_requirements": true,
+    "traceability_matrix_complete": true,
+    "traceability_coverage_percent": 100,
+    "coverage_targets_defined": true,
+    "test_data_strategy_documented": true,
+    "critical_paths_identified": true
+  },
+  "artifacts": [
+    "docs/requirements/REQ-0034-free-text-intake-reverse-lookup-github-issues/test-strategy.md",
+    "docs/requirements/REQ-0034-free-text-intake-reverse-lookup-github-issues/test-cases.md",
+    "docs/requirements/REQ-0034-free-text-intake-reverse-lookup-github-issues/test-traceability-matrix.csv",
+    "docs/requirements/REQ-0034-free-text-intake-reverse-lookup-github-issues/test-data-plan.md"
+  ],
+  "metrics": {
+    "total_test_cases": 13,
+    "total_frs_covered": 7,
+    "total_acs_covered": 32,
+    "unit_testable_acs": 15,
+    "manual_validation_acs": 17,
+    "p0_tests": 8,
+    "p1_tests": 5,
+    "test_files_planned": 1,
+    "test_suites": 3,
+    "coverage_target_percent": 100
+  },
+  "constitutional_validation": {
+    "status": "compliant",
+    "iterations_used": 1,
+    "completed": true,
+    "articles_checked": ["II", "VII", "IX", "XI"],
+    "violations_found": [],
+    "details": {
+      "article_II": "13 unit tests designed before implementation (Phase 05 precedes Phase 06). Tests cover all 3 new functions: checkGhAvailability (3 tests), searchGitHubIssues (6 tests), createGitHubIssue (4 tests). Coverage targets: 100% line, branch, and function.",
+      "article_VII": "Traceability matrix maps all 7 FRs and 32 ACs to either unit test cases (15 ACs) or manual validation in Phase 16 (17 ACs). No orphan tests. 100% requirement coverage.",
+      "article_IX": "All 4 required artifacts produced: test-strategy.md, test-cases.md, test-traceability-matrix.csv, test-data-plan.md. All GATE-05 checklist items pass.",
+      "article_XI": "No new cross-module interactions introduced. Functions are leaf-node utilities calling execSync. detectSource() is unchanged. Integration testing not required; rationale documented in test-strategy.md."
+    }
+  },
+  "notes": "GitHub issue reverse-lookup for free-text intake. 13 unit tests across 3 describe blocks covering checkGhAvailability(), searchGitHubIssues(), and createGitHubIssue(). All tests mock child_process.execSync using node:test mock API. Test data is entirely synthetic (no external fixtures). 17 UX-flow ACs deferred to manual acceptance testing in Phase 16 because they involve isdlc.md instruction blocks (not programmatic code). Extends existing test file test-three-verb-utils.test.cjs following established CJS/node:test patterns."
+}

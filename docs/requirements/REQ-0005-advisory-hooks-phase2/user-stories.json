@@ -1,0 +1,151 @@
+{
+  "feature": "REQ-0005-advisory-hooks-phase2",
+  "version": "1.0",
+  "date": "2026-02-09",
+  "stories": [
+    {
+      "id": "US-01",
+      "title": "Automatic phase transition detection",
+      "as_a": "framework user",
+      "i_want": "the framework to warn when agents ask permission to proceed instead of auto-advancing",
+      "so_that": "workflow automation is not broken by unnecessary permission prompts",
+      "acceptance_criteria": [
+        "AC-01a: Detects 'Would you like to proceed' pattern",
+        "AC-01b: Detects 'Ready to advance' pattern",
+        "AC-01c: Detects 'Should I continue' pattern",
+        "AC-01d: Detects 'Shall we proceed' pattern",
+        "AC-01e: Silent when no active workflow",
+        "AC-01f: Silent when no patterns found",
+        "AC-01g: Fails open on errors",
+        "AC-01h: Handles empty output gracefully"
+      ],
+      "priority": "P1",
+      "traces_to": "FR-01"
+    },
+    {
+      "id": "US-02",
+      "title": "Constitutional iteration gate enforcement",
+      "as_a": "framework user",
+      "i_want": "gate advancement to be blocked when constitutional validation was not actually performed",
+      "so_that": "agents cannot skip constitutional compliance checks",
+      "acceptance_criteria": [
+        "AC-02a: Blocks when completed is false",
+        "AC-02b: Blocks when iterations_used is 0",
+        "AC-02c: Blocks when articles_checked is empty",
+        "AC-02d: Allows when all fields correct",
+        "AC-02e: Allows non-gate invocations",
+        "AC-02f: Fails open on unreadable state",
+        "AC-02g: Fails open with no active workflow",
+        "AC-02h: Fails open when validation section missing"
+      ],
+      "priority": "P0",
+      "traces_to": "FR-02"
+    },
+    {
+      "id": "US-03",
+      "title": "Interactive menu halt detection",
+      "as_a": "framework user",
+      "i_want": "the framework to warn when agents continue output after presenting an interactive menu",
+      "so_that": "interactive elicitation actually waits for my input",
+      "acceptance_criteria": [
+        "AC-03a: Detects A/R/C menu followed by extra output",
+        "AC-03b: Detects numbered menu with Enter selection followed by extra output",
+        "AC-03c: Silent when menu is last content",
+        "AC-03d: Silent when no menu patterns detected",
+        "AC-03e: Fails open on all errors",
+        "AC-03f: Handles multiple menus (checks last one)"
+      ],
+      "priority": "P1",
+      "traces_to": "FR-03"
+    },
+    {
+      "id": "US-04",
+      "title": "Chat/Explore read-only enforcement",
+      "as_a": "framework user",
+      "i_want": "Chat/Explore mode to block file writes to project files",
+      "so_that": "exploration cannot accidentally modify my codebase",
+      "acceptance_criteria": [
+        "AC-04a: Blocks Write to project files in explore mode",
+        "AC-04b: Blocks Edit to project files in explore mode",
+        "AC-04c: Allows Write to /tmp in explore mode",
+        "AC-04d: Allows Write to state.json in explore mode",
+        "AC-04e: Allows all writes outside explore mode",
+        "AC-04f: Fails open on unreadable state",
+        "AC-04g: Detects mode from chat_explore_active field"
+      ],
+      "priority": "P1",
+      "traces_to": "FR-04"
+    },
+    {
+      "id": "US-05",
+      "title": "ATDD priority order enforcement",
+      "as_a": "framework user using ATDD mode",
+      "i_want": "test priority ordering to be validated during test execution",
+      "so_that": "P0 tests are implemented before P1, P1 before P2, etc.",
+      "acceptance_criteria": [
+        "AC-05a: Detects P1 tests before P0 pass",
+        "AC-05b: Detects orphaned test.skip at P0",
+        "AC-05c: Silent when ATDD mode not active",
+        "AC-05d: Silent for non-test commands",
+        "AC-05e: Silent when ordering is correct",
+        "AC-05f: Fails open on all errors"
+      ],
+      "priority": "P2",
+      "traces_to": "FR-05"
+    },
+    {
+      "id": "US-06",
+      "title": "Artifact format validation",
+      "as_a": "framework user",
+      "i_want": "known artifact files to be structurally validated when written",
+      "so_that": "malformed artifacts are caught early before they cause downstream failures",
+      "acceptance_criteria": [
+        "AC-06a: Validates user-stories.json structure",
+        "AC-06b: Validates traceability-matrix.csv headers",
+        "AC-06c: Validates ADR required sections",
+        "AC-06d: Validates test-strategy.md sections",
+        "AC-06e: Silent for unrecognized files",
+        "AC-06f: Fails open on read/parse errors",
+        "AC-06g: Reports specific missing fields"
+      ],
+      "priority": "P2",
+      "traces_to": "FR-06"
+    },
+    {
+      "id": "US-07",
+      "title": "Upgrade test adequacy gate",
+      "as_a": "framework user running an upgrade workflow",
+      "i_want": "the upgrade to be blocked when test coverage is inadequate",
+      "so_that": "upgrades always have a regression baseline to validate against",
+      "acceptance_criteria": [
+        "AC-07a: Blocks when total_tests is 0",
+        "AC-07b: Blocks when unit_test_pct below threshold",
+        "AC-07c: Allows when coverage adequate",
+        "AC-07d: Allows non-upgrade delegations",
+        "AC-07e: Fails open on unreadable state",
+        "AC-07f: Fails open when coverage data missing"
+      ],
+      "priority": "P0",
+      "traces_to": "FR-07"
+    },
+    {
+      "id": "US-08",
+      "title": "Centralized hook activity logging",
+      "as_a": "framework developer/debugger",
+      "i_want": "all hooks to log structured events to a centralized log file",
+      "so_that": "I can diagnose hook behavior, track blocks/warns, and audit enforcement",
+      "acceptance_criteria": [
+        "AC-08a: logHookEvent function exists and is exported",
+        "AC-08b: Logs in JSONL format to hook-activity.log",
+        "AC-08c: Entries include hookName, eventType, phase, timestamp",
+        "AC-08d: Log rotation at 1MB",
+        "AC-08e: Log file path in .gitignore",
+        "AC-08f: Logging fails silently",
+        "AC-08g: New hooks use logHookEvent",
+        "AC-08h: Existing Phase 1 hooks updated to use logHookEvent"
+      ],
+      "priority": "P1",
+      "traces_to": "FR-08"
+    }
+  ]
+}

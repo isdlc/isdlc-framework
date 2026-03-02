@@ -1,0 +1,113 @@
+{
+  "gate": "GATE-03",
+  "phase": "04-design",
+  "feature": "REQ-0007-ollama-local-llm-support",
+  "validated_at": "2026-02-14T11:10:00Z",
+  "validated_by": "software-designer",
+  "result": "PASS",
+  "checklist": [
+    {
+      "item": "Interface specification complete",
+      "status": "PASS",
+      "evidence": "component-spec.md defines all function signatures, parameters, return types, and behavior matrices for autoDetectProvider(), writeProviderConfig(), and all UI components",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/component-spec.md"
+    },
+    {
+      "item": "All modules designed with clear responsibilities",
+      "status": "PASS",
+      "evidence": "module-design.md defines 4 modules (M1: Auto-Detection, M2: Installer Selection, M3: Configuration, M4: Documentation) with responsibilities, file changes, integration points, and implementation order",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/module-design.md"
+    },
+    {
+      "item": "UI wireframes exist for all screens",
+      "status": "PASS",
+      "note": "This feature has no web/GUI UI. The 'screens' are CLI prompts (2-option menu, Next Steps display). Wireframe equivalents are defined as exact text output in module-design.md sections 3.2.1-3.4.3 and component-spec.md sections 3-6.",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/module-design.md"
+    },
+    {
+      "item": "User flows documented",
+      "status": "PASS",
+      "evidence": "architecture-overview.md sections 5.1 (Provider Selection at Runtime) and 5.2 (Installation Flow) document full user flows. Error taxonomy section 4 documents the failure mode decision tree.",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/architecture-overview.md"
+    },
+    {
+      "item": "Error taxonomy complete",
+      "status": "PASS",
+      "evidence": "error-taxonomy.md defines 13 error codes across 4 categories (auto-detection, router, configuration, installer) with severity, messages, and recovery actions",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/error-taxonomy.md"
+    },
+    {
+      "item": "Validation rules defined",
+      "status": "PASS",
+      "evidence": "validation-rules.json defines 18 validation rules covering all inputs, configuration constraints, and invariants",
+      "artifact": "docs/requirements/REQ-0007-ollama-local-llm-support/validation-rules.json"
+    },
+    {
+      "item": "Designs cover all requirements",
+      "status": "PASS",
+      "evidence": "Traceability verified: REQ-001 (provider.md toggle in M3), REQ-002 (model updates in M3), REQ-003 (CLAUDE.md template in M4), REQ-004 (installer in M2), REQ-005 (docs in M4), REQ-006 (auto-detect in M1). NFR-001 (zero-config via M1+M2), NFR-002 (guard clause invariant VR-017), NFR-003 (fail-open error handling). All 14 ACs traced.",
+      "traceability": {
+        "REQ-001": ["module-design.md section 4.1", "component-spec.md section 8"],
+        "REQ-002": ["module-design.md section 4.2", "component-spec.md section 7"],
+        "REQ-003": ["module-design.md section 5.1"],
+        "REQ-004": ["module-design.md sections 3.2-3.4", "component-spec.md sections 2-6"],
+        "REQ-005": ["module-design.md section 5.1"],
+        "REQ-006": ["module-design.md sections 2.3-2.6", "component-spec.md section 1"],
+        "NFR-001": ["module-design.md sections 2.4, 3.2"],
+        "NFR-002": ["module-design.md section 7", "validation-rules.json VR-017"],
+        "NFR-003": ["error-taxonomy.md sections 2-4"]
+      }
+    },
+    {
+      "item": "Interface contracts reviewed",
+      "status": "PASS",
+      "evidence": "autoDetectProvider() function signature, return type, and behavior matrix fully specified. Integration with existing selectProvider() and selectWithFallback() documented. No breaking changes to existing function signatures (VR-017)."
+    }
+  ],
+  "constitutional_validation": {
+    "completed": true,
+    "status": "compliant",
+    "iterations_used": 1,
+    "max_iterations": 5,
+    "articles_checked": [
+      {
+        "article": "I",
+        "name": "Specification Primacy",
+        "status": "compliant",
+        "evidence": "All designs trace to requirements-spec.md (6 REQs, 3 NFRs, 14 ACs). Module design sections include explicit requirement traceability tables. No implementation without specification."
+      },
+      {
+        "article": "IV",
+        "name": "Explicit Over Implicit",
+        "status": "compliant",
+        "evidence": "All design decisions documented explicitly. Behavior matrix in component-spec.md covers all input combinations. Error handling documented for every failure mode. No [UNKNOWN] markers remain."
+      },
+      {
+        "article": "V",
+        "name": "Simplicity First",
+        "status": "compliant",
+        "evidence": "Single new function (autoDetectProvider, ~40 lines). No new files created. No new dependencies. 2-option menu instead of 6. Reuses existing infrastructure (selectWithFallback, checkProviderHealth, writeFile)."
+      },
+      {
+        "article": "VII",
+        "name": "Artifact Traceability",
+        "status": "compliant",
+        "evidence": "Every module, function, and UI component traces to specific REQs and ACs. Traceability tables in module-design.md sections 2.8, 3.5, 4.3, 5.2. Validation rules trace to requirements in validation-rules.json."
+      },
+      {
+        "article": "IX",
+        "name": "Quality Gate Integrity",
+        "status": "compliant",
+        "evidence": "All 8 GATE-03 checklist items pass. Module designs, component specs, error taxonomy, and validation rules are complete."
+      }
+    ],
+    "history": [
+      {
+        "iteration": 1,
+        "timestamp": "2026-02-14T11:10:00Z",
+        "violations": [],
+        "result": "compliant"
+      }
+    ]
+  }
+}

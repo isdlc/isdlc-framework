@@ -1,0 +1,258 @@
+{
+  "version": "1.0.0",
+  "feature": "REQ-0008-backlog-management-integration",
+  "description": "Validation rules for backlog management integration",
+
+  "rules": {
+    "backlog_item_format": {
+      "id": "VR-001",
+      "description": "BACKLOG.md item line must match the expected format",
+      "regex": "^- (\\d+(?:\\.\\d+)*) \\[([ x~])\\] (.+)$",
+      "applies_to": "BACKLOG.md item lines",
+      "error_on_fail": "BLG-E033",
+      "traces": ["FR-001"],
+      "examples": {
+        "valid": [
+          "- 7.7 [ ] Backlog management integration -- description here",
+          "- 1.1 [x] Completed item",
+          "- 10.3 [~] In-progress item"
+        ],
+        "invalid": [
+          "- [ ] Missing item number",
+          "- 7.7 Backlog item without checkbox",
+          "7.7 [ ] Missing leading dash"
+        ]
+      }
+    },
+
+    "metadata_sub_bullet_format": {
+      "id": "VR-002",
+      "description": "Metadata sub-bullets must match key-value bold format",
+      "regex": "^  - \\*\\*(\\w+(?:\\s+\\w+)*):\\*\\* (.+)$",
+      "applies_to": "BACKLOG.md indented sub-bullet lines",
+      "error_on_fail": "BLG-E034",
+      "traces": ["FR-001"],
+      "examples": {
+        "valid": [
+          "  - **Jira:** PROJ-1234",
+          "  - **Priority:** High",
+          "  - **Confluence:** https://wiki.example.com/pages/spec-123",
+          "  - **Status:** In Progress",
+          "  - **Completed:** 2026-02-14"
+        ],
+        "invalid": [
+          "  - Jira: PROJ-1234",
+          "  - **Jira** PROJ-1234",
+          "- **Jira:** PROJ-1234"
+        ]
+      }
+    },
+
+    "jira_ticket_id_format": {
+      "id": "VR-003",
+      "description": "Jira ticket ID must be uppercase project key followed by hyphen and number",
+      "regex": "^[A-Z][A-Z0-9_]+-\\d+$",
+      "applies_to": "Jira ticket ID values (in user input and BACKLOG.md)",
+      "error_on_fail": "BLG-E010",
+      "traces": ["FR-002", "FR-003", "FR-005", "FR-006"],
+      "examples": {
+        "valid": [
+          "PROJ-1234",
+          "MYTEAM-1",
+          "ABC_DEF-999"
+        ],
+        "invalid": [
+          "proj-1234",
+          "PROJ1234",
+          "PROJ-",
+          "-1234",
+          "123-PROJ"
+        ]
+      }
+    },
+
+    "confluence_url_format": {
+      "id": "VR-004",
+      "description": "Confluence URLs must be valid HTTPS URLs",
+      "regex": "^https://[^\\s]+$",
+      "applies_to": "Confluence page URLs in BACKLOG.md metadata and state.json",
+      "error_on_fail": "BLG-E020",
+      "traces": ["FR-005"],
+      "examples": {
+        "valid": [
+          "https://wiki.example.com/pages/spec-123",
+          "https://myteam.atlassian.net/wiki/spaces/ENG/pages/12345/Spec"
+        ],
+        "invalid": [
+          "http://wiki.example.com/pages/spec-123",
+          "wiki.example.com/pages/spec-123",
+          "ftp://wiki.example.com/pages/spec-123"
+        ]
+      }
+    },
+
+    "priority_enum": {
+      "id": "VR-005",
+      "description": "Priority values must be one of the recognized Jira priority levels",
+      "allowed_values": ["Highest", "High", "Medium", "Low", "Lowest"],
+      "applies_to": "**Priority:** metadata sub-bullet values",
+      "error_on_fail": null,
+      "behavior_on_unknown": "Accept and store as-is (Jira custom priorities allowed)",
+      "traces": ["FR-001", "FR-002"]
+    },
+
+    "description_truncation": {
+      "id": "VR-006",
+      "description": "Jira ticket descriptions are truncated to 200 characters when imported",
+      "max_length": 200,
+      "truncation_suffix": "...",
+      "applies_to": "Description portion of BACKLOG.md item text (after ' -- ')",
+      "traces": ["FR-002"],
+      "examples": {
+        "input": "A very long description that exceeds the 200 character limit and needs to be truncated to fit within the backlog format constraint...",
+        "output": "A very long description that exceeds the 200 character limit and needs to be truncated to fit within the backlog format constraint..."
+      }
+    },
+
+    "confluence_content_truncation": {
+      "id": "VR-007",
+      "description": "Confluence page content is truncated to 5000 characters for context injection",
+      "max_length": 5000,
+      "applies_to": "Confluence page content used as requirements context",
+      "error_on_truncate": "BLG-E022",
+      "traces": ["FR-005"]
+    },
+
+    "section_headers_required": {
+      "id": "VR-008",
+      "description": "BACKLOG.md must have both ## Open and ## Completed sections",
+      "required_sections": ["## Open", "## Completed"],
+      "applies_to": "BACKLOG.md document structure",
+      "error_on_missing_open": "BLG-E031",
+      "error_on_missing_completed": "BLG-E032",
+      "auto_fix": true,
+      "traces": ["FR-001"]
+    },
+
+    "item_number_uniqueness": {
+      "id": "VR-009",
+      "description": "Item numbers should be unique within BACKLOG.md",
+      "applies_to": "Item number field (N.N) across all BACKLOG.md entries",
+      "error_on_duplicate": "BLG-E035",
+      "severity": "warning",
+      "traces": ["FR-001"]
+    },
+
+    "jira_backed_detection": {
+      "id": "VR-010",
+      "description": "An item is Jira-backed if and only if it has a **Jira:** metadata sub-bullet",
+      "detection_key": "Jira",
+      "applies_to": "All BACKLOG.md items when determining sync behavior",
+      "traces": ["FR-001", "FR-003", "FR-006"]
+    },
+
+    "state_json_jira_fields": {
+      "id": "VR-011",
+      "description": "state.json active_workflow Jira fields are optional and nullable",
+      "fields": {
+        "jira_ticket_id": {
+          "type": "string_or_null",
+          "required": false,
+          "default": null,
+          "validation": "Must match VR-003 regex when present"
+        },
+        "confluence_urls": {
+          "type": "array_of_strings_or_null",
+          "required": false,
+          "default": null,
+          "validation": "Each element must match VR-004 regex when present"
+        }
+      },
+      "applies_to": "active_workflow and workflow_history entries in state.json",
+      "traces": ["FR-005", "FR-006"]
+    },
+
+    "jira_sync_status_enum": {
+      "id": "VR-012",
+      "description": "jira_sync_status in workflow_history must be one of the recognized values",
+      "allowed_values": ["synced", "failed", null],
+      "applies_to": "workflow_history entries in state.json",
+      "traces": ["FR-006"]
+    },
+
+    "completed_date_format": {
+      "id": "VR-013",
+      "description": "Completed date must be ISO 8601 date format",
+      "regex": "^\\d{4}-\\d{2}-\\d{2}$",
+      "applies_to": "**Completed:** metadata sub-bullet values",
+      "traces": ["FR-006"],
+      "examples": {
+        "valid": ["2026-02-14", "2025-12-31"],
+        "invalid": ["02/14/2026", "Feb 14, 2026", "2026-2-14"]
+      }
+    },
+
+    "max_backlog_items_in_picker": {
+      "id": "VR-014",
+      "description": "Backlog picker displays maximum 15 items from BACKLOG.md",
+      "max_items": 15,
+      "overflow_message": "... and {N} more",
+      "truncate_description": 80,
+      "traces": ["FR-001", "FR-002"]
+    },
+
+    "completion_move_to_section": {
+      "id": "VR-015",
+      "description": "Completed items must be moved from ## Open to ## Completed section",
+      "applies_to": "Item completion flow (workflow finalize or manual mark)",
+      "steps": [
+        "Change [ ] to [x]",
+        "Add **Completed:** date sub-bullet if Jira-backed",
+        "Move entire item block to ## Completed section"
+      ],
+      "traces": ["FR-006"]
+    },
+
+    "refresh_conflict_resolution": {
+      "id": "VR-016",
+      "description": "During backlog refresh, Jira data wins for content; local data wins for ordering",
+      "rules": {
+        "title": "Jira wins (overwrite local)",
+        "description": "Jira wins (overwrite local, apply VR-006 truncation)",
+        "priority": "Jira wins (overwrite local)",
+        "status": "Jira wins (overwrite local)",
+        "confluence_urls": "Jira wins (overwrite local)",
+        "item_number": "Local wins (preserve)",
+        "section_placement": "Local wins (preserve)",
+        "ordering": "Local wins (preserve)"
+      },
+      "traces": ["FR-003"],
+      "acceptance_criteria": ["AC-002-02"]
+    },
+
+    "reorder_local_only": {
+      "id": "VR-017",
+      "description": "Reorder operations are local-only and never sync priority back to Jira",
+      "applies_to": "backlog-reorder intent",
+      "traces": ["FR-004"],
+      "acceptance_criteria": ["AC-003-02"]
+    },
+
+    "workflow_type_from_jira": {
+      "id": "VR-018",
+      "description": "Workflow type suggestion based on Jira issue type",
+      "rules": {
+        "Bug": "fix",
+        "Defect": "fix",
+        "Story": "feature",
+        "Task": "feature",
+        "Epic": "feature",
+        "Sub-task": "feature",
+        "other": "ask_user"
+      },
+      "applies_to": "Workflow kick-off from Jira-backed backlog item",
+      "traces": ["FR-005"],
+      "acceptance_criteria": ["AC-004-04"]
+    }
+  }
+}

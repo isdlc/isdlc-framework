@@ -1,0 +1,43 @@
+%% Provider Auto-Detection Flow (REQ-006)
+%% Shows the tiered detection strategy from ADR-0001
+
+flowchart TD
+    A[PreToolUse Hook Fires] --> B{tool_name === 'Task'?}
+    B -- No --> Z1[exit 0 - pass through]
+    B -- Yes --> C{hasProvidersConfig?}
+    C -- No --> Z2[exit 0 - default Anthropic]
+    C -- Yes --> D[loadProvidersConfig]
+    D --> E[selectProvider]
+
+    E --> E1{CLI override set?}
+    E1 -- Yes --> F1[Use CLI override]
+    E1 -- No --> E2{Agent override?}
+    E2 -- Yes --> F2[Use agent override]
+    E2 -- No --> E3{Phase routing?}
+    E3 -- Yes --> F3[Use phase routing]
+    E3 -- No --> E4{Mode default?}
+    E4 -- Yes --> F4[Use mode default]
+    E4 -- No --> E5[Use global default]
+
+    F1 --> G[selectWithFallback]
+    F2 --> G
+    F3 --> G
+    F4 --> G
+    E5 --> G
+
+    G --> H{Health check OK?}
+    H -- Yes --> I[getEnvironmentOverrides]
+    H -- No --> J{Fallback chain?}
+    J -- Yes --> K[Try next fallback]
+    K --> H
+    J -- No --> L[outputBlockResponse - all providers unavailable]
+
+    I --> M{Has overrides?}
+    M -- Yes --> N[Output JSON to stdout]
+    M -- No --> Z3[exit 0 - silent]
+
+    style Z1 fill:#ccc
+    style Z2 fill:#ccc
+    style Z3 fill:#ccc
+    style L fill:#f99
+    style N fill:#9f9

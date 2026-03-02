@@ -1,0 +1,207 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "add a Jira ticket to my local backlog via natural language",
+      "benefit": "I can curate a prioritized working set without leaving the CLI or manually copying ticket data",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-001-01",
+          "given": "the Atlassian MCP server is configured in Claude Code",
+          "when": "I say 'Add PROJ-1234 to the backlog'",
+          "then": "the framework pulls the ticket title, description, priority, and linked Confluence URLs from Jira and appends a new entry to BACKLOG.md with Jira metadata sub-bullets"
+        },
+        {
+          "id": "AC-001-02",
+          "given": "I add a Jira ticket to the backlog",
+          "when": "the entry is written to BACKLOG.md",
+          "then": "the entry includes the Jira ticket ID, title, priority, and any linked Confluence page URLs as metadata sub-bullets"
+        },
+        {
+          "id": "AC-001-03",
+          "given": "the Atlassian MCP server is NOT configured",
+          "when": "I try to add a Jira ticket",
+          "then": "I see a clear error message with MCP setup instructions (claude mcp add command) and the operation fails gracefully"
+        },
+        {
+          "id": "AC-001-04",
+          "given": "the Jira ticket ID does not exist",
+          "when": "I try to add it to the backlog",
+          "then": "I see a clear error message stating the ticket was not found"
+        }
+      ],
+      "linked_requirements": ["FR-002", "FR-008"]
+    },
+    {
+      "id": "US-002",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "refresh my backlog to get latest ticket data from Jira",
+      "benefit": "my local backlog stays current with Jira without manual checking",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-002-01",
+          "given": "my BACKLOG.md contains Jira-backed items",
+          "when": "I say 'Refresh the backlog'",
+          "then": "the framework re-pulls title, description, priority, and status from Jira for all Jira-backed items and updates them in-place"
+        },
+        {
+          "id": "AC-002-02",
+          "given": "I refresh the backlog",
+          "when": "Jira data has changed (title, priority, status)",
+          "then": "BACKLOG.md entries are updated with the new Jira data while preserving local ordering and section placement"
+        },
+        {
+          "id": "AC-002-03",
+          "given": "I refresh the backlog",
+          "when": "some Jira tickets are unreachable (network error, permissions)",
+          "then": "the framework updates reachable tickets and reports which ones failed with clear error messages"
+        }
+      ],
+      "linked_requirements": ["FR-003"]
+    },
+    {
+      "id": "US-003",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "reorder items in my backlog to reflect my priorities",
+      "benefit": "I control what I work on next without leaving the CLI",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-003-01",
+          "given": "my BACKLOG.md contains multiple items",
+          "when": "I say 'Move PROJ-1235 above PROJ-1234'",
+          "then": "the items are reordered in BACKLOG.md accordingly"
+        },
+        {
+          "id": "AC-003-02",
+          "given": "I reorder items locally",
+          "when": "the reorder completes",
+          "then": "the priority change is NOT synced back to Jira (local-only ordering)"
+        }
+      ],
+      "linked_requirements": ["FR-004"]
+    },
+    {
+      "id": "US-004",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "start working on a backlog item and have the framework pull in Jira and Confluence context automatically",
+      "benefit": "the requirements agent starts from a position of knowledge instead of asking cold generic questions",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-004-01",
+          "given": "BACKLOG.md contains a Jira-backed item PROJ-1234",
+          "when": "I say 'Let's work on PROJ-1234'",
+          "then": "the framework finds the item in BACKLOG.md, determines workflow type (feature/fix), and initializes a workflow with the Jira ticket description as input"
+        },
+        {
+          "id": "AC-004-02",
+          "given": "Jira ticket PROJ-1234 links to a Confluence spec page",
+          "when": "the workflow reaches Phase 01 (requirements)",
+          "then": "the Confluence page content is pulled and injected as context for the requirements analyst agent"
+        },
+        {
+          "id": "AC-004-03",
+          "given": "I start a workflow from a Jira-backed backlog item",
+          "when": "the Confluence page is unavailable or not linked",
+          "then": "the workflow proceeds normally without Confluence context (graceful degradation)"
+        },
+        {
+          "id": "AC-004-04",
+          "given": "the Jira ticket type is 'Bug' or 'Defect'",
+          "when": "I start a workflow from this item",
+          "then": "the framework suggests a fix workflow; if 'Story' or 'Task', it suggests a feature workflow"
+        }
+      ],
+      "linked_requirements": ["FR-005"]
+    },
+    {
+      "id": "US-005",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "have workflow completion automatically update Jira ticket status",
+      "benefit": "I don't have to manually update Jira after finishing work -- the framework keeps it in sync",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-005-01",
+          "given": "a workflow was started from a Jira-backed backlog item",
+          "when": "the workflow completes (branch merged to main)",
+          "then": "the Jira ticket status is transitioned to 'Done' (or configured completion status)"
+        },
+        {
+          "id": "AC-005-02",
+          "given": "a workflow completes for a Jira-backed item",
+          "when": "the status sync to Jira fails (permissions, workflow rules, network error)",
+          "then": "the workflow completion is NOT blocked; a warning is logged and the user is informed of the sync failure"
+        },
+        {
+          "id": "AC-005-03",
+          "given": "a workflow completes for a Jira-backed item",
+          "when": "status is synced back to Jira",
+          "then": "the BACKLOG.md entry is marked as [x] and moved to the Completed section"
+        }
+      ],
+      "linked_requirements": ["FR-006"]
+    },
+    {
+      "id": "US-006",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "use the backlog without any external integrations",
+      "benefit": "I can manage my work locally even without Jira access",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-006-01",
+          "given": "the Atlassian MCP server is NOT configured",
+          "when": "I interact with BACKLOG.md (view, reorder, start workflow)",
+          "then": "all local backlog operations work normally for local-only items"
+        },
+        {
+          "id": "AC-006-02",
+          "given": "BACKLOG.md contains a mix of Jira-backed and local-only items",
+          "when": "the backlog picker presents options",
+          "then": "both types of items are shown and selectable"
+        },
+        {
+          "id": "AC-006-03",
+          "given": "I start a workflow from a local-only backlog item",
+          "when": "the workflow completes",
+          "then": "no Jira sync is attempted; the BACKLOG.md entry is marked as [x] normally"
+        }
+      ],
+      "linked_requirements": ["FR-001", "NFR-003"]
+    },
+    {
+      "id": "US-007",
+      "epic": "Backlog Management Integration",
+      "persona": "Developer",
+      "goal": "have CLAUDE.md guide the framework on backlog management conventions",
+      "benefit": "the framework handles backlog operations consistently via natural language without explicit commands",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-007-01",
+          "given": "iSDLC is installed in a project",
+          "when": "I check the generated CLAUDE.md",
+          "then": "it contains backlog management instructions: BACKLOG.md location, format conventions, Jira integration behavior, and Confluence context handling"
+        },
+        {
+          "id": "AC-007-02",
+          "given": "the CLAUDE.md contains backlog instructions",
+          "when": "I say something like 'add PROJ-1234 to the backlog' in conversation",
+          "then": "Claude detects the intent and performs the backlog operation per the CLAUDE.md instructions"
+        }
+      ],
+      "linked_requirements": ["FR-007"]
+    }
+  ]
+}

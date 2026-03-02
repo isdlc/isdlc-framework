@@ -1,0 +1,36 @@
+{
+  "source": "github",
+  "source_id": "GH-39",
+  "slug": "state-json-pruning-GH-39",
+  "created_at": "2026-02-20T13:00:00.000Z",
+  "analysis_status": "complete",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "steps_completed": ["00-01", "00-02", "00-03", "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-01", "02-02", "02-03", "02-04", "03-01", "03-02", "03-03", "03-04", "04-01", "04-02", "04-03", "04-04", "04-05"],
+  "codebase_hash": "87935d2",
+  "build_started_at": "2026-02-21T14:00:00Z",
+  "workflow_type": "feature",
+  "depth_overrides": {},
+  "elaborations": [
+    {
+      "step_id": "01-01",
+      "turn_count": 8,
+      "personas_active": ["business-analyst", "solutions-architect", "system-designer"],
+      "timestamp": "2026-02-21T10:30:00Z",
+      "synthesis_summary": "Archive replaces pruning; state.json minimal between workflows; async archive after control returns to user; best-effort failure handling; compact archive format; enforcer detection logic needs rework"
+    },
+    {
+      "step_id": "01-02",
+      "turn_count": 8,
+      "personas_active": ["business-analyst", "solutions-architect", "system-designer"],
+      "timestamp": "2026-02-21T11:00:00Z",
+      "synthesis_summary": "Archive format: indexed-array in state-archive.json; multi-key index (source_id + slug) for O(1) lookup; appendToArchive() and lookupArchive() functions in common.cjs; enforcer owns write path; orchestrator reads directly; fail-open contract on all archive ops"
+    },
+    {
+      "step_id": "01-03",
+      "turn_count": 17,
+      "personas_active": ["business-analyst", "solutions-architect", "system-designer"],
+      "timestamp": "2026-02-21T12:30:00Z",
+      "synthesis_summary": "6 user journeys documented; lookupArchive() deferred; MVP pruning silent (CON-003); migration seeds archive via seedArchiveFromHistory(); abandoned recovery via FR-013; /isdlc cancel already flows through enforcer (no special handling); 3 archive paths (completed+cancelled via enforcer, abandoned via init); optional reason field for cancelled workflows; outcome field: merged|completed|cancelled|abandoned"
+    }
+  ]
+}

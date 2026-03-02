@@ -1,0 +1,17 @@
+{
+  "bug_id": "BUG-0004",
+  "root_cause": "stale-copy",
+  "root_cause_detail": "Orchestrator Phase 01 INTERACTIVE PROTOCOL block (lines 1007-1016 of 00-sdlc-orchestrator.md) was not updated when REQ-0014 changed the requirements analyst's invocation protocol",
+  "introduced_by": "REQ-0014 (missed update to orchestrator copy)",
+  "affected_files": [
+    {
+      "path": "src/claude/agents/00-sdlc-orchestrator.md",
+      "lines": "1007-1016",
+      "change": "replace",
+      "description": "Replace old INTERACTIVE PROTOCOL block with current INVOCATION PROTOCOL from 01-requirements-analyst.md"
+    }
+  ],
+  "fix_complexity": "low",
+  "regression_risk": "none",
+  "blast_radius": "low"
+}

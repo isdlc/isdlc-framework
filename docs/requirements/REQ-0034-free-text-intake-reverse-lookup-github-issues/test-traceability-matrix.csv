@@ -1,0 +1,33 @@
+Requirement,AC,Test Case,Test Type,Priority,Test Method,Status
+FR-001,AC-001-01,TC-SEARCH-01,positive,P0,Unit (mocked execSync),Designed
+FR-001,AC-001-01,TC-SEARCH-02,positive,P0,Unit (mocked execSync),Designed
+FR-001,AC-001-02,TC-SEARCH-01,positive,P0,Unit (mocked execSync),Designed
+FR-001,AC-001-02,TC-SEARCH-05,positive (security),P0,Unit (mocked execSync),Designed
+FR-001,AC-001-03,TC-SEARCH-06,positive,P1,Unit (mocked execSync),Designed
+FR-001,AC-001-04,TC-SEARCH-01,positive,P1,Unit (mocked execSync),Designed
+FR-001,AC-001-05,N/A (detectSource unchanged),N/A,P0,Existing tests (regression),Covered
+FR-002,AC-002-01,N/A (UX flow in isdlc.md),N/A,P0,Manual / Phase 16,Deferred
+FR-002,AC-002-02,N/A (UX flow in isdlc.md),N/A,P0,Manual / Phase 16,Deferred
+FR-002,AC-002-03,N/A (UX flow in isdlc.md),N/A,P0,Manual / Phase 16,Deferred
+FR-002,AC-002-04,N/A (UX flow in isdlc.md),N/A,P1,Manual / Phase 16,Deferred
+FR-002,AC-002-05,N/A (UX flow in isdlc.md),N/A,P2,Manual / Phase 16,Deferred
+FR-003,AC-003-01,N/A (UX flow sets source/source_id),N/A,P0,Manual / Phase 16,Deferred
+FR-003,AC-003-02,N/A (UX flow overrides description),N/A,P1,Manual / Phase 16,Deferred
+FR-003,AC-003-03,N/A (UX flow checks title for bug),N/A,P2,Manual / Phase 16,Deferred
+FR-004,AC-004-01,N/A (UX flow prompts user),N/A,P1,Manual / Phase 16,Deferred
+FR-004,AC-004-02,TC-CREATE-01,positive,P1,Unit (mocked execSync),Designed
+FR-004,AC-004-03,TC-CREATE-01,positive,P1,Unit (mocked execSync),Designed
+FR-004,AC-004-04,TC-CREATE-01,positive,P1,Unit (mocked execSync),Designed
+FR-004,AC-004-05,TC-CREATE-04,positive,P1,Unit (mocked execSync),Designed
+FR-005,AC-005-01,N/A (UX flow in isdlc.md),N/A,P0,Manual / Phase 16,Deferred
+FR-005,AC-005-02,N/A (UX flow in isdlc.md),N/A,P0,Manual / Phase 16,Deferred
+FR-005,AC-005-03,N/A (UX flow in isdlc.md),N/A,P1,Manual / Phase 16,Deferred
+FR-006,AC-006-01,TC-GH-AVAIL-01,positive,P0,Unit (mocked execSync),Designed
+FR-006,AC-006-02,TC-GH-AVAIL-02,negative,P0,Unit (mocked execSync),Designed
+FR-006,AC-006-03,TC-GH-AVAIL-03,negative,P0,Unit (mocked execSync),Designed
+FR-006,AC-006-04,TC-SEARCH-03,negative,P0,Unit (mocked execSync),Designed
+FR-006,AC-006-05,TC-SEARCH-04,negative,P1,Unit (mocked execSync),Designed
+FR-006,AC-006-05,TC-CREATE-02,negative,P1,Unit (mocked execSync),Designed
+FR-007,AC-007-01,N/A (UX flow chains to add),N/A,P1,Manual / Phase 16,Deferred
+FR-007,AC-007-02,N/A (UX flow resolveItem path),N/A,P1,Manual / Phase 16,Deferred
+FR-007,AC-007-03,N/A (UX flow analyze phases),N/A,P2,Manual / Phase 16,Deferred

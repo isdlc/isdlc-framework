@@ -1,0 +1,42 @@
+{
+  "stories": [
+    {
+      "id": "US-0013",
+      "title": "Centralized phase prefix constants",
+      "as_a": "hook maintainer",
+      "i_want": "phase category strings centralized in one constant",
+      "so_that": "I only update one place when phase naming changes",
+      "acceptance_criteria": ["AC-0013-1", "AC-0013-2", "AC-0013-3", "AC-0013-4", "AC-0013-5", "AC-0013-6"],
+      "priority": "P2"
+    },
+    {
+      "id": "US-0014",
+      "title": "Consistent null-check convention",
+      "as_a": "hook developer",
+      "i_want": "a single null-check pattern used consistently across all hooks",
+      "so_that": "code reviews are faster and patterns are predictable",
+      "acceptance_criteria": ["AC-0014-1", "AC-0014-2", "AC-0014-3", "AC-0014-4", "AC-0014-5"],
+      "priority": "P2"
+    },
+    {
+      "id": "US-0015",
+      "title": "Documented detectPhaseDelegation API",
+      "as_a": "new contributor",
+      "i_want": "JSDoc on detectPhaseDelegation() explaining params, return shape, and edge cases",
+      "so_that": "I can safely call it without reading the implementation",
+      "acceptance_criteria": ["AC-0015-1", "AC-0015-2", "AC-0015-3", "AC-0015-4"],
+      "priority": "P2"
+    },
+    {
+      "id": "US-0016",
+      "title": "No dead code in gate-blocker",
+      "as_a": "hook maintainer",
+      "i_want": "unreachable code removed from gate-blocker.cjs",
+      "so_that": "the code path is clear and not misleading",
+      "acceptance_criteria": ["AC-0016-1", "AC-0016-2", "AC-0016-3"],
+      "priority": "P3"
+    }
+  ],
+  "total_acceptance_criteria": 18,
+  "total_stories": 4
+}

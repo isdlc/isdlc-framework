@@ -1,0 +1,58 @@
+[
+  {
+    "id": "US-001",
+    "role": "iSDLC developer",
+    "want": "the framework to search GitHub for matching issues when I provide free-text input to /isdlc add",
+    "so_that": "my backlog items are automatically linked to existing GitHub issues without me having to look up the issue number",
+    "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-03", "AC-001-04", "AC-001-05"],
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-002",
+    "role": "iSDLC developer",
+    "want": "to see a list of matching GitHub issues and select the correct one",
+    "so_that": "I can confirm the right issue is linked to my backlog item",
+    "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-04", "AC-002-05"],
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "role": "iSDLC developer",
+    "want": "the backlog item to be linked to the selected GitHub issue with proper source metadata",
+    "so_that": "the item is traceable from the local backlog to GitHub for team-level visibility",
+    "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-03"],
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-004",
+    "role": "iSDLC developer",
+    "want": "the option to create a new GitHub issue when no existing match is found",
+    "so_that": "I don't have to leave the iSDLC workflow to create an issue manually",
+    "acceptance_criteria": ["AC-004-01", "AC-004-02", "AC-004-03", "AC-004-04", "AC-004-05"],
+    "traces": ["FR-004"]
+  },
+  {
+    "id": "US-005",
+    "role": "iSDLC developer",
+    "want": "to be able to skip GitHub issue linking and proceed with a manual entry",
+    "so_that": "I am not forced to use GitHub for every backlog item (e.g., quick prototypes, personal tasks)",
+    "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03"],
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-006",
+    "role": "iSDLC developer",
+    "want": "the add flow to work normally even when the gh CLI is not installed or authenticated",
+    "so_that": "the framework never blocks my workflow due to missing external tooling",
+    "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04", "AC-006-05"],
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-007",
+    "role": "iSDLC developer",
+    "want": "the /isdlc analyze command to use the same reverse-lookup when it triggers an add for unmatched free-text input",
+    "so_that": "the linking behavior is consistent regardless of whether I use add or analyze",
+    "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03"],
+    "traces": ["FR-007"]
+  }
+]

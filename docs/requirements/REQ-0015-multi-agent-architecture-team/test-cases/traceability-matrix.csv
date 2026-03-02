@@ -1,0 +1,85 @@
+Requirement,AC,Validation Rule,Test File,Test ID,Test Description,Priority
+FR-001,AC-001-01,M2-V04,architecture-debate-critic.test.cjs,TC-M2-05,NFR alignment check (AC-01) documented,P0
+FR-001,AC-001-02,M2-V05,architecture-debate-critic.test.cjs,TC-M2-06,STRIDE threat model check (AC-02) documented,P0
+FR-001,AC-001-03,M2-V06,architecture-debate-critic.test.cjs,TC-M2-07,Database design check (AC-03) documented,P0
+FR-001,AC-001-04,M2-V07,architecture-debate-critic.test.cjs,TC-M2-08,Tech stack justification check (AC-04) documented,P0
+FR-001,AC-001-05,M2-V08,architecture-debate-critic.test.cjs,TC-M2-09,Single points of failure check (AC-05) documented,P0
+FR-001,AC-001-06,M2-V09,architecture-debate-critic.test.cjs,TC-M2-10,Observability check (AC-06) documented,P0
+FR-001,AC-001-07,M2-V10,architecture-debate-critic.test.cjs,TC-M2-11,Coupling contradictions check (AC-07) documented,P0
+FR-001,AC-001-08,M2-V11,architecture-debate-critic.test.cjs,TC-M2-12,Cost implications check (AC-08) documented,P0
+FR-001,,M2-V12,architecture-debate-critic.test.cjs,TC-M2-13,Output file is round-N-critique.md,P0
+FR-001,,M2-V13,architecture-debate-critic.test.cjs,TC-M2-14,BLOCKING and WARNING sections in output,P0
+FR-001,,M2-V14,architecture-debate-critic.test.cjs,TC-M2-15,Summary table with finding counts,P0
+FR-001,,M2-V18,architecture-debate-critic.test.cjs,TC-M2-19,Rule: do not modify input artifacts,P1
+FR-002,AC-002-01,M3-V04,architecture-debate-refiner.test.cjs,TC-M3-05,ADR completion fix strategy documented,P0
+FR-002,AC-002-02,M3-V05,architecture-debate-refiner.test.cjs,TC-M3-06,Security hardening fix strategy documented,P0
+FR-002,AC-002-03,M3-V06,architecture-debate-refiner.test.cjs,TC-M3-07,HA/failover fix strategy documented,P0
+FR-002,AC-002-04,M3-V07,architecture-debate-refiner.test.cjs,TC-M3-08,Cost optimization fix strategy documented,P0
+FR-002,AC-002-05,M3-V08,architecture-debate-refiner.test.cjs,TC-M3-09,Observability fix strategy documented,P0
+FR-002,AC-002-06,M3-V09,architecture-debate-refiner.test.cjs,TC-M3-10,WARNING findings handling documented,P1
+FR-002,AC-002-06,M3-V12,architecture-debate-refiner.test.cjs,TC-M3-13,Escalation with NEEDS CLARIFICATION,P1
+FR-002,AC-002-07,M3-V10,architecture-debate-refiner.test.cjs,TC-M3-11,Rule: NEVER remove existing architectural decisions,P0
+FR-002,AC-002-08,M3-V11,architecture-debate-refiner.test.cjs,TC-M3-12,Change log format with required columns,P0
+FR-002,,M3-V13,architecture-debate-refiner.test.cjs,TC-M3-14,Input includes critique file reference,P1
+FR-002,,M3-V14,architecture-debate-refiner.test.cjs,TC-M3-15,Rule: NEVER introduce new scope,P1
+FR-002,,M3-V15,architecture-debate-refiner.test.cjs,TC-M3-16,Rule: Preserve ADR numbering,P1
+FR-003,AC-003-01,M1-V11,architecture-debate-orchestrator.test.cjs,TC-M1-11,Flag precedence documents --no-debate,P0
+FR-003,AC-003-02,M1-V12,architecture-debate-orchestrator.test.cjs,TC-M1-12,Creator-Critic-Refiner loop pattern documented,P0
+FR-003,AC-003-03,M1-V13,architecture-debate-orchestrator.test.cjs,TC-M1-13,Convergence condition is zero BLOCKING,P0
+FR-003,AC-003-04,M1-V14,architecture-debate-orchestrator.test.cjs,TC-M1-14,Max rounds is 3,P0
+FR-003,AC-003-05,M1-V01,architecture-debate-orchestrator.test.cjs,TC-M1-01,Section header contains Multi-Phase,P0
+FR-003,AC-003-05,M1-V02,architecture-debate-orchestrator.test.cjs,TC-M1-02,Section header does NOT contain Phase 01 Only,P0
+FR-003,,M5-V01,architecture-debate-integration.test.cjs,TC-M5-01,--debate description no longer requirements-only,P1
+FR-003,,M5-V02,architecture-debate-integration.test.cjs,TC-M5-02,--debate covers both requirements and architecture,P1
+FR-003,,M5-V03,architecture-debate-integration.test.cjs,TC-M5-03,--no-debate mentions single-agent,P1
+FR-003,,M5-V04,architecture-debate-integration.test.cjs,TC-M5-04,Debate-enabled phases listed (Phase 01 + Phase 03),P1
+FR-004,AC-004-01,M4-V01,architecture-debate-creator.test.cjs,TC-M4-02,DEBATE_CONTEXT mode detection documented,P0
+FR-004,AC-004-01,M4-V02,architecture-debate-creator.test.cjs,TC-M4-03,Self-assessment section with required subsections,P0
+FR-004,AC-004-02,M4-V03,architecture-debate-creator.test.cjs,TC-M4-04,No-debate fallback preserves current behavior,P0
+FR-004,,M4-V04,architecture-debate-creator.test.cjs,TC-M4-05,Round labeling documented,P1
+FR-004,,M4-V05,architecture-debate-creator.test.cjs,TC-M4-06,Skip final menu documented,P1
+FR-004,,M4-V06,architecture-debate-creator.test.cjs,TC-M4-07,Round > 1 behavior documented,P1
+FR-005,AC-005-01,M1-V05,architecture-debate-orchestrator.test.cjs,TC-M1-05,Phase 01 creator maps to requirements-analyst,P0
+FR-005,AC-005-01,M1-V06,architecture-debate-orchestrator.test.cjs,TC-M1-06,Phase 01 critic maps to requirements-critic,P0
+FR-005,AC-005-02,M1-V08,architecture-debate-orchestrator.test.cjs,TC-M1-08,Phase 03 creator maps to solution-architect,P0
+FR-005,AC-005-02,M1-V09,architecture-debate-orchestrator.test.cjs,TC-M1-09,Phase 03 critic maps to architecture-critic,P0
+FR-005,AC-005-03,M1-V03,architecture-debate-orchestrator.test.cjs,TC-M1-03,Routing table contains Phase 01 entry,P0
+FR-005,AC-005-03,M1-V07,architecture-debate-orchestrator.test.cjs,TC-M1-07,Phase 01 refiner maps to requirements-refiner,P0
+FR-005,AC-005-04,M1-V04,architecture-debate-orchestrator.test.cjs,TC-M1-04,Routing table contains Phase 03 entry,P0
+FR-005,AC-005-04,M1-V10,architecture-debate-orchestrator.test.cjs,TC-M1-10,Phase 03 refiner maps to architecture-refiner,P0
+FR-005,,M1-V18,architecture-debate-orchestrator.test.cjs,TC-M1-18,Uses routing.creator (not hardcoded),P0
+FR-005,,M1-V19,architecture-debate-orchestrator.test.cjs,TC-M1-19,Uses routing.critic (not hardcoded),P0
+FR-005,,M1-V20,architecture-debate-orchestrator.test.cjs,TC-M1-20,Uses routing.refiner (not hardcoded),P0
+FR-005,,,architecture-debate-orchestrator.test.cjs,TC-M1-21,DEBATE_ROUTING table structure present,P0
+FR-006,AC-006-01,M2-V12,architecture-debate-critic.test.cjs,TC-M2-13,Output file is round-N-critique.md,P0
+FR-006,AC-006-01,,architecture-debate-integration.test.cjs,TC-INT-01,Critic output naming matches orchestrator parse,P0
+FR-006,AC-006-02,,architecture-debate-integration.test.cjs,TC-INT-02,debate-summary.md referenced in orchestrator,P0
+FR-006,AC-006-03,M2-V15,architecture-debate-critic.test.cjs,TC-M2-16,ADR Count metric in summary,P0
+FR-006,AC-006-03,M2-V16,architecture-debate-critic.test.cjs,TC-M2-17,Threat Coverage metric in summary,P0
+FR-006,AC-006-03,M2-V17,architecture-debate-critic.test.cjs,TC-M2-18,NFR Alignment Score metric in summary,P0
+FR-006,AC-006-03,,architecture-debate-integration.test.cjs,TC-INT-03,Architecture metrics in critic,P0
+FR-007,AC-007-01,M1-V15,architecture-debate-orchestrator.test.cjs,TC-M1-15,architecture-overview.md is critical artifact,P0
+FR-007,AC-007-01,,architecture-debate-integration.test.cjs,TC-INT-04,Missing critical artifact triggers fallback,P0
+FR-007,AC-007-02,M1-V16,architecture-debate-orchestrator.test.cjs,TC-M1-16,Malformed critique handling (fail-open),P0
+FR-007,AC-007-02,,architecture-debate-integration.test.cjs,TC-INT-05,Malformed critique treated as 0 BLOCKING,P0
+FR-007,AC-007-03,M1-V17,architecture-debate-orchestrator.test.cjs,TC-M1-17,Unconverged warning handling documented,P0
+FR-007,AC-007-03,,architecture-debate-integration.test.cjs,TC-INT-06,Unconverged debate appends warning,P0
+NFR-001,,,,TC-M2-22,Critic file size under 15KB,P0
+NFR-001,,,,TC-M3-18,Refiner file size under 15KB,P0
+NFR-001,,,,TC-INT-11,02-architecture-critic.md under 15KB,P0
+NFR-001,,,,TC-INT-12,02-architecture-refiner.md under 15KB,P0
+NFR-002,,M2-V01,architecture-debate-critic.test.cjs,TC-M2-02,Agent name is architecture-critic,P1
+NFR-002,,M2-V02,architecture-debate-critic.test.cjs,TC-M2-03,Model is opus,P1
+NFR-002,,M2-V03,architecture-debate-critic.test.cjs,TC-M2-04,Agent is debate-only,P1
+NFR-002,,M2-V20,architecture-debate-critic.test.cjs,TC-M2-21,Structural consistency with Phase 01 critic,P0
+NFR-002,,M3-V01,architecture-debate-refiner.test.cjs,TC-M3-02,Agent name is architecture-refiner,P1
+NFR-002,,M3-V02,architecture-debate-refiner.test.cjs,TC-M3-03,Model is opus,P1
+NFR-002,,M3-V03,architecture-debate-refiner.test.cjs,TC-M3-04,Agent is debate-only,P1
+NFR-002,,M3-V16,architecture-debate-refiner.test.cjs,TC-M3-17,Structural consistency with Phase 01 refiner,P0
+NFR-003,,M4-V03,architecture-debate-creator.test.cjs,TC-M4-04,No-debate fallback preserves behavior,P0
+NFR-003,,,architecture-debate-creator.test.cjs,TC-M4-08,Agent name unchanged (backward compat),P0
+NFR-003,,,architecture-debate-integration.test.cjs,TC-INT-07,DEBATE LOOP ORCHESTRATION section preserved,P0
+NFR-003,,,architecture-debate-integration.test.cjs,TC-INT-08,Phase 01 routing entries preserved,P0
+NFR-003,,,architecture-debate-integration.test.cjs,TC-INT-09,Refiner never-remove rule preserved,P0
+NFR-004,,M2-V19,architecture-debate-critic.test.cjs,TC-M2-20,Constitutional articles referenced,P0
+NFR-004,,,architecture-debate-integration.test.cjs,TC-INT-10,Critic checks at least 3 constitutional articles,P0

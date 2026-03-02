@@ -5,7 +5,7 @@ skill_id: ORCH-013
 owner: sdlc-orchestrator
 collaborators: []
 project: sdlc-framework
-version: 1.0.0
+version: 2.0.0
 when_to_use: Before phase transitions in Antigravity to ensure hard-coded requirements are met.
 dependencies: [ORCH-004]
 ---
@@ -13,13 +13,25 @@ dependencies: [ORCH-004]
 # Antigravity Validate Gate
 
 ## Purpose
-This skill provides the same "Hard Enforcement" as the Claude Code Hook system, but implemented as an Antigravity Skill. It must be called by the Orchestrator before any phase transition to ensure that all iteration requirements are met.
+Deterministic gate validation for Antigravity. Runs 5 gate checks (test iteration, constitutional validation, interactive elicitation, agent delegation, artifact presence) and returns PASS or BLOCK.
 
 ## Usage
-Calling this skill will perform a deterministic check of the current phase gates. If requirements are missing, the skill returns a failure, which the Orchestrator must respect by blocking advancement.
+```bash
+node src/antigravity/validate-gate.cjs [--phase <phase>]
+```
 
-## Process
-1. Load shared `gate-logic.cjs`.
-2. Determine current phase from `state.json`.
-3. Execute all requirement checks (Tests, Constitution, Artifacts, etc.).
-4. Return a structured result that indicates PASS or BLOCK.
+If `--phase` is omitted, reads the current phase from `state.json`.
+
+## Output
+```json
+{ "result": "PASS", "phase": "03-architecture", "checks_run": 5 }
+{ "result": "BLOCK", "phase": "03-architecture", "blocking": ["test_iteration"], "details": [...] }
+```
+
+## Exit Codes
+- `0` = PASS (safe to advance)
+- `1` = BLOCK (requirements not met — do NOT advance)
+- `2` = ERROR (validation could not run)
+
+## Implementation
+Script: `src/antigravity/validate-gate.cjs` — wraps `src/claude/hooks/lib/gate-logic.cjs`.

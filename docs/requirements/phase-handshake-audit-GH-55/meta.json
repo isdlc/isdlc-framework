@@ -1,0 +1,9 @@
+{
+  "source": "github",
+  "source_id": "GH-55",
+  "slug": "phase-handshake-audit-GH-55",
+  "created_at": "2026-02-19T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "codebase_hash": "31db7d4"
+}

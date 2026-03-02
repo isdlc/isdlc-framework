@@ -1,0 +1,8 @@
+FR_ID,Title,AC_Count,Priority,User_Stories
+FR-001,GitHub Issue Search on Free-Text Input,5,Must Have,US-001
+FR-002,Match Presentation and Selection,5,Must Have,US-002
+FR-003,Issue Linking on Match Selection,3,Must Have,US-003
+FR-004,Issue Creation on No Match,5,Should Have,US-004
+FR-005,Skip Option (Manual Fallback),3,Must Have,US-005
+FR-006,Graceful Degradation,5,Must Have,US-006
+FR-007,Analyze Handler Integration,3,Should Have,US-007

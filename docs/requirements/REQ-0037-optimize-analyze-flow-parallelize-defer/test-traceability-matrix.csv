@@ -1,0 +1,41 @@
+Requirement,AC,Test Case,Test Type,Priority,File Under Test,Status
+FR-001,AC-001-01,TC-01.1,positive,P0,isdlc.md,pending
+FR-001,AC-001-02,TC-01.2,positive,P0,isdlc.md,pending
+FR-001,AC-001-03,TC-01.3,positive,P0,isdlc.md,pending
+FR-001,AC-001-04,TC-01.4,positive,P1,isdlc.md,pending
+FR-001,AC-001-01,TC-01.5,positive,P1,isdlc.md,pending
+FR-001,AC-001-01,TC-01.6,negative,P2,isdlc.md,pending
+FR-002,AC-002-01,TC-02.1,positive,P0,isdlc.md,pending
+FR-002,AC-002-02,TC-02.2,positive,P1,isdlc.md,pending
+FR-002,AC-002-03,TC-02.3,positive,P0,isdlc.md,pending
+FR-002,AC-002-04,TC-02.4,positive,P1,isdlc.md,pending
+FR-003,AC-003-01,TC-03.1,positive,P0,isdlc.md,pending
+FR-003,AC-003-02,TC-03.2,positive,P1,isdlc.md,pending
+FR-003,AC-003-03,TC-03.3,positive,P0,isdlc.md,pending
+FR-004,AC-004-01,TC-04.1,positive,P0,isdlc.md,pending
+FR-004,AC-004-02,TC-04.2,positive,P1,isdlc.md,pending
+FR-005,AC-005-01,TC-05.1,positive,P0,isdlc.md,pending
+FR-005,AC-005-02,TC-05.2,positive,P0,isdlc.md,pending
+FR-005,AC-005-03,TC-05.3,positive,P1,isdlc.md,pending
+FR-005,AC-005-01,TC-05.4,positive,P1,isdlc.md,pending
+FR-005,AC-005-02,TC-05.5,positive,P1,isdlc.md,pending
+FR-006,AC-006-01,TC-06.1,positive,P0,roundtable-analyst.md,pending
+FR-006,AC-006-02,TC-06.2,positive,P0,roundtable-analyst.md,pending
+FR-006,AC-006-03,TC-06.3,positive,P0,roundtable-analyst.md,pending
+FR-006,AC-006-01,TC-06.4,positive,P1,roundtable-analyst.md,pending
+FR-006,AC-006-02,TC-06.5,positive,P1,roundtable-analyst.md,pending
+FR-007,AC-007-01,TC-07.1,positive,P0,roundtable-analyst.md,pending
+FR-007,AC-007-02,TC-07.2,positive,P0,roundtable-analyst.md,pending
+FR-007,AC-007-03,TC-07.3,positive,P1,roundtable-analyst.md,pending
+FR-007,AC-007-04,TC-07.4,positive,P2,roundtable-analyst.md,pending
+FR-007,AC-007-01,TC-07.5,negative,P0,roundtable-analyst.md,pending
+FR-008,AC-008-01,TC-08.1,positive,P0,isdlc.md,pending
+FR-008,AC-008-02,TC-08.2,positive,P1,isdlc.md,pending
+FR-008,AC-008-03,TC-08.3,negative,P1,isdlc.md,pending
+FR-005+FR-006,AC-005-01+AC-006-01,TC-09.1,positive,P0,isdlc.md+roundtable-analyst.md,pending
+FR-005+FR-006,AC-005-02+AC-006-02,TC-09.2,positive,P0,isdlc.md+roundtable-analyst.md,pending
+NFR,Article XII,TC-09.3,negative,P0,hooks/,pending
+NFR,Article V,TC-09.4,negative,P0,package.json,pending
+FR-006,AC-006-03,TC-09.5,positive,P1,roundtable-analyst.md,pending
+FR-006,AC-006-03,TC-09.6,positive,P1,roundtable-analyst.md,pending
+Impact,Constraint,TC-09.7,positive,P1,isdlc.md+roundtable-analyst.md,pending

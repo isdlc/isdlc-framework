@@ -1,0 +1,56 @@
+{
+  "source": "github",
+  "source_id": "GH-34",
+  "slug": "REQ-0041-improve-search-capabilities-for-claude-effectiveness",
+  "created_at": "2026-03-02T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification"
+  ],
+  "steps_completed": [
+    "00-01", "00-02", "00-03",
+    "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08",
+    "02-01", "02-02", "02-03", "02-04",
+    "03-01", "03-02", "03-03", "03-04",
+    "04-01", "04-02", "04-03", "04-04", "04-05"
+  ],
+  "codebase_hash": "fb00ac5",
+  "acceptance": {
+    "accepted_at": "2026-03-02T00:00:00.000Z",
+    "domains": ["requirements", "architecture", "design"],
+    "amendment_cycles": 0
+  },
+  "sizing_decision": {
+    "intensity": "epic",
+    "effective_intensity": "standard",
+    "recommended_intensity": "epic",
+    "decided_at": "2026-03-02T00:00:00.000Z",
+    "reason": "user_accepted",
+    "user_prompted": true,
+    "forced_by_flag": false,
+    "overridden": false,
+    "overridden_to": null,
+    "file_count": 45,
+    "module_count": 16,
+    "risk_score": "medium",
+    "coupling": "medium",
+    "coverage_gaps": 1,
+    "fallback_source": null,
+    "fallback_attempted": false,
+    "light_skip_phases": null,
+    "epic_deferred": true,
+    "context": "analyze"
+  },
+  "recommended_tier": "epic"
+}

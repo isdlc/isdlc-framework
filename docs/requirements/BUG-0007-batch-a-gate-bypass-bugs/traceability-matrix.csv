@@ -1,0 +1,25 @@
+AC_ID,Bug,Description,Test_ID,Test_Name,Test_File,Priority,TDD_Status,Expected_After_Fix
+AC-01a,0.1,Gate-blocker does NOT early-return based on phase_status,TC-01a,blocks when phase_status=completed but constitutional_validation unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01a,0.1,Gate-blocker does NOT early-return based on phase_status,TC-01b,blocks when phase_status=completed but interactive_elicitation unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01a,0.1,Gate-blocker does NOT early-return based on phase_status,TC-01e,blocks when phase_status=completed but test_iteration unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01b,0.1,Gate decisions based solely on state.phases,TC-01c,allows when state.phases requirements are fully satisfied,gate-blocker-phase-status-bypass.test.cjs,P0,GREEN,PASS
+AC-01b,0.1,Gate decisions based solely on state.phases,TC-01d,blocks when phase_status absent and requirements unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P1,GREEN,PASS
+AC-01c,0.1,Gate allows when state.phases satisfied regardless of phase_status,TC-01c,allows when state.phases requirements are fully satisfied,gate-blocker-phase-status-bypass.test.cjs,P0,GREEN,PASS
+AC-01d,0.1,Gate blocks when state.phases unsatisfied even if phase_status=completed,TC-01a,blocks when phase_status=completed but constitutional_validation unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01d,0.1,Gate blocks when state.phases unsatisfied even if phase_status=completed,TC-01b,blocks when phase_status=completed but interactive_elicitation unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01d,0.1,Gate blocks when state.phases unsatisfied even if phase_status=completed,TC-01e,blocks when phase_status=completed but test_iteration unsatisfied,gate-blocker-phase-status-bypass.test.cjs,P0,RED,PASS
+AC-01e,0.1,Existing tests continue to pass,TC-01f,non-gate-advancement input is always allowed,gate-blocker-phase-status-bypass.test.cjs,P1,GREEN,PASS
+AC-02a,0.2,PHASE_STATUS_ORDINAL exists and is correctly defined,TC-02a,PHASE_STATUS_ORDINAL is defined with correct values,state-write-validator-null-safety.test.cjs,P1,GREEN,PASS
+AC-03a,0.3,checkVersionLock validates JSON.parse result is non-null object (incoming),TC-03a,null JSON content triggers explicit guard with debug log,state-write-validator-null-safety.test.cjs,P0,RED,PASS
+AC-03a,0.3,checkVersionLock validates JSON.parse result is non-null object (incoming),TC-03b,numeric JSON content triggers explicit guard,state-write-validator-null-safety.test.cjs,P0,RED,PASS
+AC-03b,0.3,null incoming returns null with debug log,TC-03a,null JSON content triggers explicit guard with debug log,state-write-validator-null-safety.test.cjs,P0,RED,PASS
+AC-03c,0.3,primitive incoming returns null with debug log,TC-03b,numeric JSON content triggers explicit guard,state-write-validator-null-safety.test.cjs,P0,RED,PASS
+AC-03c,0.3,primitive incoming returns null with debug log,TC-03c,boolean JSON content triggers explicit guard,state-write-validator-null-safety.test.cjs,P1,RED,PASS
+AC-03c,0.3,primitive incoming returns null with debug log,TC-03d,string JSON content triggers explicit guard,state-write-validator-null-safety.test.cjs,P1,RED,PASS
+AC-03d,0.3,valid object proceeds as before,TC-03e,valid object content proceeds normally without guard log,state-write-validator-null-safety.test.cjs,P0,GREEN,PASS
+AC-03e,0.3,fix does not change behavior for valid content,TC-03e,valid object content proceeds normally without guard log,state-write-validator-null-safety.test.cjs,P0,GREEN,PASS
+AC-03f,0.3,same guard applied to disk-side JSON.parse,TC-03f,null JSON on disk triggers explicit guard,state-write-validator-null-safety.test.cjs,P0,RED,PASS
+AC-03g,0.3,debug log messages clearly indicate why check skipped,TC-03g,debug messages indicate why version check was skipped,state-write-validator-null-safety.test.cjs,P1,RED,PASS
+NFR-01,all,Fail-open behavior,NFR-01,null/primitive inputs fail-open not fail-closed,state-write-validator-null-safety.test.cjs,P0,GREEN,PASS
+NFR-02,all,Backward-compatible,TC-03e,valid object content proceeds normally,state-write-validator-null-safety.test.cjs,P0,GREEN,PASS
+NFR-03,all,CJS-only,NFR-03,test file uses CJS syntax,state-write-validator-null-safety.test.cjs,P1,GREEN,PASS

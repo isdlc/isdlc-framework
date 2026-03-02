@@ -1,0 +1,46 @@
+FR/NFR,AC,User Story,Description,Priority
+FR-001,AC-001-01,US-002,Intake creates BACKLOG.md entry and draft.md from ticket,P0
+FR-001,AC-001-02,US-002,Manual description creates slug-based draft.md,P0
+FR-001,AC-001-03,US-002,Existing folder detected on re-intake prompts user,P1
+FR-002,AC-002-01,"US-001,US-007",Deep analysis produces quick-scan.md,P0
+FR-002,AC-002-02,"US-001,US-007",Deep analysis produces requirements.md with FRs ACs NFRs,P0
+FR-002,AC-002-03,US-007,Declining deep analysis leaves only draft.md and meta.json,P0
+FR-002,AC-002-04,"US-001,US-007",Deep analysis makes zero writes to state.json hooks gates,P0
+FR-003,AC-003-01,US-002,Jira MCP pulls ticket and Confluence content to draft.md,P0
+FR-003,AC-003-02,US-002,GitHub gh pulls issue body and labels to draft.md,P0
+FR-003,AC-003-03,US-002,Manual description creates draft.md with source manual,P0
+FR-003,AC-003-04,US-005,Backlog migration moves inline spec to draft.md replaces with index entry,P1
+FR-004,AC-004-01,US-002,meta.json contains all required fields after intake,P0
+FR-004,AC-004-02,US-004,meta.json phase_a_completed set true after deep analysis,P0
+FR-004,AC-004-03,US-004,meta.json phase_a_completed false when no deep analysis,P0
+FR-005,AC-005-01,US-003,Phase B starts from Phase 02 with prepared requirements,P0
+FR-005,AC-005-02,US-003,Phase B fails cleanly when no requirements folder found,P0
+FR-005,AC-005-03,US-003,Phase B blocks when phase_a_completed is false,P0
+FR-005,AC-005-04,US-004,Phase B warns on stale requirements (>10 commits),P0
+FR-005,AC-005-05,US-004,Staleness proceed-anyway logged in active_workflow,P0
+FR-005,AC-005-06,US-003,Phase B reads requirements.md from Phase A folder,P0
+FR-006,AC-006-01,US-003,Phase B agents write artifacts to same requirements folder,P0
+FR-006,AC-006-02,US-003,Completed workflow folder contains full artifact chain,P0
+FR-007,AC-007-01,US-005,BACKLOG.md restructured to under 120 lines index,P1
+FR-007,AC-007-02,US-005,Inline specs migrated to docs/requirements/{slug}/draft.md,P1
+FR-007,AC-007-03,US-005,Completed items preserved as one-line entries,P1
+FR-008,AC-008-01,US-002,CLAUDE.md.template routes add to backlog to intake,P0
+FR-008,AC-008-02,US-002,CLAUDE.md.template routes analyze to Phase A full,P0
+FR-008,AC-008-03,US-003,CLAUDE.md.template routes start/lets work on to Phase B,P0
+FR-008,AC-008-04,US-002,Dogfooding CLAUDE.md mirrors template intent patterns,P0
+FR-009,AC-009-01,US-006,Documentation explains Phase A Phase B split and folder structure,P1
+FR-009,AC-009-02,US-006,Documentation enables self-service use without reading source,P1
+NFR-001,AC-NFR-001-01,US-003,Missing meta.json fails with clear error,P0
+NFR-001,AC-NFR-001-02,US-003,Malformed meta.json fails with clear error,P0
+NFR-001,AC-NFR-001-03,US-003,Missing phase_a_completed field treated as false,P0
+NFR-001,AC-NFR-001-04,US-004,Null or empty codebase_hash treated as stale,P0
+NFR-001,AC-NFR-001-05,US-003,Missing requirements.md despite meta complete fails with error,P0
+NFR-001,AC-NFR-001-06,US-007,Interrupted Phase A leaves phase_a_completed false,P0
+NFR-001,AC-NFR-001-07,US-003,All validation errors include path and remediation,P0
+NFR-002,AC-NFR-002-01,"US-001,US-007",Phase A zero reads and writes to state.json,P0
+NFR-002,AC-NFR-002-02,"US-001,US-007",Phase A no reads or writes under .isdlc/,P0
+NFR-002,AC-NFR-002-03,"US-001,US-007",Phase A no git branch operations,P0
+NFR-003,AC-NFR-003-01,US-002,Re-intake prompts user before overwriting,P1
+NFR-003,AC-NFR-003-02,US-002,Confirmed update preserves created_at sets updated_at,P1
+NFR-004,AC-NFR-004-01,US-002,Jira unavailable falls back to manual with message,P1
+NFR-004,AC-NFR-004-02,US-002,GitHub CLI unavailable falls back to manual with message,P1

@@ -1,0 +1,26 @@
+%% C4 Level 1 - System Context: Backlog Management Integration
+%% Shows the iSDLC Framework and its external actors/systems
+
+graph TB
+    developer["Developer<br/>(iSDLC User)"]
+    claude["Claude Code CLI<br/>(LLM Runtime)"]
+    isdlc["iSDLC Framework<br/>(Agents + Hooks + CLAUDE.md)"]
+    backlog["BACKLOG.md<br/>(Local File)"]
+    jira["Jira Cloud<br/>(Atlassian)"]
+    confluence["Confluence Cloud<br/>(Atlassian)"]
+    mcp["Atlassian MCP Server<br/>(External)"]
+
+    developer -->|"Natural language<br/>(add ticket, refresh, start workflow)"| claude
+    claude -->|"Reads CLAUDE.md<br/>intent detection"| isdlc
+    isdlc -->|"Read/Write"| backlog
+    isdlc -->|"MCP tool calls<br/>(getTicket, updateStatus)"| mcp
+    mcp -->|"REST API<br/>(read tickets, transition status)"| jira
+    mcp -->|"REST API<br/>(read pages)"| confluence
+
+    style developer fill:#08427b,color:#fff
+    style claude fill:#1168bd,color:#fff
+    style isdlc fill:#1168bd,color:#fff
+    style backlog fill:#438dd5,color:#fff
+    style jira fill:#999,color:#fff
+    style confluence fill:#999,color:#fff
+    style mcp fill:#999,color:#fff

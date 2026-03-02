@@ -1,0 +1,126 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "epic": "Ollama Provider Enablement",
+      "persona": "Developer",
+      "goal": "configure Ollama as my LLM provider during iSDLC installation",
+      "benefit": "I can use free local models without paying for Anthropic API access",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-001-01",
+          "given": "I am running the iSDLC installer (installer.js, install.sh, or install.ps1)",
+          "when": "the installer reaches the provider selection step",
+          "then": "I see a choice between [1] Claude Code (Anthropic API) and [2] Ollama (local/free models)"
+        },
+        {
+          "id": "AC-001-02",
+          "given": "I select Ollama during installation",
+          "when": "the installer completes",
+          "then": "my provider preference is recorded in the project configuration (providers.yaml or equivalent)"
+        },
+        {
+          "id": "AC-001-03",
+          "given": "I selected Ollama during installation",
+          "when": "the installer displays the final 'Next Steps' section",
+          "then": "I see instructions to install Ollama and recommended models (qwen3-coder, glm-4.7, gpt-oss) followed by 'Launch claude in your project directory'"
+        },
+        {
+          "id": "AC-001-04",
+          "given": "I selected Anthropic API during installation",
+          "when": "the installer displays the final 'Next Steps' section",
+          "then": "I see instructions to set up my Anthropic API key followed by 'Launch claude in your project directory'"
+        },
+        {
+          "id": "AC-001-05",
+          "given": "the installer completes",
+          "when": "regardless of which provider I selected",
+          "then": "the installer does NOT attempt to install Ollama or download models"
+        }
+      ],
+      "linked_requirements": ["REQ-004"]
+    },
+    {
+      "id": "US-002",
+      "epic": "Ollama Provider Enablement",
+      "persona": "Developer",
+      "goal": "have the framework auto-detect my LLM provider when I launch Claude Code",
+      "benefit": "I don't need to manually configure environment variables",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-002-01",
+          "given": "I have Ollama running locally and selected Ollama during install",
+          "when": "I launch claude in my project directory",
+          "then": "the framework auto-detects Ollama and routes LLM requests to it without manual env var setup"
+        },
+        {
+          "id": "AC-002-02",
+          "given": "I have an Anthropic API key configured",
+          "when": "I launch claude in my project directory",
+          "then": "the framework uses Anthropic API as before (no regression)"
+        },
+        {
+          "id": "AC-002-03",
+          "given": "Ollama is not running and no Anthropic API key is set",
+          "when": "the framework attempts provider detection",
+          "then": "I see a clear error message suggesting how to configure a provider (not an unhandled exception)"
+        }
+      ],
+      "linked_requirements": ["REQ-006"]
+    },
+    {
+      "id": "US-003",
+      "epic": "Ollama Provider Enablement",
+      "persona": "Developer",
+      "goal": "manage my LLM provider configuration using the /provider command",
+      "benefit": "I can switch between providers, check status, and troubleshoot configuration",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-003-01",
+          "given": "I have iSDLC installed",
+          "when": "I type /provider in Claude Code",
+          "then": "the provider management interface loads (command is not disabled)"
+        },
+        {
+          "id": "AC-003-02",
+          "given": "I run /provider status",
+          "when": "Ollama is running locally",
+          "then": "I see Ollama listed as available with its running models"
+        }
+      ],
+      "linked_requirements": ["REQ-001"]
+    },
+    {
+      "id": "US-004",
+      "epic": "Ollama Provider Enablement",
+      "persona": "Developer",
+      "goal": "know which models are recommended for iSDLC and their requirements",
+      "benefit": "I choose models that will work well with the framework's multi-agent workflows",
+      "priority": "Must Have",
+      "acceptance_criteria": [
+        {
+          "id": "AC-004-01",
+          "given": "I look at provider-defaults.yaml",
+          "when": "I check the Ollama section",
+          "then": "I see current recommended models (qwen3-coder, glm-4.7, gpt-oss) with context window sizes and VRAM requirements"
+        },
+        {
+          "id": "AC-004-02",
+          "given": "I read the CLAUDE.md in my project",
+          "when": "I look for Ollama documentation",
+          "then": "I see quick-start instructions, recommended models, minimum context window (64k), and known limitations"
+        },
+        {
+          "id": "AC-004-03",
+          "given": "I read the Ollama documentation",
+          "when": "I check the limitations section",
+          "then": "I see documented risks: complex multi-agent workflows may have reduced quality, tool calling varies by model, structured output reliability varies"
+        }
+      ],
+      "linked_requirements": ["REQ-002", "REQ-003", "REQ-005"]
+    }
+  ]
+}

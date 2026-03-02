@@ -1,0 +1,66 @@
+{
+  "gate": "GATE-05",
+  "phase": "05-test-strategy",
+  "workflow": "fix",
+  "artifact_folder": "BUG-0006-batch-b-hook-bugs",
+  "validated_at": "2026-02-15T13:30:00Z",
+  "result": "PASS",
+  "checklist": {
+    "test_strategy_covers_all_types": {
+      "passed": true,
+      "details": "Unit tests (direct function calls), integration tests (subprocess), edge cases covered"
+    },
+    "test_cases_exist_for_all_requirements": {
+      "passed": true,
+      "details": "21/21 acceptance criteria have corresponding test cases"
+    },
+    "traceability_matrix_complete": {
+      "passed": true,
+      "details": "34 rows in traceability-matrix.csv covering all 21 ACs with test file, test name, priority, and TDD RED status"
+    },
+    "coverage_targets_defined": {
+      "passed": true,
+      "details": "100% AC coverage target met. All branches (null/undefined/truthy-non-object/valid) covered."
+    },
+    "test_data_strategy_documented": {
+      "passed": true,
+      "details": "Test data inline in test files. Strategy documented in test-strategy.md."
+    },
+    "critical_paths_identified": {
+      "passed": true,
+      "details": "4 critical paths: null context propagation, wrong phase prefix matching, typeof guard gap, missing structured output"
+    },
+    "tdd_red_verified": {
+      "passed": true,
+      "details": "21 tests fail against current (buggy) code, proving all 4 bugs exist. 8 tests pass (regression/edge cases)."
+    }
+  },
+  "constitutional_compliance": {
+    "article_II": "Tests designed before implementation (TDD RED confirmed)",
+    "article_VII": "Traceability matrix maps all 21 ACs to test cases (100%)",
+    "article_IX": "All required artifacts exist and validated",
+    "article_XI": "Integration tests cover dispatcher-to-hook interactions"
+  },
+  "artifacts": {
+    "test_strategy": "docs/requirements/BUG-0006-batch-b-hook-bugs/test-strategy.md",
+    "test_cases": "docs/requirements/BUG-0006-batch-b-hook-bugs/test-cases.md",
+    "traceability_matrix": "docs/requirements/BUG-0006-batch-b-hook-bugs/traceability-matrix.csv",
+    "test_files": [
+      "src/claude/hooks/tests/dispatcher-null-context.test.cjs",
+      "src/claude/hooks/tests/test-adequacy-phase-detection.test.cjs",
+      "src/claude/hooks/tests/menu-tracker-unsafe-init.test.cjs",
+      "src/claude/hooks/tests/dispatcher-timeout-hints.test.cjs"
+    ]
+  },
+  "test_summary": {
+    "total_tests": 29,
+    "tdd_red_failing": 21,
+    "tdd_red_passing": 8,
+    "by_bug": {
+      "0.6_dispatcher_null_context": { "file": "dispatcher-null-context.test.cjs", "tests": 14, "red": 4 },
+      "0.7_wrong_phase_detection": { "file": "test-adequacy-phase-detection.test.cjs", "tests": 16, "red": 7 },
+      "0.11_unsafe_nested_init": { "file": "menu-tracker-unsafe-init.test.cjs", "tests": 10, "red": 5 },
+      "0.12_timeout_advisory_only": { "file": "dispatcher-timeout-hints.test.cjs", "tests": 8, "red": 5 }
+    }
+  }
+}

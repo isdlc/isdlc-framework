@@ -1,0 +1,35 @@
+AC_ID,Bug,FR,Test_File,Test_Name,Priority,TDD_RED_Status
+AC-06a,0.6,FR-01,dispatcher-null-context.test.cjs,should provide {} for state when readState returns null,P0,FAIL
+AC-06b,0.6,FR-01,dispatcher-null-context.test.cjs,should provide {} for manifest when loadManifest returns null,P0,FAIL
+AC-06c,0.6,FR-01,dispatcher-null-context.test.cjs,should provide {} for requirements when loadIterationRequirements returns null,P0,FAIL
+AC-06d,0.6,FR-01,dispatcher-null-context.test.cjs,should provide {} for workflows when loadWorkflowDefinitions returns null,P0,FAIL
+AC-06e,0.6,FR-01,dispatcher-null-context.test.cjs,should return false for empty state object,P0,PASS
+AC-06f,0.6,FR-01,dispatcher-null-context.test.cjs,should allow skill-validator to process valid context without error,P1,PASS
+AC-07a,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return false for targetPhase 16-quality-loop,P0,FAIL
+AC-07a,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return false for any 16- prefixed phase,P0,FAIL
+AC-07a,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return false for targetPhase 14-upgrade-plan (old prefix),P0,FAIL
+AC-07b,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return true for targetPhase 15-upgrade-plan,P0,PASS
+AC-07b,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return true for targetPhase 15-upgrade-execute,P0,PASS
+AC-07b,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return true when agentName includes upgrade,P0,PASS
+AC-07c,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return false when current phase is 16-quality-loop,P0,FAIL
+AC-07c,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return false when current phase is 14-upgrade-plan,P0,FAIL
+AC-07d,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return true when current phase is 15-upgrade-plan,P0,FAIL
+AC-07d,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should return true when current phase is 15-upgrade-execute,P0,FAIL
+AC-07e,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should allow quality loop delegation when called directly,P0,PASS
+AC-07f,0.7,FR-02,test-adequacy-phase-detection.test.cjs,should allow when feature workflow is in quality loop phase with no tests,P0,PASS
+AC-11a,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should not throw when iteration_requirements is true,P0,FAIL
+AC-11a,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should not throw when iteration_requirements is a number,P0,FAIL
+AC-11a,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should not throw when iteration_requirements is a string,P0,FAIL
+AC-11b,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should initialize null iteration_requirements to {},P0,PASS
+AC-11b,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should initialize undefined iteration_requirements to {},P0,PASS
+AC-11c,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should preserve existing empty object,P1,PASS
+AC-11c,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should preserve existing object with data,P1,PASS
+AC-11d,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should initialize interactive_elicitation when iteration_requirements is reset from corrupted value,P0,FAIL
+AC-11d,0.11,FR-03,menu-tracker-unsafe-init.test.cjs,should not double-initialize interactive_elicitation for valid state,P1,PASS
+AC-12a,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should emit DEGRADATION_HINT JSON in stderr when phase timeout exceeded,P0,FAIL
+AC-12b,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should include type phase elapsed limit and actions in hint,P0,FAIL
+AC-12c,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should include reduce_debate_rounds in actions,P0,FAIL
+AC-12c,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should include skip_optional_steps in actions,P0,FAIL
+AC-12d,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should exit 0 even when timeout check environment is unusual,P1,PASS
+AC-12d,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should not block when timeout is not exceeded,P1,PASS
+AC-12e,0.12,FR-04,dispatcher-timeout-hints.test.cjs,should include TIMEOUT WARNING text alongside DEGRADATION_HINT,P0,FAIL

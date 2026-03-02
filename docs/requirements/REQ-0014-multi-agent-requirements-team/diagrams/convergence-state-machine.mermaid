@@ -1,0 +1,42 @@
+%% Debate Loop State Machine
+%% Shows all possible states and transitions for the debate loop
+%% Covers: FR-004, NFR-004 (convergence guarantee)
+
+stateDiagram-v2
+    [*] --> ResolvingDebateMode: Phase 01 starts
+
+    ResolvingDebateMode --> SingleAgentMode: debate_mode = false
+    ResolvingDebateMode --> Round1_Creator: debate_mode = true
+
+    SingleAgentMode --> PhaseComplete: Analyst finishes (current behavior)
+
+    Round1_Creator --> Round1_Critic: Creator produces artifacts
+    Round1_Critic --> Converged: blocking == 0
+    Round1_Critic --> Round1_Refiner: blocking > 0
+
+    Round1_Refiner --> Round2_Critic: Refiner improves artifacts
+    Round2_Critic --> Converged: blocking == 0
+    Round2_Critic --> Round2_Refiner: blocking > 0, round < 3
+
+    Round2_Refiner --> Round3_Critic: Refiner improves artifacts
+    Round3_Critic --> Converged: blocking == 0
+    Round3_Critic --> Unconverged: blocking > 0, round == 3 (max)
+
+    Converged --> SaveFinalArtifacts: Save + debate-summary.md
+    Unconverged --> SaveBestEffort: Save latest + unconverged warning
+
+    SaveFinalArtifacts --> PhaseComplete
+    SaveBestEffort --> PhaseComplete
+
+    PhaseComplete --> [*]: Proceed to GATE-01
+
+    note right of Converged
+        Zero BLOCKING findings.
+        WARNING findings allowed.
+    end note
+
+    note right of Unconverged
+        Max 3 rounds reached.
+        Save best-effort artifacts.
+        Append warning to spec.
+    end note

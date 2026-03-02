@@ -1,0 +1,75 @@
+{
+  "gate": "GATE-07",
+  "phase": "08-code-review",
+  "artifact_folder": "REQ-0034-free-text-intake-reverse-lookup-github-issues",
+  "workflow_type": "feature",
+  "sizing": "light",
+  "validated_at": "2026-02-22T10:00:00Z",
+  "validated_by": "qa-engineer",
+  "scope_mode": "FULL_SCOPE",
+  "verdict": "PASS",
+  "checks": {
+    "build_integrity": {
+      "status": "pass",
+      "details": "node -c passes; 306/306 tests pass in three-verb-utils suite"
+    },
+    "code_review_completed": {
+      "status": "pass",
+      "files_reviewed": 4,
+      "details": "Full-scope review of three-verb-utils.cjs, test file, isdlc.md, implementation-notes.md"
+    },
+    "no_critical_issues": {
+      "status": "pass",
+      "critical": 0,
+      "high": 0,
+      "low": 3,
+      "info": 1
+    },
+    "static_analysis": {
+      "status": "pass",
+      "details": "No syntax errors; CJS conventions followed; JSDoc complete"
+    },
+    "code_coverage": {
+      "status": "pass",
+      "line": 96.83,
+      "branch": 93.01,
+      "function": 97.67
+    },
+    "coding_standards": {
+      "status": "pass",
+      "details": "Error-safe sentinel pattern, consistent naming, section headers"
+    },
+    "performance": {
+      "status": "pass",
+      "details": "All timeouts within 5s budget; no blocking issues"
+    },
+    "security_review": {
+      "status": "pass",
+      "details": "Shell escaping reviewed; 3 low defense-in-depth findings documented"
+    },
+    "qa_sign_off": {
+      "status": "pass",
+      "sign_off_doc": "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/qa-sign-off.md"
+    }
+  },
+  "constitutional_validation": {
+    "status": "compliant",
+    "iterations_used": 1,
+    "completed": true,
+    "articles_checked": ["II", "V", "VI", "VII", "VIII", "IX", "XII"],
+    "violations_found": []
+  },
+  "artifacts": [
+    "docs/requirements/REQ-0034-free-text-intake-reverse-lookup-github-issues/code-review-report.md",
+    "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/code-review-report.md",
+    "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/quality-metrics.md",
+    "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/static-analysis-report.md",
+    "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/technical-debt.md",
+    "docs/quality/REQ-0034-free-text-intake-reverse-lookup-github-issues/qa-sign-off.md",
+    "docs/.validations/gate-08-code-review-REQ-0034.json"
+  ],
+  "phase_timing": {
+    "debate_rounds_used": 0,
+    "fan_out_chunks": 0
+  }
+}

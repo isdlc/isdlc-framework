@@ -1,0 +1,38 @@
+{
+  "bug_id": "BUG-0002",
+  "title": "Fix Plan Tracking Display",
+  "user_stories": [
+    {
+      "id": "US-01",
+      "role": "developer using iSDLC",
+      "action": "see sequential task numbers [1], [2], [3] during workflow execution",
+      "benefit": "I can quickly count how many phases are in the workflow and which number I'm on",
+      "acceptance_criteria": ["AC-01", "AC-05", "AC-06"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-02",
+      "role": "developer using iSDLC",
+      "action": "see completed tasks visually struck through in the task list",
+      "benefit": "I can instantly distinguish completed phases from pending/active ones without reading status labels",
+      "acceptance_criteria": ["AC-02", "AC-03", "AC-07"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-03",
+      "role": "developer using iSDLC",
+      "action": "see a clean, non-duplicate task display as workflow progresses",
+      "benefit": "I am not confused by stale or duplicate task entries on screen",
+      "acceptance_criteria": ["AC-07"],
+      "priority": "P1"
+    },
+    {
+      "id": "US-04",
+      "role": "developer using iSDLC",
+      "action": "see which phase is currently active with a spinner indicator",
+      "benefit": "I know the workflow is actively working and which phase it is on",
+      "acceptance_criteria": ["AC-04"],
+      "priority": "P2"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+%% C4 Level 2 - Container Diagram: Backlog Management Integration
+%% Shows internal components of the iSDLC Framework involved in this feature
+
+graph TB
+    subgraph "Developer Machine"
+        developer["Developer"]
+
+        subgraph "Claude Code Runtime"
+            claude_md["CLAUDE.md<br/>(Intent Detection)"]
+            mcp_client["MCP Client<br/>(Claude Code built-in)"]
+        end
+
+        subgraph "iSDLC Framework"
+            template["CLAUDE.md.template<br/>(Backlog Management Section)<br/>FR-007, FR-008, FR-009"]
+            orchestrator["00-sdlc-orchestrator.md<br/>(Backlog Picker + Finalize)<br/>FR-001-006"]
+            analyst["01-requirements-analyst.md<br/>(Confluence Context Injection)<br/>FR-005"]
+            isdlc_cmd["isdlc.md<br/>(Command Spec)<br/>FR-005, FR-006"]
+            halt_hook["menu-halt-enforcer.cjs<br/>(Regex Update)<br/>FR-002"]
+        end
+
+        subgraph "Data Files"
+            backlog["BACKLOG.md<br/>(Curated Backlog)"]
+            state["state.json<br/>(Workflow State)"]
+        end
+    end
+
+    subgraph "External Services"
+        mcp_server["Atlassian MCP Server<br/>(SSE Transport)"]
+        jira["Jira Cloud"]
+        confluence["Confluence Cloud"]
+    end
+
+    developer -->|"Natural language"| claude_md
+    claude_md -->|"Intent detection"| template
+    template -->|"Backlog operations"| orchestrator
+    orchestrator -->|"Read/Write items"| backlog
+    orchestrator -->|"Start workflow"| analyst
+    orchestrator -->|"jira_ticket_id, confluence_urls"| state
+    analyst -->|"Read confluence_urls"| state
+    orchestrator -->|"Finalize: sync status"| mcp_client
+    analyst -->|"Pull Confluence content"| mcp_client
+    mcp_client -->|"MCP protocol"| mcp_server
+    mcp_server -->|"REST API"| jira
+    mcp_server -->|"REST API"| confluence
+    halt_hook -.->|"Validates menu format"| orchestrator
+
+    style template fill:#2196F3,color:#fff
+    style orchestrator fill:#2196F3,color:#fff
+    style analyst fill:#2196F3,color:#fff
+    style backlog fill:#4CAF50,color:#fff
+    style state fill:#4CAF50,color:#fff
+    style mcp_server fill:#FF9800,color:#fff
+    style jira fill:#757575,color:#fff
+    style confluence fill:#757575,color:#fff

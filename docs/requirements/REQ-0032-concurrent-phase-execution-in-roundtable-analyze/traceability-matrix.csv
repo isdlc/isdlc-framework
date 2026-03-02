@@ -1,0 +1,18 @@
+FR_ID,Title,AC_Count,Priority,Confidence,User_Stories
+FR-001,Unified Conversation Model,6,Must Have,High,"US-001,US-006"
+FR-002,Silent Codebase Scan,4,Must Have,High,US-002
+FR-003,Progressive Artifact Production,4,Must Have,High,"US-003,US-008"
+FR-004,Information Threshold Engine,4,Must Have,Medium,US-003
+FR-005,Invisible Coverage Tracker,4,Must Have,Medium,US-011
+FR-006,Dual Execution Modes,5,Should Have,High,US-010
+FR-007,Agent Teams Orchestration,6,Could Have,Medium,US-010
+FR-008,Persona File Split,6,Must Have,High,
+FR-009,Topic-Based Step File Restructuring,6,Must Have,High,US-011
+FR-010,Organic Persona Interaction,5,Must Have,High,US-004
+FR-011,Confidence Indicators,5,Should Have,High,"US-005,US-007"
+FR-012,Artifact Cross-Check Before Finalization,4,Should Have,High,US-009
+FR-013,Conversation Completion Model,4,Should Have,High,"US-008,US-012"
+FR-014,Single Dispatch from isdlc.md,4,Must Have,High,
+FR-015,Adaptive Artifact Depth by User Type,4,Should Have,Medium,"US-005,US-006"
+FR-016,Elaboration Mode Removal,3,Must Have,High,US-001
+FR-017,Menu System Removal,3,Must Have,High,US-001

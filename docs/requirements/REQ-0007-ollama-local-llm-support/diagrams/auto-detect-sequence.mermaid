@@ -1,0 +1,48 @@
+%% Auto-Detection Sequence Diagram (REQ-006)
+%% Shows the tiered detection from the user's perspective
+
+sequenceDiagram
+    participant U as Developer
+    participant CC as Claude Code
+    participant MPR as model-provider-router.cjs
+    participant PU as provider-utils.cjs
+    participant OLL as Ollama (localhost:11434)
+
+    U->>CC: Runs "claude" in project
+    CC->>CC: Loads CLAUDE.md
+    U->>CC: Invokes a tool (e.g., Task)
+
+    CC->>MPR: PreToolUse (stdin JSON)
+
+    MPR->>MPR: Check tool_name === 'Task'
+    MPR->>PU: hasProvidersConfig()
+    PU-->>MPR: true (.isdlc/providers.yaml exists)
+
+    MPR->>PU: loadProvidersConfig()
+    PU-->>MPR: config {defaults.provider: "ollama", active_mode: "local"}
+
+    MPR->>PU: selectProvider(config, state, context)
+
+    Note over PU: Tier 1: Check env vars
+    PU->>PU: ANTHROPIC_BASE_URL not set
+
+    Note over PU: Tier 2: Check config file
+    PU->>PU: defaults.provider = "ollama"
+
+    Note over PU: Mode = "local" -> provider = "ollama"
+    PU-->>MPR: {provider: "ollama", model: "qwen-coder", source: "mode_local"}
+
+    MPR->>PU: selectWithFallback(config, selection)
+
+    Note over PU: Tier 3: Health probe (only for Ollama)
+    PU->>OLL: GET /api/tags
+    OLL-->>PU: 200 OK (models list)
+    PU-->>MPR: {healthy: true, latency_ms: 45}
+
+    MPR->>PU: getEnvironmentOverrides(config, selection)
+    PU-->>MPR: {ANTHROPIC_BASE_URL: "http://localhost:11434", ANTHROPIC_API_KEY: "", ANTHROPIC_AUTH_TOKEN: "ollama"}
+
+    MPR->>CC: stdout JSON (env overrides)
+    CC->>OLL: LLM request (via Anthropic Messages API)
+    OLL-->>CC: LLM response
+    CC-->>U: Tool result

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "US-001",
+    "title": "Fast analyze for GitHub issues",
+    "story": "As a framework user, I want `/isdlc analyze #N` to show Maya's first message within seconds, so that the analyze flow feels conversational rather than broken.",
+    "acceptance_criteria": [
+      "Maya's first message appears in approximately 11 seconds instead of 90 seconds",
+      "The conversation quality is identical to the current roundtable experience",
+      "All analysis artifacts are produced with the same content and structure as today"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-005", "FR-006", "FR-007"]
+  },
+  {
+    "id": "US-002",
+    "title": "No confirmation prompt for external refs",
+    "story": "As a framework user, I want `/isdlc analyze #42` to automatically add the issue to the backlog without asking me to confirm, so that I don't waste time on an obvious intent.",
+    "acceptance_criteria": [
+      "No 'Add to backlog?' prompt appears for #N inputs",
+      "No 'Add to backlog?' prompt appears for PROJECT-N inputs",
+      "Non-external-ref inputs still prompt for confirmation when no match is found"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "title": "No duplicate issue fetch",
+    "story": "As a framework user, I want the system to fetch my GitHub/Jira issue only once, so that the pre-dispatch pipeline doesn't waste time on redundant network calls.",
+    "acceptance_criteria": [
+      "gh issue view (or Jira equivalent) is called exactly once per analyze invocation",
+      "The add handler receives pre-fetched data instead of re-fetching",
+      "The add handler still fetches independently when invoked via /isdlc add"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003", "FR-004"]
+  },
+  {
+    "id": "US-004",
+    "title": "Alex contributes codebase evidence from exchange 2",
+    "story": "As a framework user, I want Alex to contribute codebase-grounded observations starting from the second exchange, so that the conversation has technical depth without delaying Maya's opening.",
+    "acceptance_criteria": [
+      "Maya's first message does not wait for codebase scan completion",
+      "Alex's first contribution includes evidence from the codebase scan",
+      "Alex contributes no later than exchange 2 (assuming scan completes during exchange 1 processing)"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-005",
+    "title": "Backward-compatible roundtable dispatch",
+    "story": "As a framework maintainer, I want the roundtable-analyst to fall back to reading files when the dispatch prompt does not include inlined context, so that existing invocations and tests continue to work.",
+    "acceptance_criteria": [
+      "Dispatch prompts without PERSONA_CONTEXT trigger fallback file reads",
+      "Dispatch prompts without TOPIC_CONTEXT trigger fallback file reads",
+      "The fallback path produces identical behavior to the current implementation"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-006"]
+  }
+]

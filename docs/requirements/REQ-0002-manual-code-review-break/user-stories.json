@@ -1,0 +1,330 @@
+{
+  "feature_id": "REQ-0002",
+  "feature_name": "Manual Code Review Break",
+  "created_at": "2026-02-08T13:20:00Z",
+  "user_stories": [
+    {
+      "id": "US-001",
+      "title": "Review AI-generated changes before merge",
+      "story": "As a team developer, I want the workflow to pause after AI code review so that I can review all changes before they are merged to main.",
+      "priority": "P0",
+      "acceptance_criteria": [
+        {
+          "id": "AC-01.1",
+          "description": "When code_review.enabled == true and GATE-08 passes, workflow enters paused_for_review state",
+          "testable": true
+        },
+        {
+          "id": "AC-01.2",
+          "description": "When code_review.enabled == false, workflow proceeds to merge without pause",
+          "testable": true
+        },
+        {
+          "id": "AC-01.3",
+          "description": "The active_workflow status shows awaiting_human_review",
+          "testable": true
+        },
+        {
+          "id": "AC-01.4",
+          "description": "Workflow does not advance or merge until user explicitly approves or bypasses",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Pull Request creation for git projects",
+      "story": "As a developer using git, I want a Pull Request to be created automatically when the review pause activates so that I can review changes using my standard PR workflow.",
+      "priority": "P0",
+      "acceptance_criteria": [
+        {
+          "id": "AC-02.1",
+          "description": "If git repo and gh CLI available, create PR via gh pr create",
+          "testable": true
+        },
+        {
+          "id": "AC-02.2",
+          "description": "PR title format: [REQ-NNNN] Feature description or [BUG-NNNN] Fix description",
+          "testable": true
+        },
+        {
+          "id": "AC-02.3",
+          "description": "PR body includes the review summary content",
+          "testable": true
+        },
+        {
+          "id": "AC-02.4",
+          "description": "If gh not available, fall back to document-only review with manual PR instruction",
+          "testable": true
+        },
+        {
+          "id": "AC-02.5",
+          "description": "PR URL recorded in active_workflow.review.pr_url in state.json",
+          "testable": true
+        },
+        {
+          "id": "AC-02.6",
+          "description": "If gh available but PR creation fails (network, permissions), fall back to document-only review, log error, instruct user to create PR manually",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Review request for non-git projects",
+      "story": "As a developer not using git, I want a review request document generated so that I can still review AI changes before they are applied.",
+      "priority": "P1",
+      "acceptance_criteria": [
+        {
+          "id": "AC-03.1",
+          "description": "review-request.md created in docs/requirements/{artifact_folder}/",
+          "testable": true
+        },
+        {
+          "id": "AC-03.2",
+          "description": "Document contains all PR-equivalent information",
+          "testable": true
+        },
+        {
+          "id": "AC-03.3",
+          "description": "Document content presented to user in terminal",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "See all artifacts and changed files in review",
+      "story": "As a reviewer, I want the review request to include links to all generated documentation and all changed files so that I have full context for my review.",
+      "priority": "P0",
+      "acceptance_criteria": [
+        {
+          "id": "AC-04.1",
+          "description": "All artifacts from phase status in state.json listed with relative paths",
+          "testable": true
+        },
+        {
+          "id": "AC-04.2",
+          "description": "git diff main...HEAD --name-only used to list changed files for git projects",
+          "testable": true
+        },
+        {
+          "id": "AC-04.3",
+          "description": "For non-git projects, artifact list from state.json used",
+          "testable": true
+        },
+        {
+          "id": "AC-04.4",
+          "description": "Files grouped by category: Documentation, Source Code, Tests, Configuration",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Review summary document",
+      "story": "As a reviewer, I want a comprehensive review summary document saved so that I have a persistent record of what was reviewed and the outcome.",
+      "priority": "P0",
+      "acceptance_criteria": [
+        {
+          "id": "AC-05.1",
+          "description": "File saved at docs/requirements/{artifact_folder}/review-summary.md",
+          "testable": true
+        },
+        {
+          "id": "AC-05.2",
+          "description": "Contains: feature description, workflow type, phases, gates, artifacts, files, tests, constitutional compliance",
+          "testable": true
+        },
+        {
+          "id": "AC-05.3",
+          "description": "Document displayed to user when review pause activates",
+          "testable": true
+        },
+        {
+          "id": "AC-05.4",
+          "description": "Bypass reason appended if review is bypassed",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Bypass review with mandatory comment",
+      "story": "As a developer, I want the option to bypass the code review with a mandatory explanation so that I can proceed in urgent situations while maintaining an audit trail.",
+      "priority": "P0",
+      "acceptance_criteria": [
+        {
+          "id": "AC-06.1",
+          "description": "User presented with [A] Approve, [B] Bypass, [R] Reject options",
+          "testable": true
+        },
+        {
+          "id": "AC-06.2",
+          "description": "Bypass requires non-empty comment (minimum 10 characters)",
+          "testable": true
+        },
+        {
+          "id": "AC-06.3",
+          "description": "Empty or too-short comments rejected with re-entry prompt",
+          "testable": true
+        },
+        {
+          "id": "AC-06.4",
+          "description": "Bypass reason recorded in active_workflow.review.bypass_reason",
+          "testable": true
+        },
+        {
+          "id": "AC-06.5",
+          "description": "Bypass reason appended to review summary document",
+          "testable": true
+        },
+        {
+          "id": "AC-06.6",
+          "description": "Bypass event logged to state.json history array",
+          "testable": true
+        },
+        {
+          "id": "AC-06.7",
+          "description": "If [R] Reject selected, workflow cancelled with reason 'rejected at human review'. Branch preserved (not deleted). Equivalent to /sdlc cancel.",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Automatic activation for teams",
+      "story": "As a team lead, I want the code review feature to automatically activate when the team has more than one developer so that no AI changes bypass human review.",
+      "priority": "P1",
+      "acceptance_criteria": [
+        {
+          "id": "AC-07.1",
+          "description": "state.json contains code_review section: { enabled: false, team_size: 1 }",
+          "testable": true
+        },
+        {
+          "id": "AC-07.2",
+          "description": "When team_size > 1, enabled automatically set to true by installer",
+          "testable": true
+        },
+        {
+          "id": "AC-07.3",
+          "description": "When team_size == 1, enabled defaults to false",
+          "testable": true
+        },
+        {
+          "id": "AC-07.4",
+          "description": "enabled field can be manually overridden regardless of team size",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Team size captured during installation",
+      "story": "As a developer installing iSDLC, I want to be asked about team size so that the code review feature is configured correctly from the start.",
+      "priority": "P1",
+      "acceptance_criteria": [
+        {
+          "id": "AC-08.1",
+          "description": "Installer asks: How many developers will work on this project? (1)",
+          "testable": true
+        },
+        {
+          "id": "AC-08.2",
+          "description": "Default value is 1 (solo developer)",
+          "testable": true
+        },
+        {
+          "id": "AC-08.3",
+          "description": "Response stored in state.json under code_review.team_size",
+          "testable": true
+        },
+        {
+          "id": "AC-08.4",
+          "description": "If team_size > 1, code_review.enabled set to true and user informed",
+          "testable": true
+        },
+        {
+          "id": "AC-08.5",
+          "description": "Non-numeric input defaults to 1",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Configuration changeable after installation",
+      "story": "As a developer whose team has grown, I want to change the team size and enable code review without reinstalling so that the feature adapts to team changes.",
+      "priority": "P1",
+      "acceptance_criteria": [
+        {
+          "id": "AC-09.1",
+          "description": "code_review section in state.json is the single source of truth",
+          "testable": true
+        },
+        {
+          "id": "AC-09.2",
+          "description": "User can modify code_review.enabled and team_size at any time",
+          "testable": true
+        },
+        {
+          "id": "AC-09.3",
+          "description": "Changes take effect on next workflow run (no restart)",
+          "testable": true
+        },
+        {
+          "id": "AC-09.4",
+          "description": "isdlc update preserves existing code_review configuration",
+          "testable": true
+        }
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Reminder when code review is bypassed",
+      "story": "As a developer on a growing team, I want to see a reminder on every commit that code review is bypassed so that I am prompted to enable it when the team grows.",
+      "priority": "P1",
+      "acceptance_criteria": [
+        {
+          "id": "AC-10.1",
+          "description": "Hook fires on commit-related events",
+          "testable": true
+        },
+        {
+          "id": "AC-10.2",
+          "description": "If enabled == false AND team_size > 1, display warning message",
+          "testable": true
+        },
+        {
+          "id": "AC-10.3",
+          "description": "If enabled == false AND team_size == 1, no message displayed",
+          "testable": true
+        },
+        {
+          "id": "AC-10.4",
+          "description": "Message suggests enabling code review if team has grown",
+          "testable": true
+        },
+        {
+          "id": "AC-10.5",
+          "description": "Hook does not block the commit (fail-open)",
+          "testable": true
+        },
+        {
+          "id": "AC-10.6",
+          "description": "Hook completes in < 100ms",
+          "testable": true
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_stories": 10,
+    "total_acceptance_criteria": 43,
+    "priority_breakdown": {
+      "P0": 6,
+      "P1": 4
+    }
+  }
+}

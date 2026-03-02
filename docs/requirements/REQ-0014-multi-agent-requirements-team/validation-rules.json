@@ -1,0 +1,246 @@
+{
+  "version": "1.0.0",
+  "feature": "REQ-0014-multi-agent-requirements-team",
+  "description": "Validation rules for the multi-agent requirements debate loop",
+  "rules": {
+    "debate_mode_resolution": {
+      "VR-001": {
+        "name": "Flag precedence: --no-debate wins over --debate",
+        "type": "precedence",
+        "input": { "no_debate": true, "debate": true },
+        "expected_output": false,
+        "rationale": "Conservative default per ADR-0003 and Article X"
+      },
+      "VR-002": {
+        "name": "Flag precedence: --debate overrides -light",
+        "type": "precedence",
+        "input": { "debate": true, "light": true },
+        "expected_output": true,
+        "rationale": "--debate is explicit user intent to enable debate"
+      },
+      "VR-003": {
+        "name": "Light flag implies no debate",
+        "type": "precedence",
+        "input": { "light": true },
+        "expected_output": false,
+        "rationale": "-light = minimal process, debate is additional process"
+      },
+      "VR-004": {
+        "name": "Standard sizing defaults to debate ON",
+        "type": "default",
+        "input": { "sizing": "standard" },
+        "expected_output": true,
+        "rationale": "Debate improves standard-sized feature requirements"
+      },
+      "VR-005": {
+        "name": "Epic sizing defaults to debate ON",
+        "type": "default",
+        "input": { "sizing": "epic" },
+        "expected_output": true,
+        "rationale": "Epic features benefit most from multi-agent review"
+      },
+      "VR-006": {
+        "name": "No flags, no sizing defaults to debate ON",
+        "type": "default",
+        "input": {},
+        "expected_output": true,
+        "rationale": "Debate is the new default for feature workflows"
+      }
+    },
+    "debate_state_schema": {
+      "VR-010": {
+        "name": "debate_state.round must be integer 0-3",
+        "type": "range",
+        "field": "active_workflow.debate_state.round",
+        "min": 0,
+        "max": 3,
+        "required": true,
+        "rationale": "Max 3 rounds per ADR-0002"
+      },
+      "VR-011": {
+        "name": "debate_state.max_rounds must be 3",
+        "type": "exact",
+        "field": "active_workflow.debate_state.max_rounds",
+        "value": 3,
+        "required": true,
+        "rationale": "Fixed at 3 for Phase 01 per ADR-0002"
+      },
+      "VR-012": {
+        "name": "debate_state.converged must be boolean",
+        "type": "type",
+        "field": "active_workflow.debate_state.converged",
+        "expected_type": "boolean",
+        "required": true,
+        "rationale": "Binary convergence decision"
+      },
+      "VR-013": {
+        "name": "debate_state.blocking_findings must be integer or null",
+        "type": "type",
+        "field": "active_workflow.debate_state.blocking_findings",
+        "expected_type": ["integer", "null"],
+        "required": true,
+        "rationale": "null before first Critic review, integer after"
+      },
+      "VR-014": {
+        "name": "rounds_history entries must have required fields",
+        "type": "schema",
+        "field": "active_workflow.debate_state.rounds_history[]",
+        "required_fields": ["round", "blocking", "warnings", "action", "timestamp"],
+        "rationale": "Complete audit trail for debate-summary.md generation"
+      },
+      "VR-015": {
+        "name": "rounds_history.action must be valid enum",
+        "type": "enum",
+        "field": "active_workflow.debate_state.rounds_history[].action",
+        "allowed_values": ["refine", "converge", "max-rounds-reached"],
+        "rationale": "Only three possible outcomes per round"
+      }
+    },
+    "critique_report_format": {
+      "VR-020": {
+        "name": "Critique report must contain Summary section",
+        "type": "content",
+        "file_pattern": "round-{N}-critique.md",
+        "required_content": "## Summary",
+        "rationale": "Orchestrator parses Summary for convergence check"
+      },
+      "VR-021": {
+        "name": "Summary must contain BLOCKING count row",
+        "type": "content",
+        "file_pattern": "round-{N}-critique.md",
+        "required_pattern": "| BLOCKING | \\d+ |",
+        "rationale": "Convergence is determined by BLOCKING count == 0"
+      },
+      "VR-022": {
+        "name": "BLOCKING findings must have B-NNN prefix",
+        "type": "format",
+        "pattern": "^### B-\\d{3}:",
+        "rationale": "Consistent ID format for cross-referencing"
+      },
+      "VR-023": {
+        "name": "WARNING findings must have W-NNN prefix",
+        "type": "format",
+        "pattern": "^### W-\\d{3}:",
+        "rationale": "Consistent ID format for cross-referencing"
+      },
+      "VR-024": {
+        "name": "Each finding must have Target field",
+        "type": "content",
+        "required_content": "**Target:**",
+        "rationale": "Findings must reference specific requirement IDs"
+      },
+      "VR-025": {
+        "name": "Each finding must have Category field",
+        "type": "content",
+        "required_content": "**Category:**",
+        "rationale": "Category enables systematic tracking of finding types"
+      },
+      "VR-026": {
+        "name": "Each finding must have Recommendation field",
+        "type": "content",
+        "required_content": "**Recommendation:**",
+        "rationale": "Concrete fix guidance for Refiner"
+      }
+    },
+    "refiner_output": {
+      "VR-030": {
+        "name": "Refiner must append Changes section to requirements-spec.md",
+        "type": "content",
+        "file": "requirements-spec.md",
+        "required_content": "## Changes in Round",
+        "rationale": "Audit trail for debate-summary.md"
+      },
+      "VR-031": {
+        "name": "All ACs in Refiner output must use Given/When/Then format",
+        "type": "content",
+        "file": "requirements-spec.md",
+        "required_pattern": "Given .* When .* Then",
+        "rationale": "MC-01 enforcement: testable acceptance criteria"
+      },
+      "VR-032": {
+        "name": "All NFRs in Refiner output must have quantified metrics",
+        "type": "content",
+        "file": "nfr-matrix.md",
+        "prohibited_patterns": ["fast$", "scalable$", "reliable$", "responsive$", "performant$"],
+        "rationale": "MC-02 enforcement: measurable non-functional requirements"
+      },
+      "VR-033": {
+        "name": "Refiner must not introduce new requirements",
+        "type": "constraint",
+        "description": "FR count in Refiner output must equal FR count in input (may add ACs to existing FRs)",
+        "rationale": "Refiner fixes findings, does not expand scope"
+      }
+    },
+    "artifact_naming": {
+      "VR-040": {
+        "name": "Critique files must follow round-N-critique.md pattern",
+        "type": "format",
+        "pattern": "^round-[1-3]-critique\\.md$",
+        "rationale": "Consistent naming for round identification"
+      },
+      "VR-041": {
+        "name": "debate-summary.md must exist after debate loop completes",
+        "type": "existence",
+        "file": "debate-summary.md",
+        "condition": "active_workflow.debate_mode == true AND debate loop completed",
+        "rationale": "FR-006: audit trail of debate outcomes"
+      }
+    },
+    "debate_context_block": {
+      "VR-050": {
+        "name": "DEBATE_CONTEXT must include mode field",
+        "type": "required_field",
+        "field": "DEBATE_CONTEXT.mode",
+        "allowed_values": ["creator", "critic", "refiner"],
+        "rationale": "Agents must know their role"
+      },
+      "VR-051": {
+        "name": "DEBATE_CONTEXT must include round field",
+        "type": "required_field",
+        "field": "DEBATE_CONTEXT.round",
+        "allowed_values": [1, 2, 3],
+        "rationale": "Round tracking for artifact labeling and audit"
+      },
+      "VR-052": {
+        "name": "Refiner DEBATE_CONTEXT must include prior_critique path",
+        "type": "conditional_required",
+        "condition": "DEBATE_CONTEXT.mode == 'refiner'",
+        "field": "DEBATE_CONTEXT.prior_critique",
+        "rationale": "Refiner needs critique report to know what to fix"
+      },
+      "VR-053": {
+        "name": "Critic DEBATE_CONTEXT must include all artifact paths",
+        "type": "conditional_required",
+        "condition": "DEBATE_CONTEXT.mode == 'critic'",
+        "fields": [
+          "DEBATE_CONTEXT.artifacts.requirements_spec",
+          "DEBATE_CONTEXT.artifacts.user_stories",
+          "DEBATE_CONTEXT.artifacts.nfr_matrix",
+          "DEBATE_CONTEXT.artifacts.traceability_matrix"
+        ],
+        "rationale": "Critic must review all four artifacts"
+      }
+    },
+    "backward_compatibility": {
+      "VR-060": {
+        "name": "Absent DEBATE_CONTEXT = single-agent mode",
+        "type": "absence",
+        "description": "When DEBATE_CONTEXT is not present in Task prompt, agent must behave exactly as before this feature",
+        "rationale": "NFR-002: backward compatibility"
+      },
+      "VR-061": {
+        "name": "Absent debate_mode in state.json = debate OFF",
+        "type": "absence",
+        "field": "active_workflow.debate_mode",
+        "default_value": false,
+        "rationale": "NFR-002: backward compatibility with existing workflows"
+      },
+      "VR-062": {
+        "name": "Single-agent mode must produce identical artifacts",
+        "type": "regression",
+        "description": "When debate is OFF, Phase 01 output must be identical to pre-feature behavior",
+        "rationale": "NFR-003: single-agent mode parity"
+      }
+    }
+  }
+}

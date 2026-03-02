@@ -1,0 +1,82 @@
+[
+  {
+    "id": "US-001",
+    "role": "iSDLC Developer",
+    "want": "start a second workflow without cancelling the first",
+    "so_that": "I can work on multiple tasks (bugs, features) concurrently without losing progress",
+    "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-008-02"],
+    "traces": ["FR-001", "FR-008"]
+  },
+  {
+    "id": "US-002",
+    "role": "iSDLC Developer",
+    "want": "each workflow's state stored in its own file",
+    "so_that": "workflows cannot interfere with each other's phase progress, escalations, or skill logs",
+    "acceptance_criteria": ["AC-001-02", "AC-001-03", "AC-001-04"],
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-003",
+    "role": "iSDLC Developer",
+    "want": "see a list of all active workflows when I start a session",
+    "so_that": "I can pick which workflow to resume without memorizing branch names or workflow IDs",
+    "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04"],
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-004",
+    "role": "iSDLC Developer",
+    "want": "hooks to automatically scope to the correct workflow based on my git branch",
+    "so_that": "I don't have to manually configure which workflow is active after switching branches",
+    "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-004-01", "AC-004-02"],
+    "traces": ["FR-003", "FR-004"]
+  },
+  {
+    "id": "US-005",
+    "role": "iSDLC Developer",
+    "want": "my existing workflow state automatically migrated when I upgrade the framework",
+    "so_that": "I don't lose my in-progress workflow when the state structure changes",
+    "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03", "AC-007-04"],
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-006",
+    "role": "iSDLC Framework Maintainer",
+    "want": "parallel workflows to work with git worktrees on separate laptops",
+    "so_that": "I can dogfood the framework across 2 machines working on different backlog items simultaneously",
+    "acceptance_criteria": ["AC-001-02", "AC-003-01", "AC-004-01"],
+    "traces": ["FR-001", "FR-003", "FR-004"]
+  },
+  {
+    "id": "US-007",
+    "role": "Hook Dispatcher (automated)",
+    "want": "to resolve the active workflow ID from the current git branch in a single subprocess call",
+    "so_that": "all downstream hooks receive consistent, correctly-scoped state without repeated I/O",
+    "acceptance_criteria": ["AC-003-03", "AC-003-04", "AC-004-01", "AC-004-04"],
+    "traces": ["FR-003", "FR-004"]
+  },
+  {
+    "id": "US-008",
+    "role": "iSDLC Developer",
+    "want": "project-level state (counters, constitution, workflow_history) to remain in the root state.json",
+    "so_that": "project-wide data is accessible regardless of which workflow is active",
+    "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03"],
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-009",
+    "role": "iSDLC Developer (monorepo)",
+    "want": "per-workflow state to work within monorepo per-project directories",
+    "so_that": "each project in my monorepo can have its own independent parallel workflows",
+    "acceptance_criteria": ["AC-009-01", "AC-009-02"],
+    "traces": ["FR-009"]
+  },
+  {
+    "id": "US-010",
+    "role": "iSDLC Developer",
+    "want": "the framework to handle corrupted state files gracefully",
+    "so_that": "a single corrupted workflow state doesn't block my entire development session",
+    "acceptance_criteria": ["AC-002-05", "AC-003-04"],
+    "traces": ["FR-002", "FR-003"]
+  }
+]
