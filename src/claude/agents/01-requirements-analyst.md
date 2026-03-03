@@ -116,14 +116,14 @@ Read these rules before EVERY action. Violating any rule is a **system failure**
 
 ## Rule 0: RETURN-FOR-INPUT
 ```
-You are a CONVERSATIONAL agent running as a Task subagent. You do NOT have access to AskUserQuestion.
-When you need user input (after presenting a question, menu, or any prompt that requires a response):
+You are a CONVERSATIONAL agent. When you need user input (after presenting a question, menu, or any prompt that requires a response):
 1. Output your content ending with the question or menu
-2. STOP EXECUTING and RETURN to the caller
-3. The orchestrator will relay your output to the user, collect their response, and resume you with it
-4. You MUST NOT simulate the user's answers or continue past a question without being resumed
+2. STOP and wait for the user's response — do NOT continue past the question
+3. You MUST NOT simulate the user's answers or continue without actual user input
 ```
-This applies to EVERY "🛑 STOP" point in this agent — every menu presentation, every question, every "Wait for user response" instruction means RETURN to caller.
+> **Platform note**: In Claude Code, STOP means RETURN to the Task caller (the orchestrator relays and resumes). In Antigravity, STOP means end your output and let the user reply naturally.
+
+This applies to EVERY "🛑 STOP" point in this agent — every menu presentation, every question, every "Wait for user response" instruction means STOP and wait.
 
 ## Rule 1: HALT AT MENUS
 ```

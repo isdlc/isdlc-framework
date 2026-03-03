@@ -62,19 +62,75 @@ The Add verb creates a backlog item without starting a workflow. It does NOT wri
 
 ---
 
+## Discover Protocol
+
+The Discover verb sets up a new project or analyzes an existing codebase. It runs **once per project** (or when re-discovery is needed).
+
+### Step D1: Determine Mode
+Ask the user: **New project** or **existing codebase**?
+
+### Step D2: Prime Session
+```bash
+node src/antigravity/prime-session.cjs
+```
+
+### For New Projects (D3-D9):
+
+1. **D3: Vision Elicitation** — Read `src/claude/agents/discover/product-analyst.md`. Engage the user interactively: problem statement, target users, key features, constraints. Produce `docs/project-brief.md`.
+2. **D4: Research** — Read `src/claude/agents/discover/domain-researcher.md`, `technical-scout.md`, `security-advisor.md`, `test-strategist.md`. Execute research **sequentially** (Antigravity limitation). Gather best practices, compliance needs, performance targets, testing strategy.
+3. **D5: Tech Stack Selection** — Recommend a cohesive stack based on research. Present to user for confirmation.
+4. **D6: PRD Generation** — From brief + research, produce `docs/requirements/prd.md` with functional requirements, NFRs, and MVP scope.
+5. **D7: Architecture Blueprint** — Read `src/claude/agents/discover/architecture-designer.md`. Design components, data model, API structure, directory layout. Produce `docs/architecture/architecture-overview.md`.
+6. **D8: Constitution** — Read `src/claude/agents/discover/constitution-generator.md`. Generate `docs/isdlc/constitution.md` from all prior artifacts. Interactive article review with user.
+7. **D9: Scaffold + Finalize** — Create `src/` from blueprint, install skills, set up test infrastructure.
+
+### For Existing Projects (D3-D9):
+
+1. **D3: Parallel Analysis (run sequentially)** — Read and execute each agent's analysis:
+   - `src/claude/agents/discover/architecture-analyzer.md` → architecture, tech stack, dependencies
+   - `src/claude/agents/discover/test-evaluator.md` → test coverage, quality assessment
+   - `src/claude/agents/discover/data-model-analyzer.md` → database schemas, entities, relationships
+   - `src/claude/agents/discover/feature-mapper.md` → API endpoints, UI pages, behavior extraction + AC
+
+2. **D4: Characterization Tests** — Read `src/claude/agents/discover/characterization-test-generator.md`. Generate `test.skip()` scaffolds from extracted AC.
+
+3. **D5: Artifact Integration** — Link AC to features, generate traceability matrix.
+
+4. **D6: Discovery Report** — Assemble `docs/project-discovery-report.md` from all analysis outputs.
+
+5. **D7: Constitution** — Read `src/claude/agents/discover/constitution-generator.md`. Generate informed by discovery findings.
+
+6. **D8: Skills** — Read `src/claude/agents/discover/skills-researcher.md`. Install relevant external skills.
+
+7. **D9: Interactive Walkthrough** — Present: constitution review (mandatory), architecture review, test gap review, iteration configuration.
+
+### Finalize Discovery
+```bash
+node src/antigravity/prime-session.cjs
+```
+Rebuild session cache so all subsequent sessions have discovery context.
+
+Update `.isdlc/state.json` → set `discovery_completed: true`.
+
+---
+
 ## Analyze Protocol
 
 The Analyze verb runs interactive roundtable analysis on a backlog item. It does NOT write to state.json or create branches.
 
-### Step A1: Resolve Item
-- If input is `#N` or `PROJECT-N`: fetch issue data, search for existing folder in `docs/requirements/*/meta.json`
-- If no folder exists: **auto-add** (run Add Protocol silently — intent is unambiguous)
-- If input is a slug/description: search existing folders; if not found, ask user to confirm adding first
+### Step A1: Resolve Item + Check Staleness
 
-### Step A2: Check Existing Analysis
-- Read `meta.json` using three-verb-utils readMetaJson pattern
-- If all 5 phases completed AND `codebase_hash` matches current HEAD → "Already analyzed. Nothing to do." STOP.
-- If hashes differ → offer re-analysis
+Run the automation script:
+```bash
+node src/antigravity/analyze-item.cjs --input "{user_input}"
+# Add --light for lightweight analysis
+```
+
+The script handles folder resolution, auto-add for external refs (#N, PROJECT-N), GitHub fetch, and staleness check. Read the returned JSON:
+- `READY` → proceed to Step A3
+- `ALREADY_COMPLETE` → tell user "Analysis is already complete. Nothing to do."
+- `STALE` → ask user "Codebase changed since analysis. Re-run?"
+- `NOT_FOUND` → ask user "No matching item. Add to backlog first?"
 
 ### Step A3: Read Personas and Topics
 Read all three persona files:
@@ -113,14 +169,53 @@ Read topic files from `src/claude/skills/analysis-topics/**/*.md`
 
 The Build verb runs the full feature workflow with phase gates.
 
-### Phase Sequence
-Phases MUST execute in this order: `01-requirements` → `02-impact-analysis` → `03-architecture` → `04-design` → `05-test-strategy` → `06-implementation` → `16-quality-loop` → `08-code-review`
+### Step B1: Initialize Workflow
+```bash
+node src/antigravity/workflow-init.cjs --type feature --description "description"
+# Or: --type fix, --type upgrade
+# Add --light to skip architecture/design phases
+# Add --supervised for supervised review mode
+```
+This validates constitution, checks no active workflow exists, creates `active_workflow` in state.json, and creates the feature branch.
 
-### Phase Lifecycle
-1. Create feature branch: `feature/REQ-NNNN-slug` from main
-2. Initialize `active_workflow` in `.isdlc/state.json`
-3. Execute phases sequentially per the Gate Enforcement Rules below
-4. After final gate: merge branch to main, delete branch
+### Step B2: Phase Loop (Agent-Becoming Pattern)
+
+> **Key difference from Claude Code**: Claude Code uses the `Task` tool to launch sub-agents with isolated context. In Antigravity, **you become the agent** by reading its `.md` file and following its instructions directly. There is no context isolation — you maintain the full conversation.
+
+**Phase agent lookup**:
+
+| Phase | Agent File |
+|-------|-----------|
+| `00-quick-scan` | `src/claude/agents/00-sdlc-orchestrator.md` (quick scan section) |
+| `01-requirements` | `src/claude/agents/01-requirements-analyst.md` |
+| `02-impact-analysis` | `src/claude/agents/impact-analysis/impact-analysis-orchestrator.md` |
+| `02-tracing` | `src/claude/agents/tracing/tracing-orchestrator.md` |
+| `03-architecture` | `src/claude/agents/02-solution-architect.md` |
+| `04-design` | `src/claude/agents/03-system-designer.md` |
+| `05-test-strategy` | `src/claude/agents/04-test-design-engineer.md` |
+| `06-implementation` | `src/claude/agents/05-software-developer.md` |
+| `16-quality-loop` | `src/claude/agents/16-quality-loop-engineer.md` |
+| `08-code-review` | `src/claude/agents/05-implementation-reviewer.md` |
+
+For each phase in `active_workflow.phases`:
+1. **Read** the phase agent file from the table above
+2. **Become** that agent — follow its instructions, produce its artifacts, satisfy its requirements
+3. Where the agent says "use Task tool to delegate", instead read the target agent's `.md` file and do the work directly
+4. Where the agent says "launch N parallel Task calls", execute them **sequentially** (Antigravity is single-threaded)
+5. When the phase work is done, run gate validation:
+   ```bash
+   node src/antigravity/phase-advance.cjs
+   ```
+6. If `ADVANCED` → continue to next phase
+7. If `BLOCKED` → address blocking requirements, repeat step 5
+8. If `WORKFLOW_COMPLETE` → proceed to Step B3
+
+### Step B3: Finalize
+```bash
+node src/antigravity/workflow-finalize.cjs
+# Add --skip-merge to archive without merging
+```
+Merges branch to main, moves workflow to history, clears active_workflow.
 
 ---
 
@@ -128,11 +223,35 @@ Phases MUST execute in this order: `01-requirements` → `02-impact-analysis` �
 
 The Fix verb runs the bug fix workflow with TDD enforcement.
 
+### Initialize
+```bash
+node src/antigravity/workflow-init.cjs --type fix --description "bug description"
+```
+
 ### Phase Sequence
 `01-requirements` → `02-tracing` → `05-test-strategy` → `06-implementation` → `16-quality-loop` → `08-code-review`
 
 ### TDD Enforcement
 Phase 05 MUST produce a failing test before the fix. Phase 06 makes the test pass.
+
+### Advance + Finalize
+Same as Build Protocol steps B2 and B3.
+
+---
+
+## PLATFORM LIMITATIONS (Antigravity vs Claude Code)
+
+> These are structural differences that affect how the framework operates. They cannot be fixed — work around them.
+
+1. **No parallel sub-agents**: Claude Code can fire 2-4 `Task` tool calls simultaneously. Antigravity is single-threaded. When agent instructions say "launch N agents in parallel", execute them **sequentially** instead. Quality is unaffected — just slower.
+
+2. **No context isolation**: In Claude Code, each sub-agent gets a clean context window. In Antigravity, everything runs in one conversation. Be disciplined about context switching — when you "become" a new phase agent, focus exclusively on its instructions.
+
+3. **No model routing**: Agent files specify `model: opus` or `model: sonnet`. Ignore these — Antigravity uses its configured model for everything.
+
+4. **No AskUserQuestion tool**: Present menus as text (e.g., "[1] Continue [2] Cancel") and let the user reply in freeform. This works identically in practice.
+
+5. **No Task/resume relay**: Agents that say "STOP and RETURN" or "when RESUMED" — in Antigravity, just stop your output and wait for the user to reply. Natural conversation replaces the relay pattern.
 
 ---
 
