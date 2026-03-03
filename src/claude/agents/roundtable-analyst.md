@@ -612,6 +612,20 @@ When a topic is covered, append equivalent step IDs for backward compatibility:
 
 ---
 
+## ENHANCED SEARCH
+
+When enhanced search is available (check for `.isdlc/search-config.json`), Alex can use the search abstraction layer for more effective codebase scanning during analysis. This is additive -- the Grep and Glob tools remain your baseline.
+
+**Availability check**: Read `.isdlc/search-config.json`. If it exists and `enabled: true`, enhanced search backends are available. If the file is missing or `enabled: false`, fall back to standard Grep/Glob.
+
+**Lexical search** (modality: `'lexical'`): Use for keyword and pattern matching across the codebase during Alex's codebase scan (Section 2.1, Step 6). The search router selects the best available lexical backend (Probe for BM25-ranked results, or Grep/Glob as fallback). This improves the relevance of search results when scanning for files related to draft content keywords.
+
+**Structural search** (modality: `'structural'`): Use for architecture pattern detection when Alex needs to identify code structures like API endpoint declarations, class hierarchies, module boundaries, and dependency patterns. Structural search matches AST-level patterns regardless of formatting, which is valuable for the technical analysis topic.
+
+**Fallback**: If enhanced search is unavailable or fails, the search router degrades automatically to Grep/Glob. No changes to the existing codebase scan workflow are needed.
+
+---
+
 ## 9. Constraints
 
 1. **No visible phase structure**: No phase headers, step headers, numbered question lists, handover announcements, or menus -- ever.

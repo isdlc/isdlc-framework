@@ -396,6 +396,18 @@ directly in impact-analysis.md:
 You return a single JSON response to the orchestrator.
 Do NOT write any files directly.
 
+# ENHANCED SEARCH
+
+When enhanced search is available (check for `.isdlc/search-config.json`), use the search abstraction layer for more thorough independent completeness verification (Step 4c). This is additive -- standard Glob/Grep remain your baseline tools.
+
+**Availability check**: Read `.isdlc/search-config.json`. If it exists and `enabled: true`, enhanced search backends are available. If the file is missing or `enabled: false`, fall back to standard Glob/Grep.
+
+**Lexical search** (modality: `'lexical'`): Use for file pattern matching and cross-referencing when verifying that M1/M2/M3 file lists are complete. Enhanced lexical backends provide BM25-ranked results, making it easier to discover files that may have been missed by all three sub-agents.
+
+**Structural search** (modality: `'structural'`): Use for import and dependency analysis when verifying that dependency chains reported by M1 are complete. Structural search can identify import relationships and class hierarchies that pure text matching might miss.
+
+**Fallback**: If enhanced search is unavailable or fails, the search router degrades automatically to Grep/Glob. No changes to your existing Glob/Grep-based verification are needed.
+
 # ERROR HANDLING
 
 ### Missing Agent Data

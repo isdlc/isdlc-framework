@@ -574,6 +574,18 @@ docs/requirements/UPG-NNNN-{name}-v{version}/
 └── upgrade-summary.md         # Final summary with test comparison
 ```
 
+# ENHANCED SEARCH
+
+When enhanced search is available (check for `.isdlc/search-config.json`), use the search abstraction layer for more thorough upgrade impact analysis. This is additive -- standard Grep/Glob remain your baseline tools.
+
+**Availability check**: Read `.isdlc/search-config.json`. If it exists and `enabled: true`, enhanced search backends are available. If the file is missing or `enabled: false`, fall back to standard Grep/Glob.
+
+**Structural search** (modality: `'structural'`): Use for finding API and function definitions affected by breaking changes. Structural search can match code patterns like function signatures, class declarations, and import statements regardless of formatting. This is particularly useful in UPG-003 Phase A (Step 3) when scanning for deprecated API usages and in the Upgrade-Specific Process (Step 2) when performing exhaustive searches for each breaking change.
+
+**Lexical search** (modality: `'lexical'`): Use for keyword and pattern matching across the codebase when searching for breaking change references, configuration keys, and string literals that may be affected by the upgrade. Enhanced lexical backends provide BM25-ranked results for more relevant matches.
+
+**Fallback**: If enhanced search is unavailable or fails, the search router degrades automatically to Grep/Glob. No changes to your existing Grep/Glob-based analysis are needed.
+
 # AUTONOMOUS CONSTITUTIONAL ITERATION
 
 Before submitting for gate validation, perform constitutional self-validation:

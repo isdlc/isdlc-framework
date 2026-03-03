@@ -4,6 +4,10 @@
  * REQ-0042 / FR-003, FR-004, FR-005: Validates that agent markdown files
  * have been correctly migrated with Enhanced Search sections.
  *
+ * REQ-0043 / FR-006, FR-007, FR-008, FR-009: Validates 4 additional agents
+ * migrated with Enhanced Search sections (upgrade-engineer, execution-path-tracer,
+ * cross-validation-verifier, roundtable-analyst).
+ *
  * These tests validate structural properties of agent markdown files:
  * - Section presence (Enhanced Search heading)
  * - Content validation (modalities, fallback, availability check)
@@ -28,6 +32,11 @@ const AGENTS = {
   'risk-assessor': join(projectRoot, 'src', 'claude', 'agents', 'impact-analysis', 'risk-assessor.md'),
   'architecture-analyzer': join(projectRoot, 'src', 'claude', 'agents', 'discover', 'architecture-analyzer.md'),
   'feature-mapper': join(projectRoot, 'src', 'claude', 'agents', 'discover', 'feature-mapper.md'),
+  // REQ-0043: 4 additional agents
+  'upgrade-engineer': join(projectRoot, 'src', 'claude', 'agents', '14-upgrade-engineer.md'),
+  'execution-path-tracer': join(projectRoot, 'src', 'claude', 'agents', 'tracing', 'execution-path-tracer.md'),
+  'cross-validation-verifier': join(projectRoot, 'src', 'claude', 'agents', 'impact-analysis', 'cross-validation-verifier.md'),
+  'roundtable-analyst': join(projectRoot, 'src', 'claude', 'agents', 'roundtable-analyst.md'),
 };
 
 /**
@@ -293,5 +302,296 @@ describe('Discovery agent migration (FR-005)', () => {
 
     assert.ok(frontmatter.includes('name: feature-mapper'), 'Should have correct name');
     assert.ok(frontmatter.includes('DISC-601'), 'Should include DISC-601 skill');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REQ-0043: Migrate remaining 4 agents to Enhanced Search sections
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// TC-U-038 through TC-U-042: Upgrade Engineer migration (FR-006)
+// ---------------------------------------------------------------------------
+
+describe('Upgrade Engineer migration (FR-006)', () => {
+  // TC-U-038: upgrade-engineer.md contains Enhanced Search section
+  it('TC-U-038: should contain Enhanced Search section', () => {
+    const content = readAgent('upgrade-engineer');
+    assert.ok(
+      hasEnhancedSearchSection(content),
+      'upgrade-engineer.md should contain an Enhanced Search section heading'
+    );
+  });
+
+  // TC-U-039: Describes structural and lexical modalities
+  it('TC-U-039: Enhanced Search section should describe structural and lexical modalities', () => {
+    const content = readAgent('upgrade-engineer');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /structural/i.test(section),
+      'Enhanced Search section should mention structural modality'
+    );
+    assert.ok(
+      /lexical/i.test(section),
+      'Enhanced Search section should mention lexical modality'
+    );
+  });
+
+  // TC-U-040: Describes availability check
+  it('TC-U-040: Enhanced Search section should describe availability check', () => {
+    const content = readAgent('upgrade-engineer');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /search-config\.json|hasEnhancedSearch|enhanced\s*search.*available|check.*search/i.test(section),
+      'Enhanced Search section should describe how to check if enhanced search is available'
+    );
+  });
+
+  // TC-U-041: Preserves existing Grep references
+  it('TC-U-041: should preserve existing Grep references', () => {
+    const content = readAgent('upgrade-engineer');
+
+    const enhancedIdx = content.search(/^#{1,2}\s+ENHANCED\s+SEARCH/im);
+    const beforeEnhanced = content.substring(0, enhancedIdx > 0 ? enhancedIdx : content.length);
+
+    assert.ok(
+      /[Gg]rep/i.test(beforeEnhanced),
+      'Grep references should exist before Enhanced Search section'
+    );
+  });
+
+  // TC-U-042: Frontmatter unchanged
+  it('TC-U-042: frontmatter should contain expected agent name and skills', () => {
+    const content = readAgent('upgrade-engineer');
+    const frontmatter = extractFrontmatter(content);
+
+    assert.ok(
+      frontmatter.includes('name: upgrade-engineer'),
+      'Frontmatter should have name: upgrade-engineer'
+    );
+    assert.ok(
+      frontmatter.includes('UPG-001'),
+      'Frontmatter should include UPG-001 skill'
+    );
+    assert.ok(
+      frontmatter.includes('UPG-002'),
+      'Frontmatter should include UPG-002 skill'
+    );
+    assert.ok(
+      frontmatter.includes('UPG-003'),
+      'Frontmatter should include UPG-003 skill'
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-U-043 through TC-U-047: Execution Path Tracer migration (FR-007)
+// ---------------------------------------------------------------------------
+
+describe('Execution Path Tracer migration (FR-007)', () => {
+  // TC-U-043: execution-path-tracer.md contains Enhanced Search section
+  it('TC-U-043: should contain Enhanced Search section', () => {
+    const content = readAgent('execution-path-tracer');
+    assert.ok(
+      hasEnhancedSearchSection(content),
+      'execution-path-tracer.md should contain an Enhanced Search section heading'
+    );
+  });
+
+  // TC-U-044: Describes structural and lexical modalities
+  it('TC-U-044: Enhanced Search section should describe structural and lexical modalities', () => {
+    const content = readAgent('execution-path-tracer');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /structural/i.test(section),
+      'Enhanced Search section should mention structural modality'
+    );
+    assert.ok(
+      /lexical/i.test(section),
+      'Enhanced Search section should mention lexical modality'
+    );
+  });
+
+  // TC-U-045: Describes availability check
+  it('TC-U-045: Enhanced Search section should describe availability check', () => {
+    const content = readAgent('execution-path-tracer');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /search-config\.json|hasEnhancedSearch|enhanced\s*search.*available|check.*search/i.test(section),
+      'Enhanced Search section should describe how to check if enhanced search is available'
+    );
+  });
+
+  // TC-U-046: Preserves existing search instructions
+  it('TC-U-046: should preserve existing search instructions', () => {
+    const content = readAgent('execution-path-tracer');
+
+    assert.ok(
+      /find.*entry|find.*execution|find.*where/i.test(content),
+      'File should still contain references to finding execution entry points'
+    );
+  });
+
+  // TC-U-047: Frontmatter unchanged
+  it('TC-U-047: frontmatter should contain expected agent name and skills', () => {
+    const content = readAgent('execution-path-tracer');
+    const frontmatter = extractFrontmatter(content);
+
+    assert.ok(
+      frontmatter.includes('name: execution-path-tracer'),
+      'Frontmatter should have name: execution-path-tracer'
+    );
+    assert.ok(
+      frontmatter.includes('TRACE-201'),
+      'Frontmatter should include TRACE-201 skill'
+    );
+    assert.ok(
+      frontmatter.includes('TRACE-202'),
+      'Frontmatter should include TRACE-202 skill'
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-U-048 through TC-U-052: Cross-Validation Verifier migration (FR-008)
+// ---------------------------------------------------------------------------
+
+describe('Cross-Validation Verifier migration (FR-008)', () => {
+  // TC-U-048: cross-validation-verifier.md contains Enhanced Search section
+  it('TC-U-048: should contain Enhanced Search section', () => {
+    const content = readAgent('cross-validation-verifier');
+    assert.ok(
+      hasEnhancedSearchSection(content),
+      'cross-validation-verifier.md should contain an Enhanced Search section heading'
+    );
+  });
+
+  // TC-U-049: Describes structural and lexical modalities
+  it('TC-U-049: Enhanced Search section should describe structural and lexical modalities', () => {
+    const content = readAgent('cross-validation-verifier');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /structural/i.test(section),
+      'Enhanced Search section should mention structural modality'
+    );
+    assert.ok(
+      /lexical/i.test(section),
+      'Enhanced Search section should mention lexical modality'
+    );
+  });
+
+  // TC-U-050: Describes availability check
+  it('TC-U-050: Enhanced Search section should describe availability check', () => {
+    const content = readAgent('cross-validation-verifier');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /search-config\.json|hasEnhancedSearch|enhanced\s*search.*available|check.*search/i.test(section),
+      'Enhanced Search section should describe how to check if enhanced search is available'
+    );
+  });
+
+  // TC-U-051: Preserves existing Glob/Grep references
+  it('TC-U-051: should preserve existing Glob/Grep references', () => {
+    const content = readAgent('cross-validation-verifier');
+
+    assert.ok(
+      /Glob.*Grep|Grep.*Glob|Glob\/Grep/i.test(content),
+      'File should still contain Glob/Grep search references'
+    );
+  });
+
+  // TC-U-052: Frontmatter unchanged
+  it('TC-U-052: frontmatter should contain expected agent name and skills', () => {
+    const content = readAgent('cross-validation-verifier');
+    const frontmatter = extractFrontmatter(content);
+
+    assert.ok(
+      frontmatter.includes('name: cross-validation-verifier'),
+      'Frontmatter should have name: cross-validation-verifier'
+    );
+    assert.ok(
+      frontmatter.includes('IA-401'),
+      'Frontmatter should include IA-401 skill'
+    );
+    assert.ok(
+      frontmatter.includes('IA-402'),
+      'Frontmatter should include IA-402 skill'
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-U-053 through TC-U-057: Roundtable Analyst migration (FR-009)
+// ---------------------------------------------------------------------------
+
+describe('Roundtable Analyst migration (FR-009)', () => {
+  // TC-U-053: roundtable-analyst.md contains Enhanced Search section
+  it('TC-U-053: should contain Enhanced Search section', () => {
+    const content = readAgent('roundtable-analyst');
+    assert.ok(
+      hasEnhancedSearchSection(content),
+      'roundtable-analyst.md should contain an Enhanced Search section heading'
+    );
+  });
+
+  // TC-U-054: Describes structural and lexical modalities
+  it('TC-U-054: Enhanced Search section should describe structural and lexical modalities', () => {
+    const content = readAgent('roundtable-analyst');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /structural/i.test(section),
+      'Enhanced Search section should mention structural modality'
+    );
+    assert.ok(
+      /lexical/i.test(section),
+      'Enhanced Search section should mention lexical modality'
+    );
+  });
+
+  // TC-U-055: Describes availability check
+  it('TC-U-055: Enhanced Search section should describe availability check', () => {
+    const content = readAgent('roundtable-analyst');
+    const section = extractEnhancedSearchSection(content);
+
+    assert.ok(
+      /search-config\.json|hasEnhancedSearch|enhanced\s*search.*available|check.*search/i.test(section),
+      'Enhanced Search section should describe how to check if enhanced search is available'
+    );
+  });
+
+  // TC-U-056: Preserves existing Grep and Glob references
+  it('TC-U-056: should preserve existing Grep and Glob references', () => {
+    const content = readAgent('roundtable-analyst');
+
+    assert.ok(
+      /Grep/i.test(content),
+      'File should still contain Grep references'
+    );
+    assert.ok(
+      /Glob/i.test(content),
+      'File should still contain Glob references'
+    );
+  });
+
+  // TC-U-057: Frontmatter unchanged
+  it('TC-U-057: frontmatter should contain expected agent name and empty skills', () => {
+    const content = readAgent('roundtable-analyst');
+    const frontmatter = extractFrontmatter(content);
+
+    assert.ok(
+      frontmatter.includes('name: roundtable-analyst'),
+      'Frontmatter should have name: roundtable-analyst'
+    );
+    assert.ok(
+      frontmatter.includes('owned_skills: []'),
+      'Frontmatter should have owned_skills: []'
+    );
   });
 });

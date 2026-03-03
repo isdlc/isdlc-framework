@@ -329,6 +329,18 @@ async getPreferences(userId: string) {
 
 You return a single JSON response to the orchestrator. Do NOT write any files directly.
 
+# ENHANCED SEARCH
+
+When enhanced search is available (check for `.isdlc/search-config.json`), use the search abstraction layer for more precise execution path tracing. This is additive -- standard search methods remain your baseline.
+
+**Availability check**: Read `.isdlc/search-config.json`. If it exists and `enabled: true`, enhanced search backends are available. If the file is missing or `enabled: false`, fall back to standard search methods.
+
+**Structural search** (modality: `'structural'`): Use for finding function and class definitions in call chains. Structural search can match code patterns like function declarations, method definitions, and class hierarchies regardless of formatting. This is particularly useful in Step 2 (Identify Entry Point) and Step 3 (Trace Call Chain) when you need to locate specific function definitions and follow the execution path through the codebase.
+
+**Lexical search** (modality: `'lexical'`): Use for finding variable references, state mutations, and string patterns across the codebase. Enhanced lexical backends provide BM25-ranked results for more relevant matches when searching for data flow elements and state changes in Steps 4-5.
+
+**Fallback**: If enhanced search is unavailable or fails, the search router degrades automatically to Grep/Glob. No changes to your existing analysis workflow are needed.
+
 # ERROR HANDLING
 
 ### Cannot Identify Entry Point

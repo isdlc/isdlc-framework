@@ -1,0 +1,21 @@
+Requirement,AC,Test Case,Test Type,Priority,Description
+FR-006,AC-006-01,TC-U-038,positive,P1,upgrade-engineer.md contains Enhanced Search section
+FR-006,AC-006-02,TC-U-039,positive,P1,upgrade-engineer.md Enhanced Search describes structural and lexical modalities
+FR-006,AC-006-03,TC-U-040,positive,P1,upgrade-engineer.md Enhanced Search describes availability check
+FR-006,AC-006-04,TC-U-041,positive,P1,upgrade-engineer.md preserves existing Grep references
+FR-006,AC-006-05,TC-U-042,negative,P1,upgrade-engineer.md frontmatter unchanged
+FR-007,AC-007-01,TC-U-043,positive,P1,execution-path-tracer.md contains Enhanced Search section
+FR-007,AC-007-02,TC-U-044,positive,P1,execution-path-tracer.md Enhanced Search describes structural and lexical modalities
+FR-007,AC-007-03,TC-U-045,positive,P1,execution-path-tracer.md Enhanced Search describes availability check
+FR-007,AC-007-04,TC-U-046,positive,P1,execution-path-tracer.md preserves existing search instructions
+FR-007,AC-007-05,TC-U-047,negative,P1,execution-path-tracer.md frontmatter unchanged
+FR-008,AC-008-01,TC-U-048,positive,P1,cross-validation-verifier.md contains Enhanced Search section
+FR-008,AC-008-02,TC-U-049,positive,P1,cross-validation-verifier.md Enhanced Search describes structural and lexical modalities
+FR-008,AC-008-03,TC-U-050,positive,P1,cross-validation-verifier.md Enhanced Search describes availability check
+FR-008,AC-008-04,TC-U-051,positive,P1,cross-validation-verifier.md preserves existing Glob/Grep references
+FR-008,AC-008-05,TC-U-052,negative,P1,cross-validation-verifier.md frontmatter unchanged
+FR-009,AC-009-01,TC-U-053,positive,P1,roundtable-analyst.md contains Enhanced Search section
+FR-009,AC-009-02,TC-U-054,positive,P1,roundtable-analyst.md Enhanced Search describes structural and lexical modalities
+FR-009,AC-009-03,TC-U-055,positive,P1,roundtable-analyst.md Enhanced Search describes availability check
+FR-009,AC-009-04,TC-U-056,positive,P1,roundtable-analyst.md preserves existing Grep and Glob references
+FR-009,AC-009-05,TC-U-057,negative,P1,roundtable-analyst.md frontmatter unchanged

@@ -5,6 +5,8 @@
   "created_at": "2026-03-03T19:30:00.000Z",
   "analysis_status": "raw",
   "phases_completed": [],
+  "build_started_at": "2026-03-03T19:15:00.000Z",
+  "workflow_type": "feature",
   "codebase_hash": "2aa0a20",
   "sizing_decision": {
     "intensity": "light",
