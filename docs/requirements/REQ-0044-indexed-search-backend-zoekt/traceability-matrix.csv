@@ -1,0 +1,44 @@
+FR_ID,AC_ID,User_Story_ID,Confidence,Source
+FR-001,AC-001-01,US-002,High,Codebase analysis + user confirmation
+FR-001,AC-001-02,US-002,High,Codebase analysis + user confirmation
+FR-001,AC-001-03,US-002,High,Codebase analysis + user confirmation
+FR-001,AC-001-04,US-005,High,User confirmation (scale-based recommendation)
+FR-001,AC-001-05,US-002,High,Inferred from fail-open design pattern
+FR-002,AC-002-01,US-002,High,Codebase analysis (install.js MCP_CONFIGS pattern)
+FR-002,AC-002-02,US-002,High,User confirmation (pip install)
+FR-002,AC-002-03,US-002,High,Codebase analysis (configureMcpServers pattern)
+FR-002,AC-002-04,US-002,High,Inferred from fail-open design pattern
+FR-002,AC-002-05,US-002,High,Codebase analysis (--force flag pattern)
+FR-003,AC-003-01,US-001,High,Codebase analysis (backend adapter interface)
+FR-003,AC-003-02,US-001,High,Codebase analysis (MCP transport)
+FR-003,AC-003-03,US-001,High,Codebase analysis (RawSearchHit format)
+FR-003,AC-003-04,US-006,High,Codebase analysis (healthCheck pattern)
+FR-003,AC-003-05,US-006,High,Inferred from fail-open design pattern
+FR-004,AC-004-01,US-001,High,Codebase analysis (inferModality pattern)
+FR-004,AC-004-02,US-001,High,Codebase analysis (inferPriority pattern)
+FR-004,AC-004-03,US-001,High,Codebase analysis (loadFromConfig pattern)
+FR-004,AC-004-04,US-001,High,Codebase analysis (routeWithFallback)
+FR-005,AC-005-01,US-003,Medium,Inferred from upstream MCP server capabilities
+FR-005,AC-005-02,US-003,Medium,Inferred from upstream MCP server capabilities
+FR-005,AC-005-03,US-003,Medium,Inferred from upstream MCP server capabilities
+FR-005,AC-005-04,US-003,Medium,Inferred from codebase ignore patterns
+FR-006,AC-006-01,US-004,Medium,Inferred from upstream MCP server documentation
+FR-006,AC-006-02,US-004,Medium,Inferred from upstream MCP server documentation
+FR-006,AC-006-03,US-004,Medium,Inferred from upstream MCP server documentation
+FR-006,AC-006-04,US-004,Medium,Inferred from upstream MCP server documentation
+FR-007,AC-007-01,US-006,High,Codebase analysis (updateHealth pattern)
+FR-007,AC-007-02,US-006,High,Codebase analysis (routeWithFallback)
+FR-007,AC-007-03,US-006,High,Codebase analysis (onNotification callback)
+FR-007,AC-007-04,US-006,High,Codebase analysis (existing degradation flow)
+FR-008,AC-008-01,US-007,Medium,Inferred from upstream MCP server defaults
+FR-008,AC-008-02,US-007,Medium,Inferred from upstream MCP server documentation
+FR-008,AC-008-03,US-007,Medium,Inferred from design decision
+FR-008,AC-008-04,US-007,Medium,Inferred from detection recommendation pattern
+FR-009,AC-009-01,US-001,Medium,Inferred from REQ-0042/REQ-0043 agent migration pattern
+FR-009,AC-009-02,US-001,Medium,Inferred from existing agent guidance pattern
+FR-009,AC-009-03,US-001,Medium,Inferred from REQ-0043 migration approach
+FR-009,AC-009-04,US-001,High,Codebase analysis (agent frontmatter constraint)
+FR-010,AC-010-01,US-006,High,Codebase analysis (healthCheck interface)
+FR-010,AC-010-02,US-006,Medium,Design decision (timeout threshold)
+FR-010,AC-010-03,US-006,High,Codebase analysis (on-failure health update)
+FR-010,AC-010-04,US-006,Medium,Design decision (health recovery)

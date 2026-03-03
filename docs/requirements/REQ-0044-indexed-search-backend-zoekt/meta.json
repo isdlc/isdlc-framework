@@ -1,0 +1,37 @@
+{
+  "source": "manual",
+  "source_id": null,
+  "slug": "REQ-0044-indexed-search-backend-zoekt",
+  "created_at": "2026-03-03T20:20:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "codebase_hash": "958012b",
+  "parent_requirement": "REQ-0041-improve-search-capabilities-for-claude-effectiveness",
+  "parent_fr": "FR-013",
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification",
+    "security"
+  ],
+  "steps_completed": [
+    "00-01", "00-02", "00-03",
+    "01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08",
+    "02-01", "02-02", "02-03", "02-04",
+    "03-01", "03-02", "03-03", "03-04",
+    "04-01", "04-02", "04-03", "04-04", "04-05"
+  ],
+  "acceptance": {
+    "accepted_at": "2026-03-03T20:45:00.000Z",
+    "domains": ["requirements", "architecture", "design"],
+    "amendment_cycles": 0
+  }
+}

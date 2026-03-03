@@ -1,0 +1,27 @@
+Requirement,AC,Test_Case,Test_Type,Priority,Test_File
+FR-003,AC-003-01,TC-003-01,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-02,TC-003-02,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-03,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-10,boundary,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-11,boundary,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-12,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-13,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-03,TC-003-14,boundary,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-04,TC-003-06,positive,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-04,TC-003-07,negative,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-05,TC-003-04,negative,Must Have,lib/search/backends/indexed.test.js
+FR-003,AC-003-05,TC-003-05,negative,Must Have,lib/search/backends/indexed.test.js
+FR-001,AC-001-01,TC-001-01,positive,Must Have,lib/search/detection.test.js
+FR-001,AC-001-01,TC-001-02,negative,Must Have,lib/search/detection.test.js
+FR-001,AC-001-02,TC-001-03,positive,Must Have,lib/search/detection.test.js
+FR-001,AC-001-05,TC-001-04,negative,Must Have,lib/search/detection.test.js
+FR-001,AC-001-05,TC-001-05,negative,Must Have,lib/search/detection.test.js
+FR-002,AC-002-01,TC-002-01,positive,Must Have,lib/search/install.test.js
+FR-002,AC-002-03,TC-002-02,positive,Must Have,lib/search/install.test.js
+FR-004,AC-004-01,TC-004-01,positive,Must Have,lib/search/registry.test.js
+FR-004,AC-004-02,TC-004-02,positive,Must Have,lib/search/registry.test.js
+FR-004,AC-004-03,TC-004-03,positive,Must Have,lib/search/registry.test.js
+FR-010,AC-010-01,TC-003-06,positive,Should Have,lib/search/backends/indexed.test.js
+FR-010,AC-010-01,TC-003-07,negative,Should Have,lib/search/backends/indexed.test.js
+FR-010,AC-010-01,TC-003-09,negative,Should Have,lib/search/backends/indexed.test.js
+FR-010,AC-010-02,TC-003-08,negative,Should Have,lib/search/backends/indexed.test.js

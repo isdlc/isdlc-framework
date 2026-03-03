@@ -24,15 +24,25 @@ When the user speaks, classify their intent into one of these categories using t
 
 ### Step 2 -- Get Consent
 
-After detecting intent, present a single concise confirmation message in plain language. Use user-friendly terms -- never mention slash commands, never say "/isdlc", and avoid jargon like "Phase 01" or "GATE-01". Describe what you detected and what you will do in user terms.
+After detecting intent, ask for a brief go-ahead in natural conversational language. Do NOT repeat or summarize what the user just said -- they already know what they asked for. Just confirm the action you will take.
 
-**Good example**: "Looks like you want to add a login page. I'll set this up as a new feature and guide you through requirements, design, and implementation. Sound good?"
+**Good examples** (vary your language naturally -- never use the same phrasing twice):
+- "Ready to kick this off?" (when context is obvious)
+- "I'll get the analysis started -- go ahead?"
+- "Want me to start the build workflow for this?"
 
-**Bad example**: "I'll run `/isdlc feature` to start Phase 01..."
+**Bad examples**:
+- "Looks like you want to build X. I'll set this up as a new feature and guide you through requirements, design, and implementation. Sound good?" (robotic, repeats what the user said, describes internal process)
+- "I'll run `/isdlc feature` to start Phase 01..." (exposes internals)
+- "This is a significant feature. I'll set it up as a feature workflow." (restates the obvious)
 
+**Rules**:
+- Do NOT parrot back what the user said ("Looks like you want to...")
+- Do NOT describe the workflow stages ("requirements, design, and implementation")
+- Do NOT label the intent ("This is a feature enhancement")
+- Keep it to ONE short sentence -- conversational, not mechanical
 - If the user **confirms** (yes, sure, go ahead, ok) -- invoke the mapped command immediately and proceed
 - If the user **declines** -- do not invoke any command; ask what they want instead
-- Keep the consent message short and brief -- one or two sentences, not a multi-paragraph explanation
 
 ### Step 3 -- Edge Cases
 

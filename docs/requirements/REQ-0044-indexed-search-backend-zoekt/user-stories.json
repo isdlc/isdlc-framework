@@ -1,0 +1,89 @@
+[
+  {
+    "id": "US-001",
+    "title": "Large codebase developer gets faster agent searches",
+    "story": "As an iSDLC user with a large codebase (10K-500K files), I want agent searches to complete in sub-second time so that my analysis and discovery workflows are not slowed down by sequential grep scans.",
+    "acceptance_criteria": [
+      "Searches with modality 'indexed' return results in under 1 second on a 500K file codebase",
+      "The speed improvement is transparent -- agents use it automatically when available",
+      "grep-glob baseline continues to work when indexed backend is unavailable"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003", "FR-004", "FR-007"]
+  },
+  {
+    "id": "US-002",
+    "title": "Developer installs indexed backend during setup",
+    "story": "As an iSDLC user running 'isdlc init', I want the setup pipeline to detect my project size, recommend an indexed search backend if beneficial, and install it with a single confirmation so that I don't have to research and configure search tools manually.",
+    "acceptance_criteria": [
+      "Detection identifies project scale and Python availability",
+      "Recommendation is shown with a clear explanation of the benefit",
+      "Installation completes with a single 'yes' confirmation",
+      "MCP server is auto-configured in .claude/settings.json",
+      "Setup never blocks or fails if I decline or if installation fails"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-002"]
+  },
+  {
+    "id": "US-003",
+    "title": "Developer never manually maintains the search index",
+    "story": "As an iSDLC user with the indexed backend installed, I want the index to stay current automatically as I edit code so that I never need to think about rebuilding or refreshing it.",
+    "acceptance_criteria": [
+      "File creates, modifications, and deletions are reflected in the index automatically",
+      "The file watcher runs in the background without user intervention",
+      "Standard directories (node_modules, .git, vendor) are excluded from indexing"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-004",
+    "title": "Developer on any platform can use indexed search",
+    "story": "As an iSDLC user on macOS, Linux, or Windows, I want the indexed search backend to work on my platform so that I am not excluded from the performance improvement.",
+    "acceptance_criteria": [
+      "Installation succeeds on macOS (Intel and Apple Silicon)",
+      "Installation succeeds on Linux (common distributions)",
+      "Installation succeeds on Windows 10/11 with Python 3.8+",
+      "File watching uses platform-appropriate mechanisms"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-005",
+    "title": "Small codebase developer is not pressured to install",
+    "story": "As an iSDLC user with a small codebase (under 10K files), I want the indexed backend to be presented as optional rather than recommended so that I am not pressured to install something I don't need.",
+    "acceptance_criteria": [
+      "Detection marks indexed backend as 'optional' for small projects",
+      "No warning or negative messaging if the user skips installation",
+      "grep-glob baseline continues to serve all search needs adequately"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-006",
+    "title": "Agent workflows continue when indexed backend fails",
+    "story": "As an iSDLC user whose indexed backend has crashed or become unresponsive, I want my agent workflows to continue without interruption so that a backend failure does not block my work.",
+    "acceptance_criteria": [
+      "Router falls back to grep-glob when indexed backend is degraded",
+      "A single degradation warning is shown per session, not per query",
+      "Agent workflows complete successfully regardless of backend status"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007", "FR-010"]
+  },
+  {
+    "id": "US-007",
+    "title": "Developer configures index storage location",
+    "story": "As an iSDLC user with limited disk space or a preferred storage location, I want to configure where the search index is stored so that I can manage disk usage according to my needs.",
+    "acceptance_criteria": [
+      "Default location follows platform conventions",
+      "Location is overridable via CODE_INDEX_DIR environment variable",
+      "Index is stored outside the project tree by default (not in git)"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-008"]
+  }
+]
