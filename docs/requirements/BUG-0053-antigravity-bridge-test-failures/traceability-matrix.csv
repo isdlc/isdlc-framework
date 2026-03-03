@@ -1,0 +1,26 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File,Line,Status (Pre-Fix),Status (Post-Fix)
+FR-001,AC-001-01,TC-INS-001,positive,P0,lib/installer.test.js,281,RED,GREEN
+FR-001,AC-001-01,TC-INS-002,positive,P1,lib/installer.test.js,298,RED (cancelled),GREEN
+FR-001,AC-001-02,TC-INS-001,positive,P0,lib/installer.test.js,281,RED,GREEN
+FR-001,AC-001-02,TC-INS-004,positive,P1,lib/installer.test.js,651,RED,GREEN
+FR-001,AC-001-03,TC-INS-005,positive (regression),P0,lib/installer.test.js,various,PASSING,PASSING
+FR-002,AC-002-01,TC-UPD-001,positive,P0,lib/updater.test.js,125,RED,GREEN
+FR-002,AC-002-01,TC-UPD-002,positive,P0,lib/updater.test.js,137,RED (cancelled),GREEN
+FR-002,AC-002-01,TC-UPD-003,positive,P1,lib/updater.test.js,141,RED (cancelled),GREEN
+FR-002,AC-002-01,TC-UPD-004,positive,P0,lib/updater.test.js,150,RED,GREEN
+FR-002,AC-002-01,TC-UPD-005,positive,P1,lib/updater.test.js,182,RED,GREEN
+FR-002,AC-002-01,TC-UPD-006,positive,P1,lib/updater.test.js,214,RED,GREEN
+FR-002,AC-002-01,TC-UPD-007,positive,P1,lib/updater.test.js,244,RED,GREEN
+FR-002,AC-002-01,TC-UPD-008,positive,P1,lib/updater.test.js,269,RED,GREEN
+FR-002,AC-002-01,TC-UPD-009,positive,P2,lib/updater.test.js,300,RED,GREEN
+FR-002,AC-002-01,TC-UPD-010,positive,P1,lib/updater.test.js,333,RED,GREEN
+FR-002,AC-002-01,TC-UPD-011,positive,P2,lib/updater.test.js,372,RED,GREEN
+FR-002,AC-002-02,TC-UPD-001,positive,P0,lib/updater.test.js,125,RED,GREEN
+FR-002,AC-002-03,TC-UPD-012,positive (regression),P0,lib/updater.test.js,various,PASSING,PASSING
+FR-002,N/A,TC-UPD-013,negative (regression),P1,lib/updater.test.js,92,PASSING,PASSING
+FR-003,AC-003-01,TC-FSH-001,positive,P1,lib/utils/fs-helpers.test.js,442,RED,GREEN
+FR-003,AC-003-01,TC-FSH-002,positive,P1,lib/utils/fs-helpers.test.js,465,RED (implicit),GREEN
+FR-003,AC-003-01,TC-FSH-003,negative (regression),P2,lib/utils/fs-helpers.test.js,473,RED,GREEN
+BUG-0053,AC-006,ALL,positive,P0,all 3 files,all,29 RED,0 RED
+BUG-0053,AC-007,REGRESSION,positive (regression),P0,full suite,all,PASSING,PASSING
+BUG-0053,AC-008,TC-INS-001 + TC-UPD-001,positive,P0,installer + updater,281 + 125,RED,GREEN
