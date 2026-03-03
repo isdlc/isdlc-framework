@@ -34,6 +34,8 @@
     Show what would change without executing.
 .PARAMETER Backup
     Create backup directory before updating.
+.PARAMETER NoSearchSetup
+    Skip search tool detection and configuration.
 .PARAMETER Help
     Display usage text and exit.
 .EXAMPLE
@@ -52,6 +54,7 @@ param(
     [switch]$Force,
     [switch]$DryRun,
     [switch]$Backup,
+    [switch]$NoSearchSetup,
     [switch]$Help
 )
 
@@ -227,15 +230,16 @@ function New-ManifestJson {
 if ($Help) {
     Write-Host "iSDLC Framework - In-Place Update Script"
     Write-Host ""
-    Write-Host "Usage: .\update.ps1 [-Force] [-DryRun] [-Backup] [-Help]"
+    Write-Host "Usage: .\update.ps1 [-Force] [-DryRun] [-Backup] [-NoSearchSetup] [-Help]"
     Write-Host ""
     Write-Host "Run this from your project root directory."
     Write-Host ""
     Write-Host "Options:"
-    Write-Host "  -Force     Skip confirmation prompts and version check"
-    Write-Host "  -DryRun    Show what would change without making changes"
-    Write-Host "  -Backup    Create timestamped backup before updating"
-    Write-Host "  -Help      Show this help message"
+    Write-Host "  -Force           Skip confirmation prompts and version check"
+    Write-Host "  -DryRun          Show what would change without making changes"
+    Write-Host "  -Backup          Create timestamped backup before updating"
+    Write-Host "  -NoSearchSetup   Skip search tool detection and configuration"
+    Write-Host "  -Help            Show this help message"
     Write-Host ""
     Write-Host "UPDATED (overwritten):"
     Write-Host "  .claude/agents/, skills/, commands/, hooks/"
@@ -708,6 +712,33 @@ else {
     Write-Warn "[dry-run] Would update state.json ($InstalledVersion -> $NewVersion)"
 }
 Write-Host ""
+
+# ============================================================================
+# Search Setup: Detect and configure search tools (fail-open)
+# ============================================================================
+if (-not $NoSearchSetup -and -not $DryRun) {
+    $isdlcBin = Join-Path (Join-Path $ScriptDir "bin") "isdlc.js"
+    $nodeAvailable = $false
+    try { $null = Get-Command node -ErrorAction Stop; $nodeAvailable = $true } catch {}
+
+    if ($nodeAvailable -and (Test-Path $isdlcBin)) {
+        Write-Host ""
+        Write-Step "*" "*" "Setting up search capabilities..."
+        try {
+            Push-Location $ProjectRoot
+            & node $isdlcBin search-setup --force 2>$null
+            Pop-Location
+        }
+        catch {
+            Pop-Location
+            Write-Warn "Search setup skipped (non-fatal)"
+        }
+    }
+    else {
+        Write-Warn "Search setup skipped (Node.js not available). Run 'isdlc search-setup' later."
+    }
+    Write-Host ""
+}
 
 # ============================================================================
 # Summary

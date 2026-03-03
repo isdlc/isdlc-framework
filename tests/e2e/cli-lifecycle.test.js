@@ -251,4 +251,84 @@ describe('E2E: CLI Lifecycle', () => {
       }
     });
   });
+
+  describe('E2E-016: search-setup Command', () => {
+    it('search-setup appears in help output', () => {
+      const tmpDir = createTempDir();
+      try {
+        const output = runCli(tmpDir, 'help');
+        assert.ok(
+          output.includes('search-setup'),
+          'Help should list search-setup command'
+        );
+      } finally {
+        cleanupTempDir(tmpDir);
+      }
+    });
+
+    it('search-setup runs standalone after init', () => {
+      const projectDir = setupProjectDir('search-setup-standalone');
+      try {
+        runCli(projectDir, 'init --force --no-search-setup');
+        assert.ok(existsSync(join(projectDir, '.isdlc')), '.isdlc/ should exist');
+
+        // Run search-setup standalone — should not throw
+        const output = runCli(projectDir, 'search-setup --force');
+        assert.ok(typeof output === 'string', 'search-setup should produce output');
+
+        // search-config.json should exist after search-setup
+        assert.ok(
+          existsSync(join(projectDir, '.isdlc', 'search-config.json')),
+          'search-config.json should exist after search-setup'
+        );
+      } finally {
+        cleanupTempDir(join(projectDir, '..'));
+      }
+    });
+  });
+
+  describe('E2E-017: Update Runs Search Setup', () => {
+    it('update --force creates search-config.json', () => {
+      const projectDir = setupProjectDir('update-search');
+      try {
+        // Init without search setup
+        runCli(projectDir, 'init --force --no-search-setup');
+        assert.ok(
+          !existsSync(join(projectDir, '.isdlc', 'search-config.json')),
+          'search-config.json should NOT exist after init --no-search-setup'
+        );
+
+        // Update should run search setup
+        const output = runCli(projectDir, 'update --force');
+        assert.ok(typeof output === 'string', 'update should produce output');
+
+        assert.ok(
+          existsSync(join(projectDir, '.isdlc', 'search-config.json')),
+          'search-config.json should exist after update'
+        );
+      } finally {
+        cleanupTempDir(join(projectDir, '..'));
+      }
+    });
+
+    it('update --no-search-setup skips search config', () => {
+      const projectDir = setupProjectDir('update-no-search');
+      try {
+        runCli(projectDir, 'init --force --no-search-setup');
+        assert.ok(
+          !existsSync(join(projectDir, '.isdlc', 'search-config.json')),
+          'search-config.json should NOT exist after init --no-search-setup'
+        );
+
+        // Update with --no-search-setup
+        runCli(projectDir, 'update --force --no-search-setup');
+        assert.ok(
+          !existsSync(join(projectDir, '.isdlc', 'search-config.json')),
+          'search-config.json should NOT exist after update --no-search-setup'
+        );
+      } finally {
+        cleanupTempDir(join(projectDir, '..'));
+      }
+    });
+  });
 });

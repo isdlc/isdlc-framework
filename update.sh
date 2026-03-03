@@ -9,10 +9,11 @@
 #   2. From your project root: ./isdlc-framework/update.sh
 #
 # Options:
-#   --force     Skip confirmation prompts and version check
-#   --dry-run   Show what would change without making changes
-#   --backup    Create timestamped backup before updating
-#   --help      Show this help message
+#   --force             Skip confirmation prompts and version check
+#   --dry-run           Show what would change without making changes
+#   --backup            Create timestamped backup before updating
+#   --no-search-setup   Skip search tool detection and configuration
+#   --help              Show this help message
 #
 # What gets UPDATED (overwritten):
 #   - .claude/agents/, skills/, commands/, hooks/ — framework files
@@ -44,6 +45,7 @@ NC='\033[0m'
 FORCE=false
 DRY_RUN=false
 BACKUP=false
+NO_SEARCH_SETUP=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -59,6 +61,10 @@ while [[ $# -gt 0 ]]; do
             BACKUP=true
             shift
             ;;
+        --no-search-setup)
+            NO_SEARCH_SETUP=true
+            shift
+            ;;
         --help|-h)
             echo "iSDLC Framework - In-Place Update Script"
             echo ""
@@ -67,10 +73,11 @@ while [[ $# -gt 0 ]]; do
             echo "Run this from your project root directory."
             echo ""
             echo "Options:"
-            echo "  --force     Skip confirmation prompts and version check"
-            echo "  --dry-run   Show what would change without making changes"
-            echo "  --backup    Create timestamped backup (tar.gz) before updating"
-            echo "  --help      Show this help message"
+            echo "  --force             Skip confirmation prompts and version check"
+            echo "  --dry-run           Show what would change without making changes"
+            echo "  --backup            Create timestamped backup (tar.gz) before updating"
+            echo "  --no-search-setup   Skip search tool detection and configuration"
+            echo "  --help              Show this help message"
             echo ""
             echo "UPDATED (overwritten):"
             echo "  .claude/agents/, skills/, commands/, hooks/"
@@ -566,6 +573,20 @@ else
     echo -e "${YELLOW}  [dry-run] Would update state.json ($INSTALLED_VERSION → $NEW_VERSION)${NC}"
 fi
 echo ""
+
+# ============================================================================
+# Search Setup: Detect and configure search tools (fail-open)
+# ============================================================================
+if [ "$NO_SEARCH_SETUP" = false ] && [ "$DRY_RUN" = false ]; then
+    ISDLC_BIN="$SCRIPT_DIR/bin/isdlc.js"
+    if command -v node &> /dev/null && [ -f "$ISDLC_BIN" ]; then
+        echo -e "${BLUE}[*]${NC} Setting up search capabilities..."
+        (cd "$PROJECT_ROOT" && node "$ISDLC_BIN" search-setup --force) 2>/dev/null || echo -e "${YELLOW}  Search setup skipped (non-fatal)${NC}"
+    else
+        echo -e "${YELLOW}  Search setup skipped (Node.js not available). Run 'isdlc search-setup' later.${NC}"
+    fi
+    echo ""
+fi
 
 # ============================================================================
 # Summary

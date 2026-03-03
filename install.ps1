@@ -1407,6 +1407,30 @@ Write-Success "Created installation manifest ($($manifest.files.Count) files tra
 Write-Warn "This manifest enables safe uninstall - user files will be preserved"
 
 # ============================================================================
+# Search Setup: Detect and configure search tools (fail-open)
+# ============================================================================
+$isdlcBin = Join-Path (Join-Path $ScriptDir "bin") "isdlc.js"
+$nodeAvailable = $false
+try { $null = Get-Command node -ErrorAction Stop; $nodeAvailable = $true } catch {}
+
+if ($nodeAvailable -and (Test-Path $isdlcBin)) {
+    Write-Host ""
+    Write-Step "*" "*" "Setting up search capabilities..."
+    try {
+        Push-Location $ProjectRoot
+        & node $isdlcBin search-setup --force 2>$null
+        Pop-Location
+    }
+    catch {
+        Pop-Location
+        Write-Warn "Search setup skipped (non-fatal)"
+    }
+}
+else {
+    Write-Warn "Search setup skipped (Node.js not available). Run 'isdlc search-setup' later."
+}
+
+# ============================================================================
 # Step 6/6: Cleanup + Copy Scripts
 # ============================================================================
 Write-Step "6" "6" "Cleaning up installation files..."

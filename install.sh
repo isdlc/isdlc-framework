@@ -1175,6 +1175,17 @@ echo -e "${GREEN}  ✓ Created installation manifest (${#INSTALLED_FILES[@]} fil
 echo -e "${YELLOW}    This manifest enables safe uninstall - user files will be preserved${NC}"
 
 # ============================================================================
+# Search Setup: Detect and configure search tools (fail-open)
+# ============================================================================
+ISDLC_BIN="$SCRIPT_DIR/bin/isdlc.js"
+if command -v node &> /dev/null && [ -f "$ISDLC_BIN" ]; then
+    echo -e "${BLUE}[*]${NC} Setting up search capabilities..."
+    (cd "$PROJECT_ROOT" && node "$ISDLC_BIN" search-setup --force) 2>/dev/null || echo -e "${YELLOW}  Search setup skipped (non-fatal)${NC}"
+else
+    echo -e "${YELLOW}  Search setup skipped (Node.js not available). Run 'isdlc search-setup' later.${NC}"
+fi
+
+# ============================================================================
 # Step 6: Cleanup - Remove isdlc-framework folder
 # ============================================================================
 echo -e "${BLUE}[6/6]${NC} Cleaning up installation files..."
