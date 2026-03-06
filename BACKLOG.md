@@ -159,6 +159,7 @@
 - [x] ~~Semantic search backend (Group 2) — Package Builder/Reader (FR-006, M5) and Module Registry (FR-013, M6)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - [x] ~~Semantic search backend (Group 3) — MCP Server, Query Orchestrator, Package Security (FR-003, FR-004, FR-008, M7)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - [x] ~~Semantic search backend (Group 4) — Content Redaction Pipeline + iSDLC Search Backend (FR-011, FR-012, M4, M10)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
+- [x] ~~Semantic search backend (Group 5) — Distribution Adapters, Version Compatibility, Aggregation Pipeline (FR-007, FR-009, FR-010, M8, M6, M9)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - #35 [ ] Implementation learning capture: if bug fixes were identified during implementation or iteration loops > 1, create a learning for subsequent implementation
 - #27 [ ] /isdlc validate command — on-demand artifact quality check (constitutional + completeness) without running a full workflow
 - #28 [ ] Progressive disclosure / lite mode — expose only constitution → requirements → implement → quality loop for simple projects, full lifecycle opt-in
@@ -320,6 +321,25 @@
   - **Files**: `isdlc.md` (build verb implementation), `meta.json` schema extension (per-phase completion tracking)
   - **Depends on**: #19 (three-verb model exists) — DONE
   - **Complexity**: Low-medium
+
+### Harness Engineering Alignment
+
+> Gaps identified by comparing iSDLC to [OpenAI's harness engineering methodology](https://openai.com/index/harness-engineering/). iSDLC already covers context engineering (CLAUDE.md, agents, constitution) and architectural constraints (hooks, gates, validation). These items address the missing pillars.
+
+- #109 [ ] Entropy management agents (`/isdlc sweep`) — scheduled codebase health checks outside active workflows: doc-code consistency, constitution compliance, pattern drift, dependency health, dead code detection. Output: `docs/isdlc/sweep-report.md`. Config: `.isdlc/sweep.json`.
+  - **Priority**: Should Have
+  - **Complexity**: Medium-large
+- #110 [ ] Observability-as-context for agents — feed runtime data (error logs, performance baselines, incidents) to Phase 02 tracing, impact analysis, and Phase 16 quality loop via `.isdlc/observability/` directory convention. Fail-open per Article X.
+  - **Priority**: Could Have
+  - **Complexity**: Medium
+- #111 [ ] Adaptive process complexity (rippable phases) — extend sizing/tier system with model confidence dimension. Phase-level skip conditions configurable in `.isdlc/process.json`. Audit trail for skipped/abbreviated phases. Override with `--strict`.
+  - **Priority**: Should Have
+  - **Complexity**: Medium
+  - **Builds on**: REQ-0011, #28, #97
+- #112 [ ] Repository-first knowledge enforcement — detect undocumented ADRs, magic config values, and integration gaps. Knowledge gap detector in sweep, `[NEEDS DOCUMENTATION]` flags in Phase 01 roundtable, Article XV for constitution.
+  - **Priority**: Should Have
+  - **Complexity**: Low-medium
+  - **Builds on**: #109 (entropy sweep)
 
 ### Hackability & Extensibility
 

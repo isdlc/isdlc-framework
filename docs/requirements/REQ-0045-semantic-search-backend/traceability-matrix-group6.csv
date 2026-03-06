@@ -1,0 +1,119 @@
+Requirement,AC,Test Case,Test Type,Priority,Module,Test File
+FR-005,AC-005-03,#1 createVoyageAdapter returns adapter with correct interface,positive,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#2 Voyage embed sends POST with correct headers and body,positive,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#3 Voyage embed returns Float32Array with 1024 dimensions,positive,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#4 Voyage healthCheck returns healthy when API responds,positive,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#5 Voyage healthCheck returns unhealthy for invalid key (401),negative,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#6 Voyage embed with empty input returns empty vectors,positive,P1,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#7 Voyage embed with ECONNREFUSED throws informative error,negative,P1,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#8 Voyage embed with rate limit (429) throws with retry hint,negative,P1,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#9 Voyage dispose is a no-op,positive,P2,M2,voyage-adapter.test.js
+FR-005,AC-005-05,#10 Voyage adapter sends correct model field in request,positive,P0,M2,voyage-adapter.test.js
+FR-005,AC-005-03,#11 createOpenAIAdapter returns adapter with correct interface,positive,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#12 OpenAI embed sends POST with correct headers and body,positive,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#13 OpenAI embed returns Float32Array with 1536 dimensions,positive,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#14 OpenAI healthCheck returns healthy when API responds,positive,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#15 OpenAI healthCheck returns unhealthy for invalid key (401),negative,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#16 OpenAI embed with empty input returns empty vectors,positive,P1,M2,openai-adapter.test.js
+FR-005,AC-005-03,#17 OpenAI embed with network error throws informative error,negative,P1,M2,openai-adapter.test.js
+FR-005,AC-005-03,#18 OpenAI embed with rate limit (429) throws with retry hint,negative,P1,M2,openai-adapter.test.js
+FR-005,AC-005-03,#19 OpenAI dispose is a no-op,positive,P2,M2,openai-adapter.test.js
+FR-005,AC-005-05,#20 OpenAI sends text-embedding-3-small by default and overridable,positive,P0,M2,openai-adapter.test.js
+FR-005,AC-005-03,#21 OpenAI custom endpoint URL is respected,positive,P1,M2,openai-adapter.test.js
+FR-005,AC-005-03,#22 embed() with voyage-code-3 provider returns valid EmbeddingResult,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#23 embed() with openai provider returns valid EmbeddingResult,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#24 embed() with voyage-code-3 without apiKey throws error,negative,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#25 embed() with openai without apiKey throws error,negative,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#26 healthCheck for voyage-code-3 with apiKey returns healthy,positive,P1,M2,engine/index.test.js
+FR-005,AC-005-03,#27 healthCheck for openai with apiKey returns healthy,positive,P1,M2,engine/index.test.js
+FR-005,AC-005-04,#28 Each provider reports correct dimensions (768/1024/1536),positive,P0,M2,engine/index.test.js
+FR-005,AC-005-04,#29 embed() result dimensions matches provider (not hardcoded),positive,P0,M2,engine/index.test.js
+FR-005,AC-005-04,#30 Package built with Voyage has dimensions=1024 in manifest,positive,P0,M2+M5,engine/index.test.js
+FR-005,AC-005-04,#31 Loading package with wrong-dimension query throws mismatch error,negative,P0,M2+M5+M7,engine/index.test.js
+FR-005,AC-005-05,#32 Generation config with per-module model selection uses correct adapter,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-05,#33 Mixed models (Voyage for mod-a + CodeBERT for mod-b) both produce valid packages,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-05,#34 Missing model in config defaults to codebert,positive,P1,M2,engine/index.test.js
+FR-005,AC-005-05,#35 Invalid model name in config throws before embedding starts,negative,P1,M2,engine/index.test.js
+FR-005,AC-005-03,#36 UPDATE: voyage-code-3 resolves adapter when apiKey provided,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#37 UPDATE: openai resolves adapter when apiKey provided,positive,P0,M2,engine/index.test.js
+FR-005,AC-005-03,#38 UPDATE: healthCheck returns healthy for cloud providers with valid key,positive,P0,M2,engine/index.test.js
+FR-016,AC-016-01,#39 offerEmbeddingGeneration returns timing choices,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-01,#40 offerEmbeddingGeneration includes description for each option,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#41 User selects skip - no embedding generation triggered,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#42 User selects valid timing - returns selected mode,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#43 generateBeforeMode generates single flat .emb package,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#44 Flat package has partitioned: false in manifest,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#45 Flat package includes all supported source files,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#46 generateBeforeMode uses VCS adapter to enumerate files,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#47 generateBeforeMode with empty directory produces warning,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#48 generateBeforeMode reports progress via callback,positive,P2,FR-016,discover-integration.test.js
+FR-016,AC-016-03,#49 generateDuringMode generates flat embedding independently,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-03,#50 During-mode does not depend on architecture analysis,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-03,#51 During-mode runs concurrently with mock analysis agent,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-03,#52 During-mode output equivalent to before-mode output,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#53 generateAfterMode generates per-module .emb packages,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#54 Each module package contains only that module's chunks,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#55 Module boundaries come from architecture-analyzer output,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#56 Module packages have partitioned: true and correct moduleId,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#57 After-mode registers modules in registry with domain metadata,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#58 After-mode with empty module produces warning but continues,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#59 User selects before - only before-mode runs,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#60 User selects during - only during-mode runs,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#61 User selects after - only after-mode runs,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-05,#62 User selects skip - no generation occurs,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#63 upgradeToModulePartitioned re-partitions without re-embedding,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#64 Upgrade reuses existing chunk vectors (no engine calls),positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#65 Upgrade produces per-module .emb packages,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#66 Upgrade preserves chunk IDs and vector data exactly,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#67 Upgrade with single module produces package identical to flat,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#68 Upgrade with unmatched chunks assigns to unclassified module,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-07,#69 loadIntoMCPServer calls loadPackage for each path,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-07,#70 After loading MCP listStores includes new modules,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-07,#71 When MCP unavailable auto-load logs warning without throwing,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-07,#72 Multiple packages loaded in sequence all available,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-08,#73 generateEmbeddingReport returns markdown with generation status,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-08,#74 Report includes files/chunks/dimensions/package count/total size,positive,P0,FR-016,discover-integration.test.js
+FR-016,AC-016-08,#75 Report includes timing mode and duration,positive,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-08,#76 Report with 0 files shows no-files-found message,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-08,#77 Report with failed generation includes error summary,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-02,#78 generateBeforeMode with non-existent path throws error,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-04,#79 generateAfterMode with no modules throws error,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-06,#80 upgradeToModulePartitioned with non-existent package throws error,negative,P1,FR-016,discover-integration.test.js
+FR-016,AC-016-02..04,#81 All generation modes respect AbortSignal,positive,P2,FR-016,discover-integration.test.js
+FR-002,AC-002-01,#82 chunkDocument with markdown parses and returns chunks,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#83 chunkDocument with html parses and returns chunks,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#84 chunkDocument with text parses and returns chunks,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#85 chunkDocument with unsupported type throws listing supported types,negative,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#86 detectDocumentType detects .md as markdown,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#87 detectDocumentType detects .html/.htm as html,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#88 detectDocumentType detects .txt as text,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-01,#89 detectDocumentType returns null for unsupported extensions,negative,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#90 Markdown chunking splits on H1 boundaries,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#91 Markdown chunking splits on H2/H3 boundaries,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#92 Markdown chunking preserves paragraph boundaries,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#93 Markdown chunk name includes heading text,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#94 HTML chunking splits on h1..h6 tags,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#95 HTML chunking strips tags from content,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#96 Plain text chunking splits on double newlines,positive,P0,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#97 Long paragraph split at sentence boundaries,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#98 Single heading with long body produces overlapping chunks,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#99 Empty document returns empty chunks array,negative,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#100 Whitespace-only document returns empty chunks,negative,P2,M1-ext,document-chunker.test.js
+FR-002,AC-002-03,#101 buildKBPackage produces valid .emb package,positive,P0,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-03,#102 KB package manifest has content_type: knowledge-base,positive,P0,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-03,#103 KB package distinguishable from code package by content_type,positive,P0,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-03,#104 KB chunks have type: document or section,positive,P0,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-03,#105 KB package loadable by existing readPackage,positive,P0,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-03,#106 buildKBPackage with mixed doc types in one package,positive,P1,M5-ext,kb-pipeline.test.js
+FR-002,AC-002-02,#107 Markdown code fences preserved as content not headings,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#108 HTML nested tags extract text correctly,positive,P1,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#109 Very long line (10K chars) no OOM or hang,negative,P2,M1-ext,document-chunker.test.js
+FR-002,AC-002-02,#110 Markdown front matter excluded from chunks,positive,P2,M1-ext,document-chunker.test.js
+FR-005+FR-002,AC-005-03+AC-005-04,I1 Cloud Voyage embed -> buildPackage -> readPackage roundtrip,positive,P0,M2+M5,engine/index.test.js
+FR-005+FR-002,AC-005-03+AC-005-04,I2 Cloud OpenAI embed -> buildPackage -> readPackage roundtrip,positive,P0,M2+M5,engine/index.test.js
+FR-005,AC-005-05,I3 Per-module model config: Voyage for mod-a + CodeBERT for mod-b,positive,P0,M2+M5,engine/index.test.js
+FR-002,AC-002-01..03,I4 Document chunker -> embed -> buildKBPackage -> readPackage e2e,positive,P0,M1+M2+M5,kb-pipeline.test.js
+FR-016,AC-016-02+AC-016-07,I5 Discover before-mode -> auto-load -> query returns results,positive,P0,FR-016+M7,discover-integration.test.js
+FR-016,AC-016-04+AC-016-07,I6 Discover after-mode -> partitioned -> load -> list_modules shows all,positive,P0,FR-016+M6+M7,discover-integration.test.js
+FR-016,AC-016-02+AC-016-06,I7 Discover before -> upgrade to partitioned -> same chunk data,positive,P0,FR-016,discover-integration.test.js
+FR-002+FR-005,AC-002-03,I8 Mixed code+KB embeddings both loadable in same MCP server,positive,P1,M2+M5+M7,kb-pipeline.test.js
