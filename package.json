@@ -39,7 +39,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "test": "node --test lib/*.test.js lib/utils/*.test.js lib/search/*.test.js lib/search/backends/*.test.js",
+    "test": "node --test lib/*.test.js lib/utils/*.test.js lib/search/*.test.js lib/search/backends/*.test.js lib/embedding/**/*.test.js",
     "test:hooks": "node --test src/claude/hooks/tests/*.test.cjs",
     "test:char": "node --test tests/characterization/*.test.js",
     "test:e2e": "node --test tests/e2e/*.test.js",
