@@ -160,6 +160,7 @@
 - [x] ~~Semantic search backend (Group 3) — MCP Server, Query Orchestrator, Package Security (FR-003, FR-004, FR-008, M7)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - [x] ~~Semantic search backend (Group 4) — Content Redaction Pipeline + iSDLC Search Backend (FR-011, FR-012, M4, M10)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - [x] ~~Semantic search backend (Group 5) — Distribution Adapters, Version Compatibility, Aggregation Pipeline (FR-007, FR-009, FR-010, M8, M6, M9)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
+- [x] ~~Semantic search backend (Group 6) — Cloud Embedding Adapters (FR-005 Voyage/OpenAI), Knowledge Base Pipeline (FR-002), Discovery Integration (FR-016)~~ -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/) **Completed: 2026-03-06**
 - #35 [ ] Implementation learning capture: if bug fixes were identified during implementation or iteration loops > 1, create a learning for subsequent implementation
 - #27 [ ] /isdlc validate command — on-demand artifact quality check (constitutional + completeness) without running a full workflow
 - #28 [ ] Progressive disclosure / lite mode — expose only constitution → requirements → implement → quality loop for simple projects, full lifecycle opt-in
