@@ -1,0 +1,35 @@
+{
+  "modules": [
+    {
+      "id": "mod-auth",
+      "name": "Authentication Module",
+      "domain": "security.authentication",
+      "description": "Handles user login, session management, and OAuth flows",
+      "dependencies": [],
+      "version": "2.1.0",
+      "compatibility": { "minVersion": "2.0.0", "maxVersion": "2.9.9" },
+      "keywords": ["login", "session", "oauth", "jwt"]
+    },
+    {
+      "id": "mod-orders",
+      "name": "Order Management",
+      "domain": "commerce.order-management",
+      "description": "Order creation, lifecycle, and fulfillment tracking",
+      "dependencies": ["mod-auth"],
+      "version": "1.5.0",
+      "compatibility": { "minVersion": "1.0.0" },
+      "keywords": ["order", "checkout", "cart", "fulfillment"]
+    },
+    {
+      "id": "mod-payments",
+      "name": "Payment Processing",
+      "domain": "commerce.payments",
+      "description": "Payment gateway integration and transaction management",
+      "dependencies": ["mod-auth", "mod-orders"],
+      "version": "1.2.3",
+      "compatibility": {},
+      "keywords": ["payment", "stripe", "transaction", "billing"]
+    }
+  ],
+  "version": "1.0.0"
+}

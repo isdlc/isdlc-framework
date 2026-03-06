@@ -286,3 +286,66 @@ The following summarizes the internal development milestones leading to the 0.1.
 - Skills are logged for observability (primary agent documented, not enforced)
 - Hooks enforce iteration requirements deterministically
 - State tracked in `.isdlc/state.json` (gitignored)
+
+---
+
+## REQ-0045 Semantic Search Backend — Implementation Groups
+
+16 FRs split into 6 groups. Groups 3 and 4 can run in parallel.
+
+### Group 1: Foundation (DONE)
+
+**FRs**: FR-001, FR-005 (CodeBERT only), FR-014, FR-015
+**Modules**: M1 Chunker, M2 Engine (CodeBERT), M3 VCS, Installer, CLI
+**Delivers**: Generate embeddings locally from a Git/SVN working copy
+**Status**: Merged to main (94 tests, 979 total)
+
+### Group 2: Package & Registry
+
+**FRs**: FR-006, FR-013
+**Modules**: M5 Package Builder/Reader, M6 Module Registry
+**Delivers**: Persist embeddings as portable `.emb` packages; track module metadata
+**Depends on**: Group 1
+**Parallelism**: M5 and M6 have no cross-dependency — can build in parallel
+
+### Group 3: Serving & Query
+
+**FRs**: FR-003, FR-004, FR-012
+**Modules**: M7 MCP Server + Query Orchestrator, M10 iSDLC Search Backend
+**Delivers**: End-to-end query flow: user query → search router → MCP server → FAISS → ranked results
+**Depends on**: Group 2 (M5 reader, M6 registry)
+**Parallelism**: Can run in parallel with Group 4
+
+### Group 4: Security
+
+**FRs**: FR-011, FR-008
+**Modules**: M4 Content Redaction, M5 Encryption extension
+**Delivers**: 3 security tiers (Interface/Guided/Full) + AES-256-GCM encryption — enables customer distribution
+**Depends on**: FR-011 needs Group 1 (M1 chunk types); FR-008 needs Group 2 (M5 package format)
+**Parallelism**: FR-011 and FR-008 can build in parallel with each other; Group 4 can run in parallel with Group 3
+
+### Group 5: Distribution & Enterprise
+
+**FRs**: FR-007, FR-009, FR-010
+**Modules**: M8 Distribution Adapters, M6 Compatibility extension, M9 Aggregation Pipeline
+**Delivers**: Full CI/CD pipeline: publish to Artifactory/Nexus/S3/SFTP, version compatibility matrix, release bundle assembly
+**Depends on**: Groups 2 + 3 + 4
+
+### Group 6: Enhancements
+
+**FRs**: FR-005 (Voyage/OpenAI), FR-016, FR-002
+**Modules**: M2 cloud adapters, Discovery integration, Knowledge base pipeline
+**Delivers**: Cloud embedding models, discovery-triggered generation, non-code document embeddings
+**Depends on**: FR-005 cloud needs Group 1; FR-016 needs Group 3; FR-002 needs Group 1
+**Priority**: Should Have / Could Have
+
+### Dependency Graph
+
+```
+Group 1 (DONE)
+  ├──→ Group 2 (Package & Registry)
+  │      ├──→ Group 3 (Serving & Query) ──→ Group 5 (Distribution)
+  │      └──→ Group 4 (Security) ─────────→ Group 5 (Distribution)
+  └──→ Group 6 (FR-005 cloud, FR-002 KB)
+Group 3 ──→ Group 6 (FR-016 Discovery)
+```

@@ -125,3 +125,107 @@
 ## Verdict
 
 **APPROVED** — All 12 production files pass correctness, security, simplicity, traceability, and documentation checks. 2 low-severity findings documented (no action required). Zero regressions. Constitutional compliance verified against Articles V, VI, VII, VIII, IX.
+
+---
+---
+
+# Code Review Report — REQ-0045 Group 2
+
+**Phase**: 08-code-review
+**Date**: 2026-03-06
+**Reviewer**: QA Engineer (Agent 07)
+**Verdict**: APPROVED
+
+---
+
+## Scope
+
+6 production files, 2 test files, 1 fixture implementing Group 2:
+
+- **M5 Package** (4 files): `lib/embedding/package/{manifest,encryption,builder,reader}.js`
+- **M6 Registry** (2 files): `lib/embedding/registry/{index,compatibility}.js`
+- **Tests** (2 files): `lib/embedding/package/index.test.js`, `lib/embedding/registry/index.test.js`
+- **Fixture**: `tests/fixtures/embedding/sample-registry.json`
+
+---
+
+## Review Checklist
+
+### 1. Correctness
+
+| Area | Finding | Severity |
+|------|---------|----------|
+| Manifest: required fields validation | `validateManifest()` checks all 8 required fields | OK |
+| Manifest: checksum computation | SHA-256 deterministic hashes | OK |
+| Encryption: AES-256-GCM with random IV | `encrypt()` generates 12-byte IV per call | OK |
+| Encryption: auth tag verification | `decrypt()` uses `setAuthTag()` and catches failures | OK |
+| Builder: tar format | USTAR headers with proper checksum calculation | OK |
+| Builder: encryption flag ordering | `manifest.encrypted = true` set BEFORE manifest serialization | OK |
+| Reader: tar parsing | Bounds-checked extraction with null-byte name termination | OK |
+| Reader: encrypted package detection | Checks both `manifest.encrypted` and `options.decryptionKey` | OK |
+| Registry: CRUD operations | add/get/list/update all work correctly | OK |
+| Registry: domain routing | Prefix match, keyword match, contains match — correct | OK |
+| Registry: version compatibility | semver with manual fallback — correct | OK |
+| Registry: malformed JSON | Throws clear "malformed JSON" error | OK |
+
+### 2. Security (Article III)
+
+| Check | Result |
+|-------|--------|
+| No hardcoded encryption keys | PASS |
+| Key length validation (32 bytes) | PASS |
+| No eval() or Function() | PASS |
+| Input validation on all public APIs | PASS |
+| No command injection vectors | PASS |
+| Safe file I/O with mkdirSync recursive | PASS |
+
+### 3. Simplicity (Article V)
+
+| Check | Result |
+|-------|--------|
+| Custom tar avoids external dependency | PASS |
+| Flat serialization (no FAISS native dep needed) | PASS |
+| JSON metadata fallback (no SQLite native dep needed) | PASS |
+| Registry uses closure pattern — simple, no class overhead | PASS |
+
+### 4. Traceability (Article VII)
+
+| Check | Result |
+|-------|--------|
+| All files reference REQ-0045 / FR / AC / M in JSDoc | PASS |
+| 39 tests cover all 8 ACs (FR-006: 4 ACs, FR-013: 4 ACs) | PASS |
+| No orphan code — every function traces to a requirement | PASS |
+
+### 5. Module System (Article XIII)
+
+| Check | Result |
+|-------|--------|
+| All lib/ files use ESM | PASS |
+| No CommonJS require in lib/ | PASS |
+| compatibility.js uses `await import('semver')` — ESM-safe | PASS |
+
+---
+
+## Findings
+
+**Blockers**: 0
+**Warnings**: 0
+**Notes**: 1
+
+1. **NOTE**: `builder.js` lines 35-53 contain `tryRequireFaiss()` and `tryRequireSqlite()` stubs that always return `true` but never actually load native dependencies. These are intentional placeholders — native FAISS and SQLite support will be added in a future group.
+
+---
+
+## Test Summary
+
+| Suite | Tests | Pass | Fail | Skip |
+|-------|-------|------|------|------|
+| M5 Package (new) | 19 | 19 | 0 | 0 |
+| M6 Registry (new) | 20 | 20 | 0 | 0 |
+| Full regression suite | 1018 | 1018 | 0 | 0 |
+
+---
+
+## Verdict
+
+**APPROVED** — All 9 new files pass correctness, security, simplicity, traceability, and module system checks. 1 informational note (no action required). Zero regressions (1018/1018 tests pass). Constitutional compliance verified against Articles II, III, V, VI, VII, IX, XIII.
