@@ -155,6 +155,7 @@
 - #34 [x] ~~Improve search capabilities to help Claude be more effective~~ -> [requirements](docs/requirements/REQ-0041-improve-search-capabilities-for-claude-effectiveness/) **Completed: 2026-03-03** *(merged 8356153)*
 - #96 [x] ~~Migrate remaining 4 agents to Enhanced Search sections~~ -> [requirements](docs/requirements/REQ-0043-migrate-remaining-4-agents-to-enhanced-search-sections/) **Completed: 2026-03-03** *(merged 717d625)*
 - [x] ~~Indexed search backend — sub-second full-codebase queries for large codebases (promoted from REQ-0041 FR-013)~~ -> [requirements](docs/requirements/REQ-0044-indexed-search-backend-zoekt/) **Completed: 2026-03-03** *(merged eac5b62)*
+- [A] Semantic search backend — embedding-based natural language queries with CodeBERT as local default model, optional cloud providers (Voyage-3-large, OpenAI). Deferred Phase 2 item from REQ-0041 FR-012. -> [requirements](docs/requirements/REQ-0045-semantic-search-backend/)
 - #35 [ ] Implementation learning capture: if bug fixes were identified during implementation or iteration loops > 1, create a learning for subsequent implementation
 - #27 [ ] /isdlc validate command — on-demand artifact quality check (constitutional + completeness) without running a full workflow
 - #28 [ ] Progressive disclosure / lite mode — expose only constitution → requirements → implement → quality loop for simple projects, full lifecycle opt-in

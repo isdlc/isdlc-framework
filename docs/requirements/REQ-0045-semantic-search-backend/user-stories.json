@@ -1,0 +1,140 @@
+[
+  {
+    "id": "US-001",
+    "title": "Developer generates local embeddings",
+    "story": "As an internal developer, I want to generate embeddings from my local working copy so that Claude has accurate context for my module while I code.",
+    "acceptance_criteria": [
+      "CLI command produces .emb package from current working copy",
+      "Incremental mode only re-embeds changed files",
+      "Package auto-loads into local MCP server",
+      "Works with both Git and SVN working copies"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-014"]
+  },
+  {
+    "id": "US-002",
+    "title": "Customer queries shipped embeddings",
+    "story": "As a customer developer, I want to query pre-built embeddings of the product so that I can find the right classes and patterns for my extensions without needing source code access.",
+    "acceptance_criteria": [
+      "MCP server loads shipped .emb packages on startup",
+      "Query returns relevant class signatures and extension points",
+      "Results come from Interface-tier content (no source code exposed)",
+      "Response within 2 seconds"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003", "FR-004", "FR-011"]
+  },
+  {
+    "id": "US-003",
+    "title": "Release engineer publishes embeddings",
+    "story": "As a release engineer, I want the CI/CD pipeline to automatically generate and publish embedding packages alongside product releases so that customers always have up-to-date embeddings.",
+    "acceptance_criteria": [
+      "Jenkins/GH Actions pipeline generates embeddings per module in parallel",
+      "Content redaction produces Interface and Guided tier variants",
+      "Packages published to Artifactory/Nexus after successful build",
+      "Release bundle validates cross-module compatibility"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-007", "FR-010", "FR-011"]
+  },
+  {
+    "id": "US-004",
+    "title": "Customer receives embedding updates",
+    "story": "As a customer developer, I want to receive updated embeddings when new product versions are released so that my context stays current.",
+    "acceptance_criteria": [
+      "Update checker identifies compatible newer versions",
+      "Downloads validate checksums before replacing local packages",
+      "Previous version retained until new version verified",
+      "Incompatible versions rejected with clear error"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007", "FR-009"]
+  },
+  {
+    "id": "US-005",
+    "title": "Cross-module semantic search",
+    "story": "As a developer working on Order Management, I want to search across all modules so that I can understand how Inventory Management handles stock reservations that my module depends on.",
+    "acceptance_criteria": [
+      "Query orchestrator fans out to relevant module stores",
+      "Results merged and ranked across modules",
+      "Partial results returned if some modules timeout",
+      "Module registry routes queries to relevant domains"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004", "FR-013"]
+  },
+  {
+    "id": "US-006",
+    "title": "Security team approves embedding distribution",
+    "story": "As a security reviewer, I want to verify that shipped embeddings cannot be used to reconstruct source code so that our IP is protected.",
+    "acceptance_criteria": [
+      "Interface-tier embeddings contain only public signatures",
+      "Guided-tier adds summaries but no raw source",
+      "Packages encrypted with per-module AES-256-GCM keys",
+      "Tier is set at generation and immutable after"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-008", "FR-011"]
+  },
+  {
+    "id": "US-007",
+    "title": "Developer uses cloud embedding model",
+    "story": "As a developer with API access, I want to use Voyage-code-3 for higher quality embeddings so that my semantic search results are more accurate.",
+    "acceptance_criteria": [
+      "Cloud model configurable via API key in settings",
+      "Model selection configurable per-module",
+      "Indexes are model-specific (dimensions tracked in manifest)",
+      "Fallback to CodeBERT if cloud model unavailable"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-008",
+    "title": "iSDLC agent uses semantic search",
+    "story": "As an iSDLC agent performing code analysis, I want semantic search available as a modality so that I can find code by meaning rather than exact text match.",
+    "acceptance_criteria": [
+      "Semantic backend registered in search registry",
+      "Router routes modality:semantic queries to backend",
+      "Falls back to grep-glob if MCP server unavailable",
+      "Health check reports server status"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-012"]
+  },
+  {
+    "id": "US-009",
+    "title": "Developer installs semantic search toolchain",
+    "story": "As a developer setting up the iSDLC framework, I want the installer to automatically provision the semantic search toolchain so that I can generate and query embeddings without manual dependency management.",
+    "acceptance_criteria": [
+      "isdlc init / isdlc update installs Tree-sitter and language grammars",
+      "CodeBERT ONNX model downloaded with progress indicator and checksum verification",
+      "faiss-node and better-sqlite3 native bindings installed for the current platform",
+      "Docker image pulled for MCP server (skipped gracefully if Docker unavailable)",
+      "Partial installation allows embedding generation without Docker",
+      "Installer is idempotent — re-running skips already-installed components",
+      "Platform-specific prebuilt binaries used where available (macOS, Linux, Windows)",
+      "Clear error messages with manual installation instructions on failure"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-015"]
+  },
+  {
+    "id": "US-010",
+    "title": "Developer triggers embedding generation during discovery",
+    "story": "As a developer running project discovery on an existing codebase, I want embeddings to be generated automatically so that semantic search is available from the first Claude session after setup.",
+    "acceptance_criteria": [
+      "Before-discovery mode generates flat embeddings from the full source tree",
+      "During-discovery mode runs embedding generation in parallel with architecture analysis",
+      "After-discovery mode re-partitions embeddings into module-aware indexes using discovery output",
+      "Upgrade from flat to module-partitioned reuses existing chunk and vector data",
+      "Generated packages auto-load into the local MCP server",
+      "Progress reported during generation (files processed, time remaining)",
+      "Discovery proceeds even if embedding generation fails (non-blocking)",
+      "User can choose trigger timing or skip embedding generation entirely"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-016"]
+  }
+]

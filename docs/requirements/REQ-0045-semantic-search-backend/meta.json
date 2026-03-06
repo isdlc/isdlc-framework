@@ -1,0 +1,32 @@
+{
+  "source": "manual",
+  "source_id": null,
+  "slug": "REQ-0045-semantic-search-backend",
+  "created_at": "2026-03-05T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification",
+    "security"
+  ],
+  "codebase_hash": "410cf0c",
+  "acceptance": {
+    "accepted_at": "2026-03-06T00:00:00.000Z",
+    "domains": [
+      "requirements",
+      "architecture",
+      "design"
+    ],
+    "amendment_cycles": 0
+  }
+}
