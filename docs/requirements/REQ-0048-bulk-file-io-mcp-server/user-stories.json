@@ -1,0 +1,76 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Batch artifact write after analysis",
+      "persona": "Framework developer",
+      "story": "As a framework developer, I want to write all analysis artifacts in a single tool call so that post-analysis finalization completes in seconds instead of minutes.",
+      "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-001-04"],
+      "priority": "Must Have",
+      "related_frs": ["FR-001", "FR-005", "FR-006"]
+    },
+    {
+      "id": "US-002",
+      "title": "Crash-safe file writes",
+      "persona": "Claude Code user",
+      "story": "As a Claude Code user, I want file writes to be atomic so that a session crash never leaves a half-written file on disk.",
+      "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04"],
+      "priority": "Must Have",
+      "related_frs": ["FR-006"]
+    },
+    {
+      "id": "US-003",
+      "title": "Batch file read for implementation handoff",
+      "persona": "Framework developer",
+      "story": "As a framework developer, I want to read all test case files in a single tool call so that the implementation agent can start coding immediately after test design.",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03"],
+      "priority": "Must Have",
+      "related_frs": ["FR-002", "FR-005"]
+    },
+    {
+      "id": "US-004",
+      "title": "Incremental section update during progressive writes",
+      "persona": "Framework developer",
+      "story": "As a framework developer, I want to update a specific section of a markdown artifact without rewriting the entire file so that progressive writes are faster and generate less I/O.",
+      "acceptance_criteria": ["AC-003-01", "AC-003-02", "AC-003-04", "AC-003-05"],
+      "priority": "Should Have",
+      "related_frs": ["FR-003"]
+    },
+    {
+      "id": "US-005",
+      "title": "Partial failure recovery",
+      "persona": "Claude Code user",
+      "story": "As a Claude Code user, I want to know exactly which files succeeded and which failed in a batch operation so that I can retry only the failures.",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-04"],
+      "priority": "Must Have",
+      "related_frs": ["FR-005"]
+    },
+    {
+      "id": "US-006",
+      "title": "Directory creation for new backlog items",
+      "persona": "Framework developer",
+      "story": "As a framework developer, I want to create artifact directories in batch so that the add and analyze verbs can set up folder structures in a single call.",
+      "acceptance_criteria": ["AC-004-01", "AC-004-02", "AC-004-03"],
+      "priority": "Must Have",
+      "related_frs": ["FR-004"]
+    },
+    {
+      "id": "US-007",
+      "title": "Graceful fallback when server is unavailable",
+      "persona": "Claude Code user",
+      "story": "As a Claude Code user, I want workflows to continue normally even if the bulk I/O MCP server is not installed so that the server is an optional performance enhancement, not a hard dependency.",
+      "acceptance_criteria": ["AC-008-01", "AC-008-02", "AC-008-03"],
+      "priority": "Must Have",
+      "related_frs": ["FR-008"]
+    },
+    {
+      "id": "US-008",
+      "title": "Standalone package for reuse",
+      "persona": "MCP server consumer",
+      "story": "As an MCP server consumer, I want the bulk file I/O server to be a standalone package with no framework-specific dependencies so that I can use it in any Claude Code project.",
+      "acceptance_criteria": ["AC-009-01", "AC-009-02", "AC-009-03", "AC-009-04"],
+      "priority": "Should Have",
+      "related_frs": ["FR-009"]
+    }
+  ]
+}

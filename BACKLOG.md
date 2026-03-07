@@ -351,7 +351,7 @@
 - #98 [ ] Workflow recovery — retry/redo current phase without restarting
 - #99 [ ] Workflow recovery — rollback to earlier phase
 - #100 [x] Roundtable depth control — adaptive brief/standard/deep analysis -> [requirements](docs/requirements/REQ-0046-roundtable-depth-control-adaptive-brief-standard-deep/)
-- #108a [ ] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/)
+- #108a [A] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/)
   - Split from #108. Contributing personas add observations without owning artifacts. Pairs with #100 (depth + who).
 
 **Performance**
