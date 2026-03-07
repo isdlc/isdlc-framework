@@ -350,7 +350,7 @@
 - #97 [ ] Gate profiles — configurable strictness levels (rapid/standard/strict)
 - #98 [ ] Workflow recovery — retry/redo current phase without restarting
 - #99 [ ] Workflow recovery — rollback to earlier phase
-- #100 [A] Roundtable depth control — adaptive brief/standard/deep analysis -> [requirements](docs/requirements/REQ-0046-roundtable-depth-control-adaptive-brief-standard-deep/)
+- #100 [x] Roundtable depth control — adaptive brief/standard/deep analysis -> [requirements](docs/requirements/REQ-0046-roundtable-depth-control-adaptive-brief-standard-deep/)
 - #108a [ ] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/)
   - Split from #108. Contributing personas add observations without owning artifacts. Pairs with #100 (depth + who).
 
@@ -373,6 +373,9 @@
   - Remainder of original #108. Requires artifact ownership model changes. Depends on #108a.
 
 ## Completed
+
+### 2026-03-07
+- [x] #100: Roundtable depth control — adaptive brief/standard/deep analysis. Dynamic depth sensing (FR-001), bidirectional adjustment (FR-002), inference tracking (FR-003), tiered assumption views (FR-004), scope recommendation (FR-005), --light deprecation (FR-006), topic file restructuring (FR-007). 31 prompt verification tests, 1277 total tests, 0 regressions. *(merged 13ddfa7)*
 
 ### 2026-03-03
 - [x] #96: Migrate remaining 4 agents to Enhanced Search sections — upgrade-engineer, execution-path-tracer, cross-validation-verifier, roundtable-analyst. 39 tests, 0 regressions. *(merged 717d625)*
