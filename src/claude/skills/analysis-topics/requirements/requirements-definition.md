@@ -21,9 +21,18 @@ artifact_sections:
   - artifact: "traceability-matrix.csv"
     sections: ["all"]
 depth_guidance:
-  brief: "Accept user-provided requirements. Validate for testability. 2-3 exchanges."
-  standard: "Probe for edge cases and implicit requirements. 4-6 exchanges."
-  deep: "Challenge every requirement. Identify hidden dependencies. 8+ exchanges."
+  brief:
+    behavior: "Accept user-provided requirements. Validate each FR for testability. Fill gaps from codebase conventions."
+    acceptance: "At least 3 FRs with testable ACs. MoSCoW assigned. Out-of-scope documented or inferred."
+    inference_policy: "Infer technical constraints, quality attributes, and out-of-scope items from codebase patterns. Tag inferences as Medium confidence."
+  standard:
+    behavior: "Probe for edge cases and implicit requirements. Challenge vague ACs. Explore boundary conditions."
+    acceptance: "All coverage criteria met. Dependencies mapped. Confidence indicators assigned to all FRs."
+    inference_policy: "Infer only non-critical NFRs and secondary dependencies. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Challenge every requirement. Identify hidden dependencies. Explore all boundary conditions and error scenarios."
+    acceptance: "All coverage criteria met with high-confidence data. All FRs have High confidence. No inferred ACs."
+    inference_policy: "Minimize inference. Every FR and AC must be user-confirmed. Only infer documentation-level details."
 source_step_files:
   - "01-04"
   - "01-05"

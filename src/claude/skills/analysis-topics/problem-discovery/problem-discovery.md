@@ -16,9 +16,18 @@ artifact_sections:
   - artifact: "quick-scan.md"
     sections: ["1. Scope"]
 depth_guidance:
-  brief: "Accept surface-level answers. 1-2 questions max."
-  standard: "Probe each area with follow-up. 3-5 exchanges."
-  deep: "Exhaustive exploration. Challenge every assumption. 6+ exchanges."
+  brief:
+    behavior: "Accept the user's framing at face value. Validate for completeness. Fill gaps from draft and codebase analysis."
+    acceptance: "Problem statement exists, at least one user type identified, success metric stated or inferred."
+    inference_policy: "Infer stakeholders, pain points, and success metrics from draft content and codebase patterns. Tag inferences as Medium confidence."
+  standard:
+    behavior: "Probe each area with follow-up questions. Challenge vague answers. Explore edge cases in user journeys."
+    acceptance: "All coverage criteria met with user-confirmed data. Stakeholder interests documented."
+    inference_policy: "Infer only secondary stakeholders and minor pain points. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Exhaustive exploration. Challenge every assumption. Map all stakeholder interests. Explore competing priorities."
+    acceptance: "All coverage criteria met with high-confidence user-confirmed data. No unresolved ambiguities."
+    inference_policy: "Minimize inference. Ask rather than assume. Only infer when user explicitly declines to elaborate."
 source_step_files:
   - "00-01"
   - "01-01"

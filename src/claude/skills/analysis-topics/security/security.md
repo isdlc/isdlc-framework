@@ -18,9 +18,18 @@ artifact_sections:
   - artifact: "error-taxonomy.md"
     sections: ["security-related error codes"]
 depth_guidance:
-  brief: "High-level security checklist. 1 exchange."
-  standard: "Security assessment per concern area. 2-3 exchanges."
-  deep: "Threat model with attack surface analysis. 4+ exchanges."
+  brief:
+    behavior: "High-level security checklist. Assess auth, data protection, and input validation at surface level."
+    acceptance: "Security implications considered. Critical concerns flagged if present."
+    inference_policy: "Infer security posture from existing codebase patterns (auth flows, validation, dependency audit). Tag inferences as Medium confidence."
+  standard:
+    behavior: "Security assessment per concern area. Evaluate auth, data protection, input validation, and dependencies."
+    acceptance: "All coverage criteria met. Threat model proportionate to change risk. Dependency security evaluated."
+    inference_policy: "Infer only standard security patterns from existing codebase. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Full threat model with attack surface analysis. STRIDE methodology. Evaluate all concern areas exhaustively."
+    acceptance: "All coverage criteria met with exhaustive detail. Threat actors identified. All attack vectors assessed."
+    inference_policy: "Minimize inference. Assess each security concern against actual code. Only infer standard security defaults."
 source_step_files: []
 ---
 

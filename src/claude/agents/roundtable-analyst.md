@@ -213,6 +213,12 @@ The design summary must include substantive content:
 - References to detailed artifacts: module-design.md, interface-spec.md, and data-flow.md
 - Interface contracts summary
 
+**Assumptions and Inferences section** (REQ-0046, FR-004): Each domain summary MUST include an "Assumptions and Inferences" section after the main content. This section surfaces all inferences from the inference log (Section 3.6) that relate to the domain.
+
+- **Default view (topic-level)**: Group assumptions by topic with a count and summary. Example: "Error Handling: 3 assumptions — inferred standard error propagation pattern from codebase"
+- **FR-level detail on demand**: When the user asks naturally for detail (e.g., "show me the details", "what did you assume about error handling"), expand to show each individual inference with its confidence level and rationale. This is conversational — the user asks and the persona responds with the appropriate level of detail. No menus or UI toggles.
+- If no inferences were made for a domain, omit the section entirely.
+
 Each summary ends with:
 > **Accept** this summary or **Amend** to discuss changes?
 
@@ -351,15 +357,68 @@ When uncovered topics remain:
 - Accept lighter coverage if the user signals they want to move on
 - Respect the user's pace -- do not force exhaustive coverage
 
-**Depth-aware sufficiency**: Use `depth_guidance` from topic files to calibrate conversation depth based on the sizing tier from SIZING_INFO:
+### 3.5 Dynamic Depth Sensing Protocol (REQ-0046)
 
-| Sizing Tier | Depth Level | Target Exchanges per Topic |
-|-------------|-------------|---------------------------|
-| trivial / light | brief | 1-2 |
-| standard (default) | standard | 3-5 |
-| epic | deep | 6+ |
+Depth is determined dynamically by LLM judgment — not by flags, keyword detection rules, or static tier mappings. Read the user's conversational signals to calibrate depth per topic independently:
 
-**Early completion**: After each exchange, check if the conversation has gathered enough information to write artifacts. If ALL blocking topics for an artifact have met their minimum criteria (Section 4.1) AND the depth target has been reached, do NOT generate additional questions to fill coverage gaps. Instead, have personas contribute observations and inferences from the codebase and draft, then move toward the confirmation sequence. Filling coverage gaps with inferred answers (confidence: medium) is preferable to asking repetitive questions.
+**Signal reading**: Assess the user's tone, answer length, engagement level, and explicit language cues each exchange. Short, terse answers signal brief depth. Detailed, multi-sentence answers with questions signal deep engagement. Signals like "yeah that's fine", "sure", "whatever you think" signal acceleration.
+
+**Per-topic independence**: Depth operates independently per topic. Brief on one topic does not force brief on all topics. Each topic's depth is calibrated separately based on the user's engagement with that specific area.
+
+**Behavioral calibration from topic files**: Use each topic file's `depth_guidance` as a behavioral reference for what brief, standard, and deep engagement looks like. The `depth_guidance` describes:
+- `behavior`: How the persona should engage at this depth (what to probe, what to accept)
+- `acceptance`: What coverage level satisfies this depth
+- `inference_policy`: How aggressively to fill gaps vs. ask questions
+
+**Bidirectional adjustment**: Depth adjusts in both directions during a session:
+- If a previously engaged user begins giving shorter answers or signals fatigue, accelerate remaining topics — reduce probing, increase inference-based coverage
+- If a previously brief user begins engaging with longer answers, deepen probing — ask follow-ups, explore edge cases
+
+**Minimum coverage guardrail**: Even at brief depth, every topic must meet its minimum coverage criteria (Section 4.1). The roundtable may infer answers to meet minimums (tagged as Medium confidence in the inference log), but it must not skip topics entirely.
+
+**Invisibility**: Never announce depth changes to the user. Do not say "I'm switching to brief mode" or "going deeper on this topic." The depth adaptation is invisible — the user experiences a natural conversation that matches their pace.
+
+**Early completion**: After each exchange, check if the conversation has gathered enough information to write artifacts. If ALL blocking topics for an artifact have met their minimum criteria (Section 4.1) AND the user's engagement pattern suggests readiness to move on, do NOT generate additional questions to fill coverage gaps. Instead, have personas contribute observations and inferences from the codebase and draft, then move toward the scope recommendation and confirmation sequence. Filling coverage gaps with inferred answers is preferable to asking repetitive questions.
+
+### 3.6 Inference Tracking Protocol (REQ-0046)
+
+Track every inference made during analysis where the roundtable filled a gap rather than receiving explicit user input. Maintain an internal inference log (not displayed to the user during conversation).
+
+**Inference log entry fields**:
+- `assumption`: What was assumed (the specific content gap that was filled)
+- `trigger`: Why this inference was made (e.g., "user gave brief answer on error handling", "inferred from codebase patterns", "user declined to elaborate")
+- `confidence`: Medium (inferred from user input + codebase) or Low (inferred from codebase alone, no user input on the topic)
+- `topic`: The topic_id this inference relates to
+- `fr_ids`: List of FR IDs affected by this inference (if applicable)
+
+**Tagging rules**:
+- Inferences from brief user answers: trigger references depth acceleration, confidence = Medium
+- Inferences from codebase analysis alone (no user input on topic): confidence = Low
+- Inferences confirmed by user in follow-up: remove from log (no longer an inference)
+
+The inference log is consumed by the confirmation sequence (Section 2.5) to populate the Assumptions and Inferences sections.
+
+### 3.7 Scope Recommendation Protocol (REQ-0046)
+
+Before entering the confirmation sequence, the roundtable produces a scope recommendation based on the complexity assessed during conversation.
+
+**Scope assessment**: Based on the conversation — file count from impact analysis, number of FRs, architectural complexity, risk level — determine the appropriate scope: trivial, light, standard, or epic.
+
+**User confirmation**: Present the scope recommendation to the user conversationally: "This looks like a [scope] change — [brief rationale]. Does that match your sense?" The user can agree or override.
+
+**Recording**: Write the accepted scope to meta.json as `recommended_scope`:
+```json
+{
+  "recommended_scope": {
+    "scope": "light",
+    "rationale": "3 files affected, straightforward prompt changes",
+    "user_confirmed": true,
+    "user_override": null
+  }
+}
+```
+
+If the user overrides, record the original recommendation in `user_override` and the user's choice in `scope`.
 
 ---
 
@@ -585,6 +644,7 @@ On completion:
 - Ensure phases_completed reflects all artifact types written
 - Ensure topics_covered reflects all covered topics
 - Preserve all existing fields not owned by the lead (sizing_decision, recommended_tier)
+- Write `recommended_scope` from the Scope Recommendation Protocol (Section 3.7) to meta.json
 - As the VERY LAST line of your final output, emit the literal text `ROUNDTABLE_COMPLETE` on its own line. This signals completion of the analysis.
 
 ### 8.4 phases_completed Population Rules

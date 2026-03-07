@@ -1,0 +1,67 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Adaptive depth for simple tasks",
+      "persona": "Developer",
+      "story": "As a developer analyzing a simple change, I want the roundtable to sense my brevity and reduce probing so that I spend minutes, not half an hour, on analysis for straightforward work.",
+      "acceptance_criteria": ["AC-001-01", "AC-001-04", "AC-002-01"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-001", "FR-002"]
+    },
+    {
+      "id": "US-002",
+      "title": "Deep engagement on complex tasks",
+      "persona": "Developer",
+      "story": "As a developer analyzing a complex change, I want the roundtable to sense my engagement and probe deeper so that edge cases and hidden requirements are surfaced before I start building.",
+      "acceptance_criteria": ["AC-001-02", "AC-001-03", "AC-002-02"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-001", "FR-002"]
+    },
+    {
+      "id": "US-003",
+      "title": "Transparent assumptions during confirmation",
+      "persona": "Developer",
+      "story": "As a developer reviewing analysis results, I want to see what the roundtable assumed on my behalf so that I can catch incorrect inferences before they become requirements.",
+      "acceptance_criteria": ["AC-003-01", "AC-004-01", "AC-004-02"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-003", "FR-004"]
+    },
+    {
+      "id": "US-004",
+      "title": "Drill into assumption details on demand",
+      "persona": "Developer",
+      "story": "As a developer who sees a topic-level assumption summary, I want to expand into FR-level detail on demand so that I can review specific inferences without being forced to read everything.",
+      "acceptance_criteria": ["AC-004-03", "AC-004-04"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-004"]
+    },
+    {
+      "id": "US-005",
+      "title": "Scope recommendation from conversation",
+      "persona": "Developer",
+      "story": "As a developer who has just completed analysis, I want the roundtable to recommend the appropriate build scope based on what it learned so that I don't need to decide upfront whether to pass --light.",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-005"]
+    },
+    {
+      "id": "US-006",
+      "title": "No need to know about --light flag",
+      "persona": "Developer",
+      "story": "As a developer who has never heard of --light, I want the framework to figure out scope automatically so that I get the right level of analysis without learning framework flags.",
+      "acceptance_criteria": ["AC-006-01", "AC-006-02"],
+      "priority": "Should Have",
+      "fr_refs": ["FR-006"]
+    },
+    {
+      "id": "US-007",
+      "title": "Mixed depth across topics",
+      "persona": "Developer",
+      "story": "As a developer who cares deeply about one aspect of a change but not others, I want the roundtable to go deep where I engage and brief where I don't so that my time is spent where it matters.",
+      "acceptance_criteria": ["AC-001-03", "AC-002-01", "AC-002-02"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-001", "FR-002"]
+    }
+  ]
+}

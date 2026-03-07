@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "code-index-mcp": {
+      "command": "code-index-mcp",
+      "args": ["--project-path", "."]
+    }
+  }
+}

@@ -40,11 +40,12 @@ const REQUIRES_BRANCH = {
 
 function parseArgs() {
     const args = process.argv.slice(2);
-    const result = { type: null, description: null, slug: null, light: false, supervised: false };
+    const result = { type: null, description: null, slug: null, light: false, supervised: false, startPhase: null };
     for (let i = 0; i < args.length; i++) {
         if (args[i] === '--type' && args[i + 1]) { result.type = args[i + 1]; i++; }
         if (args[i] === '--description' && args[i + 1]) { result.description = args[i + 1]; i++; }
         if (args[i] === '--slug' && args[i + 1]) { result.slug = args[i + 1]; i++; }
+        if (args[i] === '--start-phase' && args[i + 1]) { result.startPhase = args[i + 1]; i++; }
         if (args[i] === '--light') result.light = true;
         if (args[i] === '--supervised') result.supervised = true;
     }
@@ -116,6 +117,11 @@ function main() {
         let phases = [...WORKFLOW_PHASES[args.type]];
         if (args.light) {
             phases = phases.filter(p => p !== '03-architecture' && p !== '04-design');
+        }
+        // Skip to start phase (for pre-analyzed items)
+        if (args.startPhase) {
+            const idx = phases.indexOf(args.startPhase);
+            if (idx > 0) phases = phases.slice(idx);
         }
 
         // Build phase_status

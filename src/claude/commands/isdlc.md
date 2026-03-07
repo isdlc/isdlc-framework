@@ -637,6 +637,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
        args = args with "-light" removed (preserve remaining text as item identifier)
    item_input = args.trim()
    ```
+   **--light deprecation notice** (REQ-0046): If lightFlag is true, emit: "Note: The --light flag is deprecated for depth control. The roundtable now adapts depth automatically and recommends scope based on the conversation. The flag will pre-set the scope recommendation to 'light' as a starting suggestion during the transition period."
 3. **Detect input type** (REQ-0037): Classify item_input as one of:
    - **External ref** (`#N` for GitHub, `PROJECT-N` for Jira): proceed to optimized dependency group path (step 3a)
    - **Non-external ref** (slug, item number, description): proceed to standard resolution (step 3b)
@@ -847,10 +848,38 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      If user confirms: run `add` handler, then proceed to step 4
    - If no match and input looks like a reference: ERROR per error taxonomy ERR-BUILD-001
 4. Read meta.json using `readMetaJson()` -- this is now actionable for build auto-detection.
+   If `meta.recommended_scope` exists (written by the roundtable during `/isdlc analyze`), use it as an input signal for tier selection in step 4a-tier alongside `recommended_tier`.
+
+**--- REQ-0026: Build Auto-Detection Steps 4a-4e ---**
+
+**Step 4a: Compute analysis status** (FR-001, FR-002, FR-003)
+
+Read feature workflow phases from `workflows.json` (`workflows.feature.phases`).
+Call `computeStartPhase(meta, featurePhases)` from `three-verb-utils.cjs`.
+This returns `{ status, startPhase, completedPhases, remainingPhases, warnings }`.
+If `warnings` is non-empty, log each warning to stderr.
+Let `analysisStatus = result.status`, `startPhase = result.startPhase`.
+If `analysisStatus === 'raw'`: skip steps 4b-4e, fall through to step 5 (full workflow).
 
 **--- GH-59: Tier Selection (Step 4a-tier) ---**
 
 Step 4a-tier: Tier Selection (GH-59, FR-005, FR-006, FR-008, NFR-001, AD-07)
+
+**IMPORTANT**: Tier selection ONLY applies when analysis is incomplete. When analysis is
+fully complete (`analysisStatus === 'analyzed'`), the remaining phases are fixed
+(implementation phases only) — the tier choice cannot affect which phases run. Skip
+the tier menu entirely and proceed to Step 4b.
+
+0. Guard: Skip tier selection when analysis is complete:
+   IF analysisStatus === 'analyzed':
+       // All analysis phases done. Remaining phases (05+) are fixed regardless of tier.
+       // Proceed directly to Step 4b (staleness check).
+       SKIP to Step 4b.
+   IF analysisStatus === 'raw':
+       // No analysis done. Tier selection was already skipped (Step 4a skips to step 5).
+       // This guard is redundant but explicit for clarity.
+       SKIP to Step 4b.
+   // Only 'partial' status reaches the tier menu below.
 
 1. Read recommended tier from meta (already loaded in step 4):
    LET recommended = meta.recommended_tier OR null
@@ -918,23 +947,12 @@ Step 4a-tier: Tier Selection (GH-59, FR-005, FR-006, FR-008, NFR-001, AD-07)
    ELSE IF selected === "epic":
        Display: "Epic decomposition is not yet available. Running standard workflow."
        // CON-003: epic placeholder routes to standard
-       // Fall through to step 4a (computeStartPhase) unchanged
+       // Fall through to step 4b unchanged
    ELSE:
-       // light or standard: fall through to step 4a unchanged
+       // light or standard: fall through to step 4b unchanged
        // existing sizing at 3e-sizing handles light/standard intensity
 
 **--- End GH-59: Tier Selection ---**
-
-**--- REQ-0026: Build Auto-Detection Steps 4a-4e ---**
-
-**Step 4a: Compute analysis status** (FR-001, FR-002, FR-003)
-
-Read feature workflow phases from `workflows.json` (`workflows.feature.phases`).
-Call `computeStartPhase(meta, featurePhases)` from `three-verb-utils.cjs`.
-This returns `{ status, startPhase, completedPhases, remainingPhases, warnings }`.
-If `warnings` is non-empty, log each warning to stderr.
-Let `analysisStatus = result.status`, `startPhase = result.startPhase`.
-If `analysisStatus === 'raw'`: skip steps 4b-4e, fall through to step 5 (full workflow).
 
 **Step 4b: Check staleness** (FR-004, FR-006, NFR-002) -- only if `analysisStatus !== 'raw'`
 
