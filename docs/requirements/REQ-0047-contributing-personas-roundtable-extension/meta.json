@@ -31,6 +31,7 @@
   "acceptance": {
     "accepted_at": "2026-03-07T23:30:00Z",
     "domains": ["requirements", "architecture", "design"],
-    "amendment_cycles": 1
+    "amendment_cycles": 2,
+    "amendment_2_summary": "Hackability review: disabled_personas config, per-analysis override flags, silent mode drift suppression, skipped-file feedback, gitignore exception, user-authored format freedom, authoring guidance, persona discovery listing"
   }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "@isdlc/bulk-fs-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for batch file I/O operations with atomic writes and per-file error reporting",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "test": "node --test *.test.js",
+    "test:integration": "node --test integration/*.test.js",
+    "test:e2e": "node --test e2e/*.test.js",
+    "test:all": "node --test *.test.js integration/*.test.js e2e/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage *.test.js"
+  },
+  "keywords": ["mcp", "file-io", "batch", "atomic-write"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -246,6 +246,24 @@ All fenced Bash/sh code blocks in agent and command markdown files MUST contain 
 Agent files reference this convention with:
 > See **Single-Line Bash Convention** in CLAUDE.md.
 
+### Tool Call Efficiency
+
+Minimize wall-clock time by maximizing parallel tool calls and avoiding unnecessary work.
+
+**Reads — choose the right tool:**
+- **Discovery and orientation**: Use `mcp__code-index-mcp__search_code_advanced` and `mcp__code-index-mcp__get_file_summary` first. Find which files matter, understand their structure, locate relevant symbols — all without reading full file contents. Don't read files speculatively; search semantically first, then read only what you need.
+- **Editing prep**: Use `Read` when you need exact line content for `Edit` calls. Read all target files in a single parallel batch — if you need 6 files, read all 6 at once.
+- Never re-read a file you already have in context unless it was modified since you last read it.
+
+**Writes:**
+- Prefer `Edit` over `Write` for partial changes. `Write` rewrites the entire file and is only justified when >50% of lines change.
+- Batch independent `Edit` calls on different files into a single parallel response. Edits to the same file must be sequential (each changes the content the next targets).
+- Multiple edits to the same file: if >4 targeted edits are needed, consider a single `Write` instead — it may be faster overall.
+
+**Planning before acting:**
+- Before starting a multi-file update, list all files and changes needed. Group into parallel batches by dependency. Execute batches, not individual calls.
+- A 10-file update should take 2-3 tool call rounds (read batch → write batch → verify), not 15+.
+
 ---
 
 ## Project Context

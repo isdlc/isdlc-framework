@@ -2,7 +2,8 @@
 Status: Draft
 Confidence: High
 Last Updated: 2026-03-07
-Coverage: specification 85%
+Coverage: specification 95%
+Amendment: 2 (hackability review — disabled filtering, per-analysis overrides, skipped-file feedback)
 Source: REQ-0047 / GH-108a
 ---
 
@@ -20,23 +21,30 @@ Source: REQ-0047 / GH-108a
        +---> Read .isdlc/personas/*.md (user personas)
        +---> Apply override-by-copy (filename match -> user wins)
        +---> Compare version fields -> collect DriftWarning[]
-       +---> Read .isdlc/roundtable.yaml -> parse verbosity + default_personas
+       +---> Read .isdlc/roundtable.yaml -> parse verbosity + default_personas + disabled_personas
+       +---> Collect skippedFiles[] for validation failures
        +---> Inject into session cache:
        |       ROUNDTABLE_CONTEXT (all resolved persona content)
-       |       ROUNDTABLE_CONFIG (verbosity, default_personas)
-       |       DRIFT_WARNINGS (if any)
+       |       ROUNDTABLE_CONFIG (verbosity, default_personas, disabled_personas)
+       |       DRIFT_WARNINGS (if any; suppressed in silent mode)
+       |       SKIPPED_FILES (if any; suppressed in silent mode)
        v
 [analyze-item.cjs: getPersonaPaths()]
        |
        +---> Same scan + override logic
-       +---> Return { paths[], driftWarnings[] }
+       +---> Check for per-analysis flags (--verbose, --silent, --personas)
+       +---> Per-analysis flags override config values
+       +---> Return { paths[], driftWarnings[], skippedFiles[] }
        v
 [Dispatch Prompt Assembly]
        |
        +---> PERSONA_CONTEXT: resolved persona file contents
-       +---> ROUNDTABLE_VERBOSITY: "bulleted" | "conversational" | "silent"
+       +---> ROUNDTABLE_VERBOSITY: "bulleted" | "conversational" | "silent" (config or flag)
        +---> ROUNDTABLE_ROSTER_DEFAULTS: ["security-reviewer", ...]
-       +---> ROUNDTABLE_DRIFT_WARNINGS: [warning strings]
+       +---> ROUNDTABLE_ROSTER_DISABLED: ["ux-reviewer", ...]
+       +---> ROUNDTABLE_DRIFT_WARNINGS: [warning strings] (suppressed in silent)
+       +---> ROUNDTABLE_SKIPPED_FILES: [skipped file strings] (suppressed in silent)
+       +---> ROUNDTABLE_PRESELECTED_ROSTER: [from --personas flag, empty if not set]
        v
 [Roundtable Agent Receives Dispatch]
 ```
@@ -54,37 +62,56 @@ Source: REQ-0047 / GH-108a
        +---> "conversational" or "bulleted":
                |
                v
-       [Read draft/issue content]
+       [Check for --personas pre-selection]
                |
-               v
-       [Extract keywords from content]
+               +---> --personas flag set:
+               |       Use pre-selected roster + primaries
+               |       SKIP roster proposal dialogue
+               |       --> go to analysis
                |
-               v
-       [Match keywords against persona triggers[] arrays]
-               |
-               +---> 2+ hits: CONFIDENT match
-               +---> 1 hit: UNCERTAIN match
-               +---> 0 hits: NO match
-               v
-       [Build roster proposal]
-               |
-               +---> Always include: Maya (BA), Alex (Arch), Jordan (Design)
-               +---> Always include: default_personas from config
-               +---> Include: CONFIDENT matches
-               +---> Flag: UNCERTAIN matches ("also considering...")
-               +---> Flag: domain needs without persona file
-               v
-       [Present to user]
-               |
-               "Based on this issue, I think we need: [confident list]."
-               "I'm also considering [uncertain list] given [reason]."
-               "What do you think?"
-               |
-               v
-       [User confirms / amends]
-               |
-               v
-       [Finalize active roster for session]
+               +---> No pre-selection:
+                       |
+                       v
+               [Read draft/issue content]
+                       |
+                       v
+               [Extract keywords from content]
+                       |
+                       v
+               [Filter out disabled_personas from candidates]
+                       |
+                       v
+               [Match keywords against remaining persona triggers[] arrays]
+                       |
+                       +---> 2+ hits: CONFIDENT match
+                       +---> 1 hit: UNCERTAIN match
+                       +---> 0 hits: AVAILABLE (shown for discovery)
+                       v
+               [Build roster proposal]
+                       |
+                       +---> Always include: Maya (BA), Alex (Arch), Jordan (Design)
+                       +---> Always include: default_personas (unless also disabled)
+                       +---> Include: CONFIDENT matches
+                       +---> Flag: UNCERTAIN matches ("also considering...")
+                       +---> List: AVAILABLE unmatched personas
+                       +---> Flag: domain needs without persona file
+                       +---> Mention: skipped files with reasons (if any)
+                       v
+               [Present to user]
+                       |
+                       "Based on this issue, I think we need: [confident list]."
+                       "I'm also considering [uncertain list] given [reason]."
+                       "Also available: [unmatched list]"
+                       "Note: [skipped file] couldn't be loaded ([reason])"
+                       "What do you think?"
+                       |
+                       v
+               [User confirms / amends]
+                       |
+                       (User can add any persona, including disabled ones)
+                       |
+                       v
+               [Finalize active roster for session]
 ```
 
 ## 3. Verbosity Rendering Flow
@@ -191,11 +218,53 @@ Source: REQ-0047 / GH-108a
 [Roundtable Agent Start]
        |
        v
-[If warnings exist (all modes, including silent):]
+[Check ROUNDTABLE_VERBOSITY]
        |
-       "Note: Your override of security-reviewer.md is based on
-        v1.0.0 but the framework now ships v1.1.0. Review the changes?"
+       +---> "silent":
+       |       Log drift warnings internally
+       |       Do NOT display to user (consistent with no-persona-framing contract)
+       |
+       +---> "conversational" or "bulleted":
+               |
+               [If warnings exist:]
+               |
+               "Note: Your override of security-reviewer.md is based on
+                v1.0.0 but the framework now ships v1.1.0. Review the changes?"
+               |
+               v
+       [Proceed with analysis (non-blocking)]
+```
+
+## 7. Per-Analysis Override Flow
+
+```
+[User invokes analyze verb]
        |
        v
-[Proceed with analysis (non-blocking)]
+[Parse CLI flags]
+       |
+       +---> --verbose: set effective_verbosity = "conversational"
+       +---> --silent: set effective_verbosity = "silent"
+       +---> --personas security,compliance: set preselected_roster
+       +---> (no flags): use config values from .isdlc/roundtable.yaml
+       |
+       v
+[Merge: per-analysis flags > config > defaults]
+       |
+       +---> ROUNDTABLE_VERBOSITY = effective_verbosity
+       +---> ROUNDTABLE_PRESELECTED_ROSTER = preselected_roster (if any)
+       +---> Config file NOT modified
+       v
+[Dispatch with resolved values]
+
+[Mid-analysis natural language override]
+       |
+       User says: "switch to conversational" / "show me the full discussion"
+       |
+       v
+[Agent adjusts verbosity for remainder of session]
+       |
+       +---> Changes rendering mode only
+       +---> No config file modification
+       +---> No re-run of roster proposal
 ```

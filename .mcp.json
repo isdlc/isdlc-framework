@@ -3,6 +3,10 @@
     "code-index-mcp": {
       "command": "code-index-mcp",
       "args": ["--project-path", "."]
+    },
+    "bulk-fs-mcp": {
+      "command": "node",
+      "args": ["packages/bulk-fs-mcp/index.js"]
     }
   }
 }

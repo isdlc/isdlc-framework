@@ -22,7 +22,7 @@
     "title": "Confirm or amend persona roster",
     "persona": "Framework user",
     "story": "As a framework user, I want to see which personas the framework proposes for my analysis and be able to add or remove perspectives before the roundtable begins.",
-    "acceptance_criteria": ["AC-003-02", "AC-003-03", "AC-003-04", "AC-003-07"],
+    "acceptance_criteria": ["AC-003-02", "AC-003-03", "AC-003-04", "AC-003-07", "AC-003-10"],
     "priority": "Must Have",
     "related_frs": ["FR-003"]
   },
@@ -39,8 +39,8 @@
     "id": "US-005",
     "title": "Set project-level roundtable preferences",
     "persona": "Framework customizer",
-    "story": "As a framework customizer, I want to set verbosity mode and default personas in a config file so that my team's preferences apply to every analysis automatically.",
-    "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-06"],
+    "story": "As a framework customizer, I want to set verbosity mode, default personas, and disabled personas in a config file so that my team's preferences apply to every analysis automatically.",
+    "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-06", "AC-005-07"],
     "priority": "Must Have",
     "related_frs": ["FR-005"]
   },
@@ -58,7 +58,7 @@
     "title": "Get notified when shipped persona updates",
     "persona": "Framework customizer",
     "story": "As a framework customizer who has overridden a persona, I want to be notified when the framework ships a newer version so that I can review improvements and update my override if needed.",
-    "acceptance_criteria": ["AC-010-01", "AC-010-02", "AC-010-03", "AC-010-04"],
+    "acceptance_criteria": ["AC-010-01", "AC-010-02", "AC-010-03", "AC-010-04", "AC-010-05"],
     "priority": "Should Have",
     "related_frs": ["FR-010"]
   },
@@ -76,8 +76,53 @@
     "title": "Create custom domain expert",
     "persona": "Framework customizer",
     "story": "As a framework customizer, I want to use the blank Domain Expert template to create a persona for my project's specific domain (e.g., healthcare compliance, fintech regulations), so that analysis includes my domain's unique constraints.",
-    "acceptance_criteria": ["AC-002-06", "AC-001-04"],
+    "acceptance_criteria": ["AC-002-06", "AC-002-07", "AC-001-04"],
     "priority": "Must Have",
     "related_frs": ["FR-002", "FR-001"]
+  },
+  {
+    "id": "US-010",
+    "title": "Suppress unwanted built-in persona",
+    "persona": "Framework customizer",
+    "story": "As a framework customizer, I want to disable specific built-in personas so that they are never proposed during roster selection without having to amend the roster every time.",
+    "acceptance_criteria": ["AC-005-07"],
+    "priority": "Must Have",
+    "related_frs": ["FR-005"]
+  },
+  {
+    "id": "US-011",
+    "title": "Override verbosity for one analysis",
+    "persona": "Framework user",
+    "story": "As a framework user, I want to override the project-level verbosity for a single analysis (e.g., use conversational mode for a complex issue) without editing the config file.",
+    "acceptance_criteria": ["AC-011-01", "AC-011-02", "AC-011-04", "AC-011-05"],
+    "priority": "Should Have",
+    "related_frs": ["FR-011"]
+  },
+  {
+    "id": "US-012",
+    "title": "Pre-select roster via command flag",
+    "persona": "Framework user",
+    "story": "As a framework user, I want to specify which personas to include when I start an analysis so that I can skip the roster proposal dialogue and get straight to work.",
+    "acceptance_criteria": ["AC-011-03", "AC-011-05"],
+    "priority": "Should Have",
+    "related_frs": ["FR-011"]
+  },
+  {
+    "id": "US-013",
+    "title": "Share personas with team via version control",
+    "persona": "Framework customizer",
+    "story": "As a framework customizer, I want my custom personas in .isdlc/personas/ to be committed to version control so that my entire team benefits from the same domain expertise during analysis.",
+    "acceptance_criteria": ["AC-005-08"],
+    "priority": "Must Have",
+    "related_frs": ["FR-005"]
+  },
+  {
+    "id": "US-014",
+    "title": "Get feedback when custom persona fails to load",
+    "persona": "Framework customizer",
+    "story": "As a framework customizer who has authored a custom persona, I want to be told during roster proposal if my persona file was skipped due to formatting issues so that I can fix it.",
+    "acceptance_criteria": ["AC-003-09"],
+    "priority": "Must Have",
+    "related_frs": ["FR-003"]
   }
 ]

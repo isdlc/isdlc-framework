@@ -2,7 +2,8 @@
 Status: Draft
 Confidence: High
 Last Updated: 2026-03-07
-Coverage: specification 85%
+Coverage: specification 95%
+Amendment: 2 (hackability review — disabled_personas, per-analysis flags, gitignore, skipped-file feedback)
 Source: REQ-0047 / GH-108a
 ---
 
@@ -36,12 +37,18 @@ function getPersonaPaths(projectRoot: string): {
 3. For each `userMap` entry:
    - If `builtInMap` has same key: override (use user path), compare versions, collect warning if drift
    - If not: add user path as new persona
-4. Return merged paths + any drift warnings
+4. Collect `skippedFiles: SkippedFile[]` for any persona that failed validation
+5. Return merged paths + drift warnings + skipped files
+
+**SkippedFile type**:
+```javascript
+/** @typedef {{ filename: string, reason: string }} SkippedFile */
+```
 
 **Error handling**:
-- `.isdlc/personas/` does not exist: return built-in paths only, no warnings
-- File read error on individual persona: skip file, continue
-- Missing/malformed frontmatter: skip file, continue
+- `.isdlc/personas/` does not exist: return built-in paths only, no warnings, no skipped
+- File read error on individual persona: add to `skippedFiles`, continue
+- Missing/malformed frontmatter: add to `skippedFiles`, continue
 
 ## 2. ROUNDTABLE_CONTEXT Builder -- Extended
 
@@ -81,11 +88,17 @@ default_personas:                # Personas always included in roster proposal
   - qa-tester
                                  # Default: [] (empty, pure auto-roster)
                                  # Ignored in silent mode (no roster proposal)
+
+disabled_personas:               # Personas excluded from roster proposals and auto-detection
+  - ux-reviewer                  # User can still manually request during roster confirmation
+                                 # Default: [] (no exclusions)
 ```
 
 **Validation rules**:
 - `verbosity`: must be one of `"conversational"`, `"bulleted"`, `"silent"`. Invalid value: default to `"bulleted"`, log warning.
 - `default_personas`: must be array of strings. Invalid type: default to `[]`, log warning.
+- `disabled_personas`: must be array of strings. Invalid type: default to `[]`, log warning.
+- A persona in both `default_personas` and `disabled_personas`: `disabled_personas` wins (explicit exclusion overrides default inclusion).
 - Unknown keys: ignored (forward-compatible).
 
 ## 4. Contributing Persona Frontmatter Schema
@@ -120,9 +133,12 @@ The following fields are added to the roundtable dispatch prompt:
 
 | Field | Source | Format | Example |
 |-------|--------|--------|---------|
-| `ROUNDTABLE_VERBOSITY` | `.isdlc/roundtable.yaml` | String | `bulleted` |
+| `ROUNDTABLE_VERBOSITY` | `.isdlc/roundtable.yaml` or per-analysis flag | String | `bulleted` |
 | `ROUNDTABLE_ROSTER_DEFAULTS` | `.isdlc/roundtable.yaml` | Comma-separated | `security-reviewer,qa-tester` |
+| `ROUNDTABLE_ROSTER_DISABLED` | `.isdlc/roundtable.yaml` | Comma-separated | `ux-reviewer` |
 | `ROUNDTABLE_DRIFT_WARNINGS` | Version comparison | Newline-separated | `persona-security-reviewer.md: user v1.0.0, shipped v1.1.0` |
+| `ROUNDTABLE_SKIPPED_FILES` | Persona loading | Newline-separated | `persona-bad.md: missing name field` |
+| `ROUNDTABLE_PRESELECTED_ROSTER` | `--personas` flag | Comma-separated | `security-reviewer,compliance` (empty if not specified) |
 
 **Mode-specific dispatch behavior**:
 
@@ -130,7 +146,10 @@ The following fields are added to the roundtable dispatch prompt:
 |-------|---------------|----------|--------|
 | `ROUNDTABLE_VERBOSITY` | `conversational` | `bulleted` | `silent` |
 | `ROUNDTABLE_ROSTER_DEFAULTS` | Sent | Sent | Ignored (no roster proposal) |
-| `ROUNDTABLE_DRIFT_WARNINGS` | Sent | Sent | Sent (still relevant for user awareness) |
+| `ROUNDTABLE_ROSTER_DISABLED` | Sent | Sent | Sent (still filters auto-detection) |
+| `ROUNDTABLE_DRIFT_WARNINGS` | Sent | Sent | Suppressed (logged internally only) |
+| `ROUNDTABLE_SKIPPED_FILES` | Sent | Sent | Suppressed (logged internally only) |
+| `ROUNDTABLE_PRESELECTED_ROSTER` | Sent | Sent | Sent (personas still loaded internally) |
 | Persona files in context | All activated | All activated | All loaded (used internally) |
 
 ## 6. Topic File Contributing Personas Array
@@ -154,3 +173,50 @@ contributing_personas:
 | architecture | system-designer | security-reviewer, devops-reviewer |
 | specification | solutions-architect | qa-tester |
 | security | system-designer | security-reviewer |
+
+## 7. Per-Analysis Override Flags
+
+**Location**: `src/antigravity/analyze-item.cjs` CLI argument parsing
+
+**New flags**:
+
+| Flag | Effect | Example |
+|------|--------|---------|
+| `--verbose` | Sets `ROUNDTABLE_VERBOSITY` to `conversational` for this analysis | `analyze REQ-047 --verbose` |
+| `--silent` | Sets `ROUNDTABLE_VERBOSITY` to `silent` for this analysis | `analyze REQ-047 --silent` |
+| `--personas <list>` | Pre-selects roster (comma-separated), skips roster proposal | `analyze REQ-047 --personas security,compliance` |
+
+**Precedence**: Per-analysis flag > `.isdlc/roundtable.yaml` > built-in defaults.
+
+**Mutual exclusion**: `--verbose` and `--silent` are mutually exclusive. If both provided, last one wins.
+
+**`--personas` behavior**:
+- Primary personas (Maya, Alex, Jordan) are always included regardless of flag
+- Named personas are resolved against available persona files (built-in + user)
+- Unresolvable names are noted: "No persona file found for 'compliance'. Create one in .isdlc/personas/?"
+- When `--personas` is provided, roster proposal dialogue is skipped
+- `disabled_personas` config is ignored when `--personas` is explicit (user override wins)
+
+**Natural language override**:
+- During an active roundtable, the agent honors verbosity change requests like "switch to conversational" or "show me the full discussion"
+- The agent responds with the mode change and continues in the new mode for the remainder of the session
+- This is agent behavior, not a code interface -- documented in `roundtable-analyst.md`
+
+## 8. Gitignore Requirements
+
+**Location**: `.gitignore` at project root
+
+**Requirement**: `.isdlc/personas/` MUST NOT be covered by `.gitignore` patterns.
+
+If `.isdlc/` is gitignored (as is common for runtime state), an explicit exception must be added:
+
+```gitignore
+# iSDLC runtime state (gitignored)
+.isdlc/state.json
+.isdlc/projects/
+
+# iSDLC persona files (version-controlled, shareable)
+!.isdlc/personas/
+```
+
+**Rationale**: Persona files are declarative project configuration, not runtime state. Team members need to share custom personas via version control.

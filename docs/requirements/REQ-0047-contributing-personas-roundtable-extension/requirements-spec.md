@@ -4,6 +4,7 @@ Confidence: High
 Last Updated: 2026-03-07
 Coverage: problem-discovery 95%, requirements-definition 95%
 Source: REQ-0047 / GH-108a
+Amendment: 2 (hackability review — 12 gaps addressed)
 ---
 
 # Requirements Specification: Contributing Personas -- Roundtable Extension
@@ -16,14 +17,14 @@ Additionally, the roundtable output is always conversational -- personas talk to
 
 **Business impact**: Analyses miss domain-critical concerns that surface late in the build cycle, increasing rework cost. Verbose output slows down experienced users who want conclusions, not conversation.
 
-**Success metric**: Users can activate domain-specific personas in a roundtable analysis without editing framework source files. The framework proposes relevant personas automatically based on issue content. Users control output verbosity at the project level, including the option to disable persona framing entirely.
+**Success metric**: Users can activate domain-specific personas in a roundtable analysis without editing framework source files. The framework proposes relevant personas automatically based on issue content. Users control output verbosity at the project level and per-analysis, including the option to disable persona framing entirely. Users can suppress, override, or extend every framework default.
 
 ## 2. User Types
 
 | User Type | Description | Pain Points |
 |-----------|-------------|-------------|
-| Framework user (primary) | Developer using iSDLC for analysis | Cannot get domain-specific review during roundtable; must mentally track security/UX/DevOps concerns themselves; output too verbose for experienced users; no option to disable persona framing |
-| Framework customizer (secondary) | Developer who wants project-specific expertise | No mechanism to add custom domain perspectives; persona format is undocumented |
+| Framework user (primary) | Developer using iSDLC for analysis | Cannot get domain-specific review during roundtable; must mentally track security/UX/DevOps concerns themselves; output too verbose for experienced users; no option to disable persona framing; no per-analysis control over verbosity or roster |
+| Framework customizer (secondary) | Developer who wants project-specific expertise | No mechanism to add custom domain perspectives; persona format is undocumented; no way to suppress unwanted built-in personas; personas not version-controlled with project |
 | Roundtable lead (system) | The orchestrating agent | Fixed persona roster; no runtime flexibility to match analysis to issue needs |
 
 ## 3. Functional Requirements
@@ -49,8 +50,9 @@ The framework SHALL ship with contributing personas for common domains: Security
 - AC-002-02: Each contributing persona has `role_type: contributing` in frontmatter
 - AC-002-03: Each contributing persona has `owned_skills` referencing existing framework skills
 - AC-002-04: Each contributing persona has a `triggers` array in frontmatter for roster inference
-- AC-002-05: Each contributing persona uses bullet-only body format (no prose paragraphs, no numbered sections)
+- AC-002-05: Each **shipped** contributing persona uses bullet-only body format (< 40 lines). User-authored personas in `.isdlc/personas/` have no format restrictions -- the user accepts the context cost of longer files.
 - AC-002-06: Domain Expert template has blank/placeholder content for user to fill in
+- AC-002-07: Domain Expert template includes inline comments explaining each section's purpose: what `triggers` should contain, how to write effective voice rules, what "Flag When You See" vs "Stay Silent About" means, and a note about context window trade-offs for longer files
 
 ### FR-003: Roster Proposal and User Confirmation
 **Priority**: Must Have | **Confidence**: High
@@ -66,6 +68,8 @@ Before the roundtable conversation begins (unless in `silent` mode), the framewo
 - AC-003-06: Uncertain keyword matches are flagged in the proposal ("I'm also considering [domain] given [reason]")
 - AC-003-07: When in doubt about a domain's relevance, the framework asks the user rather than silently including or excluding
 - AC-003-08: Roster proposal is skipped entirely when verbosity is `silent`
+- AC-003-09: When persona files were skipped due to validation errors, the roster proposal mentions them: "I found [filename] but couldn't load it ([reason]). Check the format?"
+- AC-003-10: Roster proposal shows all available personas (not just matched ones) so the user can discover and add unmatched perspectives. Unmatched personas are listed separately: "Also available: [list]"
 
 ### FR-004: Verbosity Mode Toggle
 **Priority**: Must Have | **Confidence**: High
@@ -81,6 +85,7 @@ The framework SHALL support three verbosity modes for roundtable output: `conver
 - AC-004-06: In `silent` mode, mid-conversation persona invitation (FR-006) is disabled -- no persona announcements
 - AC-004-07: Verbosity mode is a rendering change only; persona files and internal agent behavior are unchanged
 - AC-004-08: Project default is `bulleted`
+- AC-004-09: In `silent` mode, version drift notifications (FR-010) are suppressed from user-facing output. They are logged internally but not displayed, consistent with the "no persona framing" contract.
 
 ### FR-005: Roundtable Configuration File
 **Priority**: Must Have | **Confidence**: High
@@ -93,7 +98,9 @@ The framework SHALL read roundtable preferences from `.isdlc/roundtable.yaml` an
 - AC-005-03: Config supports optional `default_personas` array (always-include list)
 - AC-005-04: Config values are injected into the roundtable dispatch prompt as `ROUNDTABLE_VERBOSITY` and `ROUNDTABLE_ROSTER_DEFAULTS`
 - AC-005-05: CLAUDE.md instructions reference the config file so the agent knows to look for it
-- AC-005-06: Missing config file defaults to `verbosity: bulleted` with no default personas
+- AC-005-06: Missing config file defaults to `verbosity: bulleted` with no default personas and no disabled personas
+- AC-005-07: Config supports optional `disabled_personas` array (never-propose list). Personas in this list are excluded from roster proposals and auto-detection. Users can still manually request them during roster confirmation.
+- AC-005-08: `.isdlc/personas/` directory MUST NOT be gitignored. Persona files are declarative project configuration (not runtime state) and should be version-controlled and shareable across the team.
 
 ### FR-006: Mid-Conversation Persona Invitation
 **Priority**: Should Have | **Confidence**: High
@@ -149,15 +156,29 @@ When a user override exists and the shipped persona has been updated to a newer 
 - AC-010-02: On override detection, framework compares `version` in user file vs shipped file
 - AC-010-03: If shipped version is newer, framework emits a non-blocking notification: "Your override of [persona] is based on v[old] but the framework now ships v[new]. Review the changes?"
 - AC-010-04: Analysis proceeds with the user's version regardless -- notification is informational only
+- AC-010-05: In `silent` mode, drift notifications are suppressed from user output (logged internally only), per AC-004-09
+
+### FR-011: Per-Analysis Override Flags
+**Priority**: Should Have | **Confidence**: High
+
+The framework SHALL support per-analysis overrides for verbosity mode and roster composition, allowing the user to override project-level defaults without editing config files.
+
+**Acceptance Criteria**:
+- AC-011-01: `--verbose` flag on the analyze verb sets verbosity to `conversational` for that analysis only
+- AC-011-02: `--silent` flag on the analyze verb sets verbosity to `silent` for that analysis only
+- AC-011-03: `--personas security,compliance` flag pre-selects the roster (in addition to primaries), skipping the roster proposal dialogue
+- AC-011-04: Natural language override honored during analysis: user can say "switch to conversational" or "show me the full discussion" and the roundtable agent adjusts verbosity for the remainder of the session
+- AC-011-05: Per-analysis overrides do not modify `.isdlc/roundtable.yaml`
 
 ## 4. Non-Functional Requirements
 
 | NFR | Description | Threshold |
 |-----|-------------|-----------|
 | NFR-001 | Persona loading time | < 500ms for 10 persona files |
-| NFR-002 | Context window impact | Contributing persona files < 40 lines each |
+| NFR-002 | Context window impact | Shipped contributing persona files < 40 lines each. No format restriction on user-authored personas. |
 | NFR-003 | Fail-open safety | Bad persona files skip with warning, never crash or corrupt state |
 | NFR-004 | Backward compatibility | Existing projects with no `.isdlc/personas/` or `.isdlc/roundtable.yaml` work identically to today |
+| NFR-005 | Version control friendliness | `.isdlc/personas/` is not gitignored; persona files are shareable via version control |
 
 ## 5. Out of Scope
 
@@ -166,26 +187,30 @@ When a user override exists and the shipped persona has been updated to a newer 
 - **Confirmation sequence changes** for contributing persona domains
 - **Persona marketplace or sharing mechanism**
 - **Automatic persona generation** from project analysis
+- **Contributing persona blocker authority** (contributing personas flag, they do not gate decisions)
 
 ## 6. Risks
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| Too many personas dilute signal quality | Medium | Medium | Roster proposal mechanism lets framework and user jointly decide; bulleted mode compresses output; silent mode eliminates persona framing |
-| User-authored personas with poor voice rules cause incoherent output | Low | Medium | Fail-open design; framework ships high-quality defaults; Domain Expert template guides authoring |
-| Context window pressure from many persona files | Medium | High | Contributing personas are bullet-only format (< 40 lines); only activated personas are loaded |
-| Config file schema drift | Low | Low | Simple YAML schema with 2 fields; versioned if needed later |
-| Version drift on overridden personas | Medium | Low | FR-010 notification mechanism alerts user to review |
-| Roster inference false positives/negatives | Medium | Low | User confirms/amends; uncertain matches flagged explicitly; framework asks when in doubt |
-| Silent mode loses domain-specific attribution | Low | Medium | Artifacts still contain domain analysis; only user-facing output is unified. User can switch modes per-conversation if needed |
+| Too many personas dilute signal quality | Medium | Medium | Roster proposal mechanism lets framework and user jointly decide; bulleted mode compresses output; silent mode eliminates persona framing; `disabled_personas` config suppresses unwanted defaults |
+| User-authored personas with poor voice rules cause incoherent output | Low | Medium | Fail-open design; framework ships high-quality defaults; Domain Expert template with inline authoring guidance |
+| Context window pressure from many persona files | Medium | High | Shipped contributing personas are bullet-only format (< 40 lines); only activated personas are loaded; user accepts context cost of longer custom files |
+| Config file schema drift | Low | Low | Simple YAML schema with 3 fields; versioned if needed later |
+| Version drift on overridden personas | Medium | Low | FR-010 notification mechanism alerts user to review (suppressed in silent mode per AC-004-09) |
+| Roster inference false positives/negatives | Medium | Low | User confirms/amends; uncertain matches flagged explicitly; framework asks when in doubt; all available personas shown for discovery (AC-003-10) |
+| Silent mode loses domain-specific attribution | Low | Medium | Artifacts still contain domain analysis; only user-facing output is unified. User can switch modes per-analysis (FR-011) |
+| User persona silently skipped due to validation error | Medium | Medium | Skipped files mentioned during roster proposal (AC-003-09) so user can fix the issue |
+| User personas not shared across team | Low | High | `.isdlc/personas/` explicitly not gitignored (AC-005-08); personas are declarative config |
 
 ## 7. Dependency Map
 
 ```
 FR-001 (Discovery) <-- FR-009 (Override-by-copy) <-- FR-010 (Version drift)
 FR-002 (Built-in personas) <-- FR-007 (Skill wiring)
-FR-003 (Roster proposal) <-- FR-001, FR-002, FR-004 (skipped in silent mode)
+FR-003 (Roster proposal) <-- FR-001, FR-002, FR-004 (skipped in silent), FR-005 (disabled_personas filtering)
 FR-004 (Verbosity) <-- FR-005 (Config file)
 FR-006 (Mid-conversation) <-- FR-001, FR-004 (disabled in silent mode)
 FR-008 (Output integration) <-- FR-002, FR-004 (attribution varies by mode)
+FR-011 (Per-analysis overrides) <-- FR-004 (verbosity), FR-003 (roster)
 ```

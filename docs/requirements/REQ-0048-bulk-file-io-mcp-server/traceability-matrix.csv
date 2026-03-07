@@ -1,44 +1,122 @@
-Requirement,Acceptance Criterion,User Story,Priority,Confidence
-FR-001,AC-001-01,US-001,Must Have,High
-FR-001,AC-001-02,US-002,Must Have,High
-FR-001,AC-001-03,US-002,Must Have,High
-FR-001,AC-001-04,US-001,Must Have,High
-FR-001,AC-001-05,US-006,Must Have,High
-FR-001,AC-001-06,US-005,Must Have,High
-FR-002,AC-002-01,US-003,Must Have,High
-FR-002,AC-002-02,US-005,Must Have,High
-FR-002,AC-002-03,US-003,Must Have,High
-FR-002,AC-002-04,US-003,Must Have,High
-FR-003,AC-003-01,US-004,Should Have,High
-FR-003,AC-003-02,US-004,Should Have,High
-FR-003,AC-003-03,US-004,Should Have,High
-FR-003,AC-003-04,US-004,Should Have,High
-FR-003,AC-003-05,US-004,Should Have,High
-FR-003,AC-003-06,US-004,Should Have,High
-FR-003,AC-003-07,US-004,Should Have,High
-FR-004,AC-004-01,US-006,Must Have,High
-FR-004,AC-004-02,US-006,Must Have,High
-FR-004,AC-004-03,US-006,Must Have,High
-FR-004,AC-004-04,US-006,Must Have,High
-FR-005,AC-005-01,US-005,Must Have,High
-FR-005,AC-005-02,US-005,Must Have,High
-FR-005,AC-005-03,US-005,Must Have,High
-FR-005,AC-005-04,US-005,Must Have,High
-FR-006,AC-006-01,US-002,Must Have,High
-FR-006,AC-006-02,US-002,Must Have,High
-FR-006,AC-006-03,US-002,Must Have,High
-FR-006,AC-006-04,US-002,Must Have,High
-FR-006,AC-006-05,US-002,Must Have,High
-FR-007,AC-007-01,US-005,Should Have,High
-FR-007,AC-007-02,US-005,Should Have,High
-FR-007,AC-007-03,US-005,Should Have,High
-FR-007,AC-007-04,US-005,Should Have,High
-FR-007,AC-007-05,US-005,Should Have,High
-FR-008,AC-008-01,US-007,Must Have,High
-FR-008,AC-008-02,US-007,Must Have,High
-FR-008,AC-008-03,US-007,Must Have,High
-FR-008,AC-008-04,US-007,Must Have,High
-FR-009,AC-009-01,US-008,Should Have,High
-FR-009,AC-009-02,US-008,Should Have,High
-FR-009,AC-009-03,US-008,Should Have,High
-FR-009,AC-009-04,US-008,Should Have,High
+Requirement,AC,Test Case,Test Type,Priority,Test File
+FR-001,AC-001-01,FO-01: writeFiles writes single file with correct content,positive,P0,file-ops.test.js
+FR-001,AC-001-01,FO-02: writeFiles writes batch of 5 files all succeed,positive,P0,file-ops.test.js
+FR-001,AC-001-01,FO-09: writeFiles rejects relative paths,negative,P0,file-ops.test.js
+FR-001,AC-001-01,FO-10: writeFiles rejects empty files array,negative,P0,file-ops.test.js
+FR-001,AC-001-01,FO-11: writeFiles rejects null content,negative,P1,file-ops.test.js
+FR-001,AC-001-01,SV-01: Server registers write_files tool,positive,P0,server.test.js
+FR-001,AC-001-01,SV-05: Server routes write_files to fileOps,positive,P0,server.test.js
+FR-001,AC-001-01,INT-08: writeFiles 10 files mix new and overwrite,positive,P1,integration/file-ops-locking.test.js
+FR-001,AC-001-01,INT-15: Full write_files MCP flow,positive,P0,integration/server-e2e.test.js
+FR-001,AC-001-02,FO-06: Atomic write temp file in same directory,positive,P0,file-ops.test.js
+FR-001,AC-001-02,FO-07: Atomic write temp file naming convention,positive,P1,file-ops.test.js
+FR-001,AC-001-03,FO-08: Overwrite preserves atomicity,positive,P0,file-ops.test.js
+FR-001,AC-001-03,FO-13: Partial batch failure does not abort others,negative,P0,file-ops.test.js
+FR-001,AC-001-03,INT-06: Crashed write leaves original intact,positive,P0,integration/file-ops-locking.test.js
+FR-001,AC-001-04,FO-04: Response includes per-file status,positive,P0,file-ops.test.js
+FR-001,AC-001-05,FO-03: writeFiles creates parent directories automatically,positive,P1,file-ops.test.js
+FR-001,AC-001-06,INT-01: Concurrent writeFiles to same path serialize,positive,P0,integration/file-ops-locking.test.js
+FR-002,AC-002-01,FO-14: readFiles reads single file returns content,positive,P0,file-ops.test.js
+FR-002,AC-002-01,FO-15: readFiles reads batch of 5 files concurrently,positive,P0,file-ops.test.js
+FR-002,AC-002-01,FO-19: readFiles rejects relative paths,negative,P0,file-ops.test.js
+FR-002,AC-002-01,FO-20: readFiles rejects empty paths array,negative,P0,file-ops.test.js
+FR-002,AC-002-01,SV-02: Server registers read_files tool,positive,P0,server.test.js
+FR-002,AC-002-01,SV-06: Server routes read_files to fileOps,positive,P0,server.test.js
+FR-002,AC-002-01,INT-16: Full read_files MCP flow,positive,P0,integration/server-e2e.test.js
+FR-002,AC-002-02,FO-18: Missing file returns per-file error others still read,negative,P0,file-ops.test.js
+FR-002,AC-002-02,INT-20: Batch read mixed existing/missing files,negative,P1,integration/server-e2e.test.js
+FR-002,AC-002-03,FO-16: readFiles response includes content field,positive,P0,file-ops.test.js
+FR-002,AC-002-03,INT-22: Response for read_files includes content on success,positive,P1,integration/server-e2e.test.js
+FR-002,AC-002-04,FO-15: readFiles reads batch of 5 files concurrently,positive,P0,file-ops.test.js
+FR-003,AC-003-01,FO-21: appendSection replaces section by heading match,positive,P0,file-ops.test.js
+FR-003,AC-003-01,FO-22: appendSection replaces section by marker match,positive,P0,file-ops.test.js
+FR-003,AC-003-01,FO-26: appendSection rejects relative path,negative,P1,file-ops.test.js
+FR-003,AC-003-01,SV-03: Server registers append_section tool,positive,P0,server.test.js
+FR-003,AC-003-01,INT-09: appendSection full flow reads-finds-splices-writes,positive,P0,integration/section-update.test.js
+FR-003,AC-003-01,INT-17: Full append_section MCP flow,positive,P0,integration/server-e2e.test.js
+FR-003,AC-003-02,SP-01: findSection locates ## heading at level 2,positive,P0,section-parser.test.js
+FR-003,AC-003-02,SP-02: findSection locates ### heading at level 3,positive,P1,section-parser.test.js
+FR-003,AC-003-02,SP-03: findSection locates # heading at level 1,positive,P1,section-parser.test.js
+FR-003,AC-003-02,SP-08: findSection without prefix assumes level 2,positive,P1,section-parser.test.js
+FR-003,AC-003-02,SP-18: Section at start of document,positive,P2,section-parser.test.js
+FR-003,AC-003-02,SP-20: Multiple sections same heading matches first,positive,P2,section-parser.test.js
+FR-003,AC-003-02,SP-22: Heading with extra whitespace,negative,P2,section-parser.test.js
+FR-003,AC-003-02,INT-10: appendSection heading match correct section,positive,P0,integration/section-update.test.js
+FR-003,AC-003-03,SP-11: findSection locates marker comment,positive,P0,section-parser.test.js
+FR-003,AC-003-03,SP-12: Marker match section ends at equal/higher heading,positive,P1,section-parser.test.js
+FR-003,AC-003-03,SP-13: Marker match section ends at next marker,positive,P1,section-parser.test.js
+FR-003,AC-003-03,INT-11: appendSection marker match updates correct section,positive,P0,integration/section-update.test.js
+FR-003,AC-003-04,SP-04: Section ends at next heading equal level,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-05: Section ends at higher level heading,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-06: Section includes sub-headings,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-07: Section ends at EOF,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-09: spliceSection replaces content between bounds,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-10: spliceSection preserves surrounding content,positive,P0,section-parser.test.js
+FR-003,AC-003-04,SP-19: Section at end of document no trailing newline,positive,P2,section-parser.test.js
+FR-003,AC-003-04,SP-21: Section with empty body,positive,P2,section-parser.test.js
+FR-003,AC-003-04,INT-12: appendSection preserves other sections,positive,P0,integration/section-update.test.js
+FR-003,AC-003-05,FO-23: appendSection uses atomic write,positive,P0,file-ops.test.js
+FR-003,AC-003-05,INT-09: appendSection full flow atomic,positive,P0,integration/section-update.test.js
+FR-003,AC-003-06,SP-14: findSection returns null heading not found,negative,P0,section-parser.test.js
+FR-003,AC-003-06,SP-15: findSection returns null marker not found,negative,P0,section-parser.test.js
+FR-003,AC-003-06,SP-16: findSection returns null empty content,negative,P1,section-parser.test.js
+FR-003,AC-003-06,SP-17: findSection returns null empty sectionId,negative,P1,section-parser.test.js
+FR-003,AC-003-06,FO-24: appendSection error when section not found,negative,P0,file-ops.test.js
+FR-003,AC-003-06,INT-14: appendSection SECTION_NOT_FOUND,negative,P0,integration/section-update.test.js
+FR-003,AC-003-07,FO-25: appendSection error when file not exist,negative,P0,file-ops.test.js
+FR-003,AC-003-07,INT-13: appendSection FILE_NOT_FOUND,negative,P0,integration/section-update.test.js
+FR-004,AC-004-01,FO-27: createDirectories creates single directory,positive,P0,file-ops.test.js
+FR-004,AC-004-01,FO-30: createDirectories creates batch of 5,positive,P0,file-ops.test.js
+FR-004,AC-004-01,FO-31: createDirectories rejects relative paths,negative,P0,file-ops.test.js
+FR-004,AC-004-01,SV-04: Server registers create_directories tool,positive,P0,server.test.js
+FR-004,AC-004-01,INT-18: Full create_directories MCP flow,positive,P0,integration/server-e2e.test.js
+FR-004,AC-004-02,FO-28: createDirectories nested recursive,positive,P0,file-ops.test.js
+FR-004,AC-004-03,FO-32: createDirectories ENOTDIR component is file,negative,P1,file-ops.test.js
+FR-004,AC-004-04,FO-29: createDirectories succeeds if already exists,positive,P1,file-ops.test.js
+FR-005,AC-005-01,FO-04: Response per-file status with path and success,positive,P0,file-ops.test.js
+FR-005,AC-005-01,SV-07: Server formats response with results and summary,positive,P0,server.test.js
+FR-005,AC-005-01,INT-19: Batch write partial failure mixed results,negative,P0,integration/server-e2e.test.js
+FR-005,AC-005-01,INT-21: Response matches BatchResult schema,positive,P0,integration/server-e2e.test.js
+FR-005,AC-005-02,FO-12: Permission denied reports per-file error,negative,P0,file-ops.test.js
+FR-005,AC-005-02,SV-09: Server handles thrown exception gracefully,negative,P1,server.test.js
+FR-005,AC-005-03,FO-13: Failed file does not abort others,negative,P0,file-ops.test.js
+FR-005,AC-005-03,FO-18: Missing file error others still read,negative,P0,file-ops.test.js
+FR-005,AC-005-03,INT-19: Batch write partial failure correct summary,negative,P0,integration/server-e2e.test.js
+FR-005,AC-005-03,INT-20: Batch read mixed existing/missing correct results,negative,P1,integration/server-e2e.test.js
+FR-005,AC-005-04,FO-05: Response includes summary total/succeeded/failed,positive,P0,file-ops.test.js
+FR-005,AC-005-04,FO-17: readFiles response includes summary counts,positive,P0,file-ops.test.js
+FR-006,AC-006-01,FO-06: Temp file in same directory as target,positive,P0,file-ops.test.js
+FR-006,AC-006-01,INT-08: writeFiles 10 files all atomic,positive,P1,integration/file-ops-locking.test.js
+FR-006,AC-006-02,FO-06: Content fully written and flushed before rename,positive,P0,file-ops.test.js
+FR-006,AC-006-03,FO-08: Rename replaces target atomically,positive,P0,file-ops.test.js
+FR-006,AC-006-04,FO-08: Overwrite preserves atomicity old content until rename,positive,P0,file-ops.test.js
+FR-006,AC-006-04,INT-06: Crashed write leaves original intact,positive,P0,integration/file-ops-locking.test.js
+FR-006,AC-006-05,FO-07: Temp file naming .name.tmp.pid.ts,positive,P1,file-ops.test.js
+FR-006,AC-006-05,INT-07: Orphaned temp file follows naming convention,positive,P1,integration/file-ops-locking.test.js
+FR-007,AC-007-01,LM-01: acquire returns release function,positive,P0,lock-manager.test.js
+FR-007,AC-007-01,LM-03: isLocked true after acquire false after release,positive,P0,lock-manager.test.js
+FR-007,AC-007-01,LM-04: Second acquire waits for first release,positive,P0,lock-manager.test.js
+FR-007,AC-007-01,LM-06: Release callable multiple times,positive,P2,lock-manager.test.js
+FR-007,AC-007-01,LM-08: Lock release FIFO order,positive,P1,lock-manager.test.js
+FR-007,AC-007-01,LM-11: Lock map cleaned up after all waiters done,negative,P1,lock-manager.test.js
+FR-007,AC-007-01,LM-12: 10 concurrent acquires serialize,positive,P1,lock-manager.test.js
+FR-007,AC-007-01,INT-01: Concurrent writeFiles same path serialize,positive,P0,integration/file-ops-locking.test.js
+FR-007,AC-007-02,LM-07: Path normalization relative and absolute same lock,positive,P0,lock-manager.test.js
+FR-007,AC-007-03,LM-09: acquire throws LockTimeoutError,negative,P0,lock-manager.test.js
+FR-007,AC-007-03,LM-10: Custom timeout overrides default,negative,P1,lock-manager.test.js
+FR-007,AC-007-03,LM-14: Timeout does not corrupt state for other waiters,positive,P0,lock-manager.test.js
+FR-007,AC-007-03,INT-05: Lock timeout during concurrent writes,negative,P0,integration/file-ops-locking.test.js
+FR-007,AC-007-04,LM-02: isLocked false for path not in map,positive,P1,lock-manager.test.js
+FR-007,AC-007-04,LM-05: Concurrent acquires different paths parallel,positive,P0,lock-manager.test.js
+FR-007,AC-007-04,LM-13: Mixed concurrent 5 different paths independent,positive,P1,lock-manager.test.js
+FR-007,AC-007-04,INT-02: Concurrent writeFiles different paths parallel,positive,P0,integration/file-ops-locking.test.js
+FR-007,AC-007-05,INT-03: appendSection acquires lock before modify,positive,P0,integration/file-ops-locking.test.js
+FR-007,AC-007-05,INT-04: writeFiles + appendSection same file serialize,positive,P0,integration/file-ops-locking.test.js
+FR-008,AC-008-01,E2E-02: Server lists all 4 tools in capabilities,positive,P1,e2e/server-lifecycle.test.js
+FR-008,AC-008-02,E2E-01: Server starts on stdio and responds,positive,P1,e2e/server-lifecycle.test.js
+FR-008,AC-008-03,FR-008 consumer fallback: out of scope for this package,N/A,P2,N/A
+FR-008,AC-008-04,FR-008 consumer fallback: out of scope for this package,N/A,P2,N/A
+FR-009,AC-009-01,SV-10: package.json correct name version main,positive,P1,server.test.js
+FR-009,AC-009-02,SV-10: package.json no iSDLC internal dependencies,positive,P0,server.test.js
+FR-009,AC-009-03,E2E-01: Entry point executable via node,positive,P0,e2e/server-lifecycle.test.js
+FR-009,AC-009-04,SV-10: Package self-contained no parent imports,positive,P0,server.test.js
