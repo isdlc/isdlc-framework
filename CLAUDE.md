@@ -255,6 +255,10 @@ Minimize wall-clock time by maximizing parallel tool calls and avoiding unnecess
 - **Editing prep**: Use `Read` when you need exact line content for `Edit` calls. Read all target files in a single parallel batch — if you need 6 files, read all 6 at once.
 - Never re-read a file you already have in context unless it was modified since you last read it.
 
+**Shell text processing:**
+- Prefer dedicated tools (`Read` + parse, `Grep`) over shell commands (`awk`, `cut`, `sort`) for file content extraction.
+- When shell text processing is genuinely the simplest option (e.g., piping CSV columns through `sort -u`), use it — permissions are pre-allowed for `awk`, `sort`, `cut`, `wc`, `head`, `tail`, `sed`.
+
 **Writes:**
 - Prefer `Edit` over `Write` for partial changes. `Write` rewrites the entire file and is only justified when >50% of lines change.
 - Batch independent `Edit` calls on different files into a single parallel response. Edits to the same file must be sequential (each changes the content the next targets).

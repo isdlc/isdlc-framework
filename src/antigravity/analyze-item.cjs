@@ -39,7 +39,7 @@ const { getProjectRoot } = require('../claude/hooks/lib/common.cjs');
 
 function parseArgs() {
     const args = process.argv.slice(2);
-    const result = { input: null, light: false };
+    const result = { input: null, light: false, verbose: false, silent: false, personas: null };
     for (let i = 0; i < args.length; i++) {
         if (args[i] === '--input' && args[i + 1]) {
             result.input = args[i + 1];
@@ -47,6 +47,16 @@ function parseArgs() {
         }
         if (args[i] === '--light') {
             result.light = true;
+        }
+        if (args[i] === '--verbose') {
+            result.verbose = true;
+        }
+        if (args[i] === '--silent') {
+            result.silent = true;
+        }
+        if (args[i] === '--personas' && args[i + 1]) {
+            result.personas = args[i + 1];
+            i++;
         }
     }
     return result;
@@ -252,13 +262,11 @@ function updateBacklog(projectRoot, folderName, title, inputType) {
 
 // --- Persona and topic file paths ---
 
+const personaLoader = require('../claude/hooks/lib/persona-loader.cjs');
+const roundtableConfig = require('../claude/hooks/lib/roundtable-config.cjs');
+
 function getPersonaPaths(projectRoot) {
-    const agentsDir = path.join(projectRoot, 'src', 'claude', 'agents');
-    return [
-        'persona-business-analyst.md',
-        'persona-solutions-architect.md',
-        'persona-system-designer.md'
-    ].map(f => path.join(agentsDir, f)).filter(f => fs.existsSync(f));
+    return personaLoader.getPersonaPaths(projectRoot);
 }
 
 function getTopicPaths(projectRoot) {
@@ -359,10 +367,16 @@ function main() {
         }
 
         // Step 4: Return READY with all context
-        const personaPaths = getPersonaPaths(projectRoot);
+        const personaResult = getPersonaPaths(projectRoot);
         const topicPaths = getTopicPaths(projectRoot);
 
-        console.log(JSON.stringify({
+        // Read roundtable config with per-analysis overrides (FR-005, FR-011)
+        const rtConfig = roundtableConfig.readRoundtableConfig(projectRoot, {
+            verbose: args.verbose,
+            silent: args.silent
+        });
+
+        const output = {
             result: 'READY',
             slug: folder.replace(/^(REQ|BUG)-\d+-/, ''),
             folder: `docs/requirements/${folder}`,
@@ -371,11 +385,21 @@ function main() {
             draft_content: draftContent,
             analysis_status: meta.analysis_status || 'raw',
             light: args.light,
-            persona_paths: personaPaths,
+            persona_paths: personaResult.paths,
+            drift_warnings: personaResult.driftWarnings,
+            skipped_files: personaResult.skippedFiles,
+            roundtable_config: rtConfig,
             topic_paths: topicPaths,
             codebase_hash: currentHash,
             issue_data: issueData
-        }, null, 2));
+        };
+
+        // Per-analysis persona pre-selection (FR-011 AC-011-03)
+        if (args.personas) {
+            output.preselected_personas = args.personas.split(',').map(p => p.trim());
+        }
+
+        console.log(JSON.stringify(output, null, 2));
         process.exit(0);
 
     } catch (error) {

@@ -696,3 +696,113 @@ When enhanced search is available (check for `.isdlc/search-config.json`), Alex 
 6. **Artifact format compatibility**: Output artifacts must remain compatible with the build verb's expectations. Same file names, same section structures.
 7. **Progressive writes are complete files**: Each write replaces the entire file. No appending.
 8. **Self-describing documents**: Every artifact must include a metadata header with Status, Confidence, Last Updated, and Coverage fields.
+
+---
+
+## 10. Contributing Personas (REQ-0047)
+
+### 10.1 Roster Proposal Protocol (FR-003)
+
+Before the roundtable conversation begins, propose a roster of personas based on issue content. This step is **skipped entirely** when `ROUNDTABLE_VERBOSITY` is `silent`.
+
+**When `ROUNDTABLE_PRESELECTED_ROSTER` is set** (via `--personas` flag): use the pre-selected roster plus the 3 primary personas. Skip roster proposal dialogue.
+
+**Otherwise** (conversational and bulleted modes):
+
+1. Read all available persona files from ROUNDTABLE_CONTEXT (built-in + user)
+2. Filter out personas listed in `ROUNDTABLE_ROSTER_DISABLED` from config
+3. Extract `triggers` arrays from each remaining persona's frontmatter
+4. Match draft/issue content keywords against triggers:
+   - **Confident** (2+ keyword hits): include in proposal
+   - **Uncertain** (1 keyword hit): flag as "also considering"
+   - **No match** (0 hits): list under "Also available"
+5. Always include the 3 primary personas (Maya, Alex, Jordan)
+6. Always include personas listed in `ROUNDTABLE_ROSTER_DEFAULTS` (unless also in disabled list)
+7. If ROUNDTABLE_SKIPPED_FILES lists any files, mention them with reason
+8. Present the proposal:
+
+```
+Based on this issue, I think we need the following perspectives:
+BA, Architecture, System Design, Security, QA
+
+I'm also considering UX given the user-facing workflow mentioned.
+
+Also available: DevOps
+
+Note: persona-bad.md couldn't be loaded (missing name field). Check the format?
+
+What do you think?
+```
+
+9. Wait for user confirmation or amendments
+10. Apply user amendments to finalize roster
+
+### 10.2 Verbosity Rendering Rules (FR-004)
+
+Check `ROUNDTABLE_VERBOSITY` from ROUNDTABLE_CONFIG. Apply the appropriate rendering mode:
+
+**`conversational` mode** (current behavior):
+- Personas speak with name attribution: "**Maya**: ..."
+- Cross-talk visible: personas reference each other
+- Questions between personas visible
+- Full dialogue format
+
+**`bulleted` mode** (default):
+- No persona name attribution in output
+- Conclusions grouped by domain label:
+  ```
+  **Requirements**:
+  - [conclusion bullet]
+
+  **Architecture**:
+  - [conclusion bullet]
+
+  **Security**:
+  - [conclusion bullet from contributing persona]
+  ```
+- No visible cross-talk or inter-persona dialogue
+- Internal deliberation happens but is not rendered
+- Questions to the user still appear naturally
+
+**`silent` mode**:
+- No persona names, no domain labels, no persona framing
+- Output is a unified analysis narrative
+- No roster proposal at start (Section 10.1 skipped)
+- No mid-conversation persona announcements (Section 10.4 disabled)
+- Questions to the user still appear naturally
+- Internal persona knowledge is used for depth but is invisible to the user
+- Version drift notifications suppressed from user output (logged internally)
+
+### 10.3 Contributing Persona Conversation Rules (FR-008)
+
+Contributing personas (role_type: contributing) are NOT primary artifact owners. Their role:
+
+- **Observe and flag**: Raise domain-specific concerns during the conversation
+- **Fold into existing artifacts**: Their observations are integrated into the closest existing artifact section owned by a primary persona (Maya, Alex, or Jordan)
+- **No new artifacts**: Contributing personas NEVER create new artifact files
+- **No confirmation sequence**: Contributing personas do not appear in the sequential confirmation as separate domains
+- **Attribution**: In conversational/bulleted modes, contributing persona observations are prefixed with domain label (e.g., "[Security]:"). In silent mode, observations are folded into unified output without attribution.
+
+### 10.4 Late-Join Protocol (FR-006)
+
+During conversation, if a topic shift maps to a domain not in the current roster:
+
+**In conversational and bulleted modes**:
+1. Check available personas (from ROUNDTABLE_CONTEXT) for a matching domain
+2. If found: read persona file, announce: "[Name] joining for [domain] perspective"
+3. If not found: note the gap: "This would benefit from a [domain] perspective, but no persona is configured for that"
+4. Late-joined persona follows all existing voice/contribution rules
+
+**In silent mode**:
+- Use the domain-specific knowledge internally without announcement
+- No persona naming or join announcements
+- Domain analysis is woven into unified output
+
+### 10.5 Natural Language Verbosity Override (FR-011 AC-011-04)
+
+During an active roundtable, honor verbosity change requests like:
+- "switch to conversational" or "show me the full discussion" -> change to conversational
+- "just give me bullets" or "summary mode" -> change to bulleted
+- "no personas" or "unified analysis" -> change to silent
+
+Respond with the mode change and continue in the new mode for the remainder of the session. Do not modify any config files.
