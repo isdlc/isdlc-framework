@@ -351,8 +351,11 @@
 - #98 [ ] Workflow recovery — retry/redo current phase without restarting
 - #99 [ ] Workflow recovery — rollback to earlier phase
 - #100 [x] Roundtable depth control — adaptive brief/standard/deep analysis -> [requirements](docs/requirements/REQ-0046-roundtable-depth-control-adaptive-brief-standard-deep/)
-- #108a [A] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/)
+- #108a [x] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/) **Completed: 2026-03-08**
   - Split from #108. Contributing personas add observations without owning artifacts. Pairs with #100 (depth + who).
+
+**Infrastructure**
+- #115 [ ] Extract agent protocols from CLAUDE.md — move 8 shared protocols (Monorepo Mode, Constitutional Principles, Skill Observability, Suggested Prompts, Iteration Enforcement, Root Resolution, Git Commit Prohibition, Single-Line Bash) to `src/claude/protocols.md`. Update 31 agent files, 3 test files, CLAUDE.md.template. Wire into session cache. CLAUDE.md drops from 307 to ~100 lines.
 
 **Tier 2 — Extension Points**
 - #101 [ ] User-space hooks — extensible pre/post phase hook points (.isdlc/hooks/)
