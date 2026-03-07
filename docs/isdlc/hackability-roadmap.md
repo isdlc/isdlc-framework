@@ -322,19 +322,33 @@ Use cases:
 - Each project adds domain-specific articles
 - Update base once → all projects inherit changes
 
-#### 4.4.2 Persona Customization
+#### 4.4.2 Persona Customization (Split: #108a + #108b)
 
-Allow adding, removing, or tuning roundtable personas.
+**#108a: Contributing Personas (promoted to Tier 1)** — LOW-MEDIUM effort
+
+Add domain-specific reviewers that contribute observations without owning artifacts.
 
 ```
 .isdlc/personas/
-  security-reviewer.md       ← new persona — always included in roundtable
+  security-reviewer.md       ← contributes security observations
+  qa-tester.md               ← contributes testability concerns
+  compliance-officer.md      ← contributes regulatory flags
+```
+
+Contributing personas use the same format as `src/claude/agents/persona-*.md` with `role_type: contributing`. They participate in roundtable conversation but do not own artifacts, do not appear in the confirmation sequence, and cannot disable built-in personas. Max 3 contributing personas per project. See [REQ-0047](../../docs/requirements/REQ-0047-contributing-personas-roundtable-extension/draft.md) for full design.
+
+**#108b: Full Persona Override (remains Tier 4)** — HIGH effort
+
+Allow disabling, replacing, or tuning built-in roundtable personas.
+
+```
+.isdlc/personas/
   maya-override.md           ← tune Maya's behavior ("skip MoSCoW, use P0-P3")
   disabled/
     jordan.md                ← disable Jordan for this project
 ```
 
-Persona files follow the same format as `src/claude/agents/persona-*.md`. Framework loads project personas alongside or instead of defaults.
+Requires artifact ownership model changes, confirmation sequence updates, and coverage tracker modifications. Depends on #108a establishing the dynamic loading mechanism.
 
 ---
 
@@ -355,7 +369,8 @@ All extensibility features must follow the invisible framework pattern:
 | Templates | Developer drops template in `.isdlc/templates/` | Agents use during implementation |
 | Skill authoring | "capture this as a skill" | Scaffold created |
 | Constitution composition | Set up during `/discover` | Merged automatically |
-| Persona customization | Drop file in `.isdlc/personas/` | Loaded at roundtable start |
+| Contributing personas | Drop file in `.isdlc/personas/` | Loaded at roundtable start (#108a) |
+| Full persona override | Drop file in `.isdlc/personas/disabled/` | Built-in persona disabled (#108b) |
 | Change summary | Automatic after implementation | No request needed |
 | Context carry-forward | "work on X" where X has prior analysis | Offer to reuse |
 
@@ -372,6 +387,7 @@ Slash command equivalents exist for power users and backward compatibility, but 
 | Gate profiles | Configure | Medium | Every subsequent feature needs configurable strictness |
 | Workflow recovery (retry/redo/rollback) | Configure | Medium | Core developer experience gap — can't recover from mistakes |
 | Roundtable depth control | Configure | Low | Quick win — infrastructure exists, just needs wiring |
+| Contributing personas (#108a) | Override (light) | Low-Medium | Pairs with depth control — customize WHO and HOW DEEP. No artifact ownership changes. |
 
 ### Tier 2: Extension Points (platform primitives)
 
@@ -394,13 +410,13 @@ Slash command equivalents exist for power users and backward compatibility, but 
 | Item | Layer | Effort | Rationale |
 |------|-------|--------|-----------|
 | Constitution composition | Override | Medium | Team-level sharing of quality standards |
-| Persona customization | Override | High | Most differentiating — reshape how analysis works |
+| Full persona override (#108b) | Override | High | Disable/replace/tune built-in personas. Depends on #108a. |
 
 ### Recommended Build Order
 
 ```
 Tier 1 (foundation):
-  Gate profiles → Workflow recovery → Roundtable depth
+  Gate profiles → Workflow recovery → Roundtable depth + Contributing personas (#108a)
                                           │
 Tier 2 (extension points):                ▼
   User-space hooks → Custom workflows → Change summary
@@ -409,10 +425,10 @@ Tier 3 (productivity):                    ▼
   Templates → Skill scaffold → Context carry-forward
                                           │
 Tier 4 (organization):                    ▼
-  Constitution composition → Persona customization
+  Constitution composition → Full persona override (#108b)
 ```
 
-Each tier builds on the previous. Tier 1 items are prerequisites for making Tier 2 items meaningful (e.g., custom workflows need gate profiles to be useful — a `spike` workflow needs `rapid` gates).
+Each tier builds on the previous. Tier 1 items are prerequisites for making Tier 2 items meaningful (e.g., custom workflows need gate profiles to be useful — a `spike` workflow needs `rapid` gates). #108a and roundtable depth control pair naturally and share the same dispatch surface.
 
 ---
 

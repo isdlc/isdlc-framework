@@ -17,9 +17,18 @@ artifact_sections:
   - artifact: "impact-analysis.md"
     sections: ["1. Blast Radius", "2. Entry Points", "3. Implementation Order", "4. Risk Zones", "5. Summary"]
 depth_guidance:
-  brief: "High-level blast radius and risk assessment. 2-3 exchanges."
-  standard: "Detailed blast radius with dependency tracing. 4-6 exchanges."
-  deep: "Exhaustive impact mapping with file-level precision. 8+ exchanges."
+  brief:
+    behavior: "High-level blast radius from codebase scan. Identify direct changes and major risks only."
+    acceptance: "At least 1 directly modified file identified. Top-level risk assessment provided."
+    inference_policy: "Infer transitive impact and risk zones from codebase structure. Tag inferences as Medium confidence."
+  standard:
+    behavior: "Detailed blast radius with dependency tracing. Map all three tiers. Identify entry points and implementation order."
+    acceptance: "All coverage criteria met. Blast radius tables complete for all 3 tiers. Risk zones mapped with mitigations."
+    inference_policy: "Infer Tier 3 side effects from module coupling analysis. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Exhaustive impact mapping with file-level precision. Trace every dependency chain. Quantify risk with metrics."
+    acceptance: "All coverage criteria met with file-level detail. Every affected file categorized. Implementation order dependency-verified."
+    inference_policy: "Minimize inference. Verify each impact claim against actual codebase imports and references."
 source_step_files:
   - "00-02"
   - "00-03"

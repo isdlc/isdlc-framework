@@ -350,7 +350,12 @@
 - #97 [ ] Gate profiles — configurable strictness levels (rapid/standard/strict)
 - #98 [ ] Workflow recovery — retry/redo current phase without restarting
 - #99 [ ] Workflow recovery — rollback to earlier phase
-- #100 [ ] Roundtable depth control — adaptive brief/standard/deep analysis
+- #100 [A] Roundtable depth control — adaptive brief/standard/deep analysis -> [requirements](docs/requirements/REQ-0046-roundtable-depth-control-adaptive-brief-standard-deep/)
+- #108a [ ] Contributing personas — add domain-specific reviewers to roundtable (.isdlc/personas/) -> [requirements](docs/requirements/REQ-0047-contributing-personas-roundtable-extension/)
+  - Split from #108. Contributing personas add observations without owning artifacts. Pairs with #100 (depth + who).
+
+**Performance**
+- #114 [ ] Bulk file I/O MCP server — multi-file read/write in a single tool call to reduce round-trip overhead during artifact-heavy phases -> [requirements](docs/requirements/REQ-0048-bulk-file-io-mcp-server/)
 
 **Tier 2 — Extension Points**
 - #101 [ ] User-space hooks — extensible pre/post phase hook points (.isdlc/hooks/)
@@ -364,7 +369,8 @@
 
 **Tier 4 — Team & Organization Scale**
 - #107 [ ] Constitution composition — base + project constitution merge for team sharing
-- #108 [ ] Persona customization — add, tune, or disable roundtable personas (.isdlc/personas/)
+- #108b [ ] Full persona override — disable, replace, or tune built-in roundtable personas (.isdlc/personas/disabled/)
+  - Remainder of original #108. Requires artifact ownership model changes. Depends on #108a.
 
 ## Completed
 
