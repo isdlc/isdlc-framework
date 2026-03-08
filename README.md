@@ -30,14 +30,14 @@ From there, 28 hooks running as separate Node.js processes intercept tool calls 
 
 But a harness that only constrains is a cage. Every layer of iSDLC is hackable — from changing a threshold to replacing entire subsystems:
 
-| Layer | Configure | Extend | Override |
-|-------|-----------|--------|----------|
-| **Quality gates** | Set coverage thresholds per profile (`rapid` / `standard` / `strict`) | Drop domain-specific validators in `.isdlc/hooks/` | Write your own gate logic |
-| **Workflows** | Choose light/standard/epic sizing | Define custom workflows (`spike`, `hotfix`, `ui-feature`) with your own phase sequences | Replace built-in phase sequences entirely |
-| **Analysis** | Set depth (`brief` / `standard` / `deep`) | Author new personas — drop a markdown file, it joins the roundtable | Override built-in personas, disable ones you don't need, change analysis modes |
-| **Project knowledge** | Choose embedding provider (CodeBERT local, Voyage, OpenAI) | [Inject your own documents](docs/PROJECT-KNOWLEDGE.md) — Markdown, HTML, text chunked and embedded alongside code | Build on the semantic engine — chunking, embedding, packaging, and 3-tier content redaction are composable modules |
-| **Constitution** | Edit thresholds and rules in your project constitution | Add domain-specific articles | Compose base + project constitutions for team-wide standards |
-| **Recovery** | Retry, redo, or rollback any phase | | |
+| Layer | What ships | Make it yours |
+|-------|-----------|---------------|
+| **Quality gates** | 28 hooks enforce coverage, constitutional compliance, and phase sequencing | Set thresholds per profile (`rapid` / `standard` / `strict`), drop domain-specific validators in `.isdlc/hooks/`, or write your own gate logic |
+| **Workflows** | Feature, fix, upgrade, and test workflows with adaptive sizing | Choose light/standard/epic sizing, define custom workflows with your own phase sequences, or replace built-in sequences entirely |
+| **Analysis** | 3-persona roundtable (business analyst, solutions architect, system designer) | Set depth (`brief` / `standard` / `deep`), author new personas, override or disable built-in ones, change analysis modes |
+| **Project knowledge** | Code scanned, chunked, and embedded during `/discover` — agents search it semantically | Choose embedding provider, [inject your own documents](docs/PROJECT-KNOWLEDGE.md), or build on the composable semantic engine |
+| **Constitution** | Generated from your actual codebase during `/discover` | Edit thresholds, add domain-specific articles, or compose base + project constitutions for team-wide standards |
+| **Recovery** | Retry, redo, or rollback any phase | |
 
 The harness ships strict. You decide how much to loosen — or tighten.
 
