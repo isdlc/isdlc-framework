@@ -250,7 +250,6 @@
 **Tier 2 — Extension Points**
 - #101 [ ] User-space hooks — extensible pre/post phase hook points (.isdlc/hooks/)
 - #102 [ ] Custom workflow definitions — user-defined phase sequences (.isdlc/workflows/*.yaml)
-- #103 [x] Post-implementation change summary — structured diff report after phase 06 **Completed: 2026-03-09**
 
 **Tier 3 — Developer Productivity**
 - #104 [ ] Template system — project-local code templates (.isdlc/templates/)
@@ -262,6 +261,9 @@
   - Depends on #108a (completed). 7 FRs, ~11 files, standard tier.
 
 ## Completed
+
+### 2026-03-09
+- [x] #103: Post-implementation change summary — structured diff report after phase 06. CJS script (change-summary-generator.cjs) with 13-function pipeline, dual output (change-summary.md + change-summary.json), 4-level requirement tracing, section-independent degradation. 59 tests (42 unit + 13 integration + 4 E2E), 90% coverage. *(merged 876c58b)*
 
 ### 2026-03-08
 - [x] #105: Skill authoring scaffold — already implemented. Users say "add a new skill" for interactive creation/wiring. Slash commands: `skill add`, `wire`, `list`, `remove`. Removed from "Coming next" roadmap, added to README. *(closed as already-exists)*
