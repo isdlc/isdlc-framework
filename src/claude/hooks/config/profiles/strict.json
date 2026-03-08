@@ -1,0 +1,11 @@
+{
+  "name": "strict",
+  "description": "Maximum rigor for critical or regulated code",
+  "triggers": ["strict", "critical", "regulated", "compliance", "audit"],
+  "global_overrides": {
+    "test_iteration": {
+      "success_criteria": { "min_coverage_percent": 95 }
+    },
+    "constitutional_validation": { "max_iterations": 8 }
+  }
+}

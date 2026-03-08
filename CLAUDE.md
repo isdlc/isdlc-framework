@@ -78,42 +78,11 @@ Shared protocols referenced by all iSDLC agents. Agents use 1-line references to
 
 ### SKILL OBSERVABILITY Protocol
 
-All skill usage is logged for visibility and audit purposes.
-
-- **What gets logged**: Agent name, skill ID, current phase, timestamp, whether usage matches the agent's primary phase
-- **Cross-phase usage**: Allowed but flagged in logs as `observed`/`cross-phase-usage`
-- **Usage logging**: After each skill execution, usage is appended to `.isdlc/state.json` → `skill_usage_log`
+Skill usage is logged for visibility. Agent name, skill ID, phase, and timestamp are appended to `.isdlc/state.json` → `skill_usage_log`. Cross-phase usage is allowed but flagged as `cross-phase-usage`.
 
 ### SUGGESTED PROMPTS — Phase Agent Protocol
 
-Phase agents emit a SUGGESTED NEXT STEPS block at the end of their phase work (after artifacts are saved and self-validation is complete).
-
-**Resolution Logic:**
-1. Read `active_workflow` from `.isdlc/state.json`
-2. If `active_workflow` is null or missing → emit fallback prompts (see below)
-3. Read `active_workflow.phases[]` and `active_workflow.current_phase_index`
-4. Let next_index = current_phase_index + 1
-5. If next_index < phases.length → resolve next phase display name (split key on first hyphen, title-case remainder, e.g. `"03-architecture"` → `"Phase 03 - Architecture"`), set primary_prompt = `"Continue to {display_name}"`
-6. If next_index >= phases.length → primary_prompt = `"Complete workflow and merge to main"`
-
-**Output Format:**
-```
----
-SUGGESTED NEXT STEPS:
-  [1] {primary_prompt}
-  [2] {agent-specific review option}
-  [3] Show workflow status
----
-```
-
-**Fallback (no active workflow):**
-```
----
-SUGGESTED NEXT STEPS:
-  [1] Show project status
-  [2] Start a new workflow
----
-```
+Phase agents emit a `SUGGESTED NEXT STEPS` block after phase work completes. Resolution: read `active_workflow` from state.json → if next phase exists, primary prompt = `"Continue to {Phase NN - Name}"`; if last phase, prompt = `"Complete workflow and merge to main"`; if no active workflow, prompt = `"Show project status"`. Format: numbered list with primary prompt, agent-specific review option, and "Show workflow status".
 
 ### CONSTITUTIONAL PRINCIPLES Preamble
 
@@ -126,68 +95,10 @@ Each agent must uphold the constitutional articles listed in its agent file. The
 Resolve the **project root** -- the directory containing `.isdlc/` -- before any other action.
 
 1. Check if `.isdlc/` exists in CWD
-2. If **not found**, walk up parent directories (`../`, `../../`, etc.) looking for a directory that contains `.isdlc/state.json` or `.isdlc/monorepo.json`
-3. When found, treat that directory as the **project root** for all subsequent `.isdlc/` and `.claude/` path references
-4. Record the relative path from that root to the original CWD (e.g., if root is `~/projects/my-app` and CWD is `~/projects/my-app/FE`, the relative path is `FE`). This becomes the **CWD-relative path** used for monorepo project matching.
-5. If `.isdlc/` is not found in CWD or any parent, report that the framework is not installed (or fall through to agent-specific error handling)
-
-### Project Context Resolution (Monorepo)
-
-After root resolution, determine if this is a monorepo installation and resolve the active project context.
-
-#### Detection
-
-1. Check if `.isdlc/monorepo.json` exists at the resolved project root
-2. If **NO** -- single-project mode. Skip this section entirely. All paths work as before.
-3. If **YES** -- monorepo mode. Resolve the active project before proceeding.
-
-#### Project Resolution (Monorepo Mode)
-
-Resolve the active project in this priority order:
-1. **`--project {id}` flag** -- if the user passed `--project` on the command, use that project
-2. **CWD-based detection** -- use the **CWD-relative path** from ROOT RESOLUTION and match against registered project paths in `monorepo.json` (longest prefix match)
-3. **`default_project` in `monorepo.json`** -- use the configured default
-4. **Prompt the user** -- if none of the above resolves, present project selection
-
-#### Monorepo Path Routing
-
-Once the active project is resolved, ALL paths are scoped to that project:
-
-| Resource | Single-Project Path | Monorepo Path |
-|----------|-------------------|---------------|
-| State file | `.isdlc/state.json` | `.isdlc/projects/{project-id}/state.json` |
-| Constitution | `docs/isdlc/constitution.md` | `docs/isdlc/projects/{project-id}/constitution.md` (if exists), else `docs/isdlc/constitution.md` |
-| External skills | `.claude/skills/external/` | `.isdlc/projects/{project-id}/skills/external/` |
-| External manifest | `docs/isdlc/external-skills-manifest.json` | `docs/isdlc/projects/{project-id}/external-skills-manifest.json` |
-| Skill report | `docs/isdlc/skill-customization-report.md` | `docs/isdlc/projects/{project-id}/skill-customization-report.md` |
-| Requirements docs | `docs/requirements/` | `docs/{project-id}/requirements/` or `{project-path}/docs/requirements/` (depends on `docs_location` in monorepo.json) |
-| Architecture docs | `docs/architecture/` | `docs/{project-id}/architecture/` or `{project-path}/docs/architecture/` (depends on `docs_location`) |
-| Design docs | `docs/design/` | `docs/{project-id}/design/` or `{project-path}/docs/design/` (depends on `docs_location`) |
-| Git branch prefix | `feature/REQ-NNNN-name` | `{project-id}/feature/REQ-NNNN-name` |
-| Git branch prefix | `bugfix/BUG-NNNN-id` | `{project-id}/bugfix/BUG-NNNN-id` |
-
-#### Project Context in Delegation
-
-When delegating to any phase agent in monorepo mode, include this context in the Task prompt:
-```
-MONOREPO CONTEXT:
-- Project ID: {project-id}
-- Project Name: {project-name}
-- Project Path: {project-path}
-- State File: .isdlc/projects/{project-id}/state.json
-- Docs Base: {resolved docs path}
-- Constitution: {resolved constitution path}
-- External Skills: .isdlc/projects/{project-id}/skills/external/
-- External Manifest: docs/isdlc/projects/{project-id}/external-skills-manifest.json
-- Skill Report: docs/isdlc/projects/{project-id}/skill-customization-report.md
-```
-
-#### Workflow Independence
-
-In monorepo mode, the `single_active_workflow_per_project` rule applies:
-- Each project can have ONE active workflow at a time
-- Different projects can have active workflows simultaneously
-- Counters (next_req_id, next_bug_id) are per-project in each project's state.json
+2. If **not found**, walk up parent directories until `.isdlc/state.json` or `.isdlc/monorepo.json` is found
+3. That directory becomes the **project root** for all `.isdlc/` and `.claude/` path references
+4. Record the relative path from root to original CWD (used for monorepo project matching)
+5. If not found in any parent, report framework not installed
 
 ### Monorepo Mode Protocol
 
@@ -221,27 +132,11 @@ Agent files reference this protocol with:
 
 ### Git Commit Prohibition
 
-**Do NOT run `git add`, `git commit`, or `git push` during phase work.** All file changes must remain uncommitted on the working tree. The orchestrator handles git add, commit, and merge at workflow finalize.
-
-**Rationale**: Commits represent validated work that has passed quality gates and code review. Committing before those phases creates unvalidated snapshots in version control. The orchestrator manages all git operations at the appropriate time.
+**Do NOT run `git add`, `git commit`, or `git push` during phase work.** The orchestrator handles all git operations at workflow finalize.
 
 ### Single-Line Bash Convention
 
-All fenced Bash/sh code blocks in agent and command markdown files MUST contain only a single command line (one non-empty line). Claude Code's permission auto-allow rules use `*` glob patterns (e.g., `Bash(npm *)`) which do not match newlines -- multiline commands bypass these rules and trigger interactive permission prompts.
-
-**Transformation patterns:**
-
-| Multiline Pattern | Single-Line Equivalent |
-|-------------------|----------------------|
-| for-loop (`for f in ...; do ... done`) | `find ... \| xargs ...` on one line |
-| Newline-separated commands | `command1 && command2 && command3` |
-| Comments interleaved with commands | Move comments to markdown prose above the code block |
-| Pipe chains split across lines | Join into a single `cmd1 \| cmd2 \| cmd3` line |
-| Multiline `node -e "..."` | `node -e "compact single-line JS"` or extract to `bin/script.js` |
-
-**`node -e` shell safety:** Never use `node -e` to read or parse files — use the Read tool instead. If `node -e` is unavoidable, use **single quotes** for the JS body (`node -e '...'`), not double quotes. The `!` operator in JS (e.g., `!x.includes(...)`) triggers zsh history expansion inside double quotes, producing `\!` which is a SyntaxError. Single quotes prevent all shell interpolation.
-
-**Escape hatch:** If a command cannot be reasonably expressed as a single line, extract it to a script file in `bin/` and call it with `node bin/script-name.js` or `bash bin/script-name.sh`. The single-line call matches permission glob patterns.
+All Bash code blocks in agent/command markdown files MUST be a single command line. Claude Code's permission auto-allow globs don't match newlines — multiline commands trigger interactive prompts. Chain with `&&`, join pipes on one line, or extract to a script in `bin/`. Use single quotes for `node -e '...'` (double quotes cause zsh `!` expansion errors).
 
 Agent files reference this convention with:
 > See **Single-Line Bash Convention** in CLAUDE.md.
@@ -287,25 +182,9 @@ This is the iSDLC (integrated Software Development Lifecycle) framework for Clau
 
 **0.1.0-alpha** - Initial public release
 
-### Development History
-
-The following summarizes the internal development milestones leading to the 0.1.0-alpha release:
-
-- Cross-platform npm package distribution (`npx isdlc init`, `npm install -g isdlc`)
-- Skills/agents consistency fixes (removed obsolete mapping/, added QS-*/IA-* skills)
-- GitHub Actions CI/CD workflows for multi-platform testing and publishing
-- Integrated test evaluation with SDLC workflow agents
-- Phase 1b: Test Automation Evaluation
-- Article XI: Integration Testing Integrity (mutation testing, adversarial testing)
-- Deterministic iteration enforcement hooks
-- Discovery context wired into Phases 01-03 (fail-open, augment-not-replace)
-- Merged reverse-engineer into discover (behavior extraction, characterization tests, traceability)
-- In-place update mechanism (`isdlc update`, `update.sh`) with manifest-based cleanup and user artifact preservation
-
 ### Important Conventions
 
 - Each agent owns exactly ONE phase (1-to-1 mapping)
 - Skills are logged for observability (primary agent documented, not enforced)
 - Hooks enforce iteration requirements deterministically
 - State tracked in `.isdlc/state.json` (gitignored)
-

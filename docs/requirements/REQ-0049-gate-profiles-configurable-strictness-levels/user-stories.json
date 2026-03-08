@@ -1,0 +1,114 @@
+{
+  "version": "1.0.0",
+  "slug": "REQ-0049-gate-profiles-configurable-strictness-levels",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Use built-in rapid profile for side project",
+      "persona": "Individual Developer",
+      "story": "As a developer working on a side project, I want to select a rapid profile so that I can skip heavy gates and iterate quickly.",
+      "acceptance_criteria": ["AC-001-01", "AC-004-01", "AC-005-01"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-001", "FR-004", "FR-005"]
+    },
+    {
+      "id": "US-002",
+      "title": "Create custom spike profile",
+      "persona": "Individual Developer",
+      "story": "As a developer who frequently prototypes, I want to create a custom spike profile with minimal gates so that I can use it across my projects.",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-002-03", "AC-002-05"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-002"]
+    },
+    {
+      "id": "US-003",
+      "title": "Select profile via natural language",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want to say 'quick build' and have the framework automatically select the rapid profile so that I don't need to remember command flags.",
+      "acceptance_criteria": ["AC-004-01", "AC-004-02", "AC-004-03"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-004"]
+    },
+    {
+      "id": "US-004",
+      "title": "Framework asks when profile is ambiguous",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want the framework to ask me which profile I meant when my input doesn't clearly match one so that I'm never silently given the wrong profile.",
+      "acceptance_criteria": ["AC-004-04", "AC-004-05"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-004"]
+    },
+    {
+      "id": "US-005",
+      "title": "See which profile is active before workflow starts",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want to see which profile was selected and have the chance to override it so that I'm always in control of gate strictness.",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-005"]
+    },
+    {
+      "id": "US-006",
+      "title": "Framework fixes my broken profile file",
+      "persona": "Individual Developer",
+      "story": "As a developer who made a typo in my profile JSON, I want the framework to detect the error and offer to fix it so that I'm not blocked by a config mistake.",
+      "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03", "AC-007-04", "AC-007-05"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-007"]
+    },
+    {
+      "id": "US-007",
+      "title": "Get warned when profile drops below recommended thresholds",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want to be warned when my custom profile sets thresholds below recommended levels so that I make an informed choice.",
+      "acceptance_criteria": ["AC-008-01", "AC-008-02", "AC-008-03"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-008"]
+    },
+    {
+      "id": "US-008",
+      "title": "Enforce minimum thresholds for team project",
+      "persona": "Team Lead",
+      "story": "As a team lead, I want to opt into enforcing minimum gate thresholds so that no developer can accidentally ship with gates disabled on our critical project.",
+      "acceptance_criteria": ["AC-008-04"],
+      "priority": "Must Have",
+      "fr_refs": ["FR-008"]
+    },
+    {
+      "id": "US-009",
+      "title": "List all available profiles",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want to see all available profiles with their source and description so that I know what options I have.",
+      "acceptance_criteria": ["AC-009-01", "AC-009-02", "AC-009-03"],
+      "priority": "Should Have",
+      "fr_refs": ["FR-009"]
+    },
+    {
+      "id": "US-010",
+      "title": "Set project default profile",
+      "persona": "Individual Developer",
+      "story": "As a developer, I want to set a default profile for my project so that every workflow uses it without me specifying each time.",
+      "acceptance_criteria": ["AC-010-01", "AC-010-02", "AC-010-03"],
+      "priority": "Should Have",
+      "fr_refs": ["FR-010"]
+    },
+    {
+      "id": "US-011",
+      "title": "Personal profile overrides project default",
+      "persona": "Individual Developer",
+      "story": "As a developer who prefers different strictness than my project's default, I want my personal profile to take precedence so that I maintain autonomy.",
+      "acceptance_criteria": ["AC-003-01", "AC-010-04"],
+      "priority": "Should Have",
+      "fr_refs": ["FR-003", "FR-010"]
+    },
+    {
+      "id": "US-012",
+      "title": "Per-project profiles in monorepo",
+      "persona": "Individual Developer",
+      "story": "As a developer in a monorepo, I want each project to have its own profiles so that my API service can use strict while my internal tool uses rapid.",
+      "acceptance_criteria": ["AC-012-01", "AC-012-02", "AC-012-03"],
+      "priority": "Should Have",
+      "fr_refs": ["FR-012"]
+    }
+  ]
+}

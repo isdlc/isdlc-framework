@@ -150,6 +150,15 @@ Read topic files from `src/claude/skills/analysis-topics/**/*.md`
    - Design summary (Jordan) → Accept/Amend?
 7. **Update meta.json** on completion — set `phases_completed`, `topics_covered`, `analysis_status`
 
+### Step A5: Finalize Analysis
+
+After roundtable completes (or after straight analysis artifact production), run:
+```bash
+node src/antigravity/analyze-finalize.cjs --folder "docs/requirements/{artifact_folder}"
+```
+
+This updates BACKLOG.md with the analysis link and **Analyzed** tag, and comments on the GitHub issue if the item has a GitHub source.
+
 ---
 
 ## Build Protocol

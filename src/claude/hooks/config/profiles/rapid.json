@@ -1,0 +1,10 @@
+{
+  "name": "rapid",
+  "description": "Minimal gates for simple changes or prototyping",
+  "triggers": ["quick", "fast", "minimal", "rapid", "spike", "prototype"],
+  "global_overrides": {
+    "constitutional_validation": { "enabled": false },
+    "interactive_elicitation": { "min_menu_interactions": 1 },
+    "test_iteration": { "max_iterations": 3, "success_criteria": { "min_coverage_percent": 60 } }
+  }
+}

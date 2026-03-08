@@ -1,0 +1,6 @@
+{
+  "name": "standard",
+  "description": "Default — balanced rigor for most work",
+  "triggers": ["standard", "default", "normal"],
+  "global_overrides": {}
+}
