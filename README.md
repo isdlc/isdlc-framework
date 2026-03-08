@@ -16,19 +16,29 @@
 
 ## The Problem
 
-AI coding assistants are powerful but structurally unreliable. They skip tests, drift from requirements, lose context across sessions, declare work "done" prematurely, and scope-creep every task. Prompt-based instructions help but can't guarantee behavior — the same prompt produces different results, and rules get forgotten as conversations grow long.
+**AI assistants are structurally unreliable:**
+- Skip tests, drift from requirements, lose context across sessions
+- Declare work "done" prematurely, scope-creep every task
+- Prompt-based rules get forgotten as conversations grow long
 
-These problems are worse on existing codebases. The AI doesn't know your architecture, your conventions, your test coverage gaps, or your team's standards. It guesses — and guesses wrong. It reinvents patterns you already have, proposes changes that break established conventions, and ignores the constraints that matter to your project.
+**Worse on existing codebases:**
+- Don't know your architecture, conventions, or test coverage gaps
+- Reinvent patterns you already have
+- Propose changes that break established conventions
 
-You need constraints that run **outside** the LLM — deterministic enforcement that the AI can't ignore, reinterpret, or forget. And you need them grounded in your actual codebase, not generic best practices.
+**You need constraints that run outside the LLM** — deterministic enforcement the AI can't ignore, grounded in your actual codebase.
 
 ## The Harness
 
-iSDLC is that enforcement layer. Install it into your existing project and it learns your codebase first — 23 discovery agents map your architecture, test coverage, dependencies, data models, and feature inventory before changing a single line. The result is a project constitution: governance rules verified against your actual code, not hallucinated from training data.
+**iSDLC is a hackable harness.** It ships strict — but every layer is yours to change.
 
-From there, 28 hooks running as separate Node.js processes intercept tool calls and block non-compliant behavior. The AI doesn't get to decide when it's done. The harness does.
+Install it into your existing project and it learns your codebase first:
 
-But a harness that only constrains is a cage. Every layer of iSDLC is hackable — from changing a threshold to replacing entire subsystems:
+- 23 discovery agents map your architecture, test coverage, dependencies, data models, and feature inventory — before changing a single line
+- The result is a **project constitution**: governance rules verified against your actual code, not hallucinated from training data
+- 28 hooks intercept tool calls and block non-compliant behavior — the AI doesn't get to decide when it's done, the harness does
+
+You decide how much to loosen — or tighten:
 
 | Layer | What ships | Make it yours |
 |-------|-----------|---------------|
@@ -38,8 +48,6 @@ But a harness that only constrains is a cage. Every layer of iSDLC is hackable �
 | **Project knowledge** | Code scanned, chunked, and embedded during `/discover` — agents search it semantically | • Choose embedding provider<br>• [Inject your own documents](docs/PROJECT-KNOWLEDGE.md)<br>• Build on the composable semantic engine |
 | **Constitution** | Generated from your actual codebase during `/discover` | • Edit thresholds and rules<br>• Add domain-specific articles<br>• Compose base + project constitutions for team-wide standards |
 | **Recovery** | Retry, redo, or rollback any phase | |
-
-The harness ships strict. You decide how much to loosen — or tighten.
 
 ---
 
