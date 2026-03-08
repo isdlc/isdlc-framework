@@ -133,9 +133,15 @@ function checkPhaseFieldProtection(filePath, toolInput, toolName, diskState) {
         if (incomingIndex !== undefined && incomingIndex !== null && diskIndex !== undefined && diskIndex !== null) {
             if (typeof incomingIndex === 'number' && typeof diskIndex === 'number') {
                 if (incomingIndex < diskIndex) {
-                    const reason = `Phase index regression: incoming current_phase_index (${incomingIndex}) < disk (${diskIndex}).`;
-                    logHookEvent('state-write-validator', 'block', { reason: `V8: phase_index ${incomingIndex} < disk ${diskIndex}` });
-                    return { decision: 'block', stopReason: reason };
+                    // Recovery action exception: allow index regression for rollback
+                    const recoveryAction = incomingAW.recovery_action;
+                    if (recoveryAction && recoveryAction.type === 'rollback') {
+                        // Rollback explicitly decreases phase index — allowed
+                    } else {
+                        const reason = `Phase index regression: incoming current_phase_index (${incomingIndex}) < disk (${diskIndex}).`;
+                        logHookEvent('state-write-validator', 'block', { reason: `V8: phase_index ${incomingIndex} < disk ${diskIndex}` });
+                        return { decision: 'block', stopReason: reason };
+                    }
                 }
             }
         }
@@ -154,10 +160,17 @@ function checkPhaseFieldProtection(filePath, toolInput, toolName, diskState) {
                 if (incomingOrd === undefined || diskOrd === undefined) continue;
 
                 if (incomingOrd < diskOrd) {
+                    // Exception 1: supervised_review redo (existing)
                     const supervisedReview = incomingState?.active_workflow?.supervised_review;
                     const isRedo = supervisedReview && (supervisedReview.status === 'redo_pending' || (typeof supervisedReview.redo_count === 'number' && supervisedReview.redo_count > 0));
 
                     if (isRedo && incomingStatus === 'in_progress' && diskStatus === 'completed') {
+                        continue;
+                    }
+
+                    // Exception 2: recovery_action (retry or rollback)
+                    const recoveryAction = incomingAW.recovery_action;
+                    if (recoveryAction && (recoveryAction.type === 'retry' || recoveryAction.type === 'rollback')) {
                         continue;
                     }
 
