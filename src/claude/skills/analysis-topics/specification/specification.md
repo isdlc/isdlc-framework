@@ -23,9 +23,18 @@ artifact_sections:
   - artifact: "design-summary.md"
     sections: ["all"]
 depth_guidance:
-  brief: "Module boundaries and key interfaces only. 2-3 exchanges."
-  standard: "Full module design with interfaces and data flow. 4-6 exchanges."
-  deep: "Exhaustive specification with error taxonomy and review. 8+ exchanges."
+  brief:
+    behavior: "Define module boundaries and key public interfaces only. Infer internal structure from codebase conventions."
+    acceptance: "Module boundaries identified with single responsibility. At least 1 interface contract specified."
+    inference_policy: "Infer data flow, error handling, and internal module structure from existing codebase patterns. Tag inferences as Medium confidence."
+  standard:
+    behavior: "Full module design with interfaces, data flow, and error taxonomy. Validate consistency with architecture."
+    acceptance: "All coverage criteria met. Interfaces have concrete types. Error paths defined for every interface."
+    inference_policy: "Infer only error recovery strategies and internal data transformations. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Exhaustive specification including error taxonomy, design review, and implementation readiness assessment."
+    acceptance: "All coverage criteria met with exhaustive detail. Design review confirms consistency. No open questions."
+    inference_policy: "Minimize inference. Specify every interface, error path, and data flow explicitly. Only infer low-risk internal details."
 source_step_files:
   - "04-01"
   - "04-02"

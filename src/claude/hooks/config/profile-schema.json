@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "iSDLC Gate Profile",
+  "description": "Defines configurable strictness levels for gate checks",
+  "type": "object",
+  "required": ["name", "description", "triggers"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique profile identifier"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One-line description for display"
+    },
+    "triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Natural language keywords for matching"
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Per-phase override definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/phaseOverrides"
+      }
+    },
+    "global_overrides": {
+      "$ref": "#/definitions/phaseOverrides",
+      "description": "Overrides applied to all phases"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "phaseOverrides": {
+      "type": "object",
+      "properties": {
+        "test_iteration": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "max_iterations": { "type": "integer", "minimum": 1 },
+            "circuit_breaker_threshold": { "type": "integer", "minimum": 1 },
+            "success_criteria": {
+              "type": "object",
+              "properties": {
+                "all_tests_passing": { "type": "boolean" },
+                "min_coverage_percent": { "type": "number", "minimum": 0, "maximum": 100 },
+                "lint_passing": { "type": "boolean" },
+                "type_check_passing": { "type": "boolean" },
+                "no_critical_vulnerabilities": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "constitutional_validation": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "max_iterations": { "type": "integer", "minimum": 1 },
+            "articles": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "interactive_elicitation": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "min_menu_interactions": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "agent_delegation_validation": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "artifact_validation": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,86 @@
+Requirement,AC,Test Case,Test Type,Priority,Module,Description
+FR-007,AC-007-01,TC-M8-001,positive,P0,M8,Transport Factory -- Artifactory
+FR-007,AC-007-01,TC-M8-002,positive,P0,M8,Transport Factory -- Nexus
+FR-007,AC-007-01,TC-M8-003,positive,P0,M8,Transport Factory -- S3
+FR-007,AC-007-01,TC-M8-004,positive,P0,M8,Transport Factory -- SFTP
+FR-007,AC-007-01,TC-M8-005,negative,P1,M8,Transport Factory -- Unknown Type
+FR-007,AC-007-01,TC-M8-006,negative,P1,M8,Transport Factory -- Missing Config
+FR-007,AC-007-01,TC-M8-007,positive,P0,M8,All Transports -- Interface Conformance
+FR-007,AC-007-01,TC-M8-008,positive,P0,M8,Artifactory -- Publish
+FR-007,AC-007-03,TC-M8-009,positive,P0,M8,Artifactory -- Publish Sends Checksums
+FR-007,AC-007-01,TC-M8-010,positive,P0,M8,Artifactory -- Fetch
+FR-007,AC-007-03,TC-M8-011,positive,P0,M8,Artifactory -- Fetch Validates Checksum
+FR-007,AC-007-03,TC-M8-012,negative,P0,M8,Artifactory -- Fetch Checksum Mismatch
+FR-007,AC-007-02,TC-M8-013,positive,P1,M8,Artifactory -- List Versions
+FR-007,AC-007-01,TC-M8-014,positive,P1,M8,Artifactory -- Auth Header
+FR-007,AC-007-01,TC-M8-015,negative,P1,M8,Artifactory -- Publish Retry on Server Error
+FR-007,AC-007-01,TC-M8-016,positive,P0,M8,Nexus -- Publish
+FR-007,"AC-007-01,AC-007-03",TC-M8-017,positive,P0,M8,Nexus -- Fetch with Checksum
+FR-007,AC-007-03,TC-M8-018,negative,P0,M8,Nexus -- Fetch Checksum Mismatch
+FR-007,AC-007-02,TC-M8-019,positive,P1,M8,Nexus -- List Versions
+FR-007,AC-007-01,TC-M8-020,positive,P0,M8,S3 -- Publish
+FR-007,"AC-007-01,AC-007-03",TC-M8-021,positive,P0,M8,S3 -- Fetch with Checksum
+FR-007,AC-007-03,TC-M8-022,negative,P0,M8,S3 -- Fetch Checksum Mismatch
+FR-007,AC-007-02,TC-M8-023,positive,P1,M8,S3 -- List Versions
+FR-007,AC-007-01,TC-M8-024,negative,P1,M8,S3 -- Missing Bucket Config
+FR-007,AC-007-01,TC-M8-025,positive,P0,M8,SFTP -- Publish
+FR-007,"AC-007-01,AC-007-03",TC-M8-026,positive,P0,M8,SFTP -- Fetch with Checksum
+FR-007,AC-007-03,TC-M8-027,negative,P0,M8,SFTP -- Fetch Checksum Mismatch
+FR-007,AC-007-02,TC-M8-028,positive,P1,M8,SFTP -- List Versions
+FR-007,AC-007-02,TC-M8-029,positive,P0,M8,Update Checker -- Newer Version Available
+FR-007,AC-007-02,TC-M8-030,positive,P1,M8,Update Checker -- Already Latest
+FR-007,"AC-007-02,AC-007-03",TC-M8-031,positive,P0,M8,Update Checker -- Only Compatible Versions
+FR-007,AC-007-04,TC-M8-032,positive,P0,M8,Rollback -- Previous Version Retained
+FR-007,AC-007-04,TC-M8-033,positive,P0,M8,Rollback -- Failed Download Preserves Previous
+FR-007,AC-007-04,TC-M8-034,positive,P1,M8,Rollback -- Successful Fetch Cleans Up Old
+FR-007,AC-007-04,TC-M8-035,positive,P1,M8,Rollback -- First Download No Previous
+FR-007,AC-007-01,TC-M8-036,negative,P2,M8,Edge -- Zero-Byte File Publish
+FR-007,AC-007-01,TC-M8-037,negative,P1,M8,Edge -- Non-Existent Module Fetch
+FR-007,AC-007-01,TC-M8-038,negative,P2,M8,Edge -- Empty URL Config
+FR-007,AC-007-01,TC-M8-039,negative,P2,M8,Edge -- Transport Timeout
+FR-009,AC-009-01,TC-M6C-040,positive,P0,M6,Create Compatibility Matrix
+FR-009,AC-009-01,TC-M6C-041,positive,P0,M6,Matrix Declares Compatible Pairs
+FR-009,AC-009-01,TC-M6C-042,positive,P0,M6,Group Compatibility -- All Compatible
+FR-009,AC-009-01,TC-M6C-043,negative,P0,M6,Group Compatibility -- Incompatible Set
+FR-009,AC-009-01,TC-M6C-044,positive,P1,M6,Matrix Wildcard Ranges
+FR-009,AC-009-01,TC-M6C-045,positive,P1,M6,Empty Matrix -- All Compatible
+FR-009,AC-009-02,TC-M6C-046,positive,P0,M6,MCP Validation -- Compatible Set Loads
+FR-009,AC-009-02,TC-M6C-047,negative,P0,M6,MCP Validation -- Incompatible Package Rejected
+FR-009,"AC-009-02,AC-009-04",TC-M6C-048,negative,P0,M6,Validation Error Details
+FR-009,AC-009-03,TC-M6C-049,positive,P0,M6,Update Checker -- Compatible Only
+FR-009,AC-009-03,TC-M6C-050,negative,P0,M6,Update Checker -- Skips Incompatible
+FR-009,AC-009-03,TC-M6C-051,positive,P1,M6,Update Checker -- No Loaded Modules
+FR-009,AC-009-04,TC-M6C-052,negative,P0,M6,Error -- Includes Module and Version
+FR-009,AC-009-04,TC-M6C-053,negative,P0,M6,Error -- Lists Compatible Alternatives
+FR-009,AC-009-04,TC-M6C-054,negative,P1,M6,Error -- Multiple Incompatibilities
+FR-009,AC-009-01,TC-M6C-055,negative,P2,M6,Edge -- Circular Dependency Reference
+FR-009,AC-009-01,TC-M6C-056,positive,P2,M6,Edge -- Empty Module Map
+FR-009,AC-009-01,TC-M6C-057,positive,P2,M6,Edge -- Single Module Always Compatible
+FR-009,AC-009-01,TC-M6C-058,positive,P1,M6,Matrix Serialization Roundtrip
+FR-010,AC-010-01,TC-M9-059,positive,P0,M9,Aggregate -- Collects Modules into Bundle
+FR-010,AC-010-01,TC-M9-060,positive,P0,M9,Bundle Is Valid Tar
+FR-010,AC-010-01,TC-M9-061,positive,P0,M9,Single Module Bundle
+FR-010,AC-010-01,TC-M9-062,positive,P0,M9,Multiple Modules Bundle
+FR-010,AC-010-02,TC-M9-063,positive,P0,M9,Compatibility Validated Before Assembly
+FR-010,AC-010-02,TC-M9-064,positive,P0,M9,Compatible Set Produces Bundle
+FR-010,AC-010-02,TC-M9-065,negative,P0,M9,Incompatible Set Fails Before I/O
+FR-010,AC-010-03,TC-M9-066,positive,P0,M9,Manifest Lists Module IDs
+FR-010,AC-010-03,TC-M9-067,positive,P0,M9,Manifest Lists Module Versions
+FR-010,AC-010-03,TC-M9-068,positive,P0,M9,Manifest Includes Checksums
+FR-010,AC-010-03,TC-M9-069,positive,P0,M9,Manifest Includes Release Metadata
+FR-010,AC-010-03,TC-M9-070,positive,P1,M9,Manifest Is Valid JSON
+FR-010,AC-010-04,TC-M9-071,negative,P0,M9,Failed Aggregation -- Incompatible Blocks Release
+FR-010,AC-010-04,TC-M9-072,negative,P0,M9,Failed Aggregation -- Error Identifies Modules
+FR-010,AC-010-04,TC-M9-073,negative,P0,M9,Failed Aggregation -- No Partial Bundle
+FR-010,AC-010-04,TC-M9-074,negative,P1,M9,Failed Aggregation -- Suggests Alternatives
+FR-010,AC-010-01,TC-M9-075,negative,P1,M9,Edge -- Empty Module List
+FR-010,AC-010-01,TC-M9-076,negative,P1,M9,Edge -- Missing Package File
+FR-010,AC-010-01,TC-M9-077,negative,P2,M9,Edge -- Duplicate Module IDs
+FR-010,AC-010-01,TC-M9-078,positive,P2,M9,Stress -- 10+ Modules
+FR-010,AC-010-03,TC-M9-079,positive,P1,M9,Manifest Checksum Verification
+FR-010,AC-010-01,TC-M9-080,positive,P2,M9,Aggregate with Warnings
+FR-007,"AC-007-01,AC-010-01",TC-INT-I1,positive,P0,Integration,Publish-Fetch-Aggregate Pipeline
+FR-007,"AC-007-02,AC-009-03",TC-INT-I2,positive,P0,Integration,Update Checker with Compatibility Filter
+FR-010,"AC-010-02,AC-009-01",TC-INT-I3,negative,P0,Integration,Aggregate Blocked by Compatibility
+FR-007,AC-007-04,TC-INT-I4,positive,P0,Integration,Fetch with Rollback Verification
+FR-007,"AC-007-01..04,AC-010-01..04",TC-INT-I5,positive,P0,Integration,Full Distribution Lifecycle

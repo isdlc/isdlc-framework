@@ -22,6 +22,7 @@ const {
     loadManifest,
     getHooksConfigDir
 } = require('./common.cjs');
+const { resolveProfileOverrides } = require('./profile-loader.cjs');
 
 /**
  * Deep merge two objects. Overrides replace base values.
@@ -256,7 +257,19 @@ function check(ctx) {
         let phaseReq = requirements.phase_requirements[currentPhase];
         if (!phaseReq) return { decision: 'allow' };
 
+        // Profile merge layer (REQ-0049): apply profile overrides before workflow overrides
         const activeWorkflow = state.active_workflow;
+        try {
+            const profileName = activeWorkflow?.profile || state?.default_profile || 'standard';
+            const profileOverrides = resolveProfileOverrides(profileName, currentPhase);
+            if (profileOverrides) {
+                phaseReq = mergeRequirements(phaseReq, profileOverrides);
+            }
+        } catch (e) {
+            debugLog('Profile merge failed (continuing with base requirements):', e.message);
+        }
+
+        // Workflow overrides (existing behavior, unchanged)
         if (activeWorkflow && requirements.workflow_overrides?.[activeWorkflow.type]?.[currentPhase]) {
             phaseReq = mergeRequirements(phaseReq, requirements.workflow_overrides[activeWorkflow.type][currentPhase]);
         }

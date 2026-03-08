@@ -22,6 +22,7 @@ When the user speaks, classify their intent into one of these categories. Do NOT
 | **Fix** | broken, fix, bug, crash, error, wrong, failing | Fix workflow (see § Fix Protocol) |
 | **Upgrade** | upgrade, update, bump, version, migrate | Upgrade workflow |
 | **Test run** | run tests, check if tests pass | Test-run workflow |
+| **Test generate** | write tests, add tests, generate tests, test coverage | Test-generate workflow |
 | **Discovery** | set up, configure, initialize, discover | Discovery workflow |
 
 **Disambiguation**: Analyze+Add → **Analyze** (analyze runs add first if item doesn't exist). Analyze+Build → **Build** (build encompasses full workflow). If truly ambiguous, ask one brief clarifying question.
@@ -64,53 +65,39 @@ The Add verb creates a backlog item without starting a workflow. It does NOT wri
 
 ## Discover Protocol
 
-The Discover verb sets up a new project or analyzes an existing codebase. It runs **once per project** (or when re-discovery is needed).
+The Discover verb sets up a new project or analyzes an existing codebase. It runs **once per project** (or when re-discovery is needed). Discovery is **gate-exempt** — it does not use `workflow-init.cjs` or `phase-advance.cjs`.
 
-### Step D1: Determine Mode
-Ask the user: **New project** or **existing codebase**?
-
-### Step D2: Prime Session
+### Step D1: Prime Session
 ```bash
 node src/antigravity/prime-session.cjs
 ```
 
-### For New Projects (D3-D9):
+### Step D2: Become the Discover Orchestrator
 
-1. **D3: Vision Elicitation** — Read `src/claude/agents/discover/product-analyst.md`. Engage the user interactively: problem statement, target users, key features, constraints. Produce `docs/project-brief.md`.
-2. **D4: Research** — Read `src/claude/agents/discover/domain-researcher.md`, `technical-scout.md`, `security-advisor.md`, `test-strategist.md`. Execute research **sequentially** (Antigravity limitation). Gather best practices, compliance needs, performance targets, testing strategy.
-3. **D5: Tech Stack Selection** — Recommend a cohesive stack based on research. Present to user for confirmation.
-4. **D6: PRD Generation** — From brief + research, produce `docs/requirements/prd.md` with functional requirements, NFRs, and MVP scope.
-5. **D7: Architecture Blueprint** — Read `src/claude/agents/discover/architecture-designer.md`. Design components, data model, API structure, directory layout. Produce `docs/architecture/architecture-overview.md`.
-6. **D8: Constitution** — Read `src/claude/agents/discover/constitution-generator.md`. Generate `docs/isdlc/constitution.md` from all prior artifacts. Interactive article review with user.
-7. **D9: Scaffold + Finalize** — Create `src/` from blueprint, install skills, set up test infrastructure.
+Read and follow `src/claude/agents/discover-orchestrator.md`. This is the single source of truth for the discover workflow — it defines menus, sub-agent coordination, state writes, skill distillation, and the interactive walkthrough.
 
-### For Existing Projects (D3-D9):
+Apply these Antigravity adaptations while following the orchestrator:
 
-1. **D3: Parallel Analysis (run sequentially)** — Read and execute each agent's analysis:
-   - `src/claude/agents/discover/architecture-analyzer.md` → architecture, tech stack, dependencies
-   - `src/claude/agents/discover/test-evaluator.md` → test coverage, quality assessment
-   - `src/claude/agents/discover/data-model-analyzer.md` → database schemas, entities, relationships
-   - `src/claude/agents/discover/feature-mapper.md` → API endpoints, UI pages, behavior extraction + AC
+| Orchestrator Says | Antigravity Does |
+|-------------------|------------------|
+| `AskUserQuestion` to present menu | Print the menu as text, wait for the user's freeform reply |
+| Launch N sub-agents via `Task` tool in parallel | Read each sub-agent's `.md` file and execute **sequentially** |
+| Launch sub-agent via `Task` tool | Read the sub-agent's `.md` file and do the work directly |
+| `node bin/rebuild-cache.js` | Run as-is (single-line command, works in Antigravity) |
 
-2. **D4: Characterization Tests** — Read `src/claude/agents/discover/characterization-test-generator.md`. Generate `test.skip()` scaffolds from extracted AC.
+### Step D3: Validate State After Writes
 
-3. **D5: Artifact Integration** — Link AC to features, generate traceability matrix.
+The orchestrator writes to `.isdlc/state.json` multiple times (discovery context envelope, project state, iteration config). After each write, run:
+```bash
+node src/antigravity/validate-state.cjs
+```
 
-4. **D6: Discovery Report** — Assemble `docs/project-discovery-report.md` from all analysis outputs.
+### Step D4: Rebuild Session Cache
 
-5. **D7: Constitution** — Read `src/claude/agents/discover/constitution-generator.md`. Generate informed by discovery findings.
-
-6. **D8: Skills** — Read `src/claude/agents/discover/skills-researcher.md`. Install relevant external skills.
-
-7. **D9: Interactive Walkthrough** — Present: constitution review (mandatory), architecture review, test gap review, iteration configuration.
-
-### Finalize Discovery
+After the final state write, rebuild the session cache so subsequent sessions have discovery context:
 ```bash
 node src/antigravity/prime-session.cjs
 ```
-Rebuild session cache so all subsequent sessions have discovery context.
-
-Update `.isdlc/state.json` → set `discovery_completed: true`.
 
 ---
 
@@ -194,6 +181,10 @@ This validates constitution, checks no active workflow exists, creates `active_w
 | `04-design` | `src/claude/agents/03-system-designer.md` |
 | `05-test-strategy` | `src/claude/agents/04-test-design-engineer.md` |
 | `06-implementation` | `src/claude/agents/05-software-developer.md` |
+| `07-testing` | `src/claude/agents/06-integration-tester.md` |
+| `11-local-testing` | `src/claude/agents/10-dev-environment-engineer.md` |
+| `15-upgrade-plan` | `src/claude/agents/14-upgrade-engineer.md` (scope: analysis) |
+| `15-upgrade-execute` | `src/claude/agents/14-upgrade-engineer.md` (scope: execution) |
 | `16-quality-loop` | `src/claude/agents/16-quality-loop-engineer.md` |
 | `08-code-review` | `src/claude/agents/05-implementation-reviewer.md` |
 
@@ -236,6 +227,69 @@ Phase 05 MUST produce a failing test before the fix. Phase 06 makes the test pas
 
 ### Advance + Finalize
 Same as Build Protocol steps B2 and B3.
+
+---
+
+## Upgrade Protocol
+
+The Upgrade verb safely upgrades a dependency, runtime, framework, or tool with regression testing.
+
+### Initialize
+```bash
+node src/antigravity/workflow-init.cjs --type upgrade --description "upgrade <name>"
+```
+
+### Phase Sequence
+`15-upgrade-plan` → `15-upgrade-execute` → `08-code-review`
+
+### Become the Upgrade Engineer
+
+Both phases (`15-upgrade-plan` and `15-upgrade-execute`) are handled by a single agent. Read and follow `src/claude/agents/14-upgrade-engineer.md`. It is the single source of truth — it defines test adequacy checks, version detection, impact analysis (with optional IA delegation), migration planning, and the implement-test loop.
+
+Apply these Antigravity adaptations while following the agent:
+
+| Agent Says | Antigravity Does |
+|------------|------------------|
+| `AskUserQuestion` to present version/analysis choices | Print the menu as text, wait for the user's freeform reply |
+| Delegate to `impact-analysis-orchestrator` via `Task` tool | Read `src/claude/agents/impact-analysis/impact-analysis-orchestrator.md` and execute directly; its sub-agents (M1, M2, M3) run **sequentially** |
+| `WebSearch` for changelogs/migration guides | Use `WebSearch` tool as-is (works in Antigravity) |
+
+### Advance + Finalize
+Same as Build Protocol steps B2 and B3.
+
+---
+
+## Test Run Protocol
+
+The Test Run verb executes existing tests without creating a branch or artifacts folder.
+
+### Initialize
+```bash
+node src/antigravity/workflow-init.cjs --type test-run --description "run tests"
+```
+
+### Phase Sequence
+`11-local-testing` → `07-testing`
+
+### Advance + Finalize
+Same as Build Protocol steps B2 and B3. No branch merge occurs since no branch was created.
+
+---
+
+## Test Generate Protocol
+
+The Test Generate verb creates new tests for existing code without creating a branch.
+
+### Initialize
+```bash
+node src/antigravity/workflow-init.cjs --type test-generate --description "generate tests"
+```
+
+### Phase Sequence
+`05-test-strategy` → `06-implementation` → `16-quality-loop` → `08-code-review`
+
+### Advance + Finalize
+Same as Build Protocol steps B2 and B3. No branch merge occurs since no branch was created.
 
 ---
 

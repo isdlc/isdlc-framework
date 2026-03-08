@@ -1,0 +1,86 @@
+[
+  {
+    "id": "US-001",
+    "title": "Choose analysis mode upfront",
+    "story": "As a framework user, I want to choose whether to run my analysis with personas or without, so that I control how my analysis is conducted.",
+    "acceptance_criteria": [
+      "AC-001-01: Framework presents two options: with personas or straight analysis",
+      "AC-001-02: No personas = no persona files loaded, no persona influence",
+      "AC-001-04: Question is conversational, not a numbered menu"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-002",
+    "title": "Choose conversation style",
+    "story": "As a framework user, I want to choose the conversation style (conversational, bulleted, silent) when using personas, so that I get the output format I prefer.",
+    "acceptance_criteria": [
+      "AC-002-01: Three options presented",
+      "AC-002-02: Config preference shown as default",
+      "AC-002-03: Choice applies for entire session"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "title": "Curate persona roster",
+    "story": "As a framework user, I want to add or remove any persona from the recommended roster including the primary personas, so that I get exactly the perspectives I need.",
+    "acceptance_criteria": [
+      "AC-003-02: Primary personas recommended but not forced",
+      "AC-003-05: User can add or remove any persona",
+      "AC-003-06: Removing all personas falls back to no-persona mode"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-004",
+    "title": "Run analysis without personas",
+    "story": "As a framework user, I want to run a straight analysis that produces all standard artifacts without any persona influence, so that I can get a clean analysis when I don't need multi-perspective review.",
+    "acceptance_criteria": [
+      "AC-004-01: No persona files loaded",
+      "AC-004-03: All standard artifacts produced",
+      "AC-004-05: Meta.json records analysis_mode"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004"]
+  },
+  {
+    "id": "US-005",
+    "title": "Remove primary persona from roster",
+    "story": "As a framework customizer, I want to remove Maya, Alex, or Jordan from a roundtable session, so that I can run analysis with only the perspectives I find valuable.",
+    "acceptance_criteria": [
+      "AC-005-01: PRIMARY_PERSONAS no longer forces inclusion",
+      "AC-005-02: Agent references 'active personas' not 'three personas'",
+      "AC-005-04: First-exchange rule adapts to active roster"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-006",
+    "title": "Preferences pre-populate choices",
+    "story": "As a framework user, I want my roundtable.yaml preferences to pre-populate the mode selection so I don't have to re-enter the same choices every time, while still being asked.",
+    "acceptance_criteria": [
+      "AC-006-01: Verbosity pre-selected from config",
+      "AC-006-02: Default personas pre-populate recommendation",
+      "AC-006-04: Existing configs continue working"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-007",
+    "title": "Learn how to create personas",
+    "story": "As a framework customizer, I want documentation explaining how to create, override, and configure personas, so that I can extend the analysis with my own domain expertise.",
+    "acceptance_criteria": [
+      "AC-007-01: Covers creating from Domain Expert template",
+      "AC-007-02: Covers overriding built-in personas",
+      "AC-007-05: Covers frontmatter schema"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007"]
+  }
+]

@@ -397,6 +397,8 @@ When the user selects a workflow (via `/isdlc feature`, `/isdlc fix`, etc.), ini
    If the artifact folder exists and contains meta.json, update it:
    - Set `meta.build_started_at` to current ISO-8601 timestamp
    - Set `meta.workflow_type` to the workflow type (feature/fix)
+   - Copy `meta.source` to `active_workflow.source` (if present)
+   - Copy `meta.source_id` to `active_workflow.source_id` (if present)
    - Write via `writeMetaJson(slugDir, meta)`
    If no meta.json exists, create a minimal one with: `{ description, source: "manual", created_at, analysis_status: "raw", phases_completed: [], build_started_at, workflow_type }`
 

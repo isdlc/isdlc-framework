@@ -1,0 +1,10 @@
+This is a file with an unsupported extension.
+It contains regular text content but the .xyz extension
+is not mapped to any Tree-sitter grammar.
+
+The fallback chunker should handle this file by splitting
+it into line-based chunks instead of using AST parsing.
+
+Line 8 of the file.
+Line 9 of the file.
+Line 10 of the file.

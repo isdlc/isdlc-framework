@@ -4530,28 +4530,71 @@ function rebuildSessionCache(options = {}) {
         return blocks.join('\n\n---\n\n');
     }));
 
-    // Section 8: ROUNDTABLE_CONTEXT (persona + topic files)
-    // REQ-0042 FR-003/FR-004/FR-005: Apply tightenPersonaContent() and tightenTopicContent()
+    // Section 8: ROUNDTABLE_CONTEXT (persona + topic files) -- REQ-0047 + REQ-0042 tightening
     let rtBeforeChars = 0;
     let rtAfterChars = 0;
     parts.push(buildSection('ROUNDTABLE_CONTEXT', () => {
         const rtParts = [];
         const rtVerboseParts = [];
 
-        // Persona files
-        const personaDir = path.join(root, 'src', 'claude', 'agents');
-        const personaFiles = ['persona-business-analyst.md', 'persona-solutions-architect.md', 'persona-system-designer.md'];
-        for (const pf of personaFiles) {
-            try {
-                const rawContent = fs.readFileSync(path.join(personaDir, pf), 'utf8');
-                const name = pf.replace('persona-', '').replace('.md', '')
-                    .split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                rtVerboseParts.push(`### Persona: ${name}\n${rawContent}`);
-                const content = tightenPersonaContent(rawContent);
-                rtParts.push(`### Persona: ${name}\n${content}`);
-            } catch (_) {
-                // Skip missing persona files
+        // Persona files -- dynamic discovery via persona-loader (FR-001, FR-009)
+        let personaLoaderMod;
+        try { personaLoaderMod = require('./persona-loader.cjs'); } catch (_) { personaLoaderMod = null; }
+
+        if (personaLoaderMod) {
+            const personaResult = personaLoaderMod.getPersonaPaths(root);
+            for (const pPath of personaResult.paths) {
+                try {
+                    const rawContent = fs.readFileSync(pPath, 'utf8');
+                    const basename = path.basename(pPath);
+                    const name = basename.replace('persona-', '').replace('.md', '')
+                        .split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    rtVerboseParts.push(`### Persona: ${name}\n${rawContent}`);
+                    const content = tightenPersonaContent(rawContent);
+                    rtParts.push(`### Persona: ${name}\n${content}`);
+                } catch (_) { /* skip unreadable */ }
             }
+
+            // Drift warnings sub-section (FR-010)
+            if (personaResult.driftWarnings.length > 0) {
+                const driftLines = personaResult.driftWarnings.map(w =>
+                    `- ${w.filename}: user v${w.userVersion}, shipped v${w.shippedVersion}`);
+                rtParts.push(`### Drift Warnings\n${driftLines.join('\n')}`);
+            }
+
+            // Skipped files sub-section (FR-001 AC-001-02)
+            if (personaResult.skippedFiles.length > 0) {
+                const skipLines = personaResult.skippedFiles.map(s =>
+                    `- ${s.filename}: ${s.reason}`);
+                rtParts.push(`### Skipped Persona Files\n${skipLines.join('\n')}`);
+            }
+        } else {
+            // REQ-0050 FR-005 AC-005-06: Fallback discovers all persona-*.md files (not just 3 primaries)
+            const personaDir = path.join(root, 'src', 'claude', 'agents');
+            try {
+                if (fs.existsSync(personaDir)) {
+                    const allPersonaFiles = fs.readdirSync(personaDir).filter(f => f.startsWith('persona-') && f.endsWith('.md')).sort();
+                    for (const pf of allPersonaFiles) {
+                        try {
+                            const rawContent = fs.readFileSync(path.join(personaDir, pf), 'utf8');
+                            const name = pf.replace('persona-', '').replace('.md', '')
+                                .split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            rtVerboseParts.push(`### Persona: ${name}\n${rawContent}`);
+                            const content = tightenPersonaContent(rawContent);
+                            rtParts.push(`### Persona: ${name}\n${content}`);
+                        } catch (_) { /* skip */ }
+                    }
+                }
+            } catch (_) { /* fail-open */ }
+        }
+
+        // Roundtable config sub-section (FR-005)
+        let rtConfigMod;
+        try { rtConfigMod = require('./roundtable-config.cjs'); } catch (_) { rtConfigMod = null; }
+
+        if (rtConfigMod) {
+            const config = rtConfigMod.readRoundtableConfig(root);
+            rtParts.push(`### Roundtable Config\n${rtConfigMod.formatConfigSection(config)}`);
         }
 
         // Topic files

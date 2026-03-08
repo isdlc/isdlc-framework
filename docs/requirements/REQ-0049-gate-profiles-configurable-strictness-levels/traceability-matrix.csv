@@ -1,0 +1,13 @@
+FR_ID,FR_Title,AC_IDs,User_Stories,Priority,Confidence
+FR-001,Built-in Profile Definitions,"AC-001-01,AC-001-02,AC-001-03,AC-001-04","US-001",Must Have,High
+FR-002,Custom Profile Definition,"AC-002-01,AC-002-02,AC-002-03,AC-002-04,AC-002-05","US-002",Must Have,High
+FR-003,Profile Resolution Order,"AC-003-01,AC-003-02,AC-003-03","US-011",Must Have,High
+FR-004,Natural Language Profile Selection,"AC-004-01,AC-004-02,AC-004-03,AC-004-04,AC-004-05","US-003,US-004",Must Have,High
+FR-005,Profile Confirmation at Workflow Start,"AC-005-01,AC-005-02,AC-005-03,AC-005-04","US-005",Must Have,High
+FR-006,Profile Merge into Gate Logic,"AC-006-01,AC-006-02,AC-006-03,AC-006-04","",Must Have,High
+FR-007,Profile Validation and Self-Healing,"AC-007-01,AC-007-02,AC-007-03,AC-007-04,AC-007-05","US-006",Must Have,High
+FR-008,Threshold Warnings,"AC-008-01,AC-008-02,AC-008-03,AC-008-04","US-007,US-008",Must Have,High
+FR-009,Profile Listing Command,"AC-009-01,AC-009-02,AC-009-03","US-009",Should Have,High
+FR-010,Project Default Profile,"AC-010-01,AC-010-02,AC-010-03,AC-010-04","US-010,US-011",Should Have,High
+FR-011,Workflow Definition Binding,"AC-011-01,AC-011-02,AC-011-03","",Should Have,Medium
+FR-012,Monorepo Support,"AC-012-01,AC-012-02,AC-012-03","US-012",Should Have,Medium

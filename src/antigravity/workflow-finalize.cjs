@@ -57,13 +57,20 @@ function main() {
             process.exit(1);
         }
 
-        // Get branch name
-        const branchPrefix = aw.type === 'fix' ? 'bugfix' : 'feature';
-        const branchName = `${branchPrefix}/${aw.slug}`;
+        // Determine if this workflow type uses branches
+        const noBranchTypes = ['test-run', 'test-generate'];
+        const requiresBranch = !noBranchTypes.includes(aw.type);
 
-        // Merge branch
+        // Get branch name (only for branch-requiring workflows)
+        let branchName = null;
+        if (requiresBranch) {
+            const branchPrefix = aw.type === 'fix' ? 'bugfix' : 'feature';
+            branchName = `${branchPrefix}/${aw.slug}`;
+        }
+
+        // Merge branch (only for branch-requiring workflows)
         let merged = false;
-        if (!args.skipMerge) {
+        if (requiresBranch && branchName && !args.skipMerge) {
             try {
                 // Commit any uncommitted work
                 try { execSync('git add -A && git commit -m "Finalize workflow" --allow-empty', { cwd: projectRoot, stdio: 'pipe' }); } catch (e) { /* may be nothing to commit */ }
@@ -78,6 +85,42 @@ function main() {
                 merged = false;
             }
         }
+
+        // GitHub issue close (non-blocking)
+        let githubClosed = false;
+        if (aw.source === 'github' && aw.source_id) {
+            const match = aw.source_id.match(/^GH-(\d+)$/);
+            if (match) {
+                try {
+                    execSync(`gh issue close ${match[1]}`, { cwd: projectRoot, stdio: 'pipe' });
+                    githubClosed = true;
+                } catch (e) { /* non-blocking — log but don't fail */ }
+            }
+        }
+
+        // BACKLOG.md sync (non-blocking)
+        let backlogUpdated = false;
+        try {
+            const backlogPath = path.join(projectRoot, 'BACKLOG.md');
+            if (fs.existsSync(backlogPath)) {
+                let content = fs.readFileSync(backlogPath, 'utf8');
+                // Match by slug, source_id (e.g. #97), or item number from slug (e.g. REQ-0049)
+                const slug = aw.slug || aw.artifact_folder || '';
+                const issueNum = aw.source_id ? aw.source_id.replace(/^GH-/, '#') : null;
+                const lines = content.split('\n');
+                let matchIdx = -1;
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (slug && line.includes(slug)) { matchIdx = i; break; }
+                    if (issueNum && line.includes(issueNum) && /\[[ A~]\]/.test(line)) { matchIdx = i; break; }
+                }
+                if (matchIdx >= 0) {
+                    lines[matchIdx] = lines[matchIdx].replace(/\[[ A~]\]/, '[x]');
+                    fs.writeFileSync(backlogPath, lines.join('\n'), 'utf8');
+                    backlogUpdated = true;
+                }
+            }
+        } catch (e) { /* non-blocking */ }
 
         // Move to history
         if (!state.workflow_history) state.workflow_history = [];
@@ -102,7 +145,9 @@ function main() {
             branch: branchName,
             merged,
             phases_completed: phases.length,
-            state_version: state.state_version
+            state_version: state.state_version,
+            github_closed: githubClosed,
+            backlog_updated: backlogUpdated
         });
         process.exit(0);
 

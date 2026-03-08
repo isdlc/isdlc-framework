@@ -1,0 +1,147 @@
+Requirement,AC,Test Case,Test Type,Priority,Test Method,Module
+FR-001,AC-001-01,TC-M1-01,positive,P0,unit,M1
+FR-001,AC-001-01,TC-M1-02,positive,P0,unit,M1
+FR-001,AC-001-01,TC-M1-03,positive,P0,unit,M1
+FR-001,AC-001-01,TC-M1-04,positive,P0,unit,M1
+FR-001,AC-001-01,TC-M1-05,positive,P0,unit,M1
+FR-001,AC-001-01,TC-M1-06,positive,P0,unit,M1
+FR-001,AC-001-01,TC-CTX-01,positive,P1,integration,M1+M2
+FR-001,AC-001-01,TC-E2E-01,positive,P1,e2e,M1
+FR-001,AC-001-02,TC-M1-12,negative,P0,unit,M1
+FR-001,AC-001-02,TC-M1-13,negative,P0,unit,M1
+FR-001,AC-001-02,TC-M1-14,negative,P0,unit,M1
+FR-001,AC-001-02,TC-M1-15,positive,P0,unit,M1
+FR-001,AC-001-02,TC-M1-16,positive,P0,unit,M1
+FR-001,AC-001-02,TC-E2E-03,positive,P1,e2e,M1
+FR-001,AC-001-02,TC-INT-10,positive,P1,integration,M1+M2
+FR-001,AC-001-03,TC-M1-08,positive,P0,unit,M1
+FR-001,AC-001-04,TC-M1-04,positive,P0,unit,M1
+FR-001,AC-001-04,TC-M1-07,positive,P0,unit,M1
+FR-002,AC-002-01,TC-M1-02,positive,P0,unit,M1
+FR-002,AC-002-01,TC-M5-01,positive,P1,unit,M5
+FR-002,AC-002-01,TC-M5-12,positive,P1,unit,M5
+FR-002,AC-002-02,TC-M5-02,positive,P1,unit,M5
+FR-002,AC-002-02,TC-M1-23,positive,P1,unit,M1
+FR-002,AC-002-02,TC-M1-24,positive,P1,unit,M1
+FR-002,AC-002-03,TC-M5-03,positive,P1,unit,M5
+FR-002,AC-002-04,TC-M5-04,positive,P1,unit,M5
+FR-002,AC-002-04,TC-M5-08,positive,P1,unit,M5
+FR-002,AC-002-04,TC-M5-09,positive,P1,unit,M5
+FR-002,AC-002-04,TC-M1-25,positive,P1,unit,M1
+FR-002,AC-002-05,TC-M5-05,positive,P1,unit,M5
+FR-002,AC-002-06,TC-M5-06,positive,P2,unit,M5
+FR-002,AC-002-07,TC-M5-07,positive,P2,unit,M5
+FR-003,AC-003-01,TC-INT-01,positive,P1,integration,M1+M2
+FR-003,AC-003-02,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-03,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-04,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-05,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-06,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-07,"Behavioral (manual)",n/a,P2,manual,M3
+FR-003,AC-003-08,TC-CTX-05,positive,P1,integration,M2
+FR-003,AC-003-09,TC-INT-10,positive,P1,integration,M1+M2
+FR-003,AC-003-09,TC-CTX-04,positive,P1,integration,M2
+FR-003,AC-003-10,"Behavioral (manual)",n/a,P2,manual,M3
+FR-004,AC-004-01,"Behavioral (manual)",n/a,P2,manual,M4
+FR-004,AC-004-02,"Behavioral (manual)",n/a,P2,manual,M4
+FR-004,AC-004-03,"Behavioral (manual)",n/a,P2,manual,M4
+FR-004,AC-004-04,"Behavioral (manual)",n/a,P2,manual,M4
+FR-004,AC-004-05,TC-INT-05,positive,P1,integration,M1+M2
+FR-004,AC-004-06,"Behavioral (manual)",n/a,P2,manual,M4
+FR-004,AC-004-07,"Behavioral (architectural)",n/a,P2,manual,M4
+FR-004,AC-004-08,TC-M2-04,positive,P0,unit,M2
+FR-004,AC-004-09,TC-CTX-05,positive,P1,integration,M2
+FR-005,AC-005-01,TC-M2-01,positive,P0,unit,M2
+FR-005,AC-005-01,TC-M2-02,positive,P0,unit,M2
+FR-005,AC-005-01,TC-M2-03,positive,P0,unit,M2
+FR-005,AC-005-02,TC-M2-01,positive,P0,unit,M2
+FR-005,AC-005-02,TC-M2-06,negative,P1,unit,M2
+FR-005,AC-005-02,TC-M2-07,negative,P1,unit,M2
+FR-005,AC-005-03,TC-M2-02,positive,P0,unit,M2
+FR-005,AC-005-03,TC-M2-08,negative,P1,unit,M2
+FR-005,AC-005-03,TC-INT-01,positive,P1,integration,M1+M2
+FR-005,AC-005-03,TC-M2-13,positive,P1,unit,M2
+FR-005,AC-005-04,TC-M2-14,positive,P0,unit,M2
+FR-005,AC-005-04,TC-M2-15,positive,P0,unit,M2
+FR-005,AC-005-04,TC-M2-16,positive,P0,unit,M2
+FR-005,AC-005-04,TC-M2-17,positive,P0,unit,M2
+FR-005,AC-005-04,TC-CTX-02,positive,P1,integration,M2
+FR-005,AC-005-05,"Behavioral (grep check)",n/a,P2,manual,M2
+FR-005,AC-005-06,TC-M2-04,positive,P0,unit,M2
+FR-005,AC-005-06,TC-M2-05,positive,P0,unit,M2
+FR-005,AC-005-06,TC-INT-04,positive,P1,integration,M1+M2
+FR-005,AC-005-07,TC-M2-03,positive,P0,unit,M2
+FR-005,AC-005-07,TC-M2-09,negative,P1,unit,M2
+FR-005,AC-005-07,TC-M2-12,positive,P1,unit,M2
+FR-005,AC-005-07,TC-M2-17,positive,P0,unit,M2
+FR-005,AC-005-07,TC-INT-02,positive,P1,integration,M1+M2
+FR-005,AC-005-07,TC-INT-03,positive,P1,integration,M1+M2
+FR-005,AC-005-08,TC-NFR-05,positive,P2,unit,NFR
+FR-006,AC-006-01,"Behavioral (manual)",n/a,P2,manual,M6
+FR-006,AC-006-02,"Behavioral (M1 provides)",n/a,P2,manual,M6
+FR-006,AC-006-03,"Behavioral (manual)",n/a,P2,manual,M6
+FR-006,AC-006-04,"Behavioral (manual)",n/a,P2,manual,M6
+FR-006,AC-006-05,"Behavioral (manual)",n/a,P2,manual,M6
+FR-007,AC-007-01,TC-M5-03,positive,P1,unit,M5
+FR-007,AC-007-01,TC-M1-26,positive,P1,unit,M1
+FR-007,AC-007-02,"Behavioral (manual)",n/a,P2,manual,M5
+FR-007,AC-007-03,"Behavioral (manual)",n/a,P2,manual,M5
+FR-008,AC-008-01,"Behavioral (manual)",n/a,P2,manual,M4
+FR-008,AC-008-02,"Behavioral (manual)",n/a,P2,manual,M4
+FR-008,AC-008-03,"Behavioral (manual)",n/a,P2,manual,M4
+FR-008,AC-008-04,"Behavioral (manual)",n/a,P2,manual,M4
+FR-008,AC-008-05,"Behavioral (manual)",n/a,P2,manual,M4
+FR-009,AC-009-01,TC-M1-08,positive,P0,unit,M1
+FR-009,AC-009-01,TC-OVR-01,positive,P0,integration,M1+M5
+FR-009,AC-009-01,TC-CTX-06,positive,P1,integration,M1+M2
+FR-009,AC-009-02,TC-M1-09,positive,P0,unit,M1
+FR-009,AC-009-02,TC-OVR-02,positive,P0,integration,M1+M5
+FR-009,AC-009-03,TC-M1-10,positive,P0,unit,M1
+FR-009,AC-009-03,TC-OVR-05,positive,P0,integration,M1+M5
+FR-010,AC-010-01,TC-M5-10,positive,P1,unit,M5
+FR-010,AC-010-01,TC-M5-11,positive,P1,unit,M5
+FR-010,AC-010-01,TC-M1-17,positive,P1,unit,M1
+FR-010,AC-010-02,TC-M1-17,positive,P1,unit,M1
+FR-010,AC-010-02,TC-M1-18,positive,P1,unit,M1
+FR-010,AC-010-02,TC-M1-19,positive,P1,unit,M1
+FR-010,AC-010-02,TC-M1-20,positive,P1,unit,M1
+FR-010,AC-010-02,TC-M1-21,positive,P1,unit,M1
+FR-010,AC-010-02,TC-OVR-03,positive,P1,integration,M1+M5
+FR-010,AC-010-03,TC-M1-22,positive,P1,unit,M1
+FR-010,AC-010-03,TC-OVR-03,positive,P1,integration,M1+M5
+FR-010,AC-010-03,TC-CTX-03,positive,P1,integration,M2
+FR-010,AC-010-04,TC-OVR-04,positive,P1,integration,M1+M5
+FR-010,AC-010-05,TC-CTX-05,positive,P1,integration,M2
+FR-011,AC-011-01,TC-M2-18,positive,P2,unit,M2
+FR-011,AC-011-01,TC-FLAG-01,positive,P2,e2e,M2
+FR-011,AC-011-02,TC-M2-19,positive,P2,unit,M2
+FR-011,AC-011-02,TC-FLAG-02,positive,P2,e2e,M2
+FR-011,AC-011-03,TC-INT-06,positive,P2,integration,M1+M2
+FR-011,AC-011-03,TC-INT-07,positive,P2,integration,M1+M2
+FR-011,AC-011-03,TC-FLAG-03,positive,P2,e2e,M2
+FR-011,AC-011-04,"Behavioral (manual)",n/a,P2,manual,M4
+FR-011,AC-011-05,TC-M2-20,positive,P2,unit,M2
+NFR-001,n/a,TC-NFR-01,positive,P3,unit,M1
+NFR-001,n/a,TC-E2E-06,positive,P3,e2e,M1
+NFR-002,n/a,TC-M5-05,positive,P1,unit,M5
+NFR-002,n/a,TC-NFR-02,positive,P3,unit,M5
+NFR-003,n/a,TC-M1-12,negative,P0,unit,M1
+NFR-003,n/a,TC-M1-13,negative,P0,unit,M1
+NFR-003,n/a,TC-M1-14,negative,P0,unit,M1
+NFR-003,n/a,TC-M1-15,positive,P0,unit,M1
+NFR-003,n/a,TC-M2-10,negative,P0,unit,M2
+NFR-003,n/a,TC-M1-28,negative,P0,unit,M1
+NFR-004,n/a,TC-M2-04,positive,P0,unit,M2
+NFR-004,n/a,TC-INT-04,positive,P1,integration,M1+M2
+NFR-004,n/a,TC-INT-08,positive,P0,integration,M1+M2
+NFR-004,n/a,TC-E2E-04,positive,P1,e2e,M1
+NFR-005,n/a,TC-NFR-05,positive,P2,unit,NFR
+FR-009,AC-009-01,TC-M1-11,negative,P0,unit,M1
+FR-001,AC-001-02,TC-M1-27,negative,P0,unit,M1
+FR-010,AC-010-02,TC-E2E-02,positive,P1,e2e,M1
+FR-005,AC-005-04,TC-E2E-05,positive,P1,e2e,M1
+FR-011,AC-011-01,TC-FLAG-04,negative,P2,e2e,M2
+FR-001,AC-001-04,TC-INT-09,positive,P1,integration,M1+M2
+FR-010,AC-010-02,TC-OVR-06,positive,P1,integration,M1+M5
+FR-009,AC-009-01,TC-OVR-07,positive,P0,integration,M1+M5
+FR-001,AC-001-02,TC-OVR-08,negative,P0,integration,M1+M5

@@ -15,9 +15,18 @@ artifact_sections:
   - artifact: "architecture-overview.md"
     sections: ["1. Architecture Options", "2. Selected Architecture", "3. Technology Decisions", "4. Integration Architecture", "5. Summary"]
 depth_guidance:
-  brief: "Single recommended approach with brief rationale. 1-2 exchanges."
-  standard: "2-3 options with tradeoff analysis. 3-5 exchanges."
-  deep: "Exhaustive option evaluation with ADRs. 6+ exchanges."
+  brief:
+    behavior: "Single recommended approach with brief rationale. Follow existing codebase patterns unless clearly inadequate."
+    acceptance: "At least 1 architecture decision documented with rationale. Technology decisions stated."
+    inference_policy: "Infer architecture approach from existing codebase patterns. Tag inferences as Medium confidence."
+  standard:
+    behavior: "Present 2-3 options per significant decision with tradeoff analysis. Document ADRs for selected options."
+    acceptance: "All coverage criteria met. ADRs written with Status, Context, Decision, Rationale, Consequences."
+    inference_policy: "Infer only non-critical technology choices from existing stack. Tag inferences as Medium confidence."
+  deep:
+    behavior: "Exhaustive option evaluation. Formal ADRs for all decisions. Integration architecture fully specified."
+    acceptance: "All coverage criteria met with exhaustive detail. All ADRs have Accepted status. No open questions."
+    inference_policy: "Minimize inference. Present all options to user for decision. Only infer infrastructure details from existing config."
 source_step_files:
   - "03-01"
   - "03-02"

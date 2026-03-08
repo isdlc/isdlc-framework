@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "module": "mod-auth",
+      "compatibleWith": {
+        "mod-orders": ">=1.0.0 <2.0.0",
+        "mod-payments": ">=1.0.0"
+      }
+    },
+    {
+      "module": "mod-orders",
+      "compatibleWith": {
+        "mod-payments": ">=1.0.0 <2.0.0"
+      }
+    }
+  ]
+}

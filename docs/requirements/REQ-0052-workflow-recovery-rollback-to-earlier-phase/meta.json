@@ -1,0 +1,15 @@
+{
+  "source": "github",
+  "source_id": "GH-99",
+  "slug": "workflow-recovery-rollback-to-earlier-phase",
+  "created_at": "2026-03-08T16:51:01.742Z",
+  "analysis_status": "complete",
+  "phases_completed": ["analysis"],
+  "topics_covered": ["problem-discovery", "requirements-definition", "technical-analysis"],
+  "codebase_hash": "1dd17a3",
+  "analyzed_at": "2026-03-08T16:55:00.000Z",
+  "depends_on": ["REQ-0051-workflow-recovery-retryredo-current-phase-without-"],
+  "artifacts": [
+    "requirements-spec.md"
+  ]
+}

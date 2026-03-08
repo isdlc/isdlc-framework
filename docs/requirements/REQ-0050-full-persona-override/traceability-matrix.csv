@@ -1,0 +1,108 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File,Notes
+FR-001,AC-001-01,TC-MS-01,positive,P0,mode-selection.test.cjs,Default mode when no flags
+FR-001,AC-001-01,TC-MS-19,positive,P2,mode-selection.test.cjs,Conversational phrasing
+FR-001,AC-001-02,TC-MS-08,positive,P0,mode-selection.test.cjs,No persona paths in no-persona mode
+FR-001,AC-001-02,TC-INT-50-01,positive,P1,persona-config-integration.test.cjs,Integration: skip persona loading
+FR-001,AC-001-03,TC-MS-07,positive,P0,mode-selection.test.cjs,Dispatch context has analysis_mode
+FR-001,AC-001-03,TC-MS-09,positive,P0,mode-selection.test.cjs,With-personas dispatch includes active_roster
+FR-001,AC-001-03,TC-INT-50-02,positive,P1,persona-config-integration.test.cjs,Integration: all personas discovered
+FR-001,AC-001-04,TC-MS-19,positive,P2,mode-selection.test.cjs,Conversational not numbered menu
+FR-001,AC-001-04,BC-01,behavioral,P2,,Observe conversational UX
+FR-001,AC-001-05,TC-MS-03,positive,P0,mode-selection.test.cjs,--silent flag sets mode
+FR-001,AC-001-05,TC-MS-11,negative,P2,mode-selection.test.cjs,--silent vs --verbose mutual exclusivity
+FR-001,AC-001-05,TC-MS-14,positive,P2,mode-selection.test.cjs,--light alongside mode flags
+FR-001,AC-001-05,TC-E2E-02,positive,P0,mode-selection-e2e.test.cjs,E2E --silent output
+FR-001,AC-001-06,TC-MS-04,positive,P0,mode-selection.test.cjs,--personas flag parsing
+FR-001,AC-001-06,TC-MS-13,negative,P2,mode-selection.test.cjs,--personas empty string
+FR-001,AC-001-06,TC-INT-50-03,positive,P1,persona-config-integration.test.cjs,Integration: pre-selected personas
+FR-001,AC-001-06,TC-E2E-03,positive,P0,mode-selection-e2e.test.cjs,E2E --personas output
+FR-001,AC-001-07,TC-MS-02,positive,P0,mode-selection.test.cjs,--no-roundtable flag
+FR-001,AC-001-07,TC-MS-06,positive,P0,mode-selection.test.cjs,--no-roundtable skips mode question
+FR-001,AC-001-07,TC-MS-12,negative,P2,mode-selection.test.cjs,--no-roundtable overrides --personas
+FR-001,AC-001-07,TC-E2E-01,positive,P0,mode-selection-e2e.test.cjs,E2E --no-roundtable
+FR-001,AC-001-07,TC-E2E-06,negative,P2,mode-selection-e2e.test.cjs,E2E flag conflict
+FR-002,AC-002-01,TC-MS-20,positive,P1,mode-selection.test.cjs,Three verbosity options
+FR-002,AC-002-02,TC-CP-01,positive,P1,roundtable-config-prepopulate.test.cjs,Config verbosity pre-selection
+FR-002,AC-002-03,TC-MS-10,positive,P1,mode-selection.test.cjs,Verbosity in dispatch context
+FR-002,AC-002-03,TC-INT-50-20,positive,P1,mode-dispatch-integration.test.cjs,Verbosity flows through
+FR-002,AC-002-04,TC-MS-05,positive,P1,mode-selection.test.cjs,--verbose sets conversational
+FR-002,AC-002-04,TC-CP-02,positive,P1,roundtable-config-prepopulate.test.cjs,Flag overrides config
+FR-002,AC-002-04,TC-E2E-04,positive,P1,mode-selection-e2e.test.cjs,E2E --verbose output
+FR-003,AC-003-01,TC-PL-03,positive,P1,persona-loader.test.cjs,All personas treated equally
+FR-003,AC-003-01,TC-PL-05,positive,P0,persona-loader.test.cjs,All 8 personas returned
+FR-003,AC-003-01,TC-INT-50-02,positive,P1,persona-config-integration.test.cjs,All personas discovered
+FR-003,AC-003-01,TC-INT-50-06,positive,P1,persona-config-integration.test.cjs,User persona alongside built-ins
+FR-003,AC-003-02,TC-PL-04,positive,P0,persona-loader.test.cjs,User can remove primary
+FR-003,AC-003-02,TC-PL-06,positive,P1,persona-loader.test.cjs,Filter by active_roster
+FR-003,AC-003-02,TC-INT-50-04,positive,P0,persona-config-integration.test.cjs,Primaries recommended not forced
+FR-003,AC-003-02,TC-INT-50-09,positive,P0,persona-override-integration.test.cjs,Remove all primaries
+FR-003,AC-003-02,BC-06,behavioral,P1,,User can add/remove personas
+FR-003,AC-003-03,TC-PL-08,positive,P1,persona-loader.test.cjs,Trigger keyword matching
+FR-003,AC-003-03,TC-INT-50-05,positive,P1,persona-config-integration.test.cjs,Trigger matching integration
+FR-003,AC-003-04,TC-MS-21,positive,P1,mode-selection.test.cjs,Roster shows recommended+available
+FR-003,AC-003-04,BC-05,behavioral,P1,,Observe roster proposal sections
+FR-003,AC-003-05,TC-PL-06,positive,P1,persona-loader.test.cjs,Filter by active_roster
+FR-003,AC-003-05,TC-INT-50-03,positive,P1,persona-config-integration.test.cjs,Pre-selected personas
+FR-003,AC-003-05,BC-06,behavioral,P1,,User can add/remove
+FR-003,AC-003-06,TC-PL-07,positive,P1,persona-loader.test.cjs,Empty roster returns empty
+FR-003,AC-003-06,TC-MS-22,positive,P1,mode-selection.test.cjs,Empty roster fallback
+FR-003,AC-003-06,TC-INT-50-10,positive,P1,persona-override-integration.test.cjs,Empty roster triggers no-persona
+FR-003,AC-003-07,TC-PL-09,positive,P2,persona-loader.test.cjs,Disabled excluded from recommendation
+FR-003,AC-003-07,TC-PL-10,positive,P2,persona-loader.test.cjs,Disabled still in available
+FR-003,AC-003-07,TC-CP-09,positive,P2,roundtable-config-prepopulate.test.cjs,Config disabled exclusion
+FR-003,AC-003-07,TC-CP-10,positive,P2,roundtable-config-prepopulate.test.cjs,Disabled in available list
+FR-003,AC-003-07,TC-CP-12,positive,P2,roundtable-config-prepopulate.test.cjs,Disabled can be user-overridden
+FR-003,AC-003-07,TC-INT-50-08,positive,P2,persona-config-integration.test.cjs,Integration: disabled handling
+FR-003,AC-003-08,TC-CP-05,positive,P1,roundtable-config-prepopulate.test.cjs,Config defaults in recommendation
+FR-003,AC-003-08,TC-INT-50-07,positive,P1,persona-config-integration.test.cjs,Config defaults integration
+FR-004,AC-004-01,TC-MS-08,positive,P0,mode-selection.test.cjs,Zero persona paths
+FR-004,AC-004-01,TC-MS-15,positive,P1,mode-selection.test.cjs,Skip persona loading
+FR-004,AC-004-01,TC-INT-50-01,positive,P1,persona-config-integration.test.cjs,Integration: skip loading
+FR-004,AC-004-01,TC-INT-50-17,positive,P1,mode-dispatch-integration.test.cjs,No ROUNDTABLE_CONTEXT
+FR-004,AC-004-01,TC-E2E-01,positive,P0,mode-selection-e2e.test.cjs,E2E no-personas mode
+FR-004,AC-004-02,TC-MS-18,positive,P1,mode-selection.test.cjs,No persona voice in context
+FR-004,AC-004-02,TC-INT-50-17,positive,P1,mode-dispatch-integration.test.cjs,No ROUNDTABLE_CONTEXT
+FR-004,AC-004-02,BC-07,behavioral,P1,,No persona voice in artifacts
+FR-004,AC-004-03,TC-MS-16,positive,P1,mode-selection.test.cjs,All standard artifacts produced
+FR-004,AC-004-03,TC-INT-50-22,positive,P1,mode-dispatch-integration.test.cjs,All artifact types in dispatch
+FR-004,AC-004-04,TC-MS-18,positive,P1,mode-selection.test.cjs,No persona mediation
+FR-004,AC-004-04,BC-08,behavioral,P1,,Topic files used directly
+FR-004,AC-004-05,TC-MS-17,positive,P1,mode-selection.test.cjs,Meta records analysis_mode
+FR-004,AC-004-05,TC-INT-50-21,positive,P1,mode-dispatch-integration.test.cjs,Meta.json analysis_mode field
+FR-005,AC-005-01,TC-PL-01,positive,P0,persona-loader.test.cjs,No forced inclusion
+FR-005,AC-005-01,TC-PL-02,positive,P0,persona-loader.test.cjs,Only existing files returned
+FR-005,AC-005-01,TC-INT-50-04,positive,P0,persona-config-integration.test.cjs,Recommended not forced
+FR-005,AC-005-01,TC-INT-50-09,positive,P0,persona-override-integration.test.cjs,Remove all primaries
+FR-005,AC-005-02,TC-INT-50-18,positive,P1,mode-dispatch-integration.test.cjs,Active personas language
+FR-005,AC-005-02,BC-02,behavioral,P1,,Observe active personas language
+FR-005,AC-005-03,TC-PL-02,positive,P0,persona-loader.test.cjs,Dynamic loading from roster
+FR-005,AC-005-03,TC-INT-50-16,positive,P1,mode-dispatch-integration.test.cjs,Context reflects active roster
+FR-005,AC-005-04,BC-03,behavioral,P1,,Active personas engagement rule
+FR-005,AC-005-05,TC-INT-50-19,positive,P1,mode-dispatch-integration.test.cjs,Confirmation adapts to roster
+FR-005,AC-005-05,BC-04,behavioral,P1,,Confirmation sequence adapts
+FR-005,AC-005-06,TC-PL-05,positive,P0,persona-loader.test.cjs,All 8 personas returned
+FR-005,AC-005-06,TC-INT-50-15,positive,P1,mode-dispatch-integration.test.cjs,ROUNDTABLE_CONTEXT all personas
+FR-006,AC-006-01,TC-CP-01,positive,P1,roundtable-config-prepopulate.test.cjs,Verbosity pre-selection
+FR-006,AC-006-01,TC-INT-50-12,positive,P1,persona-override-integration.test.cjs,User can change verbosity
+FR-006,AC-006-02,TC-CP-05,positive,P1,roundtable-config-prepopulate.test.cjs,Default personas pre-populate
+FR-006,AC-006-02,TC-CP-06,positive,P1,roundtable-config-prepopulate.test.cjs,Recommendations not forced
+FR-006,AC-006-02,TC-INT-50-11,positive,P1,persona-override-integration.test.cjs,User choice wins
+FR-006,AC-006-03,TC-CP-09,positive,P2,roundtable-config-prepopulate.test.cjs,Disabled excluded
+FR-006,AC-006-03,TC-CP-10,positive,P2,roundtable-config-prepopulate.test.cjs,Disabled still available
+FR-006,AC-006-03,TC-CP-11,positive,P2,roundtable-config-prepopulate.test.cjs,Disabled beats default
+FR-006,AC-006-04,TC-CP-13,positive,P0,roundtable-config-prepopulate.test.cjs,Backward compatibility
+FR-006,AC-006-04,TC-CP-14,positive,P2,roundtable-config-prepopulate.test.cjs,Unknown keys ignored
+FR-006,AC-006-04,TC-CP-15,negative,P1,roundtable-config-prepopulate.test.cjs,Malformed YAML defaults
+FR-006,AC-006-04,TC-INT-50-14,positive,P0,persona-override-integration.test.cjs,Existing config works
+FR-006,AC-006-04,TC-E2E-07,positive,P1,mode-selection-e2e.test.cjs,Existing fields preserved
+FR-006,AC-006-05,TC-CP-03,positive,P1,roundtable-config-prepopulate.test.cjs,Missing config defaults
+FR-006,AC-006-05,TC-CP-07,positive,P2,roundtable-config-prepopulate.test.cjs,Empty defaults
+FR-006,AC-006-05,TC-CP-08,positive,P1,roundtable-config-prepopulate.test.cjs,3 primaries recommended by default
+FR-006,AC-006-05,TC-CP-16,negative,P2,roundtable-config-prepopulate.test.cjs,Read error defaults
+FR-006,AC-006-05,TC-INT-50-13,positive,P1,persona-override-integration.test.cjs,No config + no flags = defaults
+FR-007,AC-007-01,TC-DOC-01,positive,P3,persona-authoring-docs.test.cjs,Template creation section
+FR-007,AC-007-02,TC-DOC-02,positive,P3,persona-authoring-docs.test.cjs,Override section
+FR-007,AC-007-03,TC-DOC-03,positive,P3,persona-authoring-docs.test.cjs,Disabling section
+FR-007,AC-007-04,TC-DOC-04,positive,P3,persona-authoring-docs.test.cjs,Four analysis modes
+FR-007,AC-007-05,TC-DOC-05,positive,P3,persona-authoring-docs.test.cjs,Frontmatter schema
+FR-007,AC-007-06,TC-DOC-06,positive,P3,persona-authoring-docs.test.cjs,Discoverable link

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://example.com/config">
+    <database>
+        <connection>
+            <host>localhost</host>
+            <port>5432</port>
+            <name>orders_db</name>
+        </connection>
+        <pool>
+            <maxSize>10</maxSize>
+            <minIdle>2</minIdle>
+            <timeout>30000</timeout>
+        </pool>
+    </database>
+
+    <services>
+        <service id="order-service" class="com.example.OrderService">
+            <property name="maxRetries" value="3" />
+            <property name="timeout" value="5000" />
+        </service>
+        <service id="payment-gateway" class="com.example.PaymentGateway">
+            <property name="endpoint" value="https://api.payment.com/v2" />
+        </service>
+    </services>
+
+    <security>
+        <authentication>
+            <method>JWT</method>
+            <tokenExpiry>3600</tokenExpiry>
+        </authentication>
+        <cors>
+            <allowedOrigins>
+                <origin>https://app.example.com</origin>
+                <origin>https://admin.example.com</origin>
+            </allowedOrigins>
+        </cors>
+    </security>
+
+    <!-- CDATA section for raw content -->
+    <templates>
+        <template name="welcome">
+            <![CDATA[
+                Hello {{name}},
+                Welcome to our platform!
+                Your account has been created successfully.
+            ]]>
+        </template>
+    </templates>
+</configuration>
