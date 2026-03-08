@@ -35,7 +35,7 @@ But a harness that only constrains is a cage. Every layer of iSDLC is hackable �
 | **Quality gates** | Set coverage thresholds per profile (`rapid` / `standard` / `strict`) | Drop domain-specific validators in `.isdlc/hooks/` | Write your own gate logic |
 | **Workflows** | Choose light/standard/epic sizing | Define custom workflows (`spike`, `hotfix`, `ui-feature`) with your own phase sequences | Replace built-in phase sequences entirely |
 | **Analysis** | Set depth (`brief` / `standard` / `deep`) | Author new personas — drop a markdown file, it joins the roundtable | Override built-in personas, disable ones you don't need, change analysis modes |
-| **Search** | Choose search backend (lexical, structural, indexed) | Add custom search backends — plug in your own indexer or embeddings provider | Build on the semantic search engine — chunking, embedding, and vector storage are composable modules you own |
+| **Project knowledge** | Choose embedding provider (CodeBERT local, Voyage, OpenAI) | [Inject your own documents](docs/PROJECT-KNOWLEDGE.md) — Markdown, HTML, text chunked and embedded alongside code | Build on the semantic engine — chunking, embedding, packaging, and 3-tier content redaction are composable modules |
 | **Constitution** | Edit thresholds and rules in your project constitution | Add domain-specific articles | Compose base + project constitutions for team-wide standards |
 | **Recovery** | Retry, redo, or rollback any phase | | |
 
@@ -345,6 +345,7 @@ New projects are also supported — `/discover` switches to vision elicitation, 
 | [Persona Authoring Guide](docs/isdlc/persona-authoring-guide.md) | Create, override, and configure roundtable personas |
 | [MONOREPO-GUIDE.md](docs/MONOREPO-GUIDE.md) | Multi-project setup |
 | [AUTONOMOUS-ITERATION.md](docs/AUTONOMOUS-ITERATION.md) | Self-correcting agent behavior |
+| [PROJECT-KNOWLEDGE.md](docs/PROJECT-KNOWLEDGE.md) | Embed your documents into the project knowledge base |
 | [SKILL-ENFORCEMENT.md](docs/SKILL-ENFORCEMENT.md) | Runtime skill observability |
 
 ---
