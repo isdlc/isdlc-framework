@@ -239,7 +239,7 @@
 > Full design: [docs/isdlc/hackability-roadmap.md](docs/isdlc/hackability-roadmap.md)
 
 **Tier 1 — Foundation**
-- #97 [A] Gate profiles — configurable strictness levels (rapid/standard/strict)
+- #97 [x] Gate profiles — configurable strictness levels (rapid/standard/strict)
 - #98 [ ] Workflow recovery — retry/redo current phase without restarting
 - #99 [ ] Workflow recovery — rollback to earlier phase
 
