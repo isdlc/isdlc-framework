@@ -376,6 +376,17 @@ This framework is under active development. Contributions, feedback, and suggest
 
 ---
 
+## Complementary Frameworks
+
+Projects that operate at different layers of the AI agent stack and can complement iSDLC:
+
+| Project | Layer | Description |
+|---------|-------|-------------|
+| [ai-orchestrator](https://github.com/Community-Tech-UK/ai-orchestrator) | Process management | Electron GUI for managing concurrent Claude CLI instances with supervisor trees, multi-agent verification, and real-time telemetry |
+| [desiAgent](https://github.com/ugmurthy/desiAgent) | Task execution | Library-first TypeScript SDK that decomposes natural language goals into DAGs, executes them autonomously with cost tracking and event streaming |
+
+---
+
 <div align="center">
 
 **iSDLC Framework** v0.1.0-alpha — an AI development harness you control
