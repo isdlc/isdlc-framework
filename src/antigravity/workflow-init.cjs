@@ -143,6 +143,18 @@ function main() {
         };
         if (artifactFolder) workflow.artifact_folder = artifactFolder;
 
+        // Copy source/source_id from meta.json if artifact folder exists
+        if (slug) {
+            try {
+                const metaPath = path.join(projectRoot, 'docs', 'requirements', slug, 'meta.json');
+                if (fs.existsSync(metaPath)) {
+                    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+                    if (meta.source) workflow.source = meta.source;
+                    if (meta.source_id) workflow.source_id = meta.source_id;
+                }
+            } catch (e) { /* non-critical — source tracking is best-effort */ }
+        }
+
         // Update state
         state.active_workflow = workflow;
         state.state_version = (state.state_version || 0) + 1;
