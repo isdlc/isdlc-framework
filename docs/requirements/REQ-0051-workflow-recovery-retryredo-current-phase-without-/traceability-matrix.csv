@@ -1,0 +1,82 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File,Notes
+FR-001 (REQ-0051),AC-001-01,TC-RT-01,positive,P0,workflow-retry.test.cjs,Clears test_iteration
+FR-001 (REQ-0051),AC-001-01,TC-RT-02,positive,P0,workflow-retry.test.cjs,Clears constitutional_validation
+FR-001 (REQ-0051),AC-001-01,TC-RT-03,positive,P0,workflow-retry.test.cjs,Clears interactive_elicitation
+FR-001 (REQ-0051),AC-001-01,TC-RT-04,positive,P0,workflow-retry.test.cjs,Clears all three simultaneously
+FR-001 (REQ-0051),AC-001-01,TC-RT-05,positive,P1,workflow-retry.test.cjs,Handles missing iteration state
+FR-001 (REQ-0051),AC-001-01,TC-E2E-RT-03,positive,P0,workflow-retry.test.cjs,E2E disk state verification
+FR-001 (REQ-0051),AC-001-01,TC-INT-01,positive,P0,workflow-recovery-integration.test.cjs,Integration: V8 accepts retry state
+FR-001 (REQ-0051),AC-001-01,TC-INT-03,positive,P1,workflow-recovery-integration.test.cjs,Preserves prior completed phases
+FR-001 (REQ-0051),AC-001-02,TC-RT-06,positive,P0,workflow-retry.test.cjs,First retry sets count to 1
+FR-001 (REQ-0051),AC-001-02,TC-RT-07,positive,P0,workflow-retry.test.cjs,Increments existing count
+FR-001 (REQ-0051),AC-001-03,TC-RT-09,positive,P0,workflow-retry.test.cjs,Bumps state_version
+FR-001 (REQ-0051),AC-001-04,TC-RT-10,positive,P0,workflow-retry.test.cjs,current_phase unchanged
+FR-001 (REQ-0051),AC-001-04,TC-RT-11,positive,P0,workflow-retry.test.cjs,current_phase_index unchanged
+FR-001 (REQ-0051),AC-001-04,TC-V8-03,positive,P1,v8-recovery-action.test.cjs,V8 allows same index
+FR-001 (REQ-0051),AC-001-05,TC-RT-12,negative,P0,workflow-retry.test.cjs,ERROR no active workflow
+FR-001 (REQ-0051),AC-001-05,TC-RT-13,negative,P1,workflow-retry.test.cjs,ERROR null active_workflow
+FR-001 (REQ-0051),AC-001-05,TC-E2E-RT-02,negative,P0,workflow-retry.test.cjs,E2E exit code 2
+FR-002 (REQ-0051),AC-002-01,TC-RT-14,positive,P1,workflow-retry.test.cjs,Output includes result
+FR-002 (REQ-0051),AC-002-01,TC-RT-15,positive,P1,workflow-retry.test.cjs,Output includes phase
+FR-002 (REQ-0051),AC-002-01,TC-RT-16,positive,P1,workflow-retry.test.cjs,Output includes retry_count
+FR-002 (REQ-0051),AC-002-01,TC-RT-17,positive,P1,workflow-retry.test.cjs,Output includes cleared_state
+FR-002 (REQ-0051),AC-002-01,TC-RT-18,positive,P1,workflow-retry.test.cjs,Output includes artifacts_preserved
+FR-002 (REQ-0051),AC-002-01,TC-E2E-RT-01,positive,P0,workflow-retry.test.cjs,E2E valid JSON output
+FR-002 (REQ-0051),AC-002-02,TC-RT-19,positive,P2,workflow-retry.test.cjs,Message contains phase name
+FR-002 (REQ-0051),AC-002-03,TC-RT-20,positive,P2,workflow-retry.test.cjs,Phase 06 code preservation note
+FR-002 (REQ-0051),AC-002-03,TC-E2E-RT-04,positive,P1,workflow-retry.test.cjs,E2E Phase 06 note
+FR-004 (REQ-0051),AC-004-01,TC-RT-21,positive,P0,workflow-retry.test.cjs,Sets recovery_action type=retry
+FR-004 (REQ-0051),AC-004-01,TC-RT-22,positive,P0,workflow-retry.test.cjs,recovery_action includes phase
+FR-004 (REQ-0051),AC-004-01,TC-RT-23,positive,P1,workflow-retry.test.cjs,recovery_action ISO-8601 timestamp
+FR-004 (REQ-0051),AC-004-02,TC-V8-01,positive,P0,v8-recovery-action.test.cjs,V8 allows completed->in_progress with retry
+FR-004 (REQ-0051),AC-004-02,TC-V8-02,negative,P1,v8-recovery-action.test.cjs,V8 blocks completed->pending with retry
+FR-004 (REQ-0051),AC-004-03,TC-RT-24,positive,P0,workflow-retry.test.cjs,recovery_action cleared after re-advance
+FR-004 (REQ-0051),AC-004-03,TC-INT-02,positive,P0,workflow-recovery-integration.test.cjs,Integration: advance clears recovery_action
+FR-004 (REQ-0051),AC-004-03,TC-V8-11,negative,P1,v8-recovery-action.test.cjs,Cleared recovery_action does not bypass V8
+FR-005 (REQ-0051),AC-005-01,TC-RT-06,positive,P0,workflow-retry.test.cjs,First retry count=1
+FR-005 (REQ-0051),AC-005-01,TC-INT-04,positive,P1,workflow-recovery-integration.test.cjs,Double retry increments correctly
+FR-005 (REQ-0051),AC-005-02,TC-RT-07,positive,P0,workflow-retry.test.cjs,Increment from 2 to 3
+FR-005 (REQ-0051),AC-005-03,TC-RT-08,positive,P1,workflow-retry.test.cjs,No gate blocking from retry_count
+FR-001 (REQ-0052),AC-001-01,TC-RB-01,positive,P0,workflow-rollback.test.cjs,Sets current_phase to target
+FR-001 (REQ-0052),AC-001-01,TC-RB-02,positive,P0,workflow-rollback.test.cjs,Sets current_phase_index
+FR-001 (REQ-0052),AC-001-01,TC-E2E-RB-03,positive,P0,workflow-rollback.test.cjs,E2E disk state verification
+FR-001 (REQ-0052),AC-001-02,TC-RB-03,positive,P0,workflow-rollback.test.cjs,Target phase to in_progress
+FR-001 (REQ-0052),AC-001-02,TC-RB-04,positive,P0,workflow-rollback.test.cjs,Subsequent phases to pending
+FR-001 (REQ-0052),AC-001-03,TC-RB-05,positive,P0,workflow-rollback.test.cjs,Clears target phase iteration
+FR-001 (REQ-0052),AC-001-03,TC-RB-06,positive,P0,workflow-rollback.test.cjs,Clears subsequent phases iteration
+FR-001 (REQ-0052),AC-001-03,TC-INT-07,positive,P0,workflow-recovery-integration.test.cjs,Integration: phases record cleared
+FR-001 (REQ-0052),AC-001-04,TC-RB-07,positive,P0,workflow-rollback.test.cjs,Bumps state_version
+FR-001 (REQ-0052),AC-001-05,TC-RB-08,positive,P1,workflow-rollback.test.cjs,No files deleted from disk
+FR-001 (REQ-0052),AC-001-06,TC-RB-09,negative,P0,workflow-rollback.test.cjs,ERROR no active workflow
+FR-001 (REQ-0052),AC-001-06,TC-E2E-RB-02,negative,P0,workflow-rollback.test.cjs,E2E exit code 2
+FR-002 (REQ-0052),AC-002-01,TC-RB-10,negative,P0,workflow-rollback.test.cjs,Rejects phase not in workflow
+FR-002 (REQ-0052),AC-002-01,TC-E2E-RB-04,negative,P0,workflow-rollback.test.cjs,E2E invalid phase error
+FR-002 (REQ-0052),AC-002-02,TC-RB-11,negative,P0,workflow-rollback.test.cjs,Rejects rollback to current phase
+FR-002 (REQ-0052),AC-002-03,TC-RB-12,negative,P0,workflow-rollback.test.cjs,Rejects forward rollback
+FR-002 (REQ-0052),AC-002-01,TC-RB-13,negative,P1,workflow-rollback.test.cjs,Rejects missing --to-phase
+FR-003 (REQ-0052),AC-003-01,TC-RB-15,positive,P1,workflow-rollback.test.cjs,Shows phases to be reset
+FR-003 (REQ-0052),AC-003-02,TC-RB-16,positive,P1,workflow-rollback.test.cjs,Declined confirmation no changes
+FR-003 (REQ-0052),AC-003-03,TC-RB-14,positive,P0,workflow-rollback.test.cjs,--confirm skips prompt
+FR-004 (REQ-0052),AC-004-01,TC-RB-17,positive,P1,workflow-rollback.test.cjs,Output has from/to phase
+FR-004 (REQ-0052),AC-004-01,TC-RB-18,positive,P1,workflow-rollback.test.cjs,Output has phases_reset list
+FR-004 (REQ-0052),AC-004-01,TC-RB-19,positive,P1,workflow-rollback.test.cjs,Output has artifacts_preserved
+FR-004 (REQ-0052),AC-004-01,TC-RB-20,positive,P1,workflow-rollback.test.cjs,Output has rollback_count
+FR-004 (REQ-0052),AC-004-01,TC-E2E-RB-01,positive,P0,workflow-rollback.test.cjs,E2E valid JSON output
+FR-004 (REQ-0052),AC-004-02,TC-RB-21,positive,P2,workflow-rollback.test.cjs,Message lists all reset phases
+FR-006 (REQ-0052),AC-006-01,TC-RB-22,positive,P1,workflow-rollback.test.cjs,First rollback count=1
+FR-006 (REQ-0052),AC-006-02,TC-RB-23,positive,P1,workflow-rollback.test.cjs,Second rollback count=2
+FR-006 (REQ-0052),AC-006-03,TC-RB-24,positive,P1,workflow-rollback.test.cjs,No gate blocking from rollback_count
+FR-007 (REQ-0052),AC-007-01,TC-V8-04,positive,P0,v8-recovery-action.test.cjs,V8 allows index regression with rollback
+FR-007 (REQ-0052),AC-007-02,TC-V8-05,positive,P0,v8-recovery-action.test.cjs,V8 allows completed->pending with rollback
+FR-007 (REQ-0052),AC-007-02,TC-V8-06,positive,P0,v8-recovery-action.test.cjs,V8 allows completed->in_progress with rollback
+FR-007 (REQ-0052),AC-007-03,TC-V8-07,positive,P0,v8-recovery-action.test.cjs,No recovery_action blocks index regression
+FR-007 (REQ-0052),AC-007-03,TC-V8-08,positive,P0,v8-recovery-action.test.cjs,No recovery_action blocks completed->pending
+FR-007 (REQ-0052),AC-007-03,TC-V8-09,positive,P0,v8-recovery-action.test.cjs,No recovery_action blocks completed->in_progress
+FR-007 (REQ-0052),AC-007-03,TC-V8-10,positive,P1,v8-recovery-action.test.cjs,Backward compat: supervised_review still works
+FR-007 (REQ-0052),AC-007-03,TC-V8-12,negative,P1,v8-recovery-action.test.cjs,Invalid recovery_action type blocked
+FR-004 (REQ-0051),AC-004-01,TC-RB-25,positive,P0,workflow-rollback.test.cjs,Sets recovery_action type=rollback
+FR-004 (REQ-0051),AC-004-01,TC-RB-26,positive,P0,workflow-rollback.test.cjs,recovery_action includes target phase
+FR-004 (REQ-0051),AC-004-01,TC-RB-27,positive,P1,workflow-rollback.test.cjs,recovery_action ISO-8601 timestamp
+FR-001 (REQ-0051),AC-001-01,TC-INT-08,positive,P1,workflow-recovery-integration.test.cjs,Rollback then retry same phase
+FR-001 (REQ-0052),AC-001-01,TC-INT-05,positive,P0,workflow-recovery-integration.test.cjs,Integration: V8 accepts rollback state
+FR-001 (REQ-0052),AC-001-02,TC-INT-06,positive,P1,workflow-recovery-integration.test.cjs,Integration: re-advance after rollback

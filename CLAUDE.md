@@ -138,6 +138,35 @@ Agent files reference this protocol with:
 > Follow the **Mandatory Iteration Enforcement Protocol** in CLAUDE.md.
 > **Completion criteria**: {agent-specific criteria}. **Max iterations**: {N}.
 
+### Hook Block Auto-Recovery Protocol
+
+When a hook blocks your action (PreToolUse, PostToolUse, or notification), you MUST auto-recover without waiting for user input. Read the block message, understand the expected approach, and immediately retry with the correct method.
+
+**Auto-recovery rules:**
+1. **Read the block message carefully** — hooks always explain why the action was blocked and what to do instead
+2. **Retry with the specified approach** — if the message says "use Write or Edit tools instead of Bash", immediately use Write/Edit
+3. **Do NOT stop and ask the user** — hook blocks are guardrails, not decision points. The correct action is always specified in the message
+4. **Do NOT retry the exact same blocked action** — that will be blocked again
+
+**Common tool-level blocks and their recovery:**
+
+| Hook | Block Signal | Auto-Recovery |
+|------|-------------|---------------|
+| `state-file-guard` | "BASH STATE GUARD" | Use Write/Edit tool to modify state.json instead of Bash |
+| `branch-guard` | "COMMIT TO MAIN BLOCKED" | Switch to the feature branch before committing |
+| `explore-readonly-enforcer` | "WRITE BLOCKED" | Do not write files during explore-mode agents |
+| `state-write-validator` | Schema/version violation | Fix the state.json content to match the expected schema, then retry Write/Edit |
+| `phase-sequence-guard` | "OUT-OF-ORDER PHASE DELEGATION" | Complete the current phase before delegating to the next |
+| `delegation-gate` | Agent delegation blocked | Use the correct agent for the current phase |
+
+**Escalate to user ONLY when:**
+- The block message does not specify a recovery action
+- You have already retried the alternative and it was also blocked
+- The recovery requires a user decision (e.g., choosing between options)
+
+Agent files reference this protocol with:
+> See **Hook Block Auto-Recovery Protocol** in CLAUDE.md.
+
 ### Git Commit Prohibition
 
 **Do NOT run `git add`, `git commit`, or `git push` during phase work.** The orchestrator handles all git operations at workflow finalize.
