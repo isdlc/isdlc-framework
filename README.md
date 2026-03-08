@@ -169,6 +169,7 @@ The project constitution (`docs/isdlc/constitution.md`) codifies your governance
 
 | Extension point | What you'll be able to do |
 |----------------|--------------------------|
+| **Product MCPs** | Distribute iSDLC capabilities as standalone MCP servers — plug discovery, analysis, or quality enforcement into any AI tool |
 | **Custom workflows** | Define `spike`, `hotfix`, `ui-feature` — your own phase sequences |
 | **User-space hooks** | Drop scripts in `.isdlc/hooks/` for domain-specific validation |
 | **Templates** | Project-local file templates agents use during implementation |
