@@ -4352,14 +4352,13 @@ function rebuildSessionCache(options = {}) {
     // Section 8: ROUNDTABLE_TOPICS (REMOVED logic above but kept key for cache)
     // Section 9: REMOVED (REQ-0037)
 
-    // Section 10: INSTRUCTIONS (Antigravity-native)
+    // Section 10: INSTRUCTIONS (Antigravity-only — Claude Code native reads CLAUDE.md directly)
     parts.push(buildSection('INSTRUCTIONS', () => {
-        const agPath = path.join(root, 'ANTIGRAVITY.md');
-        const clPath = path.join(root, 'CLAUDE.md');
-        if (fs.existsSync(agPath)) {
-            return fs.readFileSync(agPath, 'utf8');
-        } else if (fs.existsSync(clPath)) {
-            return fs.readFileSync(clPath, 'utf8');
+        if (isAntigravity()) {
+            const agPath = path.join(root, 'ANTIGRAVITY.md');
+            if (fs.existsSync(agPath)) {
+                return fs.readFileSync(agPath, 'utf8');
+            }
         }
         return '';
     }));

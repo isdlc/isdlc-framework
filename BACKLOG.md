@@ -4,6 +4,7 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] Template system — project-local code templates (.isdlc/templates/) [github: GH-104] → `REQ-0060-template-system-project-local-code-templates-isdlc/`
 - [x] User-space hooks — extensible pre/post phase hook points [github: GH-101] → `REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/` -> [requirements](docs/requirements/REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/)
 
 ### Parallel Workflows (Architecture)

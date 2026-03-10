@@ -76,7 +76,7 @@ Do NOT implement changes directly without going through a workflow. The framewor
 
 1. **Three-domain confirmation sequence**: ALWAYS present confirmations sequentially per domain — Requirements (Maya) → Architecture (Alex) → Design (Jordan) — each with explicit Accept/Amend. NEVER collapse into a single combined confirmation. Produce the corresponding artifacts (requirements-spec.md, architecture-overview.md, module-design.md) BEFORE their respective confirmation prompts.
 
-2. **Run analyze-finalize after acceptance**: After the user accepts all three domain confirmations, ALWAYS run `node src/antigravity/analyze-finalize.cjs --folder "<folder>"` for EACH analyzed item. This updates BACKLOG.md and comments on the GitHub issue. Do NOT just update meta.json manually.
+2. **Finalize after acceptance**: After the user accepts all three domain confirmations, the analyze handler finalizes meta.json, updates BACKLOG.md marker, and syncs GitHub labels (steps 7.8-9 of the analyze handler in `src/claude/commands/isdlc.md`). Do NOT just update meta.json manually.
 
 ---
 
@@ -162,11 +162,11 @@ When a hook blocks your action (PreToolUse, PostToolUse, or notification), you M
 **Harness bug detection (REQ-0059):**
 
 If a hook error is caused by a bug in the framework itself (not the user's code), follow this protocol:
-1. **Identify the bug** — the error originates from `src/claude/hooks/`, `src/antigravity/`, or framework config files
+1. **Identify the bug** — the error originates from `src/claude/hooks/`, or framework config files
 2. **Inform the user** — explain that this is a framework bug, not their code
 3. **Suspend the active workflow** — use `--interrupt` to suspend and start a fix workflow:
    ```
-   node src/antigravity/workflow-init.cjs --type fix --interrupt --description "Fix <description>"
+   /isdlc fix --interrupt "Fix <description>"
    ```
 4. **Fix the bug** through the normal fix workflow (requirements → tracing → test strategy → implementation → quality loop → code review)
 5. **Finalize the fix** — `workflow-finalize.cjs` automatically restores the suspended workflow with phase iteration reset
