@@ -2,7 +2,7 @@
 
 **Status**: Complete
 **Confidence**: High
-**Last Updated**: 2026-03-08
+**Last Updated**: 2026-03-10
 **Coverage**: 100%
 
 ---
@@ -10,9 +10,10 @@
 ## 1. Module: `user-hooks.cjs`
 
 **Location**: `src/claude/hooks/lib/user-hooks.cjs`
-**Responsibility**: Discover, resolve, and execute user-space hooks from `.isdlc/hooks/`
+**Responsibility**: Discover, configure, execute, and log user-space hooks from `.isdlc/hooks/`
 **Dependencies**: `child_process` (Node built-in), `fs`, `path`, `common.cjs` (co-located, for `getProjectRoot`)
-**Update safety**: This file lives in `src/claude/hooks/lib/` and is copied to `.claude/hooks/lib/` during install/update. The user's hook scripts in `.isdlc/hooks/` are never touched by the updater.
+**Optional dependency**: `js-yaml` or inline YAML parser for `hook.yaml` parsing
+**Update safety**: This file lives in `src/claude/hooks/lib/` and is copied to `.claude/hooks/lib/` during install/update. The user's hook directories in `.isdlc/hooks/` are never touched by the updater.
 
 ---
 
@@ -20,7 +21,7 @@
 
 ### 2.1 `executeHooks(hookPoint, context)`
 
-Main entry point. Discovers and runs all hooks for a given hook point.
+Main entry point. Discovers and runs all hooks configured for the given hook point.
 
 ```javascript
 /**
@@ -32,52 +33,51 @@ function executeHooks(hookPoint, context) { ... }
 ```
 
 **Behavior**:
-1. Resolve hook point name (alias resolution)
-2. Discover hooks in resolved directory
-3. Execute each hook sequentially (alphabetical order)
-4. Collect results
-5. Return aggregated result with block/warning status
+1. Scan `.isdlc/hooks/` for hook subdirectories with valid `hook.yaml`
+2. Resolve hook point name (alias resolution)
+3. Filter hooks to those with matching trigger for this hook point
+4. Execute matching hooks sequentially (alphabetical by subdirectory name)
+5. Write execution logs to each hook's `logs/` directory
+6. Collect and return aggregated results
 
 **Error handling**: Never throws. All errors are captured in the result object. A crashed hook is reported as a warning, not a block.
 
-### 2.2 `discoverHooks(hookDir)`
+### 2.2 `scanHooks(projectRoot)`
 
-Scans a directory for executable hook scripts.
+Scans `.isdlc/hooks/` for configured hook subdirectories.
 
 ```javascript
 /**
- * @param {string} hookDir - Absolute path to hook point directory
- * @returns {string[]} - Sorted list of absolute file paths
+ * @param {string} projectRoot - Absolute path to project root
+ * @returns {HookConfig[]} - List of parsed hook configurations
  */
-function discoverHooks(hookDir) { ... }
+function scanHooks(projectRoot) { ... }
 ```
 
 **Behavior**:
-1. Check if directory exists. If not, return empty array.
-2. Read directory entries, filter to files only (skip subdirectories).
-3. Sort alphabetically by filename.
-4. Return absolute paths.
+1. Check if `.isdlc/hooks/` exists. If not, return empty array.
+2. Read subdirectories (skip files like `hook-template.yaml`).
+3. For each subdirectory, check for `hook.yaml`.
+4. Parse `hook.yaml`, validate required fields, merge with defaults.
+5. Return list of valid hook configs sorted alphabetically by subdirectory name.
 
-### 2.3 `resolveHookPoint(hookPoint, projectRoot)`
+### 2.3 `discoverHooksForTrigger(hookPoint, hooks)`
 
-Resolves a hook point name to a directory path, applying alias resolution.
+Filters scanned hooks to those matching the given trigger point.
 
 ```javascript
 /**
- * @param {string} hookPoint - e.g., 'post-implementation' or 'post-06-implementation'
- * @param {string} projectRoot - Project root directory
- * @returns {{ resolved: string, dir: string } | null} - Resolved name and directory path, or null
+ * @param {string} hookPoint - e.g., 'pre-gate', 'post-06-implementation'
+ * @param {HookConfig[]} hooks - List from scanHooks()
+ * @returns {HookConfig[]} - Hooks that have this trigger enabled
  */
-function resolveHookPoint(hookPoint, projectRoot) { ... }
+function discoverHooksForTrigger(hookPoint, hooks) { ... }
 ```
 
-**Resolution order**:
-1. Try exact match: `.isdlc/hooks/{hookPoint}/`
-2. If hook point has a phase component (e.g., `post-implementation`), try alias resolution:
-   - Extract the phase portion (`implementation`)
-   - Look up in `PHASE_ALIASES` map
-   - Construct aliased path (e.g., `.isdlc/hooks/post-06-implementation/`)
-3. If neither exists, return null
+**Behavior**:
+1. Resolve hookPoint via alias map (e.g., `post-implementation` -> `post-06-implementation`).
+2. For each hook config, check if `triggers[hookPoint]` is `true` (checking both friendly and internal names).
+3. Return matching hooks in alphabetical order.
 
 ### 2.4 `buildContext(state)`
 
@@ -91,11 +91,45 @@ Builds a context object from the current workflow state.
 function buildContext(state) { ... }
 ```
 
+### 2.5 `validateHookConfigs(projectRoot)`
+
+Checks for misconfigured hooks and returns warnings.
+
+```javascript
+/**
+ * @param {string} projectRoot - Absolute path to project root
+ * @returns {HookWarning[]} - List of misconfiguration warnings
+ */
+function validateHookConfigs(projectRoot) { ... }
+```
+
+**Checks**:
+1. Subdirectory exists but missing `hook.yaml` -> warn
+2. `hook.yaml` exists but no triggers set to `true` -> warn (hook will never fire)
+3. `hook.yaml` has triggers but entry point script missing -> warn (no script to execute)
+
 ---
 
 ## 3. Data Structures
 
-### 3.1 `HookContext`
+### 3.1 `HookConfig`
+
+```javascript
+/**
+ * @typedef {Object} HookConfig
+ * @property {string} name - Hook name (subdirectory name)
+ * @property {string} description - Human-readable description
+ * @property {string} entryPoint - Script filename (default: 'hook.sh')
+ * @property {string} dir - Absolute path to hook subdirectory
+ * @property {Object<string, boolean>} triggers - Checklist of trigger points
+ * @property {number} timeoutMs - Timeout in milliseconds (default: 60000)
+ * @property {number} retryLimit - Max retries before escalation (default: 3)
+ * @property {'minor'|'major'|'critical'} severity - Fix scope hint for agent
+ * @property {string[]} outputs - Files the hook produces
+ */
+```
+
+### 3.2 `HookContext`
 
 ```javascript
 /**
@@ -105,11 +139,11 @@ function buildContext(state) { ... }
  * @property {string} slug - Workflow slug
  * @property {string} projectRoot - Absolute path to project root
  * @property {string|null} artifactFolder - Artifact folder path (relative to project root)
- * @property {number} timeoutMs - Timeout per hook in milliseconds
+ * @property {string} hookPoint - The hook point being executed
  */
 ```
 
-### 3.2 `HookResult`
+### 3.3 `HookResult`
 
 ```javascript
 /**
@@ -122,17 +156,29 @@ function buildContext(state) { ... }
  */
 ```
 
-### 3.3 `HookEntry`
+### 3.4 `HookEntry`
 
 ```javascript
 /**
  * @typedef {Object} HookEntry
- * @property {string} name - Script filename
+ * @property {string} name - Hook subdirectory name
  * @property {number} exitCode - Process exit code
  * @property {string} stdout - Captured stdout
  * @property {string} stderr - Captured stderr
  * @property {number} durationMs - Execution duration
  * @property {'pass'|'warning'|'block'|'timeout'|'error'} status - Interpreted status
+ * @property {'minor'|'major'|'critical'} severity - From hook.yaml
+ */
+```
+
+### 3.5 `HookWarning`
+
+```javascript
+/**
+ * @typedef {Object} HookWarning
+ * @property {string} hookName - Subdirectory name
+ * @property {string} issue - Description of the misconfiguration
+ * @property {string} suggestion - Actionable suggestion for the user
  */
 ```
 
@@ -159,18 +205,20 @@ const PHASE_ALIASES = {
 };
 ```
 
-**Resolution logic**: For a hook point like `post-implementation`:
+**Resolution logic for trigger matching**: For a trigger key like `post-implementation`:
 1. Split on first `-` after `pre`/`post` prefix: prefix = `post`, phase = `implementation`
 2. Look up `implementation` in `PHASE_ALIASES` -> `06-implementation`
-3. Construct resolved name: `post-06-implementation`
+3. Construct resolved trigger: `post-06-implementation`
+4. Match against hook's trigger checklist (checking both friendly and resolved forms)
 
 ---
 
-## 5. Timeout Handling
+## 5. Hook Execution
 
 ```javascript
-function executeOneHook(scriptPath, context) {
-  const timeoutMs = context.timeoutMs || 60000;
+function executeOneHook(hookConfig, context) {
+  const timeoutMs = hookConfig.timeoutMs || 60000;
+  const scriptPath = path.join(hookConfig.dir, hookConfig.entryPoint);
   const env = {
     ...process.env,
     ISDLC_PHASE: context.phase,
@@ -193,52 +241,155 @@ function executeOneHook(scriptPath, context) {
     const durationMs = Date.now() - start;
 
     if (result.error && result.error.code === 'ETIMEDOUT') {
-      return { name: path.basename(scriptPath), exitCode: -1, stdout: '', stderr: 'Hook timed out', durationMs, status: 'timeout' };
+      return { name: hookConfig.name, exitCode: -1, stdout: '', stderr: 'Hook timed out', durationMs, status: 'timeout', severity: hookConfig.severity };
     }
 
     const exitCode = result.status ?? -1;
     const status = exitCode === 0 ? 'pass' : exitCode === 2 ? 'block' : 'warning';
 
     return {
-      name: path.basename(scriptPath),
+      name: hookConfig.name,
       exitCode,
       stdout: (result.stdout || '').toString().trim(),
       stderr: (result.stderr || '').toString().trim(),
       durationMs,
-      status
+      status,
+      severity: hookConfig.severity
     };
   } catch (err) {
-    return { name: path.basename(scriptPath), exitCode: -1, stdout: '', stderr: err.message, durationMs: 0, status: 'error' };
+    return { name: hookConfig.name, exitCode: -1, stdout: '', stderr: err.message, durationMs: 0, status: 'error', severity: hookConfig.severity };
   }
 }
 ```
 
 ---
 
-## 6. Config Loading
+## 6. Execution Logging
 
-Hook timeout is read from `.isdlc/config.json` if it exists:
+After each hook execution, write a log entry to the hook's `logs/` directory:
 
 ```javascript
-function loadHookConfig(projectRoot) {
-  const configPath = path.join(projectRoot, '.isdlc', 'config.json');
-  try {
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      return { timeoutMs: config.hook_timeout_ms || 60000 };
-    }
-  } catch (e) { /* config is optional */ }
-  return { timeoutMs: 60000 };
+function writeHookLog(hookConfig, entry) {
+  const logsDir = path.join(hookConfig.dir, 'logs');
+  if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const logFile = path.join(logsDir, `${timestamp}.log`);
+  const logContent = [
+    `Hook: ${entry.name}`,
+    `Timestamp: ${new Date().toISOString()}`,
+    `Hook Point: ${entry.hookPoint || 'unknown'}`,
+    `Exit Code: ${entry.exitCode}`,
+    `Status: ${entry.status}`,
+    `Duration: ${entry.durationMs}ms`,
+    `--- stdout ---`,
+    entry.stdout || '(empty)',
+    `--- stderr ---`,
+    entry.stderr || '(empty)'
+  ].join('\n');
+
+  fs.writeFileSync(logFile, logContent, 'utf8');
 }
 ```
 
 ---
 
-## 7. Integration Modifications
+## 7. Config Parsing
 
-### 7.1 `phase-advance.cjs` Changes
+```javascript
+function parseHookConfig(hookDir) {
+  const yamlPath = path.join(hookDir, 'hook.yaml');
+  if (!fs.existsSync(yamlPath)) return null;
 
-Insert before gate validation (after line ~69):
+  const raw = fs.readFileSync(yamlPath, 'utf8');
+  const config = parseYaml(raw);  // lightweight YAML parser
+
+  return {
+    name: config.name || path.basename(hookDir),
+    description: config.description || '',
+    entryPoint: config.entry_point || 'hook.sh',
+    dir: hookDir,
+    triggers: config.triggers || {},
+    timeoutMs: config.timeout_ms || 60000,
+    retryLimit: config.retry_limit || 3,
+    severity: config.severity || 'minor',
+    outputs: config.outputs || []
+  };
+}
+```
+
+---
+
+## 8. Hook Template
+
+The `hook-template.yaml` shipped with the framework:
+
+```yaml
+# Hook Configuration Template
+# Copy this file to .isdlc/hooks/<your-hook-name>/hook.yaml
+# See docs/isdlc/user-hooks.md for details
+# Claude Code hooks documentation: https://docs.anthropic.com/en/docs/claude-code/hooks
+
+name: my-hook
+description: Describe what this hook does
+entry_point: hook.sh
+
+# Severity hint for the agent when this hook blocks
+# minor: targeted file fix | major: broader rework | critical: fundamental issue
+severity: minor
+
+# Max retries before escalating to user (default: 3)
+retry_limit: 3
+
+# Timeout per execution in milliseconds (default: 60000)
+timeout_ms: 60000
+
+# Files this hook produces (informational)
+outputs: []
+
+# Trigger checklist -- set to true for hook points where this hook should fire
+triggers:
+  pre-workflow:             false
+  post-workflow:            false
+  pre-gate:                 false
+
+  pre-quick-scan:           false
+  post-quick-scan:          false
+  pre-requirements:         false
+  post-requirements:        false
+  pre-impact-analysis:      false
+  post-impact-analysis:     false
+  pre-architecture:         false
+  post-architecture:        false
+  pre-design:               false
+  post-design:              false
+  pre-test-strategy:        false
+  post-test-strategy:       false
+  pre-implementation:       false
+  post-implementation:      false
+  pre-testing:              false
+  post-testing:             false
+  pre-code-review:          false
+  post-code-review:         false
+  pre-local-testing:        false
+  post-local-testing:       false
+  pre-upgrade-plan:         false
+  post-upgrade-plan:        false
+  pre-upgrade-execute:      false
+  post-upgrade-execute:     false
+  pre-quality-loop:         false
+  post-quality-loop:        false
+  pre-tracing:              false
+  post-tracing:             false
+```
+
+---
+
+## 9. Integration Modifications
+
+### 9.1 `phase-advance.cjs` Changes
+
+Insert before gate validation:
 
 ```javascript
 const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');
@@ -252,13 +403,14 @@ if (preGateResult.blocked) {
     phase: currentPhase,
     hook: preGateResult.blockingHook.name,
     hook_output: preGateResult.blockingHook.stdout,
+    severity: preGateResult.blockingHook.severity,
     message: `User hook "${preGateResult.blockingHook.name}" blocked gate advancement`
   });
   process.exit(1);
 }
 ```
 
-Insert after successful advancement (after line ~140):
+Insert after successful advancement:
 
 ```javascript
 // After advancement - fire post-phase hooks (non-blocking)
@@ -268,9 +420,9 @@ try {
 } catch (e) { /* post-phase hooks are non-blocking */ }
 ```
 
-### 7.2 `workflow-init.cjs` Changes
+### 9.2 `workflow-init.cjs` Changes
 
-Insert after state write (after line ~165):
+Insert after state write:
 
 ```javascript
 const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');
@@ -281,9 +433,9 @@ try {
 } catch (e) { /* non-blocking */ }
 ```
 
-### 7.3 `workflow-finalize.cjs` Changes
+### 9.3 `workflow-finalize.cjs` Changes
 
-Insert after merge, before final output (after line ~134):
+Insert after merge, before final output:
 
 ```javascript
 const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');

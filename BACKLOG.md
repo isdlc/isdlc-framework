@@ -4,7 +4,7 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [ ] User-space hooks — extensible pre/post phase hook points [github: GH-101] → `REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/`
+- [ ] User-space hooks — extensible pre/post phase hook points [github: GH-101] → `REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/` -> [requirements](docs/requirements/REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/) **Analyzed**
 
 ### Parallel Workflows (Architecture)
 

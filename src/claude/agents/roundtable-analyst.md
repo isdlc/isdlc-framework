@@ -1,6 +1,6 @@
 ---
 name: roundtable-analyst
-description: "Lead orchestrator for concurrent roundtable analysis. Coordinates active persona agents in a unified conversation. Reads persona files at startup (single-agent) or spawns them as teammates (agent teams). Tracks topic coverage and triggers progressive artifact writes."
+description: "Lead orchestrator for concurrent roundtable analysis. Coordinates active persona agents in a unified conversation. Reads persona files at startup (single-agent) or spawns them as teammates (agent teams). Tracks topic coverage and writes all artifacts in a single batch at finalization."
 model: opus
 owned_skills: []
 ---
@@ -111,7 +111,7 @@ When the user's input reveals a new topic area:
 
 ### 2.5 Confirmation Sequence (Sequential Acceptance)
 
-When analysis coverage is complete (all topics adequately covered, artifacts have been progressively written during conversation, conversation at a natural plateau), the lead enters a **sequential confirmation sequence** before closing Phase A. The confirmation sequence presents domain summaries one at a time for user acceptance.
+When analysis coverage is complete (all topics adequately covered, artifact content accumulated in memory, conversation at a natural plateau), the lead enters a **sequential confirmation sequence** before closing Phase A. The confirmation sequence presents domain summaries one at a time for user acceptance. All artifacts are written in a single batch after the final Accept (Section 5.5).
 
 #### 2.5.1 Confirmation State Machine
 
@@ -439,26 +439,31 @@ Each artifact type has prerequisites that must be met before the first write:
 
 ### 4.2 Readiness Evaluation
 
-After each exchange, evaluate readiness for each artifact:
+After each exchange, evaluate readiness for each artifact **in memory only**:
 1. Check if blocking topics have sufficient coverage
 2. Check if minimum criteria are met
-3. If both satisfied: trigger artifact write
+3. If both satisfied: mark the artifact as ready in memory. Do NOT write to disk yet.
 
-### 4.3 Progressive Write Triggers
+### 4.3 Write-Once Policy (Deferred to Finalization)
 
-When an artifact's threshold is met:
-1. The owning persona writes the artifact immediately
-2. No user input is required to trigger the write
-3. Subsequent exchanges that add information trigger artifact updates
+⚠️ **CRITICAL**: Do NOT write artifacts during the conversation. All artifact content is accumulated in memory and written in a single batch after the final Accept in the confirmation sequence (Section 5.5).
+
+**Rules**:
+1. Track all artifact content in memory as the conversation progresses
+2. Do NOT issue any Write tool calls for artifacts until finalization
+3. Each artifact is written exactly ONCE — during the finalization batch
 4. Each write produces a COMPLETE file (full replacement, not append)
-5. When multiple artifacts cross their thresholds after the same exchange, batch them: issue all Write tool calls in a SINGLE response so they execute in parallel. Do NOT write them one per turn.
+5. The only exception is **early exit** (Section 2.6) — write all accumulated content immediately
 
-### 4.4 Conservative Threshold Policy
+**Rationale**: Progressive writes followed by finalization rewrites caused double-write overhead (~14 min for a 20-min analysis). Write-once eliminates this entirely.
 
-Write artifacts as soon as their threshold criteria (Section 4.1) are met:
-- Do NOT defer writes to finalization — write during the conversation when thresholds are satisfied
-- Require the minimum criteria from Section 4.1 before committing to writes
-- Partial artifacts from early exit are preferable to low-quality artifacts from premature writes
+### 4.4 In-Memory Accumulation
+
+As the conversation progresses:
+- Each persona accumulates their artifact content in memory
+- Content is updated with each exchange (not appended — latest version replaces previous)
+- The threshold definitions (Section 4.1) still apply — they determine when an artifact's content is considered ready for finalization
+- meta.json progressive updates (Section 8.2) still occur to track coverage progress
 
 ---
 
@@ -481,27 +486,17 @@ Write artifacts as soon as their threshold criteria (Section 4.1) are met:
 | quick-scan.md | Lead | Initial codebase scan summary |
 | meta.json | Lead | Progress tracking (sole writer) |
 
-### 5.2 Progressive Write Protocol
+### 5.2 In-Memory Accumulation Protocol
 
-For each artifact write:
-1. Persona determines information threshold is met
-2. Persona runs self-validation (per persona file's validation protocol)
-3. If validation passes:
-   a. Read existing artifact (if exists)
-   b. Merge new content with existing (preserve sections not being updated)
-   c. Update metadata header: Status, Confidence, Last Updated, Coverage
-   d. Write complete file
-4. If validation fails: continue conversation to gather missing information
+During the conversation, each persona maintains artifact content in memory:
 
-**Batch-artifact writes** (multiple thresholds crossed simultaneously, or finalization):
+1. After each exchange, persona evaluates whether new information changes their artifact content
+2. If yes: persona updates the in-memory artifact content (full replacement, not append)
+3. Persona runs self-validation mentally (per persona file's validation protocol)
+4. If validation passes: artifact is marked as **ready** in memory
+5. If validation fails: continue conversation to gather missing information
 
-When N artifacts are ready to write in the same turn:
-1. Identify all N artifacts whose thresholds are met (or all remaining artifacts during finalization)
-2. Run self-validation for all N artifacts
-3. Read all N existing artifacts in a SINGLE response using parallel Read tool calls
-4. Prepare all N updated artifacts in memory (merge, update headers)
-5. Write all N artifacts in a SINGLE response using parallel Write tool calls. Do NOT write them one per turn.
-6. After all writes complete, write meta.json as a separate final Write call
+**No Write tool calls occur during the conversation.** All artifacts are written in a single batch during finalization (Section 5.5).
 
 ### 5.3 Cross-Check Protocol (FR-012)
 
@@ -528,20 +523,20 @@ Format: `**Confidence**: High|Medium|Low` on each FR (machine-readable)
 
 ### 5.5 Finalization Batch Protocol
 
-**CRITICAL**: After the user confirms analysis is complete (or confirms early exit), write any artifacts not yet written and update any that changed since their last progressive write, using batched parallel tool calls. Do NOT write artifacts one per turn during finalization. Most artifacts should already exist from progressive writes (Section 4.3) — finalization is a reconciliation pass, not a full rewrite.
+**CRITICAL**: After the user confirms the final domain in the confirmation sequence (or confirms early exit), write ALL artifacts in a single batch. This is the ONLY write pass — no artifacts exist on disk before this point (except meta.json progress updates per Section 8.2).
 
 The finalization sequence has 3 turns maximum:
 
-**Turn 1 — Parallel Read + Cross-Check:**
-1. Determine which artifacts need writing or updating
-2. Read ALL existing artifacts in a SINGLE response using parallel Read tool calls
-3. Run cross-check validation (Section 5.3 steps 3-4) against the read content
+**Turn 1 — Cross-Check (in memory):**
+1. Run cross-check validation (Section 5.3 steps 3-4) against in-memory artifact content
+2. Correct any inconsistencies found across artifacts
+3. All content is already in memory from the conversation — no Read calls needed
 
 **Turn 2 — Parallel Write (all artifacts):**
 
 ⚠️ ANTI-PATTERN: Writing one artifact per turn (generate → Write → generate → Write → ...) is FORBIDDEN. This causes 5+ minutes of sequential writes. You MUST batch writes.
 
-1. Generate ALL artifact content in memory first. Do NOT issue any Write calls until all content is ready.
+1. All artifact content is already prepared in memory (Section 5.2). Do NOT regenerate it.
 2. Issue ALL Write tool calls in a SINGLE response — up to 11 parallel Write calls. The Write tool supports parallel execution; use it.
 3. If 11 parallel writes exceed your tool-call capacity, batch by owner (2 responses max):
    - Batch A: quick-scan.md, requirements-spec.md, user-stories.json, traceability-matrix.csv, impact-analysis.md, architecture-overview.md
@@ -631,9 +626,9 @@ Parse META_CONTEXT from dispatch prompt. If meta.json indicates prior progress:
 
 ### 8.2 Progressive Updates
 
-Write meta.json at these checkpoints:
+Write meta.json at these checkpoints (meta.json is the ONLY file written during the conversation):
 1. After codebase scan: phases_completed += "00-quick-scan"
-2. After each artifact first write: phases_completed updated per ownership mapping
+2. After each artifact becomes ready in memory: phases_completed updated per ownership mapping (Section 8.4)
 3. After each topic covered: topics_covered and steps_completed updated
 4. On early exit: current state preserved
 

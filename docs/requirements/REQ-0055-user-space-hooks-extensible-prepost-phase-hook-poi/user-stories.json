@@ -1,27 +1,27 @@
 [
   {
     "id": "US-001",
-    "title": "Drop-in hook execution",
+    "title": "Create and configure a hook",
     "persona": "Framework Developer",
-    "story": "As a framework developer, I want to drop a script into .isdlc/hooks/ and have it run automatically at the right workflow moment, so that I can extend the framework without modifying its source code.",
-    "acceptance_criteria": ["AC-001-01", "AC-001-02", "AC-002-01"],
+    "story": "As a framework developer, I want to create a hook by copying the template, configuring triggers in hook.yaml, and writing a script, so that my domain-specific tooling runs automatically at the right workflow moments.",
+    "acceptance_criteria": ["AC-001-01", "AC-001-04", "AC-012-01", "AC-012-02", "AC-013-01"],
     "priority": "Must Have",
-    "fr_refs": ["FR-001", "FR-002"]
+    "fr_refs": ["FR-001", "FR-012", "FR-013"]
   },
   {
     "id": "US-002",
-    "title": "Gate blocking with user control",
+    "title": "Hook blocks with agent retry and user escalation",
     "persona": "Framework Developer",
-    "story": "As a framework developer, I want my validation hook to block gate advancement when it finds issues, and I want the ability to override that block when I decide the issue is acceptable.",
-    "acceptance_criteria": ["AC-003-03", "AC-006-01", "AC-006-02"],
+    "story": "As a framework developer, I want my validation hook to block gate advancement when it finds issues, and I want the agent to try fixing the issue automatically before escalating to me.",
+    "acceptance_criteria": ["AC-003-03", "AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04", "AC-006-05"],
     "priority": "Must Have",
     "fr_refs": ["FR-003", "FR-006"]
   },
   {
     "id": "US-003",
-    "title": "Friendly hook point naming",
+    "title": "Friendly trigger names in hook.yaml",
     "persona": "Framework Developer",
-    "story": "As a framework developer, I want to name my hook directory post-implementation instead of post-06-implementation, so that I don't have to memorize internal phase identifiers.",
+    "story": "As a framework developer, I want to use friendly phase names like post-implementation in my hook.yaml triggers instead of internal identifiers, so that I don't have to memorize phase numbers.",
     "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-04"],
     "priority": "Must Have",
     "fr_refs": ["FR-005"]
@@ -37,20 +37,38 @@
   },
   {
     "id": "US-005",
-    "title": "Configurable hook timeout",
+    "title": "Per-hook timeout and severity configuration",
     "persona": "Team Lead / DevOps",
-    "story": "As a team lead, I want to configure hook timeouts so that slow validation tools have enough time to complete without blocking fast hooks unnecessarily.",
-    "acceptance_criteria": ["AC-007-01", "AC-007-02"],
+    "story": "As a team lead, I want to configure per-hook timeouts and severity levels so that slow validation tools have enough time and the agent knows how aggressively to fix issues.",
+    "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-012-04"],
     "priority": "Should Have",
-    "fr_refs": ["FR-007"]
+    "fr_refs": ["FR-007", "FR-012"]
   },
   {
     "id": "US-006",
     "title": "Hook authoring reference",
     "persona": "Framework Developer",
-    "story": "As a framework developer, I want a guide explaining how to create hooks, available hook points, and the exit code protocol, so that I can write hooks without reading framework source code.",
+    "story": "As a framework developer, I want a brief reference guide explaining hook setup and the hook.yaml schema, with links to Claude Code docs for detailed concepts.",
     "acceptance_criteria": ["AC-009-01", "AC-009-02", "AC-009-03"],
     "priority": "Should Have",
     "fr_refs": ["FR-009"]
+  },
+  {
+    "id": "US-007",
+    "title": "Misconfigured hook warnings",
+    "persona": "Framework Developer",
+    "story": "As a framework developer, I want to be warned at session start if my hooks are misconfigured, so that I can fix issues before they cause confusion during a workflow.",
+    "acceptance_criteria": ["AC-014-01", "AC-014-02", "AC-014-03", "AC-014-04"],
+    "priority": "Must Have",
+    "fr_refs": ["FR-014"]
+  },
+  {
+    "id": "US-008",
+    "title": "Hook template delivered with framework",
+    "persona": "Framework Developer",
+    "story": "As a framework developer, I want the hook-template.yaml to be available after install/update so I can copy it to create new hooks without looking up phase names.",
+    "acceptance_criteria": ["AC-013-01", "AC-013-02", "AC-013-03", "AC-013-04"],
+    "priority": "Must Have",
+    "fr_refs": ["FR-013"]
   }
 ]

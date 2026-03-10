@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { getProjectRoot, readState } = require('../claude/hooks/lib/common.cjs');
+const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');
 
 function parseArgs() {
     const args = process.argv.slice(2);
@@ -96,6 +97,12 @@ function main() {
                 merged = false;
             }
         }
+
+        // Run post-workflow user hooks (informational, non-blocking)
+        try {
+            const hookCtx = buildContext(state);
+            executeHooks('post-workflow', hookCtx);
+        } catch (e) { /* post-workflow hooks are non-blocking */ }
 
         // GitHub issue close (non-blocking)
         let githubClosed = false;

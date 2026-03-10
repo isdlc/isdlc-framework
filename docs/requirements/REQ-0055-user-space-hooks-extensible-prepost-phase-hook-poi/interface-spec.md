@@ -2,7 +2,7 @@
 
 **Status**: Complete
 **Confidence**: High
-**Last Updated**: 2026-03-08
+**Last Updated**: 2026-03-10
 **Coverage**: 100%
 
 ---
@@ -11,7 +11,7 @@
 
 ### 1.1 `executeHooks(hookPoint: string, context: HookContext): HookResult`
 
-Execute all hooks discovered for the given hook point.
+Execute all hooks configured for the given hook point.
 
 **Parameters**:
 - `hookPoint` (string, required): Hook point identifier. Accepts both friendly names (`post-implementation`) and internal names (`post-06-implementation`). Special hook points `pre-workflow`, `post-workflow`, and `pre-gate` are used as-is (no phase resolution).
@@ -25,7 +25,7 @@ const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.c
 const ctx = buildContext(state);
 const result = executeHooks('pre-gate', ctx);
 if (result.blocked) {
-  // Handle block
+  // Handle block -- output HOOK_BLOCKED for agent retry
 }
 ```
 
@@ -38,17 +38,45 @@ Build a HookContext from the current state.json content.
 
 **Returns**: `HookContext`
 
-**Example**:
-```javascript
-const state = readState();
-const ctx = buildContext(state);
-// ctx.phase === '06-implementation'
-// ctx.workflowType === 'feature'
-```
+### 1.3 `validateHookConfigs(projectRoot: string): HookWarning[]`
+
+Check for misconfigured hooks and return warnings.
+
+**Parameters**:
+- `projectRoot` (string, required): Absolute path to project root.
+
+**Returns**: `HookWarning[]` -- list of misconfiguration warnings. Empty array if all hooks are valid.
 
 ---
 
-## 2. Environment Variable Contract
+## 2. `hook.yaml` Schema
+
+```yaml
+# Required
+name: string              # Hook identifier
+description: string       # Human-readable description
+
+# Optional (defaults shown)
+entry_point: hook.sh      # Script filename relative to hook directory
+severity: minor           # minor | major | critical
+retry_limit: 3            # Max retries before user escalation
+timeout_ms: 60000         # Timeout per execution in milliseconds
+outputs: []               # List of output file names (informational)
+
+# Required for hook to fire
+triggers:                 # Full phase checklist
+  pre-workflow: false
+  post-workflow: false
+  pre-gate: false
+  pre-{phase}: false      # For each phase
+  post-{phase}: false     # For each phase
+```
+
+All trigger keys default to `false`. A hook with no triggers set to `true` will never fire (and generates a misconfiguration warning at session start).
+
+---
+
+## 3. Environment Variable Contract
 
 When executing a hook script, the following environment variables are set:
 
@@ -65,56 +93,34 @@ All variables are strings. Empty string for absent values (never undefined).
 
 ---
 
-## 3. Exit Code Contract
+## 4. Exit Code Contract
 
 | Exit Code | Status | Framework Behavior |
 |-----------|--------|-------------------|
 | 0 | Pass | Continue normally |
 | 1 | Warning | Show output to user, continue |
-| 2 | Block | Report to user, halt operation, present options |
+| 2 | Block | Report to agent for retry (up to `retry_limit`), then escalate to user |
 | 3+ | Warning | Treated same as exit 1 (unknown codes are non-fatal) |
 | -1 (internal) | Timeout/Error | Hook timed out or crashed; reported as warning |
 
 ---
 
-## 4. Directory Convention
+## 5. Directory Convention
 
 ```
 .isdlc/hooks/
-  {hook-point}/
-    {script-name}          # Any executable script
+  hook-template.yaml       # Shipped with framework; user copies to create new hooks
+  {hook-name}/             # One subdirectory per hook
+    hook.yaml              # Configuration (triggers, timeout, severity, etc.)
+    hook.sh                # Entry point script (or hook.py, hook.js, etc.)
+    logs/                  # Execution logs (auto-created by engine)
 ```
 
-**Hook point naming**:
-- `pre-workflow` -- before workflow starts
-- `post-workflow` -- after workflow finalize
-- `pre-gate` -- before gate validation
-- `pre-{phase}` -- before a phase executes
-- `post-{phase}` -- after a phase completes
-
-**Phase names**: Both friendly (`implementation`) and internal (`06-implementation`) forms accepted.
-
-**Script naming**: Any filename. Execution order is alphabetical. Use numeric prefixes for ordering: `01-lint.sh`, `02-test.sh`.
+**Hook naming**: Subdirectory name is the hook identifier. Use descriptive names: `validate-xml`, `sast-scan`, `notify-slack`.
 
 **Script format**: Any executable. The framework runs scripts via `sh {scriptPath}`. For non-shell scripts, use a shebang line: `#!/usr/bin/env python3`.
 
----
-
-## 5. Configuration Interface
-
-### `.isdlc/config.json` (optional)
-
-```json
-{
-  "hook_timeout_ms": 60000
-}
-```
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `hook_timeout_ms` | number | 60000 | Maximum execution time per hook in milliseconds |
-
-The config file is optional. All values have sensible defaults.
+**Execution order**: When multiple hooks match the same trigger point, they execute in alphabetical order by subdirectory name. Use numeric prefixes for explicit ordering: `01-lint/`, `02-test/`.
 
 ---
 
@@ -126,9 +132,10 @@ When a user hook blocks gate advancement, `phase-advance.cjs` outputs:
 {
   "result": "HOOK_BLOCKED",
   "phase": "06-implementation",
-  "hook": "sast-scan.sh",
+  "hook": "sast-scan",
   "hook_output": "Critical vulnerability found in auth.js:42",
-  "message": "User hook \"sast-scan.sh\" blocked gate advancement"
+  "severity": "critical",
+  "message": "User hook \"sast-scan\" blocked gate advancement"
 }
 ```
 
@@ -138,13 +145,35 @@ This is a new result type alongside the existing `ADVANCED`, `BLOCKED`, `WORKFLO
 |-------|------|-------------|
 | `result` | `"HOOK_BLOCKED"` | Distinguishes user-hook blocks from gate-requirement blocks |
 | `phase` | string | Current phase |
-| `hook` | string | Name of the blocking hook script |
+| `hook` | string | Name of the blocking hook (subdirectory name) |
 | `hook_output` | string | Captured stdout from the hook |
+| `severity` | `"minor"` \| `"major"` \| `"critical"` | From hook.yaml; guides agent fix scope |
 | `message` | string | Human-readable description |
 
 ---
 
-## 7. Internal Interface: Phase Alias Map
+## 7. Misconfiguration Warning Contract
+
+`validateHookConfigs()` returns an array of warnings:
+
+```javascript
+[
+  {
+    hookName: 'my-validator',
+    issue: 'Missing hook.yaml configuration file',
+    suggestion: 'Copy hook-template.yaml to .isdlc/hooks/my-validator/hook.yaml and configure triggers'
+  },
+  {
+    hookName: 'sast-scan',
+    issue: 'No triggers set to true -- hook will never fire',
+    suggestion: 'Edit .isdlc/hooks/sast-scan/hook.yaml and set at least one trigger to true'
+  }
+]
+```
+
+---
+
+## 8. Internal Interface: Phase Alias Map
 
 ```javascript
 // Exported for testing, not part of public API

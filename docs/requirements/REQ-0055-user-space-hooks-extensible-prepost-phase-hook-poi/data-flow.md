@@ -2,7 +2,7 @@
 
 **Status**: Complete
 **Confidence**: High
-**Last Updated**: 2026-03-08
+**Last Updated**: 2026-03-10
 **Coverage**: 100%
 
 ---
@@ -16,34 +16,39 @@ Trigger Point (e.g., phase-advance.cjs)
 executeHooks(hookPoint, context)
   |
   v
-resolveHookPoint(hookPoint, projectRoot)
-  |-- Try exact: .isdlc/hooks/{hookPoint}/
-  |-- Try alias: .isdlc/hooks/{resolved-hookPoint}/
-  |-- No match? return null (skip silently)
+scanHooks(projectRoot)
+  |-- Read .isdlc/hooks/ subdirectories
+  |-- Skip files (e.g., hook-template.yaml)
+  |-- For each subdirectory:
+  |     Read hook.yaml -> parse config
+  |     Missing hook.yaml? -> skip (warn at session start)
+  |-- Sort alphabetically by subdirectory name
   |
   v
-discoverHooks(resolvedDir)
-  |-- fs.readdirSync(dir)
-  |-- Filter to files only
-  |-- Sort alphabetically
+discoverHooksForTrigger(hookPoint, hooks)
+  |-- Resolve hookPoint via alias map
+  |-- Filter hooks where triggers[hookPoint] === true
+  |     (check both friendly and resolved trigger keys)
   |
   v
-[script1.sh, script2.sh, ...]
+[hookConfig1, hookConfig2, ...]
 ```
 
 ## 2. Hook Execution Flow
 
 ```
-For each script in discovery order:
+For each hookConfig in discovery order:
   |
   v
-executeOneHook(scriptPath, context)
+executeOneHook(hookConfig, context)
   |
-  |-- Build env vars from context
+  |-- Resolve entry point: hookConfig.dir + hookConfig.entryPoint
+  |
+  |-- Build env vars from context:
   |     ISDLC_PHASE, ISDLC_WORKFLOW_TYPE, ISDLC_SLUG,
   |     ISDLC_PROJECT_ROOT, ISDLC_ARTIFACT_FOLDER, ISDLC_HOOK_POINT
   |
-  |-- spawnSync('sh', [scriptPath], { env, timeout, cwd })
+  |-- spawnSync('sh', [scriptPath], { env, timeout: hookConfig.timeoutMs, cwd })
   |
   |-- Capture stdout, stderr, exitCode, duration
   |
@@ -55,8 +60,10 @@ executeOneHook(scriptPath, context)
   |     timeout -> timeout
   |     error -> error
   |
+  |-- Write log entry to hookConfig.dir/logs/
+  |
   v
-HookEntry { name, exitCode, stdout, stderr, durationMs, status }
+HookEntry { name, exitCode, stdout, stderr, durationMs, status, severity }
 ```
 
 ## 3. Result Aggregation Flow
@@ -69,14 +76,50 @@ Aggregate into HookResult:
   |-- blocked = any entry.status === 'block'
   |-- warnings = entries where status === 'warning'
   |-- blockingHook = first entry with status === 'block' (or null)
+  |     includes severity from hookConfig
   |
   v
 Return to caller (phase-advance.cjs / workflow-init.cjs / workflow-finalize.cjs)
 ```
 
-## 4. Integration Point Flows
+## 4. Block Handling Flow (Agent Retry)
 
-### 4.1 Pre-Gate (phase-advance.cjs)
+```
+phase-advance.cjs outputs HOOK_BLOCKED
+  { result: "HOOK_BLOCKED", hook: "sast-scan", hook_output: "...", severity: "critical" }
+  |
+  v
+Orchestrator agent receives output
+  |
+  v
+Agent reads hook_output + severity
+  |-- severity: minor -> targeted file fix
+  |-- severity: major -> broader rework
+  |-- severity: critical -> fundamental issue review
+  |
+  v
+Agent attempts fix (edits files, adjusts code)
+  |
+  v
+Agent re-triggers: node phase-advance.cjs
+  |-- Hook re-runs as part of pre-gate
+  |
+  |-- Pass (exit 0)?
+  |     YES -> Gate proceeds, workflow continues
+  |     NO  -> Block again (retry count++)
+  |
+  v
+Retry count >= 3 for this hook?
+  |-- NO  -> Agent retries (loop back)
+  |-- YES -> Escalate to user:
+  |           - Bulleted summary of all 3 failure outputs
+  |           - Hook name, description, severity
+  |           - User decides: fix manually, skip, override
+```
+
+## 5. Integration Point Flows
+
+### 5.1 Pre-Gate (phase-advance.cjs)
 
 ```
 phase-advance.cjs main()
@@ -88,7 +131,7 @@ buildContext(state) -> HookContext
 executeHooks('pre-gate', ctx)
   |
   |-- blocked?
-  |     YES -> output HOOK_BLOCKED, exit(1)
+  |     YES -> output HOOK_BLOCKED (with severity), exit(1)
   |     NO  -> continue to gate validation
   |
   v
@@ -104,7 +147,7 @@ executeHooks('post-{completedPhase}', ctx)  // non-blocking
 output ADVANCED
 ```
 
-### 4.2 Pre-Workflow (workflow-init.cjs)
+### 5.2 Pre-Workflow (workflow-init.cjs)
 
 ```
 workflow-init.cjs main()
@@ -119,7 +162,7 @@ executeHooks('pre-workflow', ctx)  // informational
 [create branch, output INITIALIZED]
 ```
 
-### 4.3 Post-Workflow (workflow-finalize.cjs)
+### 5.3 Post-Workflow (workflow-finalize.cjs)
 
 ```
 workflow-finalize.cjs main()
@@ -134,17 +177,44 @@ executeHooks('post-workflow', ctx)  // informational
 output FINALIZED
 ```
 
-## 5. Config Loading Flow
+## 6. Misconfiguration Detection Flow (Session Start)
 
 ```
-loadHookConfig(projectRoot)
+Session start (harness initialization)
   |
   v
-Read .isdlc/config.json
-  |-- Exists? Parse JSON, extract hook_timeout_ms
-  |-- Missing? Use default (60000ms)
-  |-- Parse error? Use default (60000ms), log warning
+validateHookConfigs(projectRoot)
+  |
+  |-- Scan .isdlc/hooks/ subdirectories
+  |
+  |-- For each subdirectory:
+  |     Missing hook.yaml?
+  |       -> warn: "Found {name} without configuration"
+  |     hook.yaml exists but no triggers true?
+  |       -> warn: "{name} has no triggers -- will never fire"
+  |     hook.yaml has triggers but no entry point script?
+  |       -> warn: "{name} has triggers but no script"
   |
   v
-{ timeoutMs: number }
+Return HookWarning[] to harness
+  |
+  v
+Harness displays warnings to user (informational, non-blocking)
+```
+
+## 7. Template Delivery Flow (Install/Update)
+
+```
+install.sh / update.sh
+  |
+  v
+Create .isdlc/hooks/ directory (if not exists)
+  |
+  v
+Copy hook-template.yaml to .isdlc/hooks/hook-template.yaml
+  |-- On install: fresh copy
+  |-- On update: overwrite template (refreshes phase list)
+  |
+  v
+Preserve all user hook subdirectories (never touch)
 ```
