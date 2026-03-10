@@ -383,6 +383,78 @@ describe('state-file-guard inline script inspection (BUG-0016)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// BUG-0117: False positive prevention tests
+// ---------------------------------------------------------------------------
+
+describe('state-file-guard false positive prevention (BUG-0117)', () => {
+    let hookPath;
+
+    beforeEach(() => {
+        setupTestEnv();
+        hookPath = prepareHook(HOOK_SRC);
+    });
+
+    afterEach(() => {
+        cleanupTestEnv();
+    });
+
+    // T24: gh issue create with body mentioning state.json
+    it('T24: allows gh issue create whose body mentions state.json', async () => {
+        const result = await runHook(hookPath, {
+            tool_name: 'Bash',
+            tool_input: { command: 'gh issue create --title "fix bug" --body "$(cat <<\'EOF\'\nThe .isdlc/state.json file has writeFileSync issues\nEOF\n)"' }
+        });
+        assert.equal(result.code, 0);
+        assert.equal(result.stdout, '', 'gh issue create with state.json in body should be allowed');
+    });
+
+    // T25: pipe cat state.json to node -e read-only (arrow functions)
+    it('T25: allows cat state.json piped to node -e with arrow functions', async () => {
+        const result = await runHook(hookPath, {
+            tool_name: 'Bash',
+            tool_input: { command: "cat .isdlc/state.json | node -e 'let d=\"\";process.stdin.on(\"data\",c=>d+=c);process.stdin.on(\"end\",()=>{console.log(JSON.parse(d).current_phase)})'" }
+        });
+        assert.equal(result.code, 0);
+        assert.equal(result.stdout, '', 'Read-only pipe with arrow functions should be allowed');
+    });
+
+    // T26: heredoc writing a temp script that mentions state.json
+    it('T26: allows heredoc that creates a temp script mentioning state.json', async () => {
+        const cmd = "cat > /tmp/check.cjs << 'SCRIPT'\nconst s = JSON.parse(require('fs').readFileSync('.isdlc/state.json','utf8'));\nconsole.log(s.current_phase);\nSCRIPT\nnode /tmp/check.cjs";
+        const result = await runHook(hookPath, {
+            tool_name: 'Bash',
+            tool_input: { command: cmd }
+        });
+        assert.equal(result.code, 0);
+        assert.equal(result.stdout, '', 'Heredoc creating temp read script should be allowed');
+    });
+
+    // T27: Still blocks actual write to state.json (not a false negative)
+    it('T27: still blocks echo redirect to state.json', async () => {
+        const result = await runHook(hookPath, {
+            tool_name: 'Bash',
+            tool_input: { command: 'echo "{}" > .isdlc/state.json' }
+        });
+        assert.equal(result.code, 0);
+        const output = JSON.parse(result.stdout);
+        assert.equal(output.continue, false);
+        assert.ok(output.stopReason.includes('BASH STATE GUARD'));
+    });
+
+    // T28: Still blocks node -e writeFileSync to state.json (not in quotes)
+    it('T28: still blocks direct node -e writeFileSync to state.json', async () => {
+        const result = await runHook(hookPath, {
+            tool_name: 'Bash',
+            tool_input: { command: 'node -e "require(\'fs\').writeFileSync(\'.isdlc/state.json\', \'{}\')"' }
+        });
+        assert.equal(result.code, 0);
+        const output = JSON.parse(result.stdout);
+        assert.equal(output.continue, false);
+        assert.ok(output.stopReason.includes('BASH STATE GUARD'));
+    });
+});
+
+// ---------------------------------------------------------------------------
 // Unit tests for exported helper functions
 // ---------------------------------------------------------------------------
 
@@ -420,6 +492,17 @@ describe('state-file-guard helpers (unit)', () => {
         assert.ok(isWriteCommand('echo "x" >> file.txt'));
     });
 
+    // BUG-0117: > pattern must not match => arrow functions
+    it('isWriteCommand does not match => arrow functions', () => {
+        assert.ok(!isWriteCommand('c=>d+=c'));
+        assert.ok(!isWriteCommand('()=>{console.log(1)}'));
+        assert.ok(!isWriteCommand('(x) => x + 1'));
+    });
+
+    it('isWriteCommand does not match -> arrow operator', () => {
+        assert.ok(!isWriteCommand('a->b'));
+    });
+
     it('isWriteCommand detects tee', () => {
         assert.ok(isWriteCommand('echo "x" | tee file.txt'));
     });
@@ -452,6 +535,62 @@ describe('state-file-guard helpers (unit)', () => {
         assert.ok(!isWriteCommand(''));
         assert.ok(!isWriteCommand(null));
         assert.ok(!isWriteCommand(undefined));
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Unit tests for sanitizeCommand (BUG-0117)
+// ---------------------------------------------------------------------------
+
+describe('sanitizeCommand (BUG-0117 unit)', () => {
+    const { sanitizeCommand } = require(HOOK_SRC);
+
+    it('returns empty string for empty/null input', () => {
+        assert.equal(sanitizeCommand(''), '');
+        assert.equal(sanitizeCommand(null), '');
+        assert.equal(sanitizeCommand(undefined), '');
+    });
+
+    it('strips heredoc body content', () => {
+        const cmd = "cat > /tmp/x << 'EOF'\nstate.json writeFileSync\nEOF\nnode /tmp/x";
+        const result = sanitizeCommand(cmd);
+        assert.ok(!result.includes('state.json'), 'heredoc body should be stripped');
+        assert.ok(!result.includes('writeFileSync'), 'heredoc body should be stripped');
+        assert.ok(result.includes('node /tmp/x'), 'command after heredoc should remain');
+    });
+
+    it('strips heredoc with double-quoted marker', () => {
+        const cmd = 'cat << "MARKER"\n.isdlc/state.json\nMARKER';
+        const result = sanitizeCommand(cmd);
+        assert.ok(!result.includes('.isdlc/state.json'));
+    });
+
+    it('strips heredoc with unquoted marker', () => {
+        const cmd = 'cat << END\nwriteFileSync .isdlc/state.json\nEND';
+        const result = sanitizeCommand(cmd);
+        assert.ok(!result.includes('writeFileSync'));
+        assert.ok(!result.includes('.isdlc/state.json'));
+    });
+
+    it('strips single-quoted string content', () => {
+        const cmd = "node -e 'c=>d+=c; .isdlc/state.json'";
+        const result = sanitizeCommand(cmd);
+        assert.ok(!result.includes('=>'), 'arrow function inside quotes should be stripped');
+        assert.ok(!result.includes('.isdlc/state.json'), 'state.json inside quotes should be stripped');
+    });
+
+    it('preserves unquoted command structure', () => {
+        const cmd = 'echo hello > .isdlc/state.json';
+        const result = sanitizeCommand(cmd);
+        assert.ok(result.includes('echo'));
+        assert.ok(result.includes('>'));
+        assert.ok(result.includes('.isdlc/state.json'));
+    });
+
+    it('handles command with no heredocs or quotes', () => {
+        const cmd = 'cat .isdlc/state.json | grep phase';
+        const result = sanitizeCommand(cmd);
+        assert.equal(result, cmd);
     });
 });
 

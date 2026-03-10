@@ -129,8 +129,21 @@ function main() {
             process.exit(1);
         }
 
-        // Advance phase
-        const nextIndex = currentIndex + 1;
+        // Advance phase — skip over "skipped" phases (REQ-0056 FR-003)
+        let nextIndex = currentIndex + 1;
+        while (nextIndex < phases.length && aw.phase_status[phases[nextIndex]] === 'skipped') {
+            nextIndex++;
+        }
+
+        if (nextIndex >= phases.length) {
+            output({
+                result: 'WORKFLOW_COMPLETE',
+                phase: currentPhase,
+                message: 'All phases completed. Run workflow-finalize.cjs to complete.'
+            });
+            process.exit(0);
+        }
+
         const nextPhase = phases[nextIndex];
 
         // Update state

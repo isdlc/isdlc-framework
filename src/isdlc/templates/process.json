@@ -1,0 +1,44 @@
+{
+  "_comment": "iSDLC Process Configuration — copy to .isdlc/process.json to customize",
+  "_docs": "Each key is a workflow type. The value is the array of phases that will run. Phases not listed here will be skipped (with audit trail). Unknown phase names are warned and ignored.",
+  "_phases": "Available phases: 00-quick-scan, 01-requirements, 02-impact-analysis, 02-tracing, 03-architecture, 04-design, 05-test-strategy, 06-implementation, 07-testing, 08-code-review, 11-local-testing, 15-upgrade-plan, 15-upgrade-execute, 16-quality-loop",
+
+  "feature": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design",
+    "05-test-strategy",
+    "06-implementation",
+    "16-quality-loop",
+    "08-code-review"
+  ],
+
+  "fix": [
+    "01-requirements",
+    "02-tracing",
+    "05-test-strategy",
+    "06-implementation",
+    "16-quality-loop",
+    "08-code-review"
+  ],
+
+  "upgrade": [
+    "15-upgrade-plan",
+    "15-upgrade-execute",
+    "08-code-review"
+  ],
+
+  "test-run": [
+    "11-local-testing",
+    "07-testing"
+  ],
+
+  "test-generate": [
+    "05-test-strategy",
+    "06-implementation",
+    "16-quality-loop",
+    "08-code-review"
+  ]
+}

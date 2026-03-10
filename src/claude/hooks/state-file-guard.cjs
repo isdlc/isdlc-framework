@@ -19,7 +19,13 @@
  *   - Only treat as write if script body contains write operations
  *   - Read-only inline scripts are allowed through
  *
- * Version: 1.1.0
+ * Command sanitization (BUG-0117):
+ *   - Strip heredoc bodies before pattern matching to prevent false positives
+ *     from commands whose arguments mention state.json (e.g., gh issue create)
+ *   - Strip single-quoted string content to prevent arrow function => matching
+ *   - Fix > redirect pattern to exclude => arrow functions
+ *
+ * Version: 1.2.0
  */
 
 const {
@@ -44,7 +50,7 @@ const STATE_JSON_CMD_PATTERN = /\.isdlc[/\\](?:projects[/\\][^/\\\s"']+[/\\])?st
  * @type {RegExp[]}
  */
 const WRITE_PATTERNS = [
-    />\s*/,           // redirect: > or >>
+    /(?<!=)(?<!-)>{1,2}\s*/,  // redirect: > or >> (exclude => and ->)
     /\btee\b/,        // tee command
     /\bwriteFileSync\b/,   // Node.js fs.writeFileSync (bare, outside node -e)
     /\bwriteFile\b/,       // Node.js fs.writeFile (bare, outside node -e)
@@ -121,6 +127,57 @@ const MOVE_COPY_PATTERNS = [
 ];
 
 /**
+ * Sanitize a command string by stripping content that should not trigger
+ * pattern matching: heredoc bodies and single-quoted string literals.
+ * This prevents false positives from commands whose *arguments* mention
+ * state.json or write operations (e.g., gh issue create --body "...state.json...").
+ *
+ * BUG-0117: Root cause of false positives on gh, curl, and similar commands
+ * whose text arguments happen to contain state.json references.
+ *
+ * @param {string} command - The raw bash command string
+ * @returns {string} - The command with argument content stripped
+ */
+function sanitizeCommand(command) {
+    if (!command) return '';
+    let result = command;
+
+    // 1. Strip heredoc bodies: <<MARKER ... MARKER, <<'MARKER' ... MARKER, etc.
+    //    The closing marker must appear on its own line (bash requirement).
+    result = result.replace(/<<-?\s*['"]?(\w+)['"]?[^\n]*\n[\s\S]*?\n\s*\1\b/g, '');
+
+    // 2. Strip content of TOP-LEVEL single-quoted strings only.
+    //    Single quotes inside double-quoted strings (e.g., node -e "require('fs')")
+    //    are JavaScript/language literals, not shell quotes — must be preserved.
+    //    Uses a character-level state machine to track shell quoting context.
+    let sanitized = '';
+    let inDouble = false;
+    let inSingle = false;
+    for (let i = 0; i < result.length; i++) {
+        const ch = result[i];
+        if (inSingle) {
+            if (ch === "'") { inSingle = false; sanitized += "'"; }
+            // Skip all content inside top-level single quotes
+            continue;
+        }
+        if (inDouble) {
+            if (ch === '\\' && i + 1 < result.length) {
+                sanitized += ch + result[i + 1]; i++; continue;
+            }
+            if (ch === '"') { inDouble = false; }
+            sanitized += ch;
+            continue;
+        }
+        // Top level — not inside any quotes
+        if (ch === "'") { inSingle = true; sanitized += "'"; continue; }
+        if (ch === '"') { inDouble = true; sanitized += ch; continue; }
+        sanitized += ch;
+    }
+
+    return sanitized;
+}
+
+/**
  * Check if a bash command references a state.json file.
  * @param {string} command - The bash command string
  * @returns {boolean}
@@ -175,12 +232,17 @@ function check(ctx) {
             return { decision: 'allow' };
         }
 
+        // BUG-0117: Sanitize command before checking — strip heredoc bodies
+        // and single-quoted string content to prevent false positives from
+        // commands whose arguments mention state.json or write operations.
+        const sanitized = sanitizeCommand(command);
+
         // Both conditions must be true to block
-        if (!commandTargetsStateJson(command)) {
+        if (!commandTargetsStateJson(sanitized)) {
             return { decision: 'allow' };
         }
 
-        if (!isWriteCommand(command)) {
+        if (!isWriteCommand(sanitized)) {
             // Read-only command targeting state.json is fine
             debugLog('state-file-guard: read-only state.json access allowed:', command);
             return { decision: 'allow' };
@@ -207,7 +269,7 @@ function check(ctx) {
     }
 }
 
-module.exports = { check, commandTargetsStateJson, isWriteCommand, isInlineScriptWrite };
+module.exports = { check, commandTargetsStateJson, isWriteCommand, isInlineScriptWrite, sanitizeCommand };
 
 // Standalone execution
 if (require.main === module) {

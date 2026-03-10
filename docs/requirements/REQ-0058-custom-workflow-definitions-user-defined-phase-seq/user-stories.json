@@ -1,0 +1,74 @@
+[
+  {
+    "id": "US-001",
+    "title": "Define a custom workflow",
+    "story": "As a framework user, I want to define my own workflow in a YAML file so that I can match my team's development process without modifying the framework.",
+    "acceptance_criteria": [
+      "YAML file in .isdlc/workflows/ is discovered at session start",
+      "Workflow is available for execution with defined phases and settings",
+      "Invalid YAML produces a clear error message with file path"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-004"]
+  },
+  {
+    "id": "US-002",
+    "title": "Extend a shipped workflow",
+    "story": "As a framework user, I want to extend a shipped workflow by adding, removing, or reordering phases so that I can customize without duplicating the full definition.",
+    "acceptance_criteria": [
+      "Diff operations (add, remove, reorder) resolve correctly against the base workflow",
+      "Custom phases with agent files can be added via add_phases",
+      "Phase ordering warnings are emitted but don't block execution"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "title": "Natural language workflow matching",
+    "story": "As a framework user, I want to describe what I want to do in natural language and have the framework match it to my custom workflow so that I don't need to remember command names.",
+    "acceptance_criteria": [
+      "LLM matches user input to workflow intent descriptions",
+      "LLM confirms the match before executing",
+      "Ambiguous matches present candidates for user to choose"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-004",
+    "title": "Use feature-light as a shipped variant",
+    "story": "As a framework user, I want a lightweight feature workflow available out of the box so that simple features skip architecture and design phases.",
+    "acceptance_criteria": [
+      "feature-light ships as a workflow extending feature",
+      "--light flag is removed from workflow-init",
+      "Existing --light behavior is preserved via the new workflow"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-005",
+    "title": "Custom workflow survives updates",
+    "story": "As a framework user, I want my custom workflow files preserved when the framework updates so that I don't lose my workflow definitions.",
+    "acceptance_criteria": [
+      ".isdlc/workflows/ directory created during install",
+      "User YAML files preserved during update",
+      "User files left in place during uninstall"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-008"]
+  },
+  {
+    "id": "US-006",
+    "title": "Learn to create custom workflows",
+    "story": "As a framework user, I want documentation explaining each shipped phase and how to write custom agents so that I can create effective custom workflows.",
+    "acceptance_criteria": [
+      "Each shipped phase documented with purpose, inputs, outputs",
+      "Agent authoring guidance points to Claude Code docs and example agents",
+      "README includes custom workflow section"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-006", "FR-007"]
+  }
+]

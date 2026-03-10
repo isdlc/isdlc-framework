@@ -4386,6 +4386,36 @@ function rebuildSessionCache(options = {}) {
     return { path: cachePath, size: output.length, hash, sections, skipped };
 }
 
+/**
+ * Read .isdlc/process.json configuration file (REQ-0056).
+ * Returns the parsed config object, or null if the file doesn't exist or is invalid.
+ * Malformed JSON produces a stderr warning and returns null (fail-safe, Article X).
+ *
+ * @param {string} [projectRoot] - Project root directory (defaults to getProjectRoot())
+ * @returns {object|null} Parsed process.json contents, or null
+ */
+function readProcessConfig(projectRoot) {
+    try {
+        const root = projectRoot || getProjectRoot();
+        const configPath = path.join(root, '.isdlc', 'process.json');
+        if (!fs.existsSync(configPath)) return null;
+        const raw = fs.readFileSync(configPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            process.stderr.write('[process-config] .isdlc/process.json must be a JSON object, ignoring\n');
+            return null;
+        }
+        return parsed;
+    } catch (err) {
+        if (err instanceof SyntaxError) {
+            process.stderr.write(`[process-config] .isdlc/process.json has invalid JSON: ${err.message}, using defaults\n`);
+        } else {
+            debugLog('readProcessConfig error:', err.message);
+        }
+        return null;
+    }
+}
+
 module.exports = {
     isAntigravity,
     getFrameworkDir,
@@ -4504,7 +4534,9 @@ module.exports = {
     generatePhaseSummary,
     recordReviewAction,
     // Session cache (REQ-0001)
-    rebuildSessionCache
+    rebuildSessionCache,
+    // Process config (REQ-0056)
+    readProcessConfig
 };
 
 // Test-only exports (not part of public API) -- REQ-0020 FR-001/FR-002

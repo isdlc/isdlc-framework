@@ -4,6 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] Custom workflow definitions — user-defined phase sequences (.isdlc/workflows/*.yaml) [github: GH-102] → `REQ-0058-custom-workflow-definitions-user-defined-phase-seq/` -> [requirements](docs/requirements/REQ-0058-custom-workflow-definitions-user-defined-phase-seq/) **Analyzed**
+- [x] Adaptive process complexity (rippable phases) [github: GH-111] → `REQ-0056-adaptive-process-complexity-rippable-phases/` -> [requirements](docs/requirements/REQ-0056-adaptive-process-complexity-rippable-phases/)
 - [x] User-space hooks — extensible pre/post phase hook points [github: GH-101] → `REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/` -> [requirements](docs/requirements/REQ-0055-user-space-hooks-extensible-prepost-phase-hook-poi/)
 
 ### Parallel Workflows (Architecture)
@@ -226,7 +228,7 @@
 - #110 [ ] Observability-as-context for agents — feed runtime data (error logs, performance baselines, incidents) to Phase 02 tracing, impact analysis, and Phase 16 quality loop via `.isdlc/observability/` directory convention. Fail-open per Article X.
   - **Priority**: Could Have
   - **Complexity**: Medium
-- #111 [ ] Adaptive process complexity (rippable phases) — extend sizing/tier system with model confidence dimension. Phase-level skip conditions configurable in `.isdlc/process.json`. Audit trail for skipped/abbreviated phases. Override with `--strict`.
+- #111 [x] Adaptive process complexity (rippable phases) — extend sizing/tier system with model confidence dimension. Phase-level skip conditions configurable in `.isdlc/process.json`. Audit trail for skipped/abbreviated phases. Override with `--strict`.
   - **Priority**: Should Have
   - **Complexity**: Medium
   - **Builds on**: REQ-0011, #28, #97
