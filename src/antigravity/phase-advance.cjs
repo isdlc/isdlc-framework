@@ -34,6 +34,8 @@ const {
     checkArtifactPresenceRequirement
 } = require('../claude/hooks/lib/gate-logic.cjs');
 
+const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');
+
 function output(obj) { console.log(JSON.stringify(obj, null, 2)); }
 
 function main() {
@@ -65,6 +67,23 @@ function main() {
             });
             process.exit(0);
         }
+
+        // Run pre-gate user hooks (FR-004: pre-gate hook point)
+        try {
+            const hookCtx = buildContext(state);
+            const preGateResult = executeHooks('pre-gate', hookCtx);
+            if (preGateResult.blocked) {
+                output({
+                    result: 'HOOK_BLOCKED',
+                    phase: currentPhase,
+                    hook: preGateResult.blockingHook.name,
+                    hook_output: preGateResult.blockingHook.stdout,
+                    severity: preGateResult.blockingHook.severity,
+                    message: `User hook "${preGateResult.blockingHook.name}" blocked gate advancement`
+                });
+                process.exit(1);
+            }
+        } catch (e) { /* pre-gate hooks are non-blocking on error */ }
 
         // Run gate validation
         const normalizedPhase = normalizePhaseKey(currentPhase);
@@ -130,6 +149,12 @@ function main() {
 
         const statePath = path.join(projectRoot, '.isdlc', 'state.json');
         fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8');
+
+        // Run post-phase user hooks (non-blocking -- phase already advanced)
+        try {
+            const hookCtx = buildContext(state);
+            executeHooks(`post-${currentPhase}`, hookCtx);
+        } catch (e) { /* post-phase hooks are non-blocking */ }
 
         output({
             result: 'ADVANCED',

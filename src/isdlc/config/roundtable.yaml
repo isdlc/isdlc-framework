@@ -2,7 +2,7 @@
 # See: docs/isdlc/persona-authoring-guide.md
 
 # Conversation style: conversational | bulleted | silent
-verbosity: conversational
+verbosity: bulleted
 
 # Personas pre-selected for every analysis (user can still add/remove)
 default_personas:

@@ -24,6 +24,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { getProjectRoot, readState } = require('../claude/hooks/lib/common.cjs');
+const { executeHooks, buildContext } = require('../claude/hooks/lib/user-hooks.cjs');
 
 const WORKFLOW_PHASES = {
     feature: ['00-quick-scan', '01-requirements', '02-impact-analysis', '03-architecture', '04-design', '05-test-strategy', '06-implementation', '16-quality-loop', '08-code-review'],
@@ -174,6 +175,12 @@ function main() {
                 // Branch may already exist or git not available
             }
         }
+
+        // Run pre-workflow user hooks (informational -- blocks reported but don't prevent init)
+        try {
+            const hookCtx = buildContext(state);
+            executeHooks('pre-workflow', hookCtx);
+        } catch (e) { /* pre-workflow hooks are non-blocking */ }
 
         output({
             result: 'INITIALIZED',
