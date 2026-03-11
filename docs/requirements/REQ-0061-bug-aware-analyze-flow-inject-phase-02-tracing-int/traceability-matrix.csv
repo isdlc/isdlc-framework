@@ -1,0 +1,24 @@
+FR_ID,AC_ID,User_Story_ID,Confidence,Source
+FR-001,AC-001-01,US-001,High,User-confirmed
+FR-001,AC-001-02,US-002,High,User-confirmed
+FR-001,AC-001-03,US-001,High,User-confirmed
+FR-001,AC-001-04,US-002,High,User-confirmed
+FR-002,AC-002-01,US-001,High,User-confirmed
+FR-002,AC-002-02,US-001,High,User-confirmed
+FR-002,AC-002-03,US-001,High,User-confirmed
+FR-002,AC-002-04,US-001,High,User-confirmed
+FR-002,AC-002-05,US-001,High,User-confirmed
+FR-003,AC-003-01,US-001,High,User-confirmed
+FR-003,AC-003-02,US-001,High,Inferred from tracing-orchestrator.md
+FR-003,AC-003-03,US-003,High,User-confirmed
+FR-003,AC-003-04,US-001,High,Inferred from tracing-orchestrator.md
+FR-004,AC-004-01,US-001,High,User-confirmed
+FR-004,AC-004-02,US-001,High,User-confirmed
+FR-004,AC-004-03,US-003,High,User-confirmed
+FR-004,AC-004-04,US-001,High,Inferred from REQ-0026
+FR-005,AC-005-01,US-002,High,User-confirmed
+FR-005,AC-005-02,US-002,High,User-confirmed
+FR-005,AC-005-03,US-002,High,User-confirmed
+FR-006,AC-006-01,US-001,Medium,Inferred from Phase-Loop Controller
+FR-006,AC-006-02,US-001,Medium,Inferred from tracing-orchestrator.md
+FR-006,AC-006-03,US-001,Medium,Inferred from Phase-Loop Controller

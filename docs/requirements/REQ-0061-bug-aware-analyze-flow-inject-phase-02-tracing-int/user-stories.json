@@ -1,0 +1,41 @@
+[
+  {
+    "id": "US-001",
+    "title": "Bug analysis with automatic tracing",
+    "story": "As a developer with a bug ticket, I want to say 'analyze this' and have the system understand it's a bug, gather context from the ticket and codebase, confirm its understanding with me, and then fix it autonomously with tracing -- so that I don't have to go through irrelevant requirements/architecture/design analysis for bugs.",
+    "acceptance_criteria": [
+      "System infers from description content that the subject is a bug and confirms with me",
+      "System gathers bug context from ticket and scans codebase for relevant files",
+      "System plays back structured understanding: what's broken, where in code, what's affected",
+      "I can add more context or confirm the understanding is complete",
+      "System asks 'Should I fix it?' before launching any workflow",
+      "On confirmation, fix workflow runs from Phase 02 (tracing) autonomously with live progress"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001", "FR-002", "FR-003", "FR-004", "FR-006"]
+  },
+  {
+    "id": "US-002",
+    "title": "Override bug classification to feature",
+    "story": "As a developer, when the system incorrectly classifies my item as a bug, I want to say 'no, it's a feature' and have the system fall through to the standard roundtable -- so that mislabeled items don't get stuck in the wrong analysis flow.",
+    "acceptance_criteria": [
+      "I can override the LLM's bug classification",
+      "System routes to the standard roundtable after my override",
+      "No bug-gather artifacts are produced when I override"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-003",
+    "title": "Analyze bug without fixing",
+    "story": "As a developer, I want to analyze a bug to understand it without immediately fixing it -- so that I can review the analysis and decide to fix later.",
+    "acceptance_criteria": [
+      "After playback, system asks 'Should I fix it?'",
+      "I can decline and the artifacts (bug-report.md, requirements-spec.md) are preserved",
+      "I can later invoke 'fix' and the workflow auto-detects existing artifacts, starting from Phase 02"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003", "FR-004"]
+  }
+]
