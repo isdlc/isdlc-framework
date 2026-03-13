@@ -535,6 +535,23 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
 
 ---
 
+**memory** - Manage roundtable memory (REQ-0063)
+```
+/isdlc memory compact           # Compact both user and project memory
+/isdlc memory compact --user    # Compact user memory only
+/isdlc memory compact --project # Compact project memory only
+```
+1. Parse subcommand: `compact` is the only supported action
+2. Parse flags: `--user` (compact user memory only), `--project` (compact project memory only). Default: both.
+3. Call `compact({ user, project, projectRoot, userMemoryDir })` from `lib/memory.js`
+4. Display results:
+   - For user: "Compacting user memory... Read {N} session records, Aggregated {N} topics, Wrote ~/.isdlc/user-memory/profile.json"
+   - For project: "Compacting project memory... Read {N} session records, Aggregated {N} topics, Wrote .isdlc/roundtable-memory.json"
+5. On error: display error message and exit with code 1
+6. On success: display "Done."
+
+---
+
 **add** - Add a new item to the backlog
 ```
 /isdlc add "Add payment processing"
@@ -651,6 +668,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
    - **Jira** (if source is "jira" and source_id matches PROJECT-N pattern): Call `getAccessibleAtlassianResources` to resolve cloudId (use first accessible resource if multiple), then call `getJiraIssue(cloudId, source_id)` to fetch the ticket --> issueData (summary, description, issuetype, priority). If the Jira fetch fails, fail fast: "Could not fetch Jira ticket {source_id}: {error}" and STOP (matching GitHub fail-fast behavior). Pass fetched Jira content into draft.md: use the summary as the draft heading, the description body as context, and include acceptance criteria if present in the Jira description.
    - `Grep "GH-N"` (or source_id) across `docs/requirements/*/meta.json` --> existingMatch (slug and directory if found, null if not)
    - `Glob docs/requirements/{TYPE}-*` --> folderList (for sequence number calculation)
+   - **Memory read** (REQ-0063, FR-003): Read roundtable memory in parallel with other Group 1 operations. Call `readUserProfile()` and `readProjectMemory(projectRoot)` from `lib/memory.js`. Both are fail-open: null on any error. Then `mergeMemory(userProfile, projectMemory)` and `formatMemoryContext(merged)` to produce `memoryContextBlock`. If the result is empty string, `MEMORY_CONTEXT` is omitted from the dispatch prompt.
    - **Persona + topic files** (REQ-0001 FR-006): Check if session context contains `<!-- SECTION: ROUNDTABLE_CONTEXT -->`.
      If found:
        - Extract persona content from `### Persona: Business Analyst`, `### Persona: Solutions Architect`, `### Persona: System Designer` headings --> personaContent
@@ -825,10 +843,13 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
     DISCOVERY_CONTEXT:
     {discoveryContent}
 
+    MEMORY_CONTEXT:
+    {memoryContextBlock}
+
     ANALYSIS_MODE: No state.json writes, no branch creation."
    ```
 
-   The PERSONA_CONTEXT and TOPIC_CONTEXT fields use `--- persona-{name} ---` and `--- topic: {topic_id} ---` delimiters. The roundtable-analyst parses these to skip file reads. The DISCOVERY_CONTEXT field contains project discovery reports (architecture, test coverage, reverse-engineered behavior) when available. If any field is absent (e.g., pre-reading failed), the roundtable falls back to reading files from disk.
+   The PERSONA_CONTEXT and TOPIC_CONTEXT fields use `--- persona-{name} ---` and `--- topic: {topic_id} ---` delimiters. The roundtable-analyst parses these to skip file reads. The DISCOVERY_CONTEXT field contains project discovery reports (architecture, test coverage, reverse-engineered behavior) when available. The MEMORY_CONTEXT field (REQ-0063) contains per-topic user preferences and project history from `lib/memory.js`. If any field is absent (e.g., pre-reading failed, memory files missing), the roundtable falls back to its default behavior.
 
    **Task description format**: `Concurrent analysis for {slug}`
 
@@ -853,6 +874,13 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
 7.5. **Post-dispatch: Re-read meta.json**: After the roundtable-analyst returns:
    - Re-read meta.json using `readMetaJson(slugDir)` to get the lead's updates
    - The lead will have populated phases_completed, topics_covered, and written artifacts
+
+7.5a. **Memory write-back** (REQ-0063, FR-006): After the roundtable-analyst returns with ROUNDTABLE_COMPLETE:
+   - Parse the SESSION_RECORD JSON block from the roundtable's final output (if present)
+   - Call `writeSessionRecord(record, projectRoot, userMemoryDir)` from `lib/memory.js`
+   - This writes the session record to both `~/.isdlc/user-memory/sessions/{timestamp}.json` and `.isdlc/roundtable-memory.json`
+   - Write failures are non-blocking: the result `{ userWritten, projectWritten }` is logged internally but does not affect the analyze flow (AC-006-04, AC-008-05)
+   - If no SESSION_RECORD block is found in the output, skip this step silently (fail-open)
 
 7.6. **SIZING TRIGGER** (GH-57, fires after dispatch returns):
    IF meta.sizing_decision is NOT already set AND meta.phases_completed includes '02-impact-analysis':

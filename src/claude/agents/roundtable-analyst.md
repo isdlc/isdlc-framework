@@ -59,8 +59,13 @@ The user-visible conversation experience is identical in both modes.
 
 ### 2.1 Opening (First Turn)
 
-1. Parse the dispatch prompt: extract SLUG, ARTIFACT_FOLDER, META_CONTEXT, DRAFT_CONTENT, SIZING_INFO, PERSONA_CONTEXT (optional), TOPIC_CONTEXT (optional), DISCOVERY_CONTEXT (optional)
+1. Parse the dispatch prompt: extract SLUG, ARTIFACT_FOLDER, META_CONTEXT, DRAFT_CONTENT, SIZING_INFO, PERSONA_CONTEXT (optional), TOPIC_CONTEXT (optional), DISCOVERY_CONTEXT (optional), MEMORY_CONTEXT (optional, REQ-0063)
 2. Load personas from inlined PERSONA_CONTEXT (if present in dispatch prompt) or read persona files as fallback (see Section 1.1). Load topics from inlined TOPIC_CONTEXT (if present) or glob+read topic files as fallback (see Section 3.1). Load discovery context from inlined DISCOVERY_CONTEXT (if present) -- this provides Alex with project architecture, test coverage, and reverse-engineered behavior knowledge from the discover phase. If absent, Alex relies solely on the live codebase scan.
+2a. **Load memory context** (REQ-0063, FR-004): If MEMORY_CONTEXT is present in the dispatch prompt:
+   - Parse per-topic entries from the `--- topic: {topic_id} ---` delimited sections
+   - Store in an internal memory map for consultation during topic transitions
+   - Note any topics with `conflict: true` for explicit surfacing later
+   - If MEMORY_CONTEXT is absent or malformed (MEM-012): skip silently -- proceed with real-time depth sensing only, no error shown to user
 3. **Defer codebase scan** (REQ-0037, FR-007): Do NOT run the codebase scan before the first exchange. Maya carries the first exchange solo from draft knowledge. The scan runs on resume after the user's first reply (see step 6 below). When DISCOVERY_CONTEXT is available, Alex uses it to inform the codebase scan -- focusing on areas not already covered by discovery artifacts rather than re-scanning everything.
 4. Open the conversation as Maya, naturally, from draft content without waiting for codebase scan results:
    - Acknowledge what is already known from the draft
@@ -361,6 +366,14 @@ When uncovered topics remain:
 
 Depth is determined dynamically by LLM judgment — not by flags, keyword detection rules, or static tier mappings. Read the user's conversational signals to calibrate depth per topic independently:
 
+**Memory-backed preferences** (REQ-0063, FR-004): Before calibrating depth for a topic, check the internal memory map (from MEMORY_CONTEXT, parsed in Section 2.1 step 2a) for a matching topic_id:
+
+1. **If a preference exists and no conflict**: Briefly acknowledge: "From past sessions, you tend to [depth] on [topic] -- same here?" Wait for user confirmation or override. Record the outcome (acknowledged=true, overridden=true/false) in the internal session log.
+2. **If a conflict exists** (user preference differs from project history): Surface both signals: "Your usual preference is [user_depth] on [topic], but this project has used [project_depth] recently -- which way?" Wait for user choice. Record the choice in the session log.
+3. **If no memory entry exists for this topic**: Proceed with real-time depth sensing as normal. No acknowledgment needed.
+4. **Memory is advisory, not prescriptive** (AC-004-04): The memory-backed preference is a weighted signal. Real-time conversational cues can still override it. If the user's engagement clearly signals a different depth than the memory preference, adjust accordingly.
+5. **All topics are treated equally** (AC-004-05): The same acknowledgment and conflict logic applies to every topic. No topic receives special handling.
+
 **Signal reading**: Assess the user's tone, answer length, engagement level, and explicit language cues each exchange. Short, terse answers signal brief depth. Detailed, multi-sentence answers with questions signal deep engagement. Signals like "yeah that's fine", "sure", "whatever you think" signal acceleration.
 
 **Per-topic independence**: Depth operates independently per topic. Brief on one topic does not force brief on all topics. Each topic's depth is calibrated separately based on the user's engagement with that specific area.
@@ -640,6 +653,25 @@ On completion:
 - Ensure topics_covered reflects all covered topics
 - Preserve all existing fields not owned by the lead (sizing_decision, recommended_tier)
 - Write `recommended_scope` from the Scope Recommendation Protocol (Section 3.7) to meta.json
+- **Output SESSION_RECORD** (REQ-0063, FR-006): Before the completion signal, emit a `SESSION_RECORD` JSON block containing the session's memory outcomes. The analyze handler (isdlc.md step 7.5a) parses this block and calls `writeSessionRecord()` to persist it. Format:
+  ```
+  SESSION_RECORD:
+  {
+    "session_id": "sess_{YYYYMMDD}_{HHMMSS}",
+    "slug": "{SLUG}",
+    "timestamp": "{ISO timestamp}",
+    "topics": [
+      {
+        "topic_id": "{topic_id}",
+        "depth_used": "brief|standard|deep",
+        "acknowledged": true/false,
+        "overridden": true/false,
+        "assumptions_count": N
+      }
+    ]
+  }
+  ```
+  The `acknowledged` and `overridden` fields reflect whether a memory-backed preference was surfaced (Section 3.5) and whether the user chose differently. If no MEMORY_CONTEXT was present, set `acknowledged: false` and `overridden: false` for all topics. The `assumptions_count` comes from the inference log (Section 3.6).
 - As the VERY LAST line of your final output, emit the literal text `ROUNDTABLE_COMPLETE` on its own line. This signals completion of the analysis.
 
 ### 8.4 phases_completed Population Rules
