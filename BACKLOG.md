@@ -8,8 +8,9 @@
   - **Completed:** 2026-03-15
 - [x] Inline roundtable analysis — eliminate subagent dispatch overhead [github: GH-124] → `REQ-0065-inline-roundtable-eliminate-subagent-overhead/` -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) **Completed**
   - **Completed:** 2026-03-15
-- [A] #125 Team continuity memory — project-level knowledge retention across work gaps [github: GH-125] → `REQ-0066-team-continuity-memory-project-knowledge-retent/` -> [requirements](docs/requirements/REQ-0066-team-continuity-memory-project-knowledge-retent/) **Analyzed**
+- [x] #125 Team continuity memory — project-level knowledge retention across work gaps [github: GH-125] → `REQ-0066-team-continuity-memory-project-knowledge-retent/` -> [requirements](docs/requirements/REQ-0066-team-continuity-memory-project-knowledge-retent/) **Completed**
   - Depends on REQ-0064. Inspired by Hyperspace Research DAGs. Surfaces past team decisions when work resumes after gaps.
+  - **Completed:** 2026-03-15
 - [x] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) **Completed**
   - **Completed:** 2026-03-15
 - [ ] Developer usage analytics — friction/flow event capture with privacy-respecting telemetry [github: GH-121] → `REQ-0062-developer-usage-analytics-friction-flow-event-capture/` -> [requirements](docs/requirements/REQ-0062-developer-usage-analytics-friction-flow-event-capture/) **Analyzed**
