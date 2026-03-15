@@ -4,6 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [A] Inline roundtable analysis — eliminate subagent dispatch overhead [github: GH-124] → `REQ-0065-inline-roundtable-eliminate-subagent-overhead/` -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) **Analyzed**
+- [ ] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/)
 - [ ] Developer usage analytics — friction/flow event capture with privacy-respecting telemetry [github: GH-121] → `REQ-0062-developer-usage-analytics-friction-flow-event-capture/` -> [requirements](docs/requirements/REQ-0062-developer-usage-analytics-friction-flow-event-capture/) **Analyzed**
 - [x] Bug-aware analyze flow — inject Phase 02 tracing into analyze when subject is a bug [github: GH-119] → `REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/` -> [requirements](docs/requirements/REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/) **Completed**
   - **Completed:** 2026-03-11
@@ -30,6 +32,14 @@
   - **Performance impact**: +10-20ms per hook invocation (index read + branch resolution). Mitigated by caching within dispatcher runs.
   - **Complexity**: Medium-large (2-3 sessions through full iSDLC workflow)
   - **Prerequisite**: ~~BUG-0013 (phase-loop-controller same-phase bypass)~~ DONE
+
+- #123 [ ] Event-sourced state model — replace CRUD state.json with append-only event log for team audit trails and concurrent workflow safety
+  - **Problem**: `state.json` uses read-modify-write (CRUD) which breaks in team contexts: no audit trail (who approved which gate?), last-write-wins on concurrent access, no point-in-time state reconstruction, and mutable JSON provides no tamper evidence for Articles VI/IX accountability.
+  - **Design**: Append-only event log replaces mutable JSON. Current state derived by replaying events. Events include actor attribution, timestamps, and phase context. `skill_usage_log` already follows this pattern — extend to all state.
+  - **Relationship to #30**: Event sourcing eliminates the concurrent state isolation problem that #30 solves with per-workflow state files. Should be designed alongside #30 since both reshape state management.
+  - **Migration scope**: ~20 files reference `readState()`/`writeState()`. `common.cjs` needs event-append + state-derivation functions. Compatibility layer needed during migration.
+  - **Inspired by**: [12-Factor Agents](https://github.com/humanlayer/12-factor-agents) Factor 12 (Stateless Reducer) — `(state, event) → new_state`
+  - **Complexity**: Medium-large. Design alongside #30.
 
 ### Multi-Agent Teams (Architecture)
 

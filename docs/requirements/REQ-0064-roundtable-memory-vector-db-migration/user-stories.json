@@ -1,0 +1,110 @@
+[
+  {
+    "id": "US-001",
+    "title": "Semantic memory recall at session start",
+    "story": "As a framework user, I want the roundtable to retrieve semantically relevant past session context (not just structured preferences) so that the analysis benefits from richer memory of why I prefer certain depths and what was discussed before.",
+    "acceptance_criteria": [
+      "Roundtable dispatch embeds current draft and searches both vector indexes",
+      "Retrieved excerpts include natural language context, not just depth preferences",
+      "Results are ranked by relevance and injected into MEMORY_CONTEXT"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004", "FR-001"]
+  },
+  {
+    "id": "US-002",
+    "title": "Non-blocking session embedding",
+    "story": "As a framework user, I want session memory embedding to happen in the background after the roundtable finishes so that I never wait for embedding to complete.",
+    "acceptance_criteria": [
+      "ROUNDTABLE_COMPLETE fires before embedding starts",
+      "Raw session record persists immediately regardless of embedding outcome",
+      "Failed embedding jobs do not surface errors to the user"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-002", "FR-011"]
+  },
+  {
+    "id": "US-003",
+    "title": "Team-shareable project memory",
+    "story": "As a team member, I want project analysis memory to be stored in a git-tracked location so that when I pull the repo, I inherit the team's accumulated analysis patterns.",
+    "acceptance_criteria": [
+      "Project vector index stored at docs/.embeddings/roundtable-memory.emb",
+      "File is tracked in git and shareable via normal git operations",
+      "New team members benefit from existing project memory on first roundtable"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-004",
+    "title": "Conversational preference override",
+    "story": "As a framework user, I want to tell the roundtable my preference conversationally (e.g., 'remember I prefer brief on security') so that I never need to edit JSON files to control memory.",
+    "acceptance_criteria": [
+      "Roundtable recognizes preference statements and includes them in enriched session record",
+      "Preference surfaces in future sessions via semantic search",
+      "Roundtable acknowledges the override conversationally"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-005",
+    "title": "Query stored preferences",
+    "story": "As a framework user, I want to ask the roundtable what it remembers about my preferences so that I can verify and understand the memory state without inspecting files.",
+    "acceptance_criteria": [
+      "Roundtable searches both indexes and presents a conversational summary",
+      "Both user and project memory are included with layer attribution",
+      "Results are presented naturally, not as raw data"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-006",
+    "title": "Graceful degradation without embedding backend",
+    "story": "As a framework user without an embedding backend configured, I want the memory layer to fall back to flat JSON storage so that the roundtable still functions with basic memory.",
+    "acceptance_criteria": [
+      "Existing flat JSON read/write path works when no embedding backend is available",
+      "No error messages for expected degradation",
+      "Roundtable behavior is identical to current REQ-0063 behavior"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-010", "FR-011"]
+  },
+  {
+    "id": "US-007",
+    "title": "Model consistency across team",
+    "story": "As a team member, I want the system to detect when my embedding model differs from the project index model so that I don't get silently wrong search results.",
+    "acceptance_criteria": [
+      "Model mismatch is detected at search time via .emb manifest comparison",
+      "Search returns empty results for mismatched index with a warning",
+      "rebuildIndex function available to re-embed with current model"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-008",
+    "title": "Lazy embedding recovery",
+    "story": "As a framework user, I want un-embedded session records to be automatically embedded on the next roundtable startup so that failed async jobs are recovered without manual intervention.",
+    "acceptance_criteria": [
+      "searchMemory detects records with embedded: false",
+      "Un-embedded records are embedded on the spot before search completes",
+      "Lazy embedding failure does not block the search"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-008"]
+  },
+  {
+    "id": "US-009",
+    "title": "Vector index maintenance",
+    "story": "As a framework user, I want isdlc memory compact to prune old and duplicate vectors so that my indexes stay performant over time.",
+    "acceptance_criteria": [
+      "Vectors older than configurable threshold are pruned",
+      "Near-duplicate vectors (cosine > 0.95) are deduplicated",
+      "Index is rebuilt after pruning"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-009"]
+  }
+]
