@@ -96,6 +96,37 @@ let _skillPathIndex = null;
  */
 let _skillPathIndexBuiltAt = 0;
 
+/**
+ * Cached readConfig() result. Key: projectRoot string.
+ * Value: merged config object.
+ * Per-process lifetime -- cleared by _resetCaches().
+ * Traces to: REQ-0067 FR-002 AC-002-01
+ * @type {Map<string, object>}
+ */
+const _configJsonCache = new Map();
+
+/**
+ * Default project configuration (REQ-0067 FR-006).
+ * Used when .isdlc/config.json is missing or partially defined.
+ * Traces to: AC-006-01, AC-006-02
+ */
+const DEFAULT_CONFIG = {
+    cache: {
+        budget_tokens: 100000,
+        section_priorities: {
+            constitution: 1,
+            workflow_config: 2,
+            iteration_requirements: 3,
+            artifact_paths: 4,
+            skills_manifest: 5,
+            skill_index: 6,
+            external_skills: 7,
+            roundtable_context: 8,
+            instructions: 9
+        }
+    }
+};
+
 // =========================================================================
 // Phase Prefixes (BUG-0009 item 0.13)
 // =========================================================================
@@ -230,6 +261,7 @@ function _resetCaches() {
     _cachedProjectRoot = null;
     _cachedProjectDirEnv = undefined;
     _configCache.clear();
+    _configJsonCache.clear();
     _skillPathIndex = null;
     _skillPathIndexBuiltAt = 0;
 }
@@ -4270,12 +4302,23 @@ function rebuildSessionCache(options = {}) {
         return blocks.join('\n\n');
     }));
 
-    // Section 7: EXTERNAL_SKILLS
+    // Section 7: EXTERNAL_SKILLS (REQ-0067 FR-005: budget-derived truncation)
     parts.push(buildSection('EXTERNAL_SKILLS', () => {
         const extManifest = loadExternalManifest();
         if (!extManifest || !extManifest.skills || extManifest.skills.length === 0) {
             return '';
         }
+
+        // REQ-0067 FR-005: Replace hardcoded 5000 char limit with budget-derived limit
+        const budgetConfig = readConfig(root);
+        const totalBudgetChars = budgetConfig.cache.budget_tokens * 4;
+        // Estimate chars used by higher-priority sections (rough: sum of existing parts)
+        const usedCharsBefore = parts.reduce((sum, p) => sum + p.length, 0);
+        const remainingBudgetChars = Math.max(0, totalBudgetChars - usedCharsBefore);
+        const skillCount = extManifest.skills.length;
+        // AC-005-01: divide remaining budget by skill count; AC-005-02: minimum 1000 chars
+        const perSkillLimit = Math.max(1000, Math.floor(remainingBudgetChars / skillCount));
+
         const blocks = [];
         for (const skill of extManifest.skills) {
             const meta = `### External Skill: ${skill.name || skill.file}`;
@@ -4289,8 +4332,8 @@ function rebuildSessionCache(options = {}) {
             if (skill.file) {
                 try {
                     content = fs.readFileSync(path.join(skillDir, skill.file), 'utf8');
-                    if (content.length > 5000) {
-                        content = content.substring(0, 5000) + '\n[... truncated for context budget ...]';
+                    if (content.length > perSkillLimit) {
+                        content = content.substring(0, perSkillLimit) + '\n[... truncated for context budget ...]';
                     }
                 } catch (_) {
                     content = '(file not readable)';
@@ -4401,14 +4444,125 @@ function rebuildSessionCache(options = {}) {
         return '';
     }));
 
-    // Assemble header + all sections
-    const header = `<!-- SESSION CACHE: Generated ${new Date().toISOString()} | Sources: ${count} | Hash: ${hash} -->`;
-    const output = header + '\n\n' + parts.join('\n\n') + '\n';
+    // -----------------------------------------------------------------------
+    // REQ-0067 FR-003: Budget-aware section allocation
+    // -----------------------------------------------------------------------
+    const budgetConfig = readConfig(root);
+    const budgetTokens = budgetConfig.cache.budget_tokens;
+    const priorities = budgetConfig.cache.section_priorities;
 
-    // Validate size
-    if (output.length > 128000) {
+    // Map section names from buildSection() (UPPERCASE) to priority keys (lowercase)
+    const sectionNameMap = {
+        'CONSTITUTION': 'constitution',
+        'WORKFLOW_CONFIG': 'workflow_config',
+        'ITERATION_REQUIREMENTS': 'iteration_requirements',
+        'ARTIFACT_PATHS': 'artifact_paths',
+        'SKILLS_MANIFEST': 'skills_manifest',
+        'SKILL_INDEX': 'skill_index',
+        'EXTERNAL_SKILLS': 'external_skills',
+        'ROUNDTABLE_CONTEXT': 'roundtable_context',
+        'INSTRUCTIONS': 'instructions'
+    };
+
+    // Build section metadata for budget allocation
+    const sectionMeta = parts.map((part, idx) => {
+        // Extract section name from delimiter: <!-- SECTION: NAME -->
+        const nameMatch = part.match(/<!-- SECTION: ([A-Z_]+)/);
+        const sectionName = nameMatch ? nameMatch[1] : `UNKNOWN_${idx}`;
+        const priorityKey = sectionNameMap[sectionName] || sectionName.toLowerCase();
+        const priority = priorities[priorityKey] !== undefined ? priorities[priorityKey] : 99;
+        const tokens = Math.ceil(part.length / 4);
+        return { name: sectionName, content: part, priority, tokens, index: idx };
+    });
+
+    // Sort by priority ascending (1 = highest priority, gets budget first)
+    sectionMeta.sort((a, b) => a.priority - b.priority);
+
+    // Assemble header
+    const header = `<!-- SESSION CACHE: Generated ${new Date().toISOString()} | Sources: ${count} | Hash: ${hash} -->`;
+    const headerTokens = Math.ceil(header.length / 4);
+
+    // Allocate sections within budget (FR-003 AC-003-01 through AC-003-04)
+    let usedTokens = headerTokens;
+    const allocatedParts = [];
+    let budgetExhausted = false;
+
+    for (let i = 0; i < sectionMeta.length; i++) {
+        const section = sectionMeta[i];
+
+        // Check if section was already skipped (empty content or error)
+        if (section.content.includes('SKIPPED:') && !section.content.includes('<!-- SECTION:') && !section.content.includes('<!-- /SECTION:')) {
+            allocatedParts.push(section);
+            continue;
+        }
+
+        if (budgetExhausted) {
+            // All remaining sections are skipped
+            skipped.push(section.name);
+            const idx = sections.indexOf(section.name);
+            if (idx !== -1) sections.splice(idx, 1);
+            allocatedParts.push({
+                ...section,
+                content: `<!-- SECTION: ${section.name} SKIPPED: budget_exceeded -->`
+            });
+            continue;
+        }
+
+        if (usedTokens + section.tokens <= budgetTokens) {
+            // Full fit — include section as-is
+            allocatedParts.push(section);
+            usedTokens += section.tokens;
+        } else {
+            const remainingTokens = budgetTokens - usedTokens;
+            if (remainingTokens > 100) {
+                // Partial fit — truncate at last newline boundary (AC-003-02)
+                const remainingChars = remainingTokens * 4;
+                let truncated = section.content.substring(0, remainingChars);
+                const lastNewline = truncated.lastIndexOf('\n');
+                if (lastNewline > 0) {
+                    truncated = truncated.substring(0, lastNewline);
+                }
+                truncated += '\n[... truncated for context budget ...]\n';
+                truncated += `<!-- /SECTION: ${section.name} -->`;
+                allocatedParts.push({ ...section, content: truncated, tokens: remainingTokens });
+                usedTokens = budgetTokens;
+            } else {
+                // No meaningful space left — skip this section
+                skipped.push(section.name);
+                const idx = sections.indexOf(section.name);
+                if (idx !== -1) sections.splice(idx, 1);
+                allocatedParts.push({
+                    ...section,
+                    content: `<!-- SECTION: ${section.name} SKIPPED: budget_exceeded -->`
+                });
+            }
+            budgetExhausted = true;
+
+            // Skip all remaining sections too
+            for (let j = i + 1; j < sectionMeta.length; j++) {
+                const remaining = sectionMeta[j];
+                skipped.push(remaining.name);
+                const ridx = sections.indexOf(remaining.name);
+                if (ridx !== -1) sections.splice(ridx, 1);
+                allocatedParts.push({
+                    ...remaining,
+                    content: `<!-- SECTION: ${remaining.name} SKIPPED: budget_exceeded -->`
+                });
+            }
+            break;
+        }
+    }
+
+    // Restore original order for output (stable by original index)
+    allocatedParts.sort((a, b) => a.index - b.index);
+
+    const output = header + '\n\n' + allocatedParts.map(p => p.content).join('\n\n') + '\n';
+
+    // REQ-0067 FR-004: Budget-based warning replaces hardcoded 128K check (AC-004-01, AC-004-02)
+    const finalTokens = Math.ceil(output.length / 4);
+    if (finalTokens > budgetTokens) {
         if (verbose) {
-            process.stderr.write(`WARNING: Session cache exceeds 128K character budget (${output.length} chars)\n`);
+            process.stderr.write(`WARNING: Session cache exceeds budget (${finalTokens} tokens > ${budgetTokens} token budget)\n`);
         }
     }
 
@@ -4420,7 +4574,108 @@ function rebuildSessionCache(options = {}) {
         process.stderr.write(`Session cache written: ${cachePath} (${output.length} chars, ${sections.length} sections)\n`);
     }
 
-    return { path: cachePath, size: output.length, hash, sections, skipped };
+    // REQ-0067 FR-008: Return budget metadata for CLI reporting
+    return { path: cachePath, size: output.length, hash, sections, skipped, usedTokens: finalTokens, budgetTokens };
+}
+
+/**
+ * Read .isdlc/config.json project configuration file (REQ-0067 FR-002).
+ * Deep-merges user config over DEFAULT_CONFIG. Caches per-process.
+ * Fail-open: missing file -> defaults silently, malformed JSON -> stderr warning + defaults.
+ *
+ * @param {string} [projectRoot] - Override project root (for testing)
+ * @returns {{ cache: { budget_tokens: number, section_priorities: Record<string, number> } }}
+ *
+ * Traces to: FR-001, FR-002, FR-006, FR-007
+ * Article X: Fail-Safe Defaults — never crash on config errors
+ * Article VII: Artifact Traceability — requirement IDs in comments
+ */
+function readConfig(projectRoot) {
+    try {
+        const root = projectRoot || getProjectRoot();
+
+        // AC-002-01: Return cached result if available for this project root
+        if (_configJsonCache.has(root)) {
+            return _configJsonCache.get(root);
+        }
+
+        const configPath = path.join(root, '.isdlc', 'config.json');
+
+        // AC-001-03: Missing file -> return defaults silently (no warning)
+        if (!fs.existsSync(configPath)) {
+            const defaults = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            _configJsonCache.set(root, defaults);
+            return defaults;
+        }
+
+        const raw = fs.readFileSync(configPath, 'utf8');
+
+        // AC-002-02, TC-CFG-12: Empty file or malformed JSON
+        if (!raw || raw.trim().length === 0) {
+            process.stderr.write('[config] .isdlc/config.json is empty, using defaults\n');
+            const defaults = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            _configJsonCache.set(root, defaults);
+            return defaults;
+        }
+
+        let parsed;
+        try {
+            parsed = JSON.parse(raw);
+        } catch (parseErr) {
+            process.stderr.write(`[config] .isdlc/config.json has invalid JSON: ${parseErr.message}, using defaults\n`);
+            const defaults = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            _configJsonCache.set(root, defaults);
+            return defaults;
+        }
+
+        // TC-CFG-13: Must be a plain object, not an array or null
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+            process.stderr.write('[config] .isdlc/config.json must be a JSON object, using defaults\n');
+            const defaults = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+            _configJsonCache.set(root, defaults);
+            return defaults;
+        }
+
+        // Deep-merge: start with defaults, overlay user values
+        const merged = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+        if (parsed.cache && typeof parsed.cache === 'object' && !Array.isArray(parsed.cache)) {
+            // Merge budget_tokens
+            if (parsed.cache.budget_tokens !== undefined) {
+                const bt = parsed.cache.budget_tokens;
+                if (typeof bt === 'number' && bt > 0 && isFinite(bt)) {
+                    merged.cache.budget_tokens = bt;
+                } else {
+                    // AC-002-03, AC-007-02, TC-CFG-14: Invalid budget_tokens -> warn + default
+                    process.stderr.write(`[config] Invalid budget_tokens value (${JSON.stringify(bt)}), using default 100000\n`);
+                }
+            }
+
+            // Merge section_priorities (AC-002-04: unknown keys ignored)
+            if (parsed.cache.section_priorities && typeof parsed.cache.section_priorities === 'object' && !Array.isArray(parsed.cache.section_priorities)) {
+                for (const [key, val] of Object.entries(parsed.cache.section_priorities)) {
+                    // Only merge known section names from defaults (AC-002-04: ignore unknown)
+                    if (key in DEFAULT_CONFIG.cache.section_priorities) {
+                        if (typeof val === 'number' && val > 0 && isFinite(val)) {
+                            merged.cache.section_priorities[key] = val;
+                        } else {
+                            // TC-CFG-15: Non-numeric priority -> warn + use default for that section
+                            process.stderr.write(`[config] Invalid priority for section "${key}" (${JSON.stringify(val)}), using default\n`);
+                        }
+                    }
+                    // Unknown section names are silently ignored (forward-compatible)
+                }
+            }
+        }
+
+        _configJsonCache.set(root, merged);
+        return merged;
+    } catch (err) {
+        // Catch-all fail-open: any unexpected error returns defaults (Article X)
+        process.stderr.write(`[config] Unexpected error reading config: ${err.message}, using defaults\n`);
+        const defaults = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        return defaults;
+    }
 }
 
 /**
@@ -4575,7 +4830,10 @@ module.exports = {
     // Session cache (REQ-0001)
     rebuildSessionCache,
     // Process config (REQ-0056)
-    readProcessConfig
+    readProcessConfig,
+    // Project config (REQ-0067)
+    readConfig,
+    DEFAULT_CONFIG
 };
 
 // Test-only exports (not part of public API) -- REQ-0020 FR-001/FR-002
