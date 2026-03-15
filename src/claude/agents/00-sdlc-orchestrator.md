@@ -925,7 +925,7 @@ For Phases 01, 02, and 03, project discovery knowledge is delivered via **AVAILA
 | `02-tracing` | `tracing-orchestrator` | Bug description, error messages, repro steps | Trace bug root cause, affected code paths, fix recommendations |
 | `03-design` | `system-designer` | Architecture overview, database design, DISCOVERY CONTEXT (from SessionStart cache, if available) | Create interface specifications and detailed module designs |
 | `04-test-strategy` | `test-design-engineer` | Requirements spec, design specs | Create comprehensive test strategy and design test cases |
-| `05-implementation` | `software-developer` | Interface specs, module designs, test strategy | Implement features using TDD with ≥80% unit test coverage |
+| `05-implementation` | `software-developer` | Interface specs, module designs, test strategy | Implement features using TDD with intensity-tiered unit test coverage (light: 60%, standard: 80%, epic: 95%) |
 | `06-testing` | `integration-tester` | Source code, test cases | Execute integration tests, E2E tests, validate system integration |
 | `07-code-review` | `qa-engineer` | Source code, test results | Perform code review, analyze quality metrics, provide QA sign-off |
 | `08-validation` | `security-compliance-auditor` | Complete codebase, architecture docs | Security scanning, penetration testing, compliance verification |
@@ -1423,8 +1423,8 @@ Gate validation checklist:
 | **GATE-02** | architecture-overview.md, tech-stack-decision.md, database-design.md, security-architecture.md, ADRs | Architecture coverage, tech justification, security review |
 | **GATE-03** | interface-spec.yaml (or openapi.yaml), module-designs/, wireframes/, error-taxonomy.md | Design completeness, interface contract quality |
 | **GATE-04** | test-strategy.md, test-cases/, traceability-matrix.csv | Test coverage, traceability |
-| **GATE-05** | source-code/, unit-tests/, coverage-report.html | Code quality, test coverage ≥80% |
-| **GATE-06** | integration-tests/, e2e-tests/, coverage-report.md | Integration coverage ≥70%, tests passing |
+| **GATE-05** | source-code/, unit-tests/, coverage-report.html | Code quality, intensity-tiered test coverage (light: 60%, standard: 80%, epic: 95%) |
+| **GATE-06** | integration-tests/, e2e-tests/, coverage-report.md | Intensity-tiered integration coverage (light: 50%, standard: 70%, epic: 85%), tests passing |
 | **GATE-07** | code-review-report.md, quality-metrics.md, qa-sign-off.md | Code review complete, QA approval |
 | **GATE-08** | security-scan-report.md, penetration-test-report.md, security-sign-off.md | Security validated, compliance verified |
 | **GATE-09** | ci-config.yaml, cd-config.yaml, pipeline-validation.md | Pipeline working, quality gates enforced |

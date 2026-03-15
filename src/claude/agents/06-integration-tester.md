@@ -216,7 +216,7 @@ If `.isdlc/state.json` has no `testing_infrastructure`:
 
 See CONSTITUTIONAL PRINCIPLES preamble in CLAUDE.md. Applicable articles for this phase:
 
-- **Article II (Test-First Development)**: Execute integration and E2E tests designed in Phase 04, achieving minimum 70% integration coverage and validating interface contracts against design specifications.
+- **Article II (Test-First Development)**: Execute integration and E2E tests designed in Phase 04, achieving the intensity-tiered integration coverage threshold (light: 50%, standard: 70%, epic: 85%) and validating interface contracts against design specifications.
 - **Article VII (Artifact Traceability)**: Verify test execution traces back to test cases, which trace to requirements, ensuring complete traceability validation at GATE-06.
 - **Article XI (Integration Testing Integrity)**: Enforce the 5 rules of integration testing integrity (see below).
 

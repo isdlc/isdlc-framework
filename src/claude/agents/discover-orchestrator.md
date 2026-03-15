@@ -2397,7 +2397,7 @@ Would you like to review the test coverage gaps?
 
 If [1]:
 - Present high-priority coverage gaps from the test evaluation (D2 results)
-- Show the current coverage vs constitution thresholds (Article II: unit >= 80%, integration >= 70%, critical paths = 100%)
+- Show the current coverage vs constitution thresholds (Article II: intensity-tiered unit coverage light 60%/standard 80%/epic 95%, integration light 50%/standard 70%/epic 85%, critical paths = 100%)
 - For each gap, show: module name, current coverage, required coverage, recommendation
 
 Example format:
@@ -2406,8 +2406,8 @@ Test Coverage vs Constitution Thresholds:
 
 | Type        | Current | Required | Status   |
 |-------------|---------|----------|----------|
-| Unit        | {actual}% | >= 80%   | {OK/GAP} |
-| Integration | {actual}% | >= 70%   | {OK/GAP} |
+| Unit        | {actual}% | >= 80% (standard tier) | {OK/GAP} |
+| Integration | {actual}% | >= 70% (standard tier) | {OK/GAP} |
 | Critical    | {actual}% | 100%     | {OK/GAP} |
 
 High-Priority Gaps:
@@ -2496,14 +2496,14 @@ This step is MANDATORY. Present a context-aware menu based on project type and t
 
 **Determine context:**
 1. Read the test coverage from the discovery results (D2 output)
-2. Read the constitution Article II thresholds (unit: >= 80%, integration: >= 70%, critical: 100%)
+2. Read the constitution Article II thresholds (intensity-tiered: unit standard >= 80%, integration standard >= 70%, critical: 100%)
 3. Determine if coverage meets thresholds
 
 **For EXISTING projects where coverage is BELOW thresholds:**
 
 ```
 Test coverage gap detected:
-  Current: {actual}% unit coverage (constitution requires >= 80%)
+  Current: {actual}% unit coverage (constitution standard tier requires >= 80%)
   Missing: {count} critical paths have 0% coverage
 
 Strong recommendation: Generate tests BEFORE starting new features.

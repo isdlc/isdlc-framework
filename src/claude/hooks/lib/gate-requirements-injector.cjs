@@ -19,6 +19,22 @@
 const fs = require('fs');
 const path = require('path');
 
+// Import shared coverage threshold resolver (BUG-0054-GH-52)
+let resolveCoverageThreshold;
+try {
+    resolveCoverageThreshold = require('./common.cjs').resolveCoverageThreshold;
+} catch (_e) {
+    // Fail-open: if common.cjs is not available, use inline fallback
+    resolveCoverageThreshold = function(minCov, _state) {
+        if (minCov == null) return null;
+        if (typeof minCov === 'number') return minCov;
+        if (typeof minCov === 'object' && !Array.isArray(minCov)) {
+            return minCov['standard'] ?? 80;
+        }
+        return 80;
+    };
+}
+
 // =========================================================================
 // Phase Name Mapping (hardcoded per design spec)
 // =========================================================================
@@ -209,9 +225,10 @@ function deepMerge(base, overrides) {
  * @param {object} phaseReq - Phase requirements from iteration-requirements.json
  * @param {object|null} workflowModifiers - Workflow-specific agent modifiers
  * @param {boolean} isIntermediatePhase - true if not the final phase in the workflow
+ * @param {object|null} [state] - Current state.json for intensity resolution (BUG-0054-GH-52)
  * @returns {string[]} Array of constraint strings (empty array if no constraints apply)
  */
-function buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isIntermediatePhase) {
+function buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isIntermediatePhase, state) {
     try {
         const constraints = [];
 
@@ -221,9 +238,11 @@ function buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isInter
         }
 
         // 2. Test iteration gate constraint
+        // BUG-0054-GH-52: Resolve intensity-aware coverage threshold
         const testIter = phaseReq.test_iteration || {};
         if (testIter.enabled) {
-            const coverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent) || 80;
+            const rawCoverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent);
+            const coverage = resolveCoverageThreshold(rawCoverage, state) || 80;
             constraints.push(`Do NOT advance the gate until all tests pass with >= ${coverage}% coverage.`);
         }
 
@@ -281,9 +300,10 @@ function buildConstraintReminder(constraints) {
  * @param {object} articleMap - Map of article ID to title
  * @param {object|null} workflowModifiers - Workflow-specific agent modifiers
  * @param {boolean} [isIntermediatePhase] - true if not the final phase (defaults to true, fail-safe)
+ * @param {object|null} [state] - Current state.json for intensity resolution (BUG-0054-GH-52)
  * @returns {string} Formatted text block
  */
-function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModifiers, isIntermediatePhase) {
+function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModifiers, isIntermediatePhase, state) {
     try {
         const phaseNum = phaseKey.split('-')[0];
         const phaseName = PHASE_NAME_MAP[phaseKey] || 'Unknown';
@@ -292,8 +312,8 @@ function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModi
         // Default isIntermediatePhase to true (fail-safe: assume intermediate)
         const isIntermediate = (isIntermediatePhase !== undefined) ? isIntermediatePhase : true;
 
-        // Build critical constraints
-        const constraints = buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isIntermediate);
+        // Build critical constraints (BUG-0054-GH-52: pass state for intensity resolution)
+        const constraints = buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isIntermediate, state);
 
         // CRITICAL CONSTRAINTS section (only if constraints exist)
         if (constraints.length > 0) {
@@ -314,10 +334,12 @@ function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModi
         lines.push('Iteration Requirements:');
 
         // test_iteration
+        // BUG-0054-GH-52: Resolve intensity-aware coverage threshold for display
         const testIter = phaseReq.test_iteration || {};
         if (testIter.enabled) {
             const maxIter = testIter.max_iterations || 'N/A';
-            const coverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent) || 'N/A';
+            const rawCoverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent);
+            const coverage = resolveCoverageThreshold(rawCoverage, state) || 'N/A';
             lines.push(`  - test_iteration: enabled (max ${maxIter} iterations, coverage >= ${coverage}%)`);
         } else {
             lines.push('  - test_iteration: disabled');
@@ -397,9 +419,10 @@ function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModi
  * @param {string} [workflowType] - e.g. 'feature', 'fix'
  * @param {string} [projectRoot] - Absolute path (defaults to process.cwd())
  * @param {string[]} [phases] - Workflow phases array from state.json (optional, defaults to null -> fail-safe)
+ * @param {object|null} [state] - Current state.json for intensity resolution (BUG-0054-GH-52)
  * @returns {string} Formatted text block or '' on error (fail-open)
  */
-function buildGateRequirementsBlock(phaseKey, artifactFolder, workflowType, projectRoot, phases) {
+function buildGateRequirementsBlock(phaseKey, artifactFolder, workflowType, projectRoot, phases, state) {
     try {
         const root = projectRoot || process.cwd();
 
@@ -448,8 +471,8 @@ function buildGateRequirementsBlock(phaseKey, artifactFolder, workflowType, proj
             isIntermediatePhase = (phaseKey !== lastPhase);
         }
 
-        // Build and return the formatted block
-        return formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowMods, isIntermediatePhase);
+        // Build and return the formatted block (BUG-0054-GH-52: pass state for intensity resolution)
+        return formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowMods, isIntermediatePhase, state);
     } catch (_e) {
         return '';
     }

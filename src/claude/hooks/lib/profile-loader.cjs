@@ -397,9 +397,17 @@ function checkThresholdWarnings(profile, baseRequirements) {
         if (g.test_iteration?.enabled === false) {
             warnings.push(`Profile '${name}' disables test iteration`);
         }
-        if (g.test_iteration?.success_criteria?.min_coverage_percent !== undefined &&
-            g.test_iteration.success_criteria.min_coverage_percent < 80) {
-            warnings.push(`Profile '${name}' sets coverage to ${g.test_iteration.success_criteria.min_coverage_percent}% (recommended: 80%)`);
+        // BUG-0054-GH-52: Handle tiered object format for min_coverage_percent
+        const globalCov = g.test_iteration?.success_criteria?.min_coverage_percent;
+        if (globalCov !== undefined) {
+            if (typeof globalCov === 'number' && globalCov < 80) {
+                warnings.push(`Profile '${name}' sets coverage to ${globalCov}% (recommended: 80%)`);
+            } else if (typeof globalCov === 'object' && globalCov !== null && !Array.isArray(globalCov)) {
+                const standardTier = globalCov.standard;
+                if (standardTier !== undefined && standardTier < 80) {
+                    warnings.push(`Profile '${name}' sets coverage to ${standardTier}% (recommended: 80%)`);
+                }
+            }
         }
         if (g.test_iteration?.max_iterations !== undefined &&
             g.test_iteration.max_iterations < 5) {
@@ -417,11 +425,19 @@ function checkThresholdWarnings(profile, baseRequirements) {
     }
 
     // Also check per-phase overrides
+    // BUG-0054-GH-52: Handle tiered object format for per-phase overrides
     if (profile.overrides) {
         for (const [phase, overrides] of Object.entries(profile.overrides)) {
-            if (overrides.test_iteration?.success_criteria?.min_coverage_percent !== undefined &&
-                overrides.test_iteration.success_criteria.min_coverage_percent < 80) {
-                warnings.push(`Profile '${name}' sets coverage to ${overrides.test_iteration.success_criteria.min_coverage_percent}% for phase ${phase} (recommended: 80%)`);
+            const phaseCov = overrides.test_iteration?.success_criteria?.min_coverage_percent;
+            if (phaseCov !== undefined) {
+                if (typeof phaseCov === 'number' && phaseCov < 80) {
+                    warnings.push(`Profile '${name}' sets coverage to ${phaseCov}% for phase ${phase} (recommended: 80%)`);
+                } else if (typeof phaseCov === 'object' && phaseCov !== null && !Array.isArray(phaseCov)) {
+                    const standardTier = phaseCov.standard;
+                    if (standardTier !== undefined && standardTier < 80) {
+                        warnings.push(`Profile '${name}' sets coverage to ${standardTier}% for phase ${phase} (recommended: 80%)`);
+                    }
+                }
             }
         }
     }

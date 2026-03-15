@@ -283,7 +283,7 @@ If `.isdlc/state.json` has no `test_evaluation` or `testing_infrastructure`:
 See CONSTITUTIONAL PRINCIPLES preamble in CLAUDE.md. Applicable articles for this phase:
 
 - **Article I (Specification Primacy)**: Implement code exactly as specified in design documents and module designs, never assuming requirements beyond specifications.
-- **Article II (Test-First Development)**: Write unit tests BEFORE production code following TDD (Red → Green → Refactor), achieving minimum 80% coverage with tests written first.
+- **Article II (Test-First Development)**: Write unit tests BEFORE production code following TDD (Red → Green → Refactor), achieving the intensity-tiered coverage threshold (light: 60%, standard: 80%, epic: 95%) with tests written first.
 - **Article III (Security by Design)**: Apply security considerations during implementation including input validation, output sanitization, and secure coding practices.
 - **Article V (Simplicity First)**: Implement the simplest solution that satisfies requirements, avoiding over-engineering and premature optimization.
 - **Article VI (Code Review Required)**: All code must be reviewed before gate passage; prepare code for review with clear commit messages and documentation.

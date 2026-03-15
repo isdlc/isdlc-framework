@@ -62,6 +62,8 @@ These 10 articles are mandatory for all projects. They represent industry best p
 - 87 reverse-engineered acceptance criteria: 58 covered (66.7%), 9 partially covered (10.3%), 20 uncovered (23.0%)
 - 6 high-priority coverage gaps identified (see docs/isdlc/reverse-engineer-report.md)
 
+**Enforcement Note (BUG-0054-GH-52)**: The coverage thresholds above are aspirational targets. Practical enforcement uses intensity-based tiered thresholds configured in `iteration-requirements.json`. Light workflows enforce lower thresholds (60% unit, 50% integration), standard workflows enforce the baseline thresholds (80% unit, 70% integration), and epic workflows enforce higher thresholds (95% unit, 85% integration). When no intensity is configured (e.g., fix workflows), the standard tier is used as default.
+
 **Validation**:
 - GATE-04: Test strategy approved
 - GATE-05: Unit test coverage >=80%, total tests >= 555 baseline

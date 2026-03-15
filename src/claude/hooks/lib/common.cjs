@@ -3671,6 +3671,44 @@ function applySizingDecision(state, intensity, sizingData = {}) {
 }
 
 // =========================================================================
+// Coverage Threshold Resolution (BUG-0054-GH-52)
+// =========================================================================
+
+/**
+ * Resolves an intensity-aware coverage threshold from iteration-requirements.json.
+ *
+ * Handles both the legacy scalar format (backward compat) and the new
+ * intensity-keyed object format introduced by BUG-0054-GH-52.
+ *
+ * Resolution priority:
+ * 1. If minCoveragePercent is null/undefined → return null (no enforcement)
+ * 2. If minCoveragePercent is a number (scalar) → return it directly
+ * 3. If minCoveragePercent is an object:
+ *    a. Read effective_intensity from state.active_workflow.sizing.effective_intensity
+ *    b. Default to "standard" if not present (e.g., fix workflows)
+ *    c. Look up minCoveragePercent[effective_intensity]
+ *    d. Fall back to minCoveragePercent["standard"] if key missing
+ *    e. Fall back to hardcoded 80 if "standard" key also missing
+ * 4. For any other type → return hardcoded 80 (safety net)
+ *
+ * Traces to: FR-003, AC-003-01 through AC-003-07, AC-NFR-001-01, AC-NFR-002-01
+ *
+ * @param {number|object|null|undefined} minCoveragePercent - The raw config value
+ * @param {object|null} state - The current state.json contents
+ * @returns {number|null} Resolved threshold, or null if no enforcement
+ */
+function resolveCoverageThreshold(minCoveragePercent, state) {
+    if (minCoveragePercent == null) return null;
+    if (typeof minCoveragePercent === 'number') return minCoveragePercent;
+    if (typeof minCoveragePercent === 'object' && !Array.isArray(minCoveragePercent)) {
+        const intensity = state?.active_workflow?.sizing?.effective_intensity || 'standard';
+        const effectiveKey = intensity || 'standard';
+        return minCoveragePercent[effectiveKey] ?? minCoveragePercent['standard'] ?? 80;
+    }
+    return 80; // hardcoded safety net for unexpected types (e.g., string)
+}
+
+// =========================================================================
 // Supervised Mode Utilities (REQ-0013: Supervised Mode)
 // =========================================================================
 
@@ -4527,6 +4565,8 @@ module.exports = {
     computeSizingRecommendation,
     extractFallbackSizingMetrics,
     applySizingDecision,
+    // Coverage threshold resolution (BUG-0054-GH-52)
+    resolveCoverageThreshold,
     // Supervised mode (REQ-0013)
     readSupervisedModeConfig,
     shouldReviewPhase,

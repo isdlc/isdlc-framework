@@ -1200,3 +1200,140 @@ describe('BUG-0028: buildConstraintReminder', () => {
         assert.equal(mod.buildConstraintReminder(undefined), '');
     });
 });
+
+// -------------------------------------------------------------------------
+// 15. BUG-0054-GH-52: Intensity-aware coverage display
+// Traces to: FR-004, AC-004-01, AC-004-02
+// -------------------------------------------------------------------------
+
+describe('BUG-0054-GH-52: intensity-aware coverage display', () => {
+    const TIERED_UNIT = { light: 60, standard: 80, epic: 95 };
+
+    // TC-11: Object coverage, standard intensity → "coverage >= 80%" (AC-004-01)
+    it('TC-11: displays resolved coverage for tiered config with standard intensity', () => {
+        const mod = loadModule();
+
+        const phaseReq = {
+            test_iteration: {
+                enabled: true,
+                max_iterations: 10,
+                success_criteria: {
+                    all_tests_passing: true,
+                    min_coverage_percent: TIERED_UNIT
+                }
+            },
+            constitutional_validation: { enabled: false }
+        };
+
+        // Create state fixture with standard intensity
+        const state = {
+            active_workflow: {
+                sizing: { effective_intensity: 'standard' }
+            }
+        };
+
+        // formatBlock should display the resolved threshold (80), not [object Object]
+        const result = mod.formatBlock('06-implementation', phaseReq, [], {}, null, true, state);
+        assert.ok(result.includes('coverage >= 80%'),
+            'Should display "coverage >= 80%" for standard tier');
+        assert.ok(!result.includes('[object Object]'),
+            'Should NOT display [object Object]');
+    });
+
+    // TC-12: Scalar coverage (no tier label) → "coverage >= 80%" (AC-004-02)
+    it('TC-12: displays scalar coverage without tier label', () => {
+        const mod = loadModule();
+
+        const phaseReq = {
+            test_iteration: {
+                enabled: true,
+                max_iterations: 10,
+                success_criteria: {
+                    all_tests_passing: true,
+                    min_coverage_percent: 80
+                }
+            },
+            constitutional_validation: { enabled: false }
+        };
+
+        const result = mod.formatBlock('06-implementation', phaseReq, [], {}, null, true, null);
+        assert.ok(result.includes('coverage >= 80%'),
+            'Should display "coverage >= 80%" for scalar config');
+    });
+
+    // TC-13: Object coverage, light intensity → "coverage >= 60%"
+    it('TC-13: displays resolved coverage for tiered config with light intensity', () => {
+        const mod = loadModule();
+
+        const phaseReq = {
+            test_iteration: {
+                enabled: true,
+                max_iterations: 10,
+                success_criteria: {
+                    all_tests_passing: true,
+                    min_coverage_percent: TIERED_UNIT
+                }
+            },
+            constitutional_validation: { enabled: false }
+        };
+
+        const state = {
+            active_workflow: {
+                sizing: { effective_intensity: 'light' }
+            }
+        };
+
+        const result = mod.formatBlock('06-implementation', phaseReq, [], {}, null, true, state);
+        assert.ok(result.includes('coverage >= 60%'),
+            'Should display "coverage >= 60%" for light tier');
+    });
+
+    // TC-14: Object coverage, no sizing in state → "coverage >= 80%" (standard default)
+    it('TC-14: displays standard default coverage when no sizing in state', () => {
+        const mod = loadModule();
+
+        const phaseReq = {
+            test_iteration: {
+                enabled: true,
+                max_iterations: 10,
+                success_criteria: {
+                    all_tests_passing: true,
+                    min_coverage_percent: TIERED_UNIT
+                }
+            },
+            constitutional_validation: { enabled: false }
+        };
+
+        const stateNoSizing = { active_workflow: {} };
+
+        const result = mod.formatBlock('06-implementation', phaseReq, [], {}, null, true, stateNoSizing);
+        assert.ok(result.includes('coverage >= 80%'),
+            'Should display "coverage >= 80%" when no sizing (standard default)');
+    });
+
+    // Constraint test: tiered config resolves correctly in constraints
+    it('buildCriticalConstraints resolves tiered coverage in constraint text', () => {
+        const mod = loadModule();
+
+        const phaseReq = {
+            test_iteration: {
+                enabled: true,
+                success_criteria: {
+                    min_coverage_percent: TIERED_UNIT
+                }
+            }
+        };
+
+        const state = {
+            active_workflow: {
+                sizing: { effective_intensity: 'light' }
+            }
+        };
+
+        const constraints = mod.buildCriticalConstraints('06-implementation', phaseReq, null, true, state);
+        const coverageConstraint = constraints.find(c => c.includes('coverage'));
+        assert.ok(coverageConstraint, 'Should have a coverage constraint');
+        assert.ok(coverageConstraint.includes('60%'),
+            'Coverage constraint should show 60% for light tier');
+    });
+});

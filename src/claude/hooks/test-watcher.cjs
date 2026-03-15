@@ -16,7 +16,8 @@
 const {
     debugLog,
     getTimestamp,
-    loadIterationRequirements: loadIterationRequirementsFromCommon
+    loadIterationRequirements: loadIterationRequirementsFromCommon,
+    resolveCoverageThreshold
 } = require('./lib/common.cjs');
 
 const fs = require('fs');
@@ -549,7 +550,9 @@ function check(ctx) {
             debugLog('Tests PASSED - checking coverage');
 
             // Coverage enforcement (fail-open: only activates when coverage data is present)
-            const coverageThreshold = phaseReq.test_iteration?.success_criteria?.min_coverage_percent;
+            // BUG-0054-GH-52: Resolve intensity-aware coverage threshold
+            const rawCoverage = phaseReq.test_iteration?.success_criteria?.min_coverage_percent;
+            const coverageThreshold = resolveCoverageThreshold(rawCoverage, state);
             const coverage = parseCoverage(result);
             iterState.coverage = {
                 found: coverage.found,

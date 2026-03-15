@@ -409,4 +409,41 @@ describe('checkThresholdWarnings', () => {
         const warnings = profileLoader.checkThresholdWarnings(profile, {});
         assert.ok(warnings.some(w => w.includes('40%') && w.includes('06-implementation')));
     });
+
+    // BUG-0054-GH-52: Tiered coverage validation
+    // TC-15: Object min_coverage_percent passes validation
+    it('TC-15: no warning for tiered object with standard >= 80 (BUG-0054-GH-52)', () => {
+        const profile = {
+            name: 'tiered-ok',
+            global_overrides: {
+                test_iteration: {
+                    success_criteria: {
+                        min_coverage_percent: { light: 60, standard: 80, epic: 95 }
+                    }
+                }
+            }
+        };
+        const warnings = profileLoader.checkThresholdWarnings(profile, {});
+        // Should NOT warn about coverage being < 80 since standard tier is 80
+        const coverageWarnings = warnings.filter(w => w.includes('coverage'));
+        assert.equal(coverageWarnings.length, 0,
+            'No coverage warnings for tiered object with standard >= 80');
+    });
+
+    // TC-16: Object with low standard tier triggers warning
+    it('TC-16: warns when tiered object has standard tier < 80 (BUG-0054-GH-52)', () => {
+        const profile = {
+            name: 'tiered-low',
+            global_overrides: {
+                test_iteration: {
+                    success_criteria: {
+                        min_coverage_percent: { light: 40, standard: 60, epic: 80 }
+                    }
+                }
+            }
+        };
+        const warnings = profileLoader.checkThresholdWarnings(profile, {});
+        assert.ok(warnings.some(w => w.includes('60%')),
+            'Should warn about standard tier coverage of 60% < 80% recommended');
+    });
 });

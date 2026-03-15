@@ -490,7 +490,7 @@ All items must pass (build integrity is a prerequisite for all other checks):
 
 - [ ] Build integrity check passes (project compiles cleanly after auto-fix attempts)
 - [ ] All tests pass (unit, integration, E2E as applicable)
-- [ ] Code coverage meets threshold (default: 80%)
+- [ ] Code coverage meets intensity-tiered threshold (light: 60%, standard: 80%, epic: 95%)
 - [ ] Linter passes with zero errors (warnings acceptable)
 - [ ] Type checker passes (if applicable)
 - [ ] No critical/high SAST vulnerabilities

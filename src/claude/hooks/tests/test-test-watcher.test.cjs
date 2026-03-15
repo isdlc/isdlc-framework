@@ -1321,6 +1321,390 @@ describe('check() -- inconclusive handling (BUG-0007)', () => {
 // BUG-0007: Backward Compatibility Tests
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// BUG-0054-GH-52: resolveCoverageThreshold unit tests
+// Traces to: FR-003, AC-003-01 through AC-003-07, AC-NFR-001-01, AC-NFR-002-01
+// ---------------------------------------------------------------------------
+
+describe('resolveCoverageThreshold (BUG-0054-GH-52)', () => {
+    // Load common.cjs directly for unit testing the resolver function
+    const commonPath = path.resolve(__dirname, '..', 'lib', 'common.cjs');
+
+    function loadCommon() {
+        delete require.cache[commonPath];
+        return require(commonPath);
+    }
+
+    // Fixture data
+    const TIERED_UNIT = { light: 60, standard: 80, epic: 95 };
+    const TIERED_INTEGRATION = { light: 50, standard: 70, epic: 85 };
+
+    function stateWithIntensity(effectiveIntensity) {
+        return {
+            active_workflow: {
+                sizing: {
+                    effective_intensity: effectiveIntensity
+                }
+            }
+        };
+    }
+
+    // TC-01: Object config, light intensity → 60 (AC-003-01)
+    it('TC-01: returns light tier threshold when effective_intensity is light', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('light'));
+        assert.equal(result, 60, 'Light intensity should resolve to 60');
+    });
+
+    // TC-02: Object config, standard intensity → 80 (AC-003-02)
+    it('TC-02: returns standard tier threshold when effective_intensity is standard', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('standard'));
+        assert.equal(result, 80, 'Standard intensity should resolve to 80');
+    });
+
+    // TC-03: Object config, epic intensity → 95 (AC-003-03)
+    it('TC-03: returns epic tier threshold when effective_intensity is epic', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('epic'));
+        assert.equal(result, 95, 'Epic intensity should resolve to 95');
+    });
+
+    // TC-04: Scalar config (legacy backward compat) → 80 regardless of intensity (AC-003-04, AC-NFR-001-01)
+    it('TC-04: returns scalar value directly regardless of intensity (backward compat)', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(80, stateWithIntensity('light'));
+        assert.equal(result, 80, 'Scalar 80 should be returned as-is');
+    });
+
+    // TC-05: No sizing in state (fix workflow default) → standard (AC-003-05, AC-NFR-002-01)
+    it('TC-05: defaults to standard tier when no sizing in state', () => {
+        const common = loadCommon();
+        const stateNoSizing = { active_workflow: {} };
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, stateNoSizing);
+        assert.equal(result, 80, 'No sizing should default to standard tier (80)');
+    });
+
+    // TC-06: Missing standard key, standard intensity → hardcoded 80 (AC-003-06)
+    it('TC-06: falls back to hardcoded 80 when standard key is missing from object', () => {
+        const common = loadCommon();
+        const noStandard = { light: 60, epic: 95 };
+        const result = common.resolveCoverageThreshold(noStandard, stateWithIntensity('standard'));
+        assert.equal(result, 80, 'Missing standard key should fall back to hardcoded 80');
+    });
+
+    // TC-07: Unknown tier falls back to standard (AC-003-07)
+    it('TC-07: falls back to standard value for unknown intensity tier', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('unknown_tier'));
+        assert.equal(result, 80, 'Unknown tier should fall back to standard value (80)');
+    });
+
+    // TC-08: Null/undefined coverage config → null
+    it('TC-08: returns null when coverage config is null', () => {
+        const common = loadCommon();
+        assert.equal(common.resolveCoverageThreshold(null, stateWithIntensity('standard')), null);
+        assert.equal(common.resolveCoverageThreshold(undefined, stateWithIntensity('standard')), null);
+    });
+
+    // TC-09: Custom scalar override (NFR-001)
+    it('TC-09: returns custom scalar override regardless of intensity (NFR-001)', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(90, stateWithIntensity('light'));
+        assert.equal(result, 90, 'Custom scalar 90 should be returned as-is');
+    });
+
+    // TC-10: Empty object fallback → hardcoded 80
+    it('TC-10: falls back to hardcoded 80 for empty object', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold({}, stateWithIntensity('standard'));
+        assert.equal(result, 80, 'Empty object should fall back to hardcoded 80');
+    });
+
+    // Integration coverage thresholds
+    it('resolves integration tiered thresholds correctly', () => {
+        const common = loadCommon();
+        assert.equal(common.resolveCoverageThreshold(TIERED_INTEGRATION, stateWithIntensity('light')), 50);
+        assert.equal(common.resolveCoverageThreshold(TIERED_INTEGRATION, stateWithIntensity('standard')), 70);
+        assert.equal(common.resolveCoverageThreshold(TIERED_INTEGRATION, stateWithIntensity('epic')), 85);
+    });
+
+    // Edge: state is null/undefined
+    it('defaults to standard when state is null', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_UNIT, null);
+        assert.equal(result, 80, 'Null state should default to standard (80)');
+    });
+
+    // Edge: string type falls back to hardcoded 80
+    it('falls back to hardcoded 80 for string config value', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold('80', stateWithIntensity('standard'));
+        assert.equal(result, 80, 'String value should fall back to hardcoded 80');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-0054-GH-52: iteration-requirements.json tiered config validation
+// Traces to: FR-001 (AC-001-01, AC-001-02), FR-002 (AC-002-01)
+// ---------------------------------------------------------------------------
+
+describe('iteration-requirements.json tiered config (BUG-0054-GH-52)', () => {
+    const configPath = path.resolve(__dirname, '..', 'config', 'iteration-requirements.json');
+
+    function loadConfig() {
+        delete require.cache[configPath];
+        return require(configPath);
+    }
+
+    // TC-17: Phase 06 has tiered coverage (AC-001-01)
+    it('TC-17: Phase 06 min_coverage_percent is a tiered object with correct values', () => {
+        const config = loadConfig();
+        const coverage = config.phase_requirements['06-implementation'].test_iteration.success_criteria.min_coverage_percent;
+        assert.deepEqual(coverage, { light: 60, standard: 80, epic: 95 },
+            'Phase 06 should have tiered coverage {light:60, standard:80, epic:95}');
+    });
+
+    // TC-18: Phase 16 has tiered coverage (AC-001-02)
+    it('TC-18: Phase 16 min_coverage_percent is a tiered object with correct values', () => {
+        const config = loadConfig();
+        const coverage = config.phase_requirements['16-quality-loop'].test_iteration.success_criteria.min_coverage_percent;
+        assert.deepEqual(coverage, { light: 60, standard: 80, epic: 95 },
+            'Phase 16 should have tiered coverage {light:60, standard:80, epic:95}');
+    });
+
+    // TC-19: Phase 07 has tiered integration coverage (AC-002-01)
+    it('TC-19: Phase 07 min_coverage_percent is a tiered object with correct integration values', () => {
+        const config = loadConfig();
+        const coverage = config.phase_requirements['07-testing'].test_iteration.success_criteria.min_coverage_percent;
+        assert.deepEqual(coverage, { light: 50, standard: 70, epic: 85 },
+            'Phase 07 should have tiered coverage {light:50, standard:70, epic:85}');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-0054-GH-52: Integration tests — tiered coverage enforcement
+// Traces to: AC-003-01 through AC-003-05, AC-NFR-001-01, AC-NFR-002-01
+// ---------------------------------------------------------------------------
+
+describe('integration: tiered coverage enforcement (BUG-0054-GH-52)', () => {
+    let hookPath;
+
+    beforeEach(() => {
+        setupTestEnv();
+        hookPath = installHook();
+    });
+
+    afterEach(() => {
+        cleanupTestEnv();
+    });
+
+    // TC-20: Light workflow, 62% coverage passes (AC-003-01)
+    it('TC-20: light workflow with 62% coverage passes threshold (60%)', async () => {
+        cleanupTestEnv();
+        setupTestEnv({
+            current_phase: '06-implementation',
+            iteration_enforcement: { enabled: true },
+            active_workflow: {
+                type: 'feature',
+                current_phase: '06-implementation',
+                current_phase_index: 5,
+                sizing: { effective_intensity: 'light' }
+            },
+            phases: { '06-implementation': { status: 'in_progress' } }
+        });
+        hookPath = installHook();
+
+        // Use Jest-style coverage format that parseCoverage recognizes
+        const output = 'Tests: 10 passed, 0 failed, 10 total\nAll tests passed\nStatements   : 62%\nBranches     : 50%\nFunctions    : 70%\nLines        : 62%';
+        const result = await runHook(hookPath, bashTestInput('npm test', output));
+        assert.equal(result.code, 0);
+        // Should report TESTS PASSED (not coverage failure)
+        assert.ok(result.stdout.includes('TESTS PASSED'), 'Should pass with 62% coverage on light tier (threshold: 60%)');
+        assert.ok(!result.stdout.includes('COVERAGE WARNING'), 'Should not warn about coverage');
+    });
+
+    // TC-21: Standard workflow, 75% coverage fails (AC-003-02)
+    it('TC-21: standard workflow with 75% coverage fails threshold (80%)', async () => {
+        cleanupTestEnv();
+        setupTestEnv({
+            current_phase: '06-implementation',
+            iteration_enforcement: { enabled: true },
+            active_workflow: {
+                type: 'feature',
+                current_phase: '06-implementation',
+                current_phase_index: 5,
+                sizing: { effective_intensity: 'standard' }
+            },
+            phases: { '06-implementation': { status: 'in_progress' } }
+        });
+        hookPath = installHook();
+
+        const output = 'Tests: 10 passed, 0 failed, 10 total\nAll tests passed\nStatements   : 75%\nBranches     : 70%\nFunctions    : 80%\nLines        : 75%';
+        const result = await runHook(hookPath, bashTestInput('npm test', output));
+        assert.equal(result.code, 0);
+        assert.ok(result.stdout.includes('COVERAGE'), 'Should report coverage issue for 75% on standard (threshold: 80%)');
+    });
+
+    // TC-22: Epic workflow, 90% coverage fails (AC-003-03)
+    it('TC-22: epic workflow with 90% coverage fails threshold (95%)', async () => {
+        cleanupTestEnv();
+        setupTestEnv({
+            current_phase: '06-implementation',
+            iteration_enforcement: { enabled: true },
+            active_workflow: {
+                type: 'feature',
+                current_phase: '06-implementation',
+                current_phase_index: 5,
+                sizing: { effective_intensity: 'epic' }
+            },
+            phases: { '06-implementation': { status: 'in_progress' } }
+        });
+        hookPath = installHook();
+
+        const output = 'Tests: 10 passed, 0 failed, 10 total\nAll tests passed\nStatements   : 90%\nBranches     : 85%\nFunctions    : 92%\nLines        : 90%';
+        const result = await runHook(hookPath, bashTestInput('npm test', output));
+        assert.equal(result.code, 0);
+        assert.ok(result.stdout.includes('COVERAGE'), 'Should report coverage issue for 90% on epic (threshold: 95%)');
+    });
+
+    // TC-23: Fix workflow (no sizing), 75% fails (AC-003-05, AC-NFR-002-01)
+    it('TC-23: fix workflow without sizing with 75% coverage fails (standard default: 80%)', async () => {
+        cleanupTestEnv();
+        setupTestEnv({
+            current_phase: '06-implementation',
+            iteration_enforcement: { enabled: true },
+            active_workflow: {
+                type: 'fix',
+                current_phase: '06-implementation',
+                current_phase_index: 3
+                // No sizing block — fix workflows have no Phase 00 sizing
+            },
+            phases: { '06-implementation': { status: 'in_progress' } }
+        });
+        hookPath = installHook();
+
+        const output = 'Tests: 10 passed, 0 failed, 10 total\nAll tests passed\nStatements   : 75%\nBranches     : 70%\nFunctions    : 80%\nLines        : 75%';
+        const result = await runHook(hookPath, bashTestInput('npm test', output));
+        assert.equal(result.code, 0);
+        assert.ok(result.stdout.includes('COVERAGE'), 'Should report coverage issue for 75% on fix workflow (standard default: 80%)');
+    });
+
+    // TC-24: Scalar config backward compat, 82% passes (AC-003-04, AC-NFR-001-01)
+    it('TC-24: scalar config with 82% coverage passes (backward compat)', async () => {
+        cleanupTestEnv();
+        // Use a custom iteration-requirements with scalar coverage
+        const customState = {
+            current_phase: '06-implementation',
+            iteration_enforcement: { enabled: true },
+            active_workflow: {
+                type: 'feature',
+                current_phase: '06-implementation',
+                current_phase_index: 5,
+                sizing: { effective_intensity: 'light' }
+            },
+            phases: { '06-implementation': { status: 'in_progress' } }
+        };
+        setupTestEnv(customState);
+        hookPath = installHook();
+
+        // Overwrite the iteration-requirements.json with scalar values
+        const testDir = getTestDir();
+        const configPath = path.join(testDir, '.claude', 'hooks', 'config', 'iteration-requirements.json');
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        config.phase_requirements['06-implementation'].test_iteration.success_criteria.min_coverage_percent = 80;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+        const output = 'Tests: 10 passed, 0 failed, 10 total\nAll tests passed\nStatements   : 82%\nBranches     : 80%\nFunctions    : 85%\nLines        : 82%';
+        const result = await runHook(hookPath, bashTestInput('npm test', output));
+        assert.equal(result.code, 0);
+        assert.ok(result.stdout.includes('TESTS PASSED'), 'Should pass with 82% on scalar 80 threshold');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-0054-GH-52: Behavioral validation tests (prose and documentation)
+// Traces to: FR-005 (AC-005-01, AC-005-02), FR-006 (AC-006-01 through AC-006-03), NFR-003
+// ---------------------------------------------------------------------------
+
+describe('behavioral: prose and documentation (BUG-0054-GH-52)', () => {
+    const projectRoot = path.resolve(__dirname, '..', '..', '..', '..');
+
+    // TC-25: Constitution Article II text unchanged (AC-005-01)
+    it('TC-25: Constitution Article II original threshold text is unchanged', () => {
+        const constitutionPath = path.join(projectRoot, 'docs', 'isdlc', 'constitution.md');
+        const content = fs.readFileSync(constitutionPath, 'utf8');
+        assert.ok(content.includes('Unit test coverage: >=80%'),
+            'Article II must still contain "Unit test coverage: >=80%"');
+        assert.ok(content.includes('Integration test coverage: >=70%'),
+            'Article II must still contain "Integration test coverage: >=70%"');
+    });
+
+    // TC-26: Constitution enforcement note present (AC-005-02)
+    it('TC-26: Constitution has enforcement note about intensity-based tiers', () => {
+        const constitutionPath = path.join(projectRoot, 'docs', 'isdlc', 'constitution.md');
+        const content = fs.readFileSync(constitutionPath, 'utf8');
+        // The note should be after Article II but before Article III
+        const articleIIIdx = content.indexOf('### Article II');
+        const articleIIIIdx = content.indexOf('### Article III');
+        const sectionBetween = content.substring(articleIIIdx, articleIIIIdx);
+        assert.ok(
+            sectionBetween.includes('intensity') || sectionBetween.includes('tiered'),
+            'Article II section must contain enforcement note about intensity-based or tiered thresholds'
+        );
+    });
+
+    // TC-27: Software developer agent updated (AC-006-01)
+    it('TC-27: Software developer agent does not hardcode 80% as absolute gate requirement', () => {
+        const agentPath = path.join(projectRoot, 'src', 'claude', 'agents', '05-software-developer.md');
+        const content = fs.readFileSync(agentPath, 'utf8');
+        // Check gate-related sections for hardcoded 80%
+        // The agent may still reference 80% in non-gate contexts (e.g., as default),
+        // but should NOT have it as the sole absolute requirement
+        const gateSection = content.includes('intensity') || content.includes('tiered') || content.includes('effective_intensity');
+        assert.ok(gateSection,
+            'Agent 05 must reference intensity-based or tiered coverage thresholds');
+    });
+
+    // TC-28: Quality loop agent updated (AC-006-02)
+    it('TC-28: Quality loop agent GATE-16 references intensity tiers', () => {
+        const agentPath = path.join(projectRoot, 'src', 'claude', 'agents', '16-quality-loop-engineer.md');
+        const content = fs.readFileSync(agentPath, 'utf8');
+        assert.ok(
+            content.includes('intensity') || content.includes('tiered'),
+            'Agent 16 must reference intensity-based or tiered coverage thresholds in GATE-16'
+        );
+    });
+
+    // TC-29: Integration tester agent updated (AC-006-03)
+    it('TC-29: Integration tester agent does not hardcode 70% as absolute gate requirement', () => {
+        const agentPath = path.join(projectRoot, 'src', 'claude', 'agents', '06-integration-tester.md');
+        const content = fs.readFileSync(agentPath, 'utf8');
+        assert.ok(
+            content.includes('intensity') || content.includes('tiered'),
+            'Agent 06 must reference intensity-based or tiered coverage thresholds'
+        );
+    });
+
+    // TC-30: No new dependencies (NFR-003)
+    it('TC-30: package.json has no new dependencies', () => {
+        const pkgPath = path.join(projectRoot, 'package.json');
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        // Verify no unexpected deps were added — check specific known deps
+        assert.ok(!pkg.dependencies || !pkg.dependencies['coverage-threshold'],
+            'No new coverage-threshold dependency should exist');
+        // The fix should not add any new devDependencies either
+        const devDeps = Object.keys(pkg.devDependencies || {});
+        // Baseline check: no c8, istanbul, or similar coverage tools added
+        assert.ok(!devDeps.includes('c8'), 'c8 should not be added as devDependency');
+        assert.ok(!devDeps.includes('istanbul'), 'istanbul should not be added as devDependency');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-0007: Backward Compatibility Tests
+// ---------------------------------------------------------------------------
+
 describe('backward compatibility (BUG-0007)', () => {
     // TC-INC-17: Module exports unchanged (plus new parseTestResult)
     it('exports all existing functions plus parseTestResult (AC-4.3)', () => {

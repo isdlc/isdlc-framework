@@ -216,7 +216,11 @@
         ],
         "success_criteria": {
           "all_tests_passing": true,
-          "min_coverage_percent": 80
+          "min_coverage_percent": {
+            "light": 60,
+            "standard": 80,
+            "epic": 95
+          }
         }
       },
       "constitutional_validation": {
@@ -276,7 +280,11 @@
         ],
         "success_criteria": {
           "all_tests_passing": true,
-          "min_coverage_percent": 70
+          "min_coverage_percent": {
+            "light": 50,
+            "standard": 70,
+            "epic": 85
+          }
         }
       },
       "constitutional_validation": {
@@ -673,7 +681,11 @@
           "lint_passing": true,
           "type_check_passing": true,
           "no_critical_vulnerabilities": true,
-          "min_coverage_percent": 80
+          "min_coverage_percent": {
+            "light": 60,
+            "standard": 80,
+            "epic": 95
+          }
         }
       },
       "constitutional_validation": {
