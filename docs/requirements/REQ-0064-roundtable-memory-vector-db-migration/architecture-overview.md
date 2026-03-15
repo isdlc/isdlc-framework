@@ -49,70 +49,97 @@
 
 **Decision**: Option B. The existing stack is exactly what we need — pluggable model backends, cosine similarity search, document chunking, portable package format. The `contentType` field in the knowledge pipeline already supports distinguishing content types.
 
-### ADR-004: .emb Package Format for Memory Indexes
+### ADR-004: Hybrid Storage — SQLite (User) + .emb (Project)
 
-**Context**: Need a storage format for vector indexes that supports portability (team sharing), metadata (model tracking), and efficient search.
+**Context**: Need storage formats for vector indexes. User index is personal and local. Project index must be portable and shareable via git for teams. These have different constraints.
 
 **Options Considered**:
 
 | Option | Summary | Pros | Cons | Verdict |
 |---|---|---|---|---|
-| A. Raw Float32Array + JSON sidecar | Separate files for vectors and metadata | Simple; human-inspectable metadata | Two files to manage; no integrity guarantee; no manifest | Eliminated |
-| B. SQLite with vector extension | SQLite DB with embedded vectors | SQL query flexibility; single file | New dependency (better-sqlite3); overkill for small indexes; binary diffs in git | Eliminated |
-| C. Existing .emb package format | Bundle vectors + metadata + manifest in single binary | Already implemented; portable; manifest tracks model/version; store-manager already reads it | Binary format (not human-readable); requires rebuild on append | **Selected** |
+| A. `.emb` for both | Bundle vectors + metadata in single binary for both layers | Consistent format; store-manager already reads it | Binary format; no SQL query flexibility; no self-ranking support; overkill portability for user-local data | Eliminated |
+| B. SQLite for both | SQLite DB with embedded vectors for both layers | SQL queries; self-ranking via hit_rate; single file; `better-sqlite3` already a dependency | Binary diffs in git make team sharing harder; SQLite merge conflicts | Eliminated |
+| C. SQLite for user + `.emb` for project | User index uses SQLite (query flexibility, self-ranking, local-only). Project index uses `.emb` (portable, git-friendly binary, store-manager support) | Best of both: user gets SQL power + self-ranking; project gets git portability; no new dependencies | Two storage implementations to maintain; adapter layer needed | **Selected** |
 
-**Decision**: Option C. The `.emb` format is already built, tested, and supported by the store-manager. Memory indexes are small enough that full rebuild on append is acceptable.
+**Decision**: Option C. The user index benefits from SQLite's query flexibility and self-ranking (inspired by user-memories' `appeared_count`/`accessed_count` hit_rate pattern). `better-sqlite3` is already a project dependency from REQ-0045. The project index stays as `.emb` for git portability and team sharing. An adapter layer abstracts the storage difference from the search module.
 
-### ADR-005: Conversational Override as Memory Content
+**Patterns adopted from user-memories (github.com/m13v/user-memories)**:
+- **Self-ranking**: Track `appeared_count` (how often a memory is stored/updated) and `accessed_count` (how often it's retrieved during search). The `hit_rate = accessed_count / appeared_count` surfaces frequently-useful memories higher.
+- **Tiered deduplication**: Refined from user-memories' binary supersession into a 4-tier model (with smartmemorymcp and Supermemory patterns): Reject >= 0.95, Update 0.85-0.94 if contradicts, Extend 0.85-0.94 if additive, New < 0.85.
+
+### ADR-005: LLM Playbook Curator at Session End
+
+**Context**: Vector search is only as good as the content it indexes. Raw structured data (`{ depth_used: "brief" }`) produces low-quality embeddings. The enriched session records need high-quality NL content that captures *what was decided, why, and what a future reader needs to know*. (Pattern adapted from Hyperspace Playbook Curator — LLM explains why winning mutations work, new joiners bootstrap from accumulated wisdom.)
+
+**Decision**: At session end, the handler runs an LLM playbook curator pass over its in-memory conversation state. This generates three NL fields: `summary` (full session synthesis), `context_notes` (per-topic reasoning), and `playbook_entry` (2-3 sentence distilled insight). These are the content that gets embedded and retrieved via semantic search.
+
+**Rationale**: The handler already has the full conversation context (REQ-0065 inline execution). The curator pass is a synthesis step, not a separate LLM call — it uses the same context window. The output is optimized for future retrieval: written for a reader with no prior context, capturing decisions and reasoning rather than just outcomes. This is what makes the difference between "brief on security" (useless for vector search) and "Team chose brief on security because org handles it at policy level; overrode to deep once when auth tokens were directly involved" (semantically searchable).
+
+### ADR-006: Conversational Override as Memory Content
 
 **Context**: Users need to control memory without editing files. The storage format is opaque (vector DB). The override mechanism must be conversational.
 
-**Decision**: User preference overrides are captured as natural language content in enriched session records, not as structured configuration. When a user says "remember I prefer brief on security", the roundtable includes this in the session summary, which gets embedded. Future semantic searches retrieve this preference by content similarity, not by key lookup.
+**Decision**: User preference overrides are captured as natural language content in enriched session records, not as structured configuration. When a user says "remember I prefer brief on security", the handler includes this in the playbook curator output, which gets embedded. Future semantic searches retrieve this preference by content similarity, not by key lookup.
 
-**Rationale**: This aligns with the semantic search model — everything is content, everything is searchable by meaning. No separate configuration layer is needed. The more a user reinforces a preference across sessions, the higher its relevance score in search results.
+**Rationale**: This aligns with the semantic search model — everything is content, everything is searchable by meaning. No separate configuration layer is needed. The more a user reinforces a preference across sessions, the higher its relevance score in search results (boosted by self-ranking hit_rate).
 
 ## 2. Technology Decisions
 
-- **No new dependencies**: Reuses existing embedding engine, store-manager, knowledge pipeline, `.emb` format from REQ-0045
+- **No new dependencies**: Reuses existing embedding engine, store-manager, knowledge pipeline, `.emb` format from REQ-0045. `better-sqlite3` already a dependency.
 - **Existing infrastructure**: `lib/embedding/engine/` (CodeBERT/Voyage/OpenAI), `lib/embedding/mcp-server/store-manager.js` (cosine similarity), `lib/embedding/knowledge/pipeline.js` (document chunking)
-- **Storage locations**: User index at `~/.isdlc/user-memory/user-memory.emb`, project index at `docs/.embeddings/roundtable-memory.emb`
+- **Storage locations**:
+  - User index: `~/.isdlc/user-memory/memory.db` (SQLite via `better-sqlite3` — self-ranking, SQL queries, local-only)
+  - Project index: `docs/.embeddings/roundtable-memory.emb` (`.emb` package — git-portable, team-shareable)
 - **Async pattern**: Background embedding via spawned process or promise chain, matching the discover-integration pattern
+- **Self-ranking** (from user-memories pattern): SQLite user index tracks `appeared_count` and `accessed_count` per memory entry. `hit_rate = accessed_count / appeared_count` boosts frequently-retrieved memories in search results.
+- **Tiered deduplication**: 4-tier model (Reject >= 0.95 / Update if contradicts / Extend if additive / New < 0.85). Curator annotates `relationship_hint` at session end; embedder uses hint during dedup.
 
 ## 3. Integration Points
 
+> **Note**: REQ-0065 eliminated the subagent dispatch for roundtable analysis. The analyze handler now executes the roundtable conversation protocol inline. There is no dispatch prompt, no relay-and-resume loop, no SESSION_RECORD output parsing, and no ROUNDTABLE_COMPLETE signal. The handler has direct access to conversation state and memory functions.
+
 | Source | Target | Interface | Data Format | Error Handling |
 |---|---|---|---|---|
-| Analyze handler | `lib/memory-search.js` | Function call | Query text in, ranked excerpts out | Fail-open: empty results on any error |
-| Analyze handler | `lib/memory-embedder.js` | Async spawn | EnrichedSessionRecord in, embedded index out | Fire-and-forget; log failures |
+| Analyze handler (inline) | `lib/memory-search.js` | Function call at step 3a | Query text in, ranked excerpts out | Fail-open: empty results → proceed without memory priming |
+| Analyze handler (inline) | In-memory conversation context | Internal state | Formatted excerpts used as conversation priming | No excerpts → handler proceeds without memory |
+| Analyze handler (inline) | `lib/memory.js` | Function call at session end | Handler-constructed EnrichedSessionRecord | Fail-open: write failures non-blocking |
+| Analyze handler (inline) | `lib/memory-embedder.js` | Async spawn post-session | EnrichedSessionRecord in, embedded index out | Fire-and-forget; log failures |
 | `lib/memory-embedder.js` | `lib/embedding/engine/` | Function call | Text chunks in, Float32Array out | Throw on failure; caller handles |
 | `lib/memory-embedder.js` | `lib/embedding/knowledge/pipeline.js` | Function call | NL summary in, chunks out | Throw on failure; caller handles |
-| `lib/memory-embedder.js` | `.emb` index file | File write | Rebuilt .emb package | Write failure logged; raw JSON persists |
-| `lib/memory-search.js` | `lib/embedding/mcp-server/store-manager.js` | Function call | Query vector in, SearchResult[] out | Empty results on error |
+| `lib/memory-embedder.js` | `memory-store-adapter.js` | Function call | Chunks + vectors in, index updated | Write failure logged; raw JSON persists |
+| `lib/memory-search.js` | `memory-store-adapter.js` | Function call | Query vector in, SearchResult[] out | Empty results on error |
 | `lib/memory-search.js` | `lib/embedding/engine/` | Function call | Query text in, query vector out | Fail-open: skip semantic search |
-| Roundtable agent | `MEMORY_CONTEXT` | Prompt injection | Ranked semantic excerpts | Omit block if empty |
-| Roundtable agent | `SESSION_RECORD` | Output parsing | Enriched JSON with NL summary | Handler parses; embed async |
 | `isdlc memory compact` | `lib/memory.js` | CLI call | Compact options in, result out | Report errors to CLI user |
 
+**Removed integration points** (eliminated by REQ-0065):
+- ~~Roundtable agent → `MEMORY_CONTEXT` (prompt injection)~~ → Handler uses search results as in-memory context
+- ~~Roundtable agent → `SESSION_RECORD` (output parsing)~~ → Handler constructs enriched record from conversation state
+
 ## 4. Data Flow
+
+> See `data-flow.md` for full diagrams. Summary below updated for REQ-0065 (inline execution) and hybrid storage.
 
 ### 4.1 Write Path (Session End)
 
 ```
-[Roundtable emits SESSION_RECORD with enriched content]
-  Analyze handler
-    ├── Parse enriched session record (summary, context_notes, topics)
-    ├── Call writeSessionRecord() — immediate raw JSON write
+[Analyze handler completes inline roundtable (confirmationState = COMPLETE)]
+  Handler constructs EnrichedSessionRecord from conversation state:
+    ├── Playbook curator pass: summary, context_notes (with relationship_hints),
+    │   playbook_entry, importance score, container tag
+    ├── writeSessionRecord(record, projectRoot) — immediate raw JSON write
     │     ├── User: ~/.isdlc/user-memory/sessions/{session_id}.json
     │     └── Project: .isdlc/roundtable-memory.json (append to sessions array)
-    ├── Emit ROUNDTABLE_COMPLETE to user (no delay)
-    └── Spawn async: embedSession(record, indexPath, engineConfig)
+    └── Spawn async: embedSession(record, storeAdapter, engineConfig)
           ├── Chunk NL summary via knowledge pipeline
           ├── Embed chunks via configured engine
-          ├── Load existing .emb index (or create new)
-          ├── Append vectors + metadata
-          ├── Rebuild .emb package
-          ├── Write user index: ~/.isdlc/user-memory/user-memory.emb
-          ├── Write project index: docs/.embeddings/roundtable-memory.emb
+          ├── Tiered dedup: check similarity against existing vectors
+          │     ├── >= 0.95: reject (duplicate)
+          │     ├── 0.85-0.94 + relationship_hint=updates: Update (supersede)
+          │     ├── 0.85-0.94 + relationship_hint=extends: Extend (merge)
+          │     └── < 0.85: New entry
+          ├── Write to user store: ~/.isdlc/user-memory/memory.db (SQLite)
+          ├── Write to project store: docs/.embeddings/roundtable-memory.emb
+          ├── Auto-prune if capacity exceeded (500 default)
           ├── Update record: embedded=true, embed_model=<model>
           └── On failure: log error, record stays embedded=false
 ```
@@ -120,26 +147,27 @@
 ### 4.2 Read Path (Session Start)
 
 ```
-[Analyze handler starts roundtable dispatch]
-  searchMemory(draftContent, topicContext, userIndexPath, projectIndexPath, engineConfig)
+[Analyze handler starts inline roundtable]
+  searchMemory(draftContent, userDbPath, projectIndexPath, engineConfig)
     ├── Check for un-embedded records (embedded: false)
     │     └── If found: lazy embed (best-effort, non-blocking on failure)
-    ├── Load user .emb index (fail-open: skip if missing/corrupt)
-    ├── Load project .emb index (fail-open: skip if missing/corrupt)
-    ├── Check model consistency for each index
-    │     └── If mismatch: warn, skip that index
+    ├── Open user SQLite store (fail-open: skip if missing/corrupt)
+    ├── Load project .emb store (fail-open: skip if missing/corrupt)
+    ├── Check model consistency for each store
+    │     └── If mismatch: warn, skip that store
     ├── Embed query text (draft keywords + topic names)
-    ├── Search user index: cosine similarity, top K results
-    ├── Search project index: cosine similarity, top K results
+    ├── Search user store: cosine similarity + self-ranking boost, top K
+    ├── Search project store: cosine similarity, top K
     ├── Merge results, tag with layer (user/project)
-    ├── Rank by score, apply result limit
-    └── Format as MEMORY_CONTEXT block (ranked semantic excerpts)
+    ├── Rank by final_score, apply result limit
+    ├── Increment accessed_count for returned user results
+    └── Return as in-memory conversation priming context
 
   [Fallback path — no indexes or no embedding backend]
     ├── Read ~/.isdlc/user-memory/profile.json (flat JSON)
     ├── Read .isdlc/roundtable-memory.json (flat JSON)
     ├── mergeMemory() + formatMemoryContext() (REQ-0063 path)
-    └── Format as legacy MEMORY_CONTEXT block (structured preferences)
+    └── Use as in-memory legacy conversation context
 ```
 
 ### 4.3 Compaction Path (User-Triggered)
@@ -149,12 +177,12 @@
   ├── Flat JSON compaction (existing REQ-0063 behavior — preserved)
   │     ├── Read session files, aggregate per-topic, write profile.json
   │     └── Read project sessions, aggregate summary, write roundtable-memory.json
-  └── Vector compaction (new)
-        ├── Load .emb index
-        ├── Prune vectors older than age threshold
-        ├── Deduplicate near-identical vectors (cosine > 0.95)
-        ├── Rebuild .emb package
-        └── Write updated index
+  └── Vector compaction (new, --vectors flag)
+        ├── User store (SQLite):
+        │     DELETE WHERE timestamp < N months, VACUUM
+        ├── Project store (.emb):
+        │     Load, prune old vectors, deduplicate (cosine > 0.95), rebuild
+        └── Both: auto-archive expired TTL memories
 ```
 
 ## 5. Blast Radius
@@ -165,16 +193,18 @@ See impact-analysis.md for full blast radius assessment.
 
 ## 6. Implementation Order
 
-1. `lib/memory.js` — enriched session record format (FR-001)
-2. `lib/memory-embedder.js` — embedding orchestrator (FR-002, FR-003)
-3. `lib/memory-search.js` — semantic search (FR-004, FR-007)
-4. Analyze handler changes — dispatch integration (FR-004, FR-002)
-5. Roundtable agent prompt — MEMORY_CONTEXT format + SESSION_RECORD enrichment (FR-005)
+1. `lib/memory-store-adapter.js` — MemoryStore interface, SQLite user store, .emb project store (FR-003)
+2. `lib/memory.js` — enriched session record format with playbook curator fields (FR-001, FR-014)
+3. `lib/memory-embedder.js` — async embedding with tiered dedup + auto-pruning (FR-002, FR-013, FR-016)
+4. `lib/memory-search.js` — semantic search with self-ranking + importance boost (FR-004, FR-007, FR-012)
+5. Analyze handler — inline memory search at startup + enriched record construction at session end (FR-004, FR-001, FR-005)
 6. Backward compatibility + fail-open testing (FR-010, FR-011)
 7. Lazy embed fallback (FR-008)
-8. Conversational query (FR-006)
-9. Vector compaction (FR-009)
-10. CLI extensions (FR-009)
+8. Conversational override + query (FR-005, FR-006)
+9. Memory curation: pin, archive, tag (FR-015)
+10. Container tags (FR-017)
+11. Vector compaction + temporal decay (FR-009, FR-016)
+12. CLI extensions: `isdlc memory compact --vectors`, `isdlc memory status`
 
 ## Pending Sections
 

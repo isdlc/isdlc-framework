@@ -9,28 +9,25 @@
 
 ## 1. Write Path — Session End
 
+> **REQ-0065 impact**: The handler executes the roundtable inline — no agent output, no SESSION_RECORD parsing. The handler constructs the enriched record from its own conversation state.
+
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Roundtable Agent                                        │
+│ Analyze Handler (isdlc.md) — Inline Roundtable          │
 │                                                         │
-│  SESSION_RECORD: {                                      │
-│    session_id, slug, timestamp, topics[],               │
-│    summary: "User prefers brief on security...",        │
-│    context_notes: ["Security handled at org level..."], │
-│    embedded: false                                      │
-│  }                                                      │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│ Analyze Handler (isdlc.md)                              │
+│  Conversation completes (confirmationState = COMPLETE)  │
 │                                                         │
-│  1. Parse enriched session record from output           │
+│  1. Construct EnrichedSessionRecord from in-memory      │
+│     conversation state:                                 │
+│     - summary: NL summary of memory-relevant outcomes   │
+│     - context_notes: per-topic NL notes from exchanges  │
+│     - topics: coverage, depths, overrides observed      │
+│                                                         │
 │  2. writeSessionRecord(record, projectRoot)             │
 │     ├── User: ~/.isdlc/user-memory/sessions/{id}.json  │
 │     └── Project: .isdlc/roundtable-memory.json         │
-│  3. Emit ROUNDTABLE_COMPLETE ← user sees this          │
-│  4. Spawn async: embedSession()                        │
+│                                                         │
+│  3. Spawn async: embedSession()                        │
 └─────────┬──────────────────────┬────────────────────────┘
           │ (immediate)          │ (async, non-blocking)
           ▼                      ▼
@@ -41,19 +38,17 @@
 │  sess_xxx.json   │  │     context_notes                 │
 │                  │  │  2. Chunk via knowledge pipeline   │
 │ roundtable-      │  │  3. Embed via engine               │
-│  memory.json     │  │  4. Load existing .emb index      │
-│                  │  │  5. Append vectors + metadata      │
-└──────────────────┘  │  6. Rebuild .emb package           │
-                      │  7. Write index file               │
-                      │  8. Update record: embedded=true   │
+│  memory.json     │  │  4. Check supersession (>= 0.92)  │
+│                  │  │  5. Add/supersede via store adapter│
+└──────────────────┘  │  6. Update record: embedded=true   │
                       └──────────┬──────────┬──────────────┘
                                  │          │
                                  ▼          ▼
                       ┌────────────┐  ┌──────────────────┐
                       │ User Index │  │ Project Index     │
                       │ ~/.isdlc/  │  │ docs/.embeddings/ │
-                      │ user-      │  │ roundtable-       │
-                      │ memory.emb │  │ memory.emb        │
+                      │ memory.db  │  │ roundtable-       │
+                      │ (SQLite)   │  │ memory.emb        │
                       └────────────┘  └──────────────────┘
 ```
 
@@ -98,16 +93,17 @@
                      ▼
             ┌────────────────┐
             │ Has results?   │
-            ├── Yes ─────────┼──▶ Inject semantic MEMORY_CONTEXT
-            │                │    into roundtable dispatch prompt
+            ├── Yes ─────────┼──▶ Store as in-memory conversation
+            │                │    priming context (handler uses
+            │                │    directly — no dispatch prompt)
             └── No ──────────┘
                      │
                      ▼
             ┌────────────────┐
             │ Fallback path  │
             │                │
-            │ readUserProfile│──▶ Inject legacy MEMORY_CONTEXT
-            │ readProjectMem │    (structured preferences)
+            │ readUserProfile│──▶ Store as in-memory legacy
+            │ readProjectMem │    context (structured preferences)
             │ mergeMemory    │
             │ formatMemCtx   │
             └────────────────┘
@@ -161,14 +157,14 @@ isdlc memory compact [--vectors]
   │
   └── Vector pruning (only if --vectors flag)
         │
-        ├── User index:
-        │     ├── Load ~/.isdlc/user-memory/user-memory.emb
-        │     ├── Prune vectors older than N months
-        │     ├── Deduplicate (cosine > 0.95)
-        │     ├── Rebuild .emb package
-        │     └── Write updated index
+        ├── User index (SQLite):
+        │     ├── Open ~/.isdlc/user-memory/memory.db
+        │     ├── DELETE WHERE timestamp < N months ago
+        │     ├── Deduplicate (cosine > 0.95 via SQL + vector scan)
+        │     ├── VACUUM (reclaim space)
+        │     └── Report: removed N, remaining M
         │
-        └── Project index:
+        └── Project index (.emb):
               ├── Load docs/.embeddings/roundtable-memory.emb
               ├── Prune vectors older than N months
               ├── Deduplicate (cosine > 0.95)
@@ -178,41 +174,45 @@ isdlc memory compact [--vectors]
 
 ## 5. Conversational Override Flow
 
+> **REQ-0065 impact**: The handler executes inline — it directly recognizes preference statements and writes to memory. No agent output parsing.
+
 ```
 User: "Remember that I prefer brief on security"
   │
   ▼
-Roundtable Agent (during session)
-  ├── Recognizes preference statement
+Analyze Handler (inline roundtable conversation)
+  ├── Recognizes preference statement in conversation
   ├── Acknowledges: "Got it, I'll remember that for future sessions"
-  ├── Adds to internal session log:
+  ├── Adds to in-memory conversation state:
   │     context_notes: ["User explicitly requested brief depth on
   │                      security — handles it at org policy level"]
-  └── Includes in SESSION_RECORD summary field
+  └── Includes in enriched session record at session end
         │
         ▼
 [Normal write path — Section 1 above]
-  ├── Raw JSON with enriched content
-  └── Async embed → preference becomes searchable vector
+  ├── Handler constructs EnrichedSessionRecord with preference
+  ├── Raw JSON write + async embed
+  └── Preference becomes searchable vector
         │
         ▼
 [Next session — Section 2 above]
   ├── Draft context embedded as query
   ├── Semantic search finds: "User explicitly requested brief
   │   depth on security..."
-  └── MEMORY_CONTEXT includes this as a ranked result
+  └── Handler uses as conversation priming context
 ```
 
 ## 6. Conversational Query Flow
+
+> **REQ-0065 impact**: The handler has direct access to search results in memory — no agent delegation needed.
 
 ```
 User: "What do you remember about my preferences?"
   │
   ▼
-Roundtable Agent (during session)
-  ├── Already has MEMORY_CONTEXT from session start
-  ├── Searches both indexes with broad query
-  │   (or uses already-retrieved results)
+Analyze Handler (inline roundtable conversation)
+  ├── Already has memory search results from session start
+  ├── Can call searchMemory() again with broad query if needed
   ├── Presents conversational summary:
   │     "Based on past sessions:
   │      - You tend to go brief on security (org-level policy)

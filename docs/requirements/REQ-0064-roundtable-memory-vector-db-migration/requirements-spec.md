@@ -70,7 +70,7 @@ The migration replaces compacted JSON preference summaries with semantic vector 
 
 | Attribute | Requirement |
 |---|---|
-| **Performance** | Embedding must not block user experience. Async write-time embedding with lazy fallback on read. |
+| **Performance** | Embedding must not block user experience. Async write-time embedding with lazy fallback on read. Memory search at roundtable startup must complete in < 200ms (Supermemory achieves 50ms for profile retrieval — our target is conservative given dual-index search + embedding query). |
 | **Reliability** | Fail-open on all read paths. Missing embeddings degrade to raw text, not failure. |
 | **Compatibility** | Existing flat JSON path must continue working when vector DB is not configured. |
 | **Shareability** | Project index must be committable to git and usable by team members. |
@@ -85,16 +85,18 @@ The migration replaces compacted JSON preference summaries with semantic vector 
 
 ## 6. Functional Requirements
 
-### FR-001: Enriched Session Record Format
+### FR-001: Enriched Session Record Format (Playbook Curator)
 **Priority**: Must Have | **Confidence**: High
 
-The session record output from the roundtable must include natural language content beyond the current structured fields.
+The analyze handler must generate enriched session records using an LLM playbook curator pass over its conversation state (REQ-0065: inline execution). The curator produces NL summaries written for a future reader with no context — richer than commit messages, more accessible than reading full artifacts. This is the content that makes vector search useful. (Pattern adapted from Hyperspace Playbook Curator.)
 
-- **AC-001-01**: Session record includes a `summary` field containing a natural language summary of the session's memory-relevant outcomes (e.g., "User prefers brief on security because they handle it at org level")
-- **AC-001-02**: Session record includes a `context_notes` array with per-topic natural language notes from the conversation
-- **AC-001-03**: Session record includes an `embedded` boolean field (initially `false`, set to `true` after successful embedding)
-- **AC-001-04**: Session record includes an `embed_model` field recording the model used for embedding (for consistency checks)
-- **AC-001-05**: The enriched record is backward-compatible — existing `SessionRecord` fields (session_id, slug, timestamp, topics) are preserved unchanged
+- **AC-001-01**: Session record includes a `summary` field containing an LLM-generated playbook entry — a concise NL summary of what was decided and why, written for future retrieval (e.g., "Team chose direct integration over middleware for auth because the custom token format requires access to the raw request. Brief on security — org handles it at policy level. Deep on architecture — custom auth integration points.")
+- **AC-001-02**: Session record includes a `context_notes` array with per-topic NL notes, each explaining the outcome and reasoning for that topic — not just "depth_used: brief" but "brief on security because the user handles it at the org policy level; overrode to deep once when auth tokens were involved"
+- **AC-001-03**: Session record includes a `playbook_entry` field — a 2-3 sentence distilled insight written as if for a teammate picking up this work next month
+- **AC-001-04**: Session record includes an `embedded` boolean field (initially `false`, set to `true` after successful embedding)
+- **AC-001-05**: Session record includes an `embed_model` field recording the model used for embedding (for consistency checks)
+- **AC-001-06**: The enriched record is backward-compatible — existing `SessionRecord` fields (session_id, slug, timestamp, topics) are preserved unchanged
+- **AC-001-07**: The playbook curator pass runs inline at session end (before async embedding) — it uses the conversation state already in memory, not a separate LLM call to an external service
 
 ### FR-002: Async Write-Time Embedding
 **Priority**: Must Have | **Confidence**: High
@@ -102,41 +104,42 @@ The session record output from the roundtable must include natural language cont
 Session record embedding must run asynchronously after the roundtable completes, never blocking the user experience.
 
 - **AC-002-01**: After `writeSessionRecord()` writes the raw JSON, the embedding job is spawned asynchronously
-- **AC-002-02**: The `ROUNDTABLE_COMPLETE` signal fires before embedding starts — no user-visible delay
+- **AC-002-02**: Embedding is spawned after the handler completes the roundtable conversation and writes artifacts — no user-visible delay (REQ-0065: inline execution, no ROUNDTABLE_COMPLETE signal)
 - **AC-002-03**: Embedding failure does not affect the raw session record — the JSON file persists regardless
 - **AC-002-04**: Failed embedding jobs set `embedded: false` on the record; successful jobs set `embedded: true` and populate `embed_model`
 
-### FR-003: Dual-Index Architecture
+### FR-003: Dual-Index Architecture (Hybrid Storage)
 **Priority**: Must Have | **Confidence**: High
 
-User and project memory must use separate vector indexes at separate filesystem locations.
+User and project memory must use separate vector indexes at separate filesystem locations, with storage formats optimized for each layer's constraints.
 
-- **AC-003-01**: User vector index stored at `~/.isdlc/user-memory/user-memory.emb`
-- **AC-003-02**: Project vector index stored at `docs/.embeddings/roundtable-memory.emb`
-- **AC-003-03**: Both indexes use the `.emb` package format from REQ-0045
+- **AC-003-01**: User vector index stored at `~/.isdlc/user-memory/memory.db` (SQLite via `better-sqlite3`)
+- **AC-003-02**: Project vector index stored at `docs/.embeddings/roundtable-memory.emb` (`.emb` package format)
+- **AC-003-03**: User SQLite index stores vectors as BLOBs alongside metadata columns (`appeared_count`, `accessed_count`, `hit_rate`, `session_id`, `timestamp`, `content`, `embed_model`)
 - **AC-003-04**: Indexes are searched independently and results merged with layer tags (user/project)
 - **AC-003-05**: Each index can exist independently — missing one does not prevent searching the other
+- **AC-003-06**: A storage adapter abstraction allows `memory-search.js` to query both formats through a unified interface
 
 ### FR-004: Semantic Search at Roundtable Startup
 **Priority**: Must Have | **Confidence**: High
 
-The analyze handler must use semantic search over vector indexes to retrieve relevant past session content for the roundtable dispatch.
+The analyze handler must use semantic search over vector indexes to retrieve relevant past session content as inline conversation context (REQ-0065: no dispatch prompt — results are used directly by the handler).
 
 - **AC-004-01**: The analyze handler embeds the current draft content and topic context as a query vector
 - **AC-004-02**: Both user and project indexes are searched by cosine similarity
-- **AC-004-03**: Results are ranked by score and formatted as `MEMORY_CONTEXT` with semantic excerpts (replacing the current structured preference format)
-- **AC-004-04**: A configurable result limit (default: 10) caps the number of excerpts injected into the prompt
-- **AC-004-05**: When no indexes exist (first run), `MEMORY_CONTEXT` is omitted — same as current behavior
+- **AC-004-03**: Results are ranked by score and formatted as semantic excerpts. The handler uses these as in-memory conversation priming context when executing the roundtable protocol inline — no dispatch prompt serialization
+- **AC-004-04**: A configurable result limit (default: 10) caps the number of excerpts used
+- **AC-004-05**: When no indexes exist (first run), memory context is empty — the handler proceeds without memory priming (same as current behavior)
 
 ### FR-005: Conversational Override Interface
 **Priority**: Must Have | **Confidence**: High
 
-Users must be able to set memory preferences conversationally through the roundtable, without editing files.
+Users must be able to set memory preferences conversationally through the roundtable, without editing files. The handler executes inline (REQ-0065) and has direct access to conversation state and memory write functions.
 
-- **AC-005-01**: When a user says "remember that I prefer brief on security" (or equivalent natural language), the roundtable includes this preference in the enriched session record summary
+- **AC-005-01**: When a user says "remember that I prefer brief on security" (or equivalent natural language), the handler recognizes the preference statement and includes it in the enriched session record's `context_notes` and `summary`
 - **AC-005-02**: The preference is embedded and surfaces in future sessions via semantic search
 - **AC-005-03**: No file editing, CLI command, or config change is required from the user
-- **AC-005-04**: The roundtable acknowledges the override: "Got it, I'll remember that for future sessions"
+- **AC-005-04**: The handler acknowledges the override conversationally: "Got it, I'll remember that for future sessions"
 
 ### FR-006: Conversational Query Interface
 **Priority**: Should Have | **Confidence**: High
@@ -197,33 +200,117 @@ All read and write paths must fail open when embedding infrastructure is unavail
 - **AC-011-03**: Corrupted `.emb` files trigger fallback to flat JSON read — no crash
 - **AC-011-04**: No error messages or warnings shown to the user for expected degradation scenarios
 
+### FR-012: Self-Ranking Memory Retrieval
+**Priority**: Must Have | **Confidence**: High
+
+Memory entries must track usage frequency to surface frequently-useful memories higher in search results (pattern from user-memories).
+
+- **AC-012-01**: Each memory entry in the user SQLite index tracks `appeared_count` (times stored/updated) and `accessed_count` (times retrieved during search)
+- **AC-012-02**: `hit_rate = accessed_count / appeared_count` is computed and used as a boost factor in search ranking alongside cosine similarity
+- **AC-012-03**: `accessed_count` is incremented when a memory excerpt is included in the handler's conversation priming context at roundtable startup (REQ-0065: inline execution, no dispatch prompt)
+- **AC-012-04**: Memories with zero `accessed_count` after 5+ sessions decay faster in relevance (age decay penalty)
+
+### FR-013: Tiered Semantic Deduplication with Contradiction Detection
+**Priority**: Must Have | **Confidence**: High
+
+New session records must be handled based on their semantic similarity and relationship to existing records, using a 4-tier model (patterns from smartmemorymcp + Supermemory's Updates/Extends/Derives graph relationships).
+
+- **AC-013-01**: Before embedding a new session record, compute cosine similarity against existing vectors in the target index
+- **AC-013-02**: **Tier 1 — Reject** (similarity >= 0.95): Near-identical content is rejected as a duplicate. No new entry created.
+- **AC-013-03**: **Tier 2 — Update** (similarity 0.85-0.94, content contradicts): The new record supersedes the old. Old entry is preserved with `isLatest: false`, new entry is marked `isLatest: true` with an `updates` link to the old entry. Example: "team chose middleware" → later "team switched to direct integration" — both preserved, only latest surfaces in search. (Pattern from Supermemory's Updates relationship.)
+- **AC-013-04**: **Tier 3 — Extend** (similarity 0.85-0.94, content is additive): New information enriches the existing entry without replacing it. Both memories remain valid and searchable. `appeared_count` incremented, `merge_history` updated. Example: "team prefers brief on security" → later "specifically because org handles it at policy level" — context is richer, not contradictory. (Pattern from Supermemory's Extends relationship.)
+- **AC-013-05**: **Tier 4 — New** (similarity < 0.85): Novel information. A new entry is created in the index.
+- **AC-013-06**: The playbook curator (FR-001) annotates each `context_notes` entry with a `relationship_hint: "updates" | "extends" | null` at session end. The async embedder (FR-002) uses this hint during tiered deduplication — no additional LLM call during embedding.
+- **AC-013-07**: Tiered deduplication applies independently per index (user and project)
+
+### FR-014: Importance Scoring
+**Priority**: Should Have | **Confidence**: High
+
+Each memory entry must receive an LLM-assigned importance score at write time, providing a ranking signal alongside usage-based hit_rate (pattern from smartmemorymcp).
+
+- **AC-014-01**: The playbook curator (FR-001) assigns an `importance` score (1-10) to each memory entry based on the significance of the decision or preference captured
+- **AC-014-02**: Importance score is stored alongside the vector in the index (SQLite column for user, metadata for project `.emb`)
+- **AC-014-03**: Search ranking combines three signals: `final_score = cosine_similarity * (1 + log(1 + hit_rate)) * (1 + importance/20)` — cosine similarity is primary, hit_rate and importance are boost factors
+- **AC-014-04**: Importance scores are not manually editable in this REQ (conversational adjustment is a future extension)
+
+### FR-015: Memory Curation (Pin, Archive, Tag)
+**Priority**: Should Have | **Confidence**: High
+
+Users must be able to curate memories conversationally — pinning critical memories, archiving outdated ones, and tagging for filtering (pattern from smartmemorymcp).
+
+- **AC-015-01**: **Pin**: When a user says "always remember this" (or equivalent), the memory entry is flagged as `pinned: true`. Pinned memories never decay and are always included in search results regardless of score.
+- **AC-015-02**: **Archive**: When a user says "forget that" or "that's no longer relevant", the memory entry is flagged as `archived: true`. Archived memories are excluded from search results but retained for audit.
+- **AC-015-03**: **Tag**: When a user says "tag this as architecture" (or equivalent), a tag is added to the memory entry's `tags` array. Tags can be used as search filters.
+- **AC-015-04**: All curation operations are conversational — no CLI commands or file edits required.
+- **AC-015-05**: Curation state is stored in the index (SQLite columns for user, metadata for project `.emb`)
+
+### FR-016: Auto-Pruning with Temporal Decay
+**Priority**: Should Have | **Confidence**: Medium
+
+Vector indexes must auto-prune using both capacity limits and temporal awareness, preventing unbounded growth and stale memories (patterns from smartmemorymcp capacity limits + Supermemory automatic forgetting).
+
+- **AC-016-01**: A configurable capacity limit (default: 500 vectors per index) triggers auto-pruning when exceeded
+- **AC-016-02**: Auto-pruning removes the lowest-ranked entries (by combined score of hit_rate, importance, and age) until the index is at 90% capacity
+- **AC-016-03**: Pinned memories are never auto-pruned
+- **AC-016-04**: Auto-pruning runs during the async embedding step (after session end), not during search
+- **AC-016-05**: A warning is logged when auto-pruning removes entries: "{N} memories pruned to stay within {limit} capacity"
+- **AC-016-06**: **Temporal decay**: Episodic memories (one-off session observations) decay faster than preference memories (reinforced across sessions). Memories with `appeared_count > 3` are treated as preferences and decay at half the rate. (Pattern from Supermemory: episodes decay unless significant, preferences strengthen through repetition.)
+- **AC-016-07**: Time-bound memories (e.g., "sprint deadline is Friday") should be detectable by the playbook curator and given a short TTL. After expiry, they are auto-archived (not deleted). (Pattern from Supermemory's automatic forgetting of temporal facts.)
+
+### FR-017: Container Tags for Context Scoping
+**Priority**: Could Have | **Confidence**: Medium
+
+Memories should be scopeable to specific contexts within a project, preventing cross-domain noise (pattern from Supermemory's container tag isolation).
+
+- **AC-017-01**: Memory entries can carry a `container` tag (e.g., "auth", "deployment", "error-handling") identifying the domain context
+- **AC-017-02**: The playbook curator auto-assigns container tags based on the analysis topic at session end
+- **AC-017-03**: `searchMemory()` accepts an optional `container` filter to scope results to the current domain
+- **AC-017-04**: When no container filter is provided, all memories are searched (backward-compatible default)
+
 ## 7. Out of Scope
 
 - **Real-time embedding during conversation**: Embedding happens post-session, not during the roundtable
 - **Cross-project memory sharing**: User memory is personal; project memory is per-repo. No cross-repo memory federation
-- **Memory deletion UI**: No conversational "forget this" command in this REQ (future extension)
 - **Embedding model selection UI**: Model is configured via existing REQ-0045 configuration, not a new UI
 - **Code embedding migration**: This REQ covers roundtable memory only, not the code-level embeddings from REQ-0045
+- **Graph-based memory linking and traversal**: Link data structure is defined (Update/Extend from FR-013), but multi-hop traversal, Derives relationships, and `builds_on`/`contradicts`/`related_to` types deferred to REQ-0066
+- **Memory evolution/consolidation**: Periodic LLM pass to consolidate individual records into distilled wisdom deferred to REQ-0066
+- **Formal memory type classification**: REQ-0064 uses `appeared_count > 3` as an informal preference heuristic for decay rates (FR-016). Formal Fact/Preference/Episode tagging with `memory_type` field and promotion rules deferred to REQ-0066
+- **Hybrid memory + RAG query**: Unified search across memory index and codebase index deferred to REQ-0066
 
 ## 8. MoSCoW Prioritization
 
 | Priority | Requirements |
 |---|---|
-| **Must Have** | FR-001, FR-002, FR-003, FR-004, FR-005, FR-007, FR-010, FR-011 |
-| **Should Have** | FR-006, FR-008, FR-009 |
-| **Could Have** | (none) |
-| **Won't Have** | Memory deletion, cross-project sharing, real-time embedding |
+| **Must Have** | FR-001, FR-002, FR-003, FR-004, FR-005, FR-007, FR-010, FR-011, FR-012, FR-013 |
+| **Should Have** | FR-006, FR-008, FR-009, FR-014, FR-015, FR-016 |
+| **Could Have** | FR-017 |
+| **Won't Have** | Cross-project sharing, real-time embedding, graph traversal, memory evolution, formal memory types, hybrid memory+RAG query |
 
 ## 9. Dependency Map
 
 ```
-FR-001 (enriched records) ← FR-002 (async embedding) depends on enriched content
+FR-001 (playbook curator) ← FR-002 (async embedding) depends on enriched content
+FR-001 (playbook curator) ← FR-013 (tiered dedup) — curator annotates relationship_hint
+FR-001 (playbook curator) ← FR-014 (importance) — curator assigns importance score
+FR-001 (playbook curator) ← FR-017 (containers) — curator assigns container tag
 FR-003 (dual index) ← FR-004 (semantic search) depends on indexes existing
+FR-003 (dual index) ← FR-017 (containers) — both stores need container support
 FR-002 (async embedding) ← FR-008 (lazy fallback) handles FR-002 failures
+FR-002 (async embedding) ← FR-013 (tiered dedup) — dedup runs during embedding
 FR-003 (dual index) ← FR-007 (model consistency) validates index model
 FR-004 (semantic search) ← FR-006 (query interface) uses same search path
 FR-010 (backward compat) is independent — fallback path
 FR-011 (fail-open) cross-cuts all other requirements
+FR-012 (self-ranking) ← FR-016 (auto-pruning) — pruning uses same ranking formula
+FR-015 (curation: pin) ← FR-016 (auto-pruning) — pinned memories exempt from pruning
+FR-016 (auto-pruning) depends on FR-012 (self-ranking) for decay scoring
+
+Cross-ticket dependencies (REQ-0066 builds on REQ-0064):
+  FR-013 (Update/Extend links) → REQ-0066 extends with Derives, builds_on, related_to
+  FR-015 (user curation) → REQ-0066 extends to team-level curation
+  FR-016 (informal preference heuristic) → REQ-0066 formalizes as memory_type tagging
+  FR-017 (container tags) → REQ-0066 extends for team domain filtering
 ```
 
 ## Pending Sections

@@ -4,6 +4,7 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [A] Configurable session cache token budget — replace hardcoded limits with project-configurable token budget up to 200-300K tokens → `REQ-0067-configurable-session-cache-token-budget/` -> [requirements](docs/requirements/REQ-0067-configurable-session-cache-token-budget/) **Analyzed**
 - [x] Inline roundtable analysis — eliminate subagent dispatch overhead [github: GH-124] → `REQ-0065-inline-roundtable-eliminate-subagent-overhead/` -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) **Completed**
   - **Completed:** 2026-03-15
 - [ ] #125 Team continuity memory — project-level knowledge retention across work gaps [github: GH-125] → `REQ-0066-team-continuity-memory-project-knowledge-retent/` -> [requirements](docs/requirements/REQ-0066-team-continuity-memory-project-knowledge-retent/)
