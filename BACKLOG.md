@@ -10,7 +10,8 @@
   - **Completed:** 2026-03-15
 - [ ] #125 Team continuity memory — project-level knowledge retention across work gaps [github: GH-125] → `REQ-0066-team-continuity-memory-project-knowledge-retent/` -> [requirements](docs/requirements/REQ-0066-team-continuity-memory-project-knowledge-retent/)
   - Depends on REQ-0064. Inspired by Hyperspace Research DAGs. Surfaces past team decisions when work resumes after gaps.
-- [A] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) **Analyzed**
+- [x] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) **Completed**
+  - **Completed:** 2026-03-15
 - [ ] Developer usage analytics — friction/flow event capture with privacy-respecting telemetry [github: GH-121] → `REQ-0062-developer-usage-analytics-friction-flow-event-capture/` -> [requirements](docs/requirements/REQ-0062-developer-usage-analytics-friction-flow-event-capture/) **Analyzed**
 - [x] Bug-aware analyze flow — inject Phase 02 tracing into analyze when subject is a bug [github: GH-119] → `REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/` -> [requirements](docs/requirements/REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/) **Completed**
   - **Completed:** 2026-03-11
@@ -286,6 +287,7 @@
 ## Completed
 
 ### 2026-03-15
+- [x] Roundtable memory vector DB migration — flat JSON to vector DB using existing embedding infrastructure. 4 new modules (memory-store-adapter, memory-embedder, memory-search, updated memory.js), 93 new tests (168 total), 91.72% line coverage, zero regressions. -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) *(merged 861fd1b)*
 - [x] Configurable session cache token budget — replace hardcoded limits with project-configurable token budget. Added readConfig() to common.cjs, dynamic budget allocation from .isdlc/config.json, updated rebuild-cache.js CLI. 32 new tests, 0 regressions. -> [requirements](docs/requirements/REQ-0067-configurable-session-cache-token-budget/) *(merged eac0bd0)*
 - [x] #52: Coverage threshold discrepancy — intensity-aware coverage thresholds. Added resolveCoverageThreshold() to common.cjs with tiered enforcement (light: 60/50%, standard: 80/70%, epic: 95/85%). Updated test-watcher, profile-loader, gate-requirements-injector. 38 new tests, 211 total passing. -> [requirements](docs/requirements/bug-52-coverage-threshold/) *(merged 9ab14bf)*
 - [x] #124: Inline roundtable analysis — eliminate subagent dispatch overhead. Removed subagent dispatch for roundtable analysis, executing inline to reduce overhead. 26 tests, all passing. -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) *(merged d479b2c)*
