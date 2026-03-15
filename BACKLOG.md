@@ -5,7 +5,7 @@
 
 ## Open
 - [A] Inline roundtable analysis — eliminate subagent dispatch overhead [github: GH-124] → `REQ-0065-inline-roundtable-eliminate-subagent-overhead/` -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) **Analyzed**
-- [ ] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/)
+- [A] Roundtable memory vector DB migration — move both user and project memory layers from flat JSON to vector DB using existing embedding infrastructure → `REQ-0064-roundtable-memory-vector-db-migration/` -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) **Analyzed**
 - [ ] Developer usage analytics — friction/flow event capture with privacy-respecting telemetry [github: GH-121] → `REQ-0062-developer-usage-analytics-friction-flow-event-capture/` -> [requirements](docs/requirements/REQ-0062-developer-usage-analytics-friction-flow-event-capture/) **Analyzed**
 - [x] Bug-aware analyze flow — inject Phase 02 tracing into analyze when subject is a bug [github: GH-119] → `REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/` -> [requirements](docs/requirements/REQ-0061-bug-aware-analyze-flow-inject-phase-02-tracing-int/) **Completed**
   - **Completed:** 2026-03-11

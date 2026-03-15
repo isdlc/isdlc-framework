@@ -745,39 +745,18 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
    - **If user confirms** (yes, go ahead, correct): proceed to step 6.5c (bug-gather dispatch).
    - **If user overrides** (no, it's a feature, treat as feature): proceed to step 7 (Roundtable). (AC-001-04)
 
-   6.5c. **Bug-gather dispatch**: Delegate to the `bug-gather-analyst` agent via Task tool with the following prompt:
+   6.5c. **Read bug-gather protocol reference** (REQ-0065, FR-002): Read `src/claude/agents/bug-gather-analyst.md` using the Read tool. This is a protocol reference -- do NOT spawn it as a separate agent via Task tool. The file defines the bug-gather conversation protocol and artifact specifications that you will execute inline.
 
-   ```
-   "Analyze bug '{slug}' using the bug-gather flow.
+   6.5d. **Execute bug-gather conversation protocol inline** (REQ-0065, FR-002):
 
-    ARTIFACT_FOLDER: docs/requirements/{slug}/
-    SLUG: {slug}
-    SOURCE: {meta.source}
-    SOURCE_ID: {meta.source_id}
+   CONTEXT (already in memory):
+     - slug, meta, draftContent, discoveryContent: from earlier steps
 
-    META_CONTEXT:
-    {JSON.stringify(meta, null, 2)}
-
-    DRAFT_CONTENT:
-    {draftContent}
-
-    DISCOVERY_CONTEXT:
-    {discoveryContent}
-
-    ANALYSIS_MODE: No state.json writes, no branch creation."
-   ```
-
-   **Task description format**: `Bug analysis for {slug}`
-
-   6.5d. **Bug-gather relay-and-resume loop**: The bug-gather agent returns after each exchange when it needs user input (e.g., asking if the user has anything to add). Loop as follows:
-
-   WHILE the bug-gather agent has NOT signaled completion:
-     i.   **Output the agent's text VERBATIM as your response.** Do NOT summarize, paraphrase, or reformat.
-     ii.  **Let the user respond naturally.** Do NOT use menus or multiple-choice options.
-     iii. Resume the bug-gather agent (using the `resume` parameter with the agent's ID), passing ONLY the user's exact response as the prompt.
-     iv.  On return, check if the agent signaled completion (output ends with "BUG_GATHER_COMPLETE"). If yes, exit loop.
-
-   **Completion signal**: The bug-gather agent signals completion by including "BUG_GATHER_COMPLETE" as the last line of its final output.
+   PROTOCOL (from bug-gather-analyst.md):
+     1. Follow the bug-gather opening: acknowledge bug, present structured understanding
+     2. Ask if user has additional context -- STOP and wait for reply
+     3. On reply: finalize bug report artifacts
+     4. Proceed directly to step 6.5e (inline completion -- no signal parsing needed)
 
    6.5e. **Post bug-gather: Update meta.json**: After the bug-gather agent returns:
    - Re-read meta.json using `readMetaJson(slugDir)` to get the agent's updates
@@ -798,89 +777,56 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
 7. **Roundtable conversation loop** (REQ-0032, FR-014, REQ-0037):
    (NOTE: This step is ONLY reached for items classified as features. Bugs are handled entirely by step 6.5 above.)
 
-   7a. **Initial dispatch**: Delegate to the `roundtable-analyst` agent via Task tool with the following prompt. The prompt includes PERSONA_CONTEXT, TOPIC_CONTEXT, and DISCOVERY_CONTEXT fields so the roundtable can skip file reads at startup. (Note: draftContent and discoveryContent were already resolved in step 6.5 -- reuse them here.)
+   7a. **Read protocol reference**: Read `src/claude/agents/roundtable-analyst.md` using the Read tool. This is a protocol reference -- do NOT spawn it as a separate agent via Task tool. The file defines the conversation protocol, topic coverage rules, confirmation state machine, and artifact batch write specifications that you will execute inline. (Note: draftContent and discoveryContent were already resolved in step 6.5 -- reuse them here.)
 
-   ```
-   "Analyze '{slug}' using concurrent roundtable analysis.
+   7b. **Execute roundtable conversation protocol inline** (REQ-0065, FR-001):
 
-    ARTIFACT_FOLDER: docs/requirements/{slug}/
-    SLUG: {slug}
-    SOURCE: {meta.source}
-    SOURCE_ID: {meta.source_id}
+   CONTEXT (already in memory -- no reads needed):
+     - slug, artifact_folder: from step 3 resolution
+     - meta: from step 4 readMetaJson()
+     - draftContent: from step 6.5 draft read
+     - discoveryContent: from step 6.5 discovery extraction
+     - memoryContextBlock: from step 3a Group 1 memory read
+     - lightFlag, sizing_decision: from step 2.5 / step 6
+     - Personas, topics, constitution: in session cache (ROUNDTABLE_CONTEXT)
 
-    META_CONTEXT:
-    {JSON.stringify(meta, null, 2)}
+   PROTOCOL (from roundtable-analyst.md):
+     1. Follow Section 2.1 Opening:
+        - Open as Maya from draft content
+        - Ask a single opening question
+        - STOP and wait for user reply (natural conversation turn -- no Task resume)
+     2. On user's first reply, follow Section 2.1 "On resume":
+        - Run codebase scan (Alex's deferred task)
+        - Compose response with Maya continuing + Alex contributing scan evidence
+     3. For each subsequent exchange, follow Sections 2.2-2.5:
+        - Conversation flow rules, persona contribution batching, natural steering
+        - Topic coverage tracking (Section 3)
+        - Depth adaptation (Section 4)
+     4. When coverage is complete, enter confirmation sequence (Section 2.5):
+        - Sequential: PRESENTING_REQUIREMENTS -> PRESENTING_ARCHITECTURE -> PRESENTING_DESIGN
+        - Each domain: present summary, wait for Accept/Amend
+     5. On final Accept, execute artifact batch write (Section 5.5):
+        - Write all artifacts to docs/requirements/{slug}/
+        - Update meta.json with phases_completed, topics_covered, acceptance record
+     6. Set confirmationState = COMPLETE (inline completion -- no signal parsing needed)
 
-    DRAFT_CONTENT:
-    {draftContent}
-
-    SIZING_INFO:
-      light_flag: {lightFlag}
-      sizing_decision: {JSON.stringify(meta.sizing_decision) || "null"}
-
-    PERSONA_CONTEXT:
-    --- persona-business-analyst ---
-    {personaBA content}
-    --- persona-solutions-architect ---
-    {personaSA content}
-    --- persona-system-designer ---
-    {personaSD content}
-
-    TOPIC_CONTEXT:
-    --- topic: problem-discovery ---
-    {topic content}
-    --- topic: requirements-definition ---
-    {topic content}
-    --- topic: technical-analysis ---
-    {topic content}
-    --- topic: architecture ---
-    {topic content}
-    --- topic: specification ---
-    {topic content}
-    --- topic: security ---
-    {topic content}
-
-    DISCOVERY_CONTEXT:
-    {discoveryContent}
-
-    MEMORY_CONTEXT:
-    {memoryContextBlock}
-
-    ANALYSIS_MODE: No state.json writes, no branch creation."
-   ```
-
-   The PERSONA_CONTEXT and TOPIC_CONTEXT fields use `--- persona-{name} ---` and `--- topic: {topic_id} ---` delimiters. The roundtable-analyst parses these to skip file reads. The DISCOVERY_CONTEXT field contains project discovery reports (architecture, test coverage, reverse-engineered behavior) when available. The MEMORY_CONTEXT field (REQ-0063) contains per-topic user preferences and project history from `lib/memory.js`. If any field is absent (e.g., pre-reading failed, memory files missing), the roundtable falls back to its default behavior.
-
-   **Task description format**: `Concurrent analysis for {slug}`
-
-   7b. **Relay-and-resume loop**: The roundtable-analyst returns after each exchange when it needs user input. Loop as follows:
-
-   WHILE the roundtable-analyst has NOT signaled completion:
-     i.   **Output the agent's text VERBATIM as your response.** Copy-paste it. Do NOT summarize it into tables. Do NOT paraphrase it. Do NOT add headings like "Maya (Step 01-03):" above it. Do NOT re-present the agent's tables in your own formatting. The agent's output IS the user-facing content — just emit it directly.
-     ii.  **Let the user respond naturally.** Do NOT use AskUserQuestion. Do NOT present multiple-choice options. Do NOT create menus like "Looks good, continue / Needs adjustment". The roundtable is a conversation — the user types freeform text in response to the persona's question.
-     iii. Resume the roundtable-analyst agent (using the `resume` parameter with the agent's ID), passing ONLY the user's exact response as the prompt. Do NOT add your own instructions, commentary, or analysis.
-     iv.  On return, check if the agent signaled completion (output ends with "ROUNDTABLE_COMPLETE"). If yes, exit loop.
-
-   **Completion signal**: The roundtable-analyst signals completion by including "ROUNDTABLE_COMPLETE" as the last line of its final output.
-
-   **Orchestrator boundary**: During the loop, you are INVISIBLE. You are a relay. You do not:
-   - Summarize the agent's output ("Maya's asking whether...")
-   - Add your own tables or formatting
+   **Conversation boundary**: During the roundtable conversation you ARE the roundtable. You do not:
+   - Summarize the persona output ("Maya's asking whether...")
+   - Add your own tables or formatting outside the protocol
    - Present AskUserQuestion menus
-   - Add commentary between the agent's output and the user's response
-   - Interpret what the agent said
-   The roundtable owns the entire user-facing experience. Your only job is: emit agent output → wait for user text → resume agent.
+   - Add commentary between the persona output and the user's response
+   - Interpret what the persona said
+   The roundtable protocol owns the entire user-facing experience. Follow the conversation protocol from roundtable-analyst.md directly.
 
 7.5. **Post-dispatch: Re-read meta.json**: After the roundtable-analyst returns:
    - Re-read meta.json using `readMetaJson(slugDir)` to get the lead's updates
    - The lead will have populated phases_completed, topics_covered, and written artifacts
 
-7.5a. **Memory write-back** (REQ-0063, FR-006): After the roundtable-analyst returns with ROUNDTABLE_COMPLETE:
-   - Parse the SESSION_RECORD JSON block from the roundtable's final output (if present)
+7.5a. **Memory write-back** (REQ-0063, FR-006; REQ-0065, FR-007): After the roundtable conversation completes inline:
+   - Construct session record from in-memory conversation state: `{ topics_covered, depth_preferences_observed, overrides, session_timestamp }` -- no parsing of agent output needed since the conversation ran inline
    - Call `writeSessionRecord(record, projectRoot, userMemoryDir)` from `lib/memory.js`
    - This writes the session record to both `~/.isdlc/user-memory/sessions/{timestamp}.json` and `.isdlc/roundtable-memory.json`
    - Write failures are non-blocking: the result `{ userWritten, projectWritten }` is logged internally but does not affect the analyze flow (AC-006-04, AC-008-05)
-   - If no SESSION_RECORD block is found in the output, skip this step silently (fail-open)
 
 7.6. **SIZING TRIGGER** (GH-57, fires after dispatch returns):
    IF meta.sizing_decision is NOT already set AND meta.phases_completed includes '02-impact-analysis':

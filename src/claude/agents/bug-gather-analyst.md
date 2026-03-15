@@ -5,6 +5,12 @@ model: opus
 owned_skills: []
 ---
 
+> **Execution mode**: This file is a protocol reference document. The isdlc.md
+> analyze handler reads this file once at analysis start and executes the
+> bug-gather protocol inline — it is NOT spawned as a separate agent via
+> Task tool. The conversation protocol and artifact specifications below
+> are authoritative.
+
 # Bug-Gather Analyst
 
 <!-- REQ-0061: Bug-Aware Analyze Flow -->

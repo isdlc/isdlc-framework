@@ -88,26 +88,23 @@ describe('TG-01: Dependency Group Execution (FR-001)', () => {
     );
   });
 
-  // TC-01.3 [P0]: Positive — Dispatch fires after Group 2
+  // TC-01.3 [P0]: Positive — Roundtable execution fires after Group 2
   // Traces: AC-001-03
-  it('TC-01.3 [P0]: Dispatch fires after Group 2 completes', () => {
+  // Updated by REQ-0065: dispatch replaced with inline execution; context used from session cache
+  it('TC-01.3 [P0]: Roundtable execution fires after Group 2 completes', () => {
     const content = readFile(ISDLC_MD_PATH);
     const lower = content.toLowerCase();
 
-    // Dispatch must follow Group 2 (must contain both dispatch and group 2)
+    // Roundtable execution must follow Group 2 (must contain both roundtable and group 2)
     assert.ok(
-      lower.includes('dispatch') && lower.includes('group 2'),
-      'Dispatch must be documented as occurring after Group 2'
+      (lower.includes('roundtable') || lower.includes('protocol')) && lower.includes('group 2'),
+      'Roundtable execution must be documented as occurring after Group 2'
     );
 
-    // The inlined context fields must be in the dispatch prompt
+    // REQ-0065: context is used from session cache, not re-serialized into a dispatch prompt
     assert.ok(
-      content.includes('PERSONA_CONTEXT') || content.includes('persona_context'),
-      'Dispatch prompt must include PERSONA_CONTEXT field'
-    );
-    assert.ok(
-      content.includes('TOPIC_CONTEXT') || content.includes('topic_context'),
-      'Dispatch prompt must include TOPIC_CONTEXT field'
+      lower.includes('session cache') || lower.includes('in memory') || lower.includes('in-memory'),
+      'Roundtable must use session cache / in-memory context (REQ-0065)'
     );
   });
 
@@ -323,25 +320,31 @@ describe('TG-04: Eliminate Re-Read After Write (FR-004)', () => {
 
 describe('TG-05: Inlined Context in Dispatch (FR-005)', () => {
 
-  // TC-05.1 [P0]: Positive — PERSONA_CONTEXT field in dispatch
+  // TC-05.1 [P0]: Positive — Persona context available via session cache
   // Traces: AC-005-01
-  it('TC-05.1 [P0]: PERSONA_CONTEXT field in dispatch prompt', () => {
+  // Updated by REQ-0065: dispatch prompt replaced with inline execution using session cache
+  it('TC-05.1 [P0]: Persona context available via session cache for inline execution', () => {
     const content = readFile(ISDLC_MD_PATH);
+    const lower = content.toLowerCase();
 
+    // REQ-0065: personas are in session cache (ROUNDTABLE_CONTEXT), used inline
     assert.ok(
-      content.includes('PERSONA_CONTEXT'),
-      'Dispatch prompt must include PERSONA_CONTEXT field'
+      lower.includes('persona') && (lower.includes('session cache') || lower.includes('roundtable_context')),
+      'Persona context must be available via session cache for inline execution (REQ-0065)'
     );
   });
 
-  // TC-05.2 [P0]: Positive — TOPIC_CONTEXT field in dispatch
+  // TC-05.2 [P0]: Positive — Topic context available via session cache
   // Traces: AC-005-02
-  it('TC-05.2 [P0]: TOPIC_CONTEXT field in dispatch prompt', () => {
+  // Updated by REQ-0065: dispatch prompt replaced with inline execution using session cache
+  it('TC-05.2 [P0]: Topic context available via session cache for inline execution', () => {
     const content = readFile(ISDLC_MD_PATH);
+    const lower = content.toLowerCase();
 
+    // REQ-0065: topics are in session cache (ROUNDTABLE_CONTEXT), used inline
     assert.ok(
-      content.includes('TOPIC_CONTEXT'),
-      'Dispatch prompt must include TOPIC_CONTEXT field'
+      lower.includes('topic') && (lower.includes('session cache') || lower.includes('roundtable_context')),
+      'Topic context must be available via session cache for inline execution (REQ-0065)'
     );
   });
 
@@ -594,35 +597,41 @@ describe('TG-08: Error Handling Unchanged (FR-008)', () => {
 
 describe('TG-09: Cross-File Consistency', () => {
 
-  // TC-09.1 [P0]: Positive — PERSONA_CONTEXT in both files
+  // TC-09.1 [P0]: Positive — PERSONA_CONTEXT referenced in roundtable; isdlc.md uses session cache
   // Traces: FR-005 + FR-006
-  it('TC-09.1 [P0]: PERSONA_CONTEXT referenced in both isdlc.md and roundtable', () => {
+  // Updated by REQ-0065: isdlc.md no longer has a dispatch prompt with PERSONA_CONTEXT;
+  // it uses session cache (ROUNDTABLE_CONTEXT) for inline execution instead
+  it('TC-09.1 [P0]: PERSONA_CONTEXT in roundtable, session cache in isdlc.md', () => {
     const isdlc = readFile(ISDLC_MD_PATH);
     const roundtable = readFile(ROUNDTABLE_MD_PATH);
 
+    // isdlc.md uses session cache for persona context (REQ-0065)
     assert.ok(
-      isdlc.includes('PERSONA_CONTEXT'),
-      'isdlc.md must reference PERSONA_CONTEXT in dispatch'
+      isdlc.toLowerCase().includes('session cache') || isdlc.includes('ROUNDTABLE_CONTEXT'),
+      'isdlc.md must reference session cache or ROUNDTABLE_CONTEXT for persona context (REQ-0065)'
     );
     assert.ok(
       roundtable.includes('PERSONA_CONTEXT'),
-      'roundtable-analyst.md must reference PERSONA_CONTEXT'
+      'roundtable-analyst.md must still reference PERSONA_CONTEXT for agent teams mode'
     );
   });
 
-  // TC-09.2 [P0]: Positive — TOPIC_CONTEXT in both files
+  // TC-09.2 [P0]: Positive — TOPIC_CONTEXT referenced in roundtable; isdlc.md uses session cache
   // Traces: FR-005 + FR-006
-  it('TC-09.2 [P0]: TOPIC_CONTEXT referenced in both isdlc.md and roundtable', () => {
+  // Updated by REQ-0065: isdlc.md no longer has a dispatch prompt with TOPIC_CONTEXT;
+  // it uses session cache (ROUNDTABLE_CONTEXT) for inline execution instead
+  it('TC-09.2 [P0]: TOPIC_CONTEXT in roundtable, session cache in isdlc.md', () => {
     const isdlc = readFile(ISDLC_MD_PATH);
     const roundtable = readFile(ROUNDTABLE_MD_PATH);
 
+    // isdlc.md uses session cache for topic context (REQ-0065)
     assert.ok(
-      isdlc.includes('TOPIC_CONTEXT'),
-      'isdlc.md must reference TOPIC_CONTEXT in dispatch'
+      isdlc.toLowerCase().includes('session cache') || isdlc.includes('ROUNDTABLE_CONTEXT'),
+      'isdlc.md must reference session cache or ROUNDTABLE_CONTEXT for topic context (REQ-0065)'
     );
     assert.ok(
       roundtable.includes('TOPIC_CONTEXT'),
-      'roundtable-analyst.md must reference TOPIC_CONTEXT'
+      'roundtable-analyst.md must still reference TOPIC_CONTEXT for agent teams mode'
     );
   });
 

@@ -1,0 +1,32 @@
+Requirement,AC,Test Case,Test Type,Priority,Automated
+FR-001,AC-001-01,TC-01.1: Step 7a reads roundtable-analyst.md as protocol reference,positive,P0,Yes
+FR-001,AC-001-01,TC-01.2: Step 7b executes roundtable protocol inline,positive,P0,Yes
+FR-001,AC-001-01,TC-01.3: No Task tool dispatch in step 7a,negative,P0,Yes
+FR-001,AC-001-02,TC-01.4: No relay-and-resume loop in step 7b,negative,P0,Yes
+FR-001,AC-001-02,TC-01.5: No ROUNDTABLE_COMPLETE signal check,negative,P0,Yes
+FR-002,AC-002-01,TC-02.1: Step 6.5c reads bug-gather-analyst.md as protocol reference,positive,P0,Yes
+FR-002,AC-002-01,TC-02.2: Step 6.5d executes bug-gather protocol inline,positive,P0,Yes
+FR-002,AC-002-01,TC-02.3: No Task tool dispatch in step 6.5c,negative,P0,Yes
+FR-002,AC-002-02,TC-02.4: No relay-and-resume loop in step 6.5d,negative,P0,Yes
+FR-002,AC-002-03,TC-02.5: No BUG_GATHER_COMPLETE signal check,negative,P0,Yes
+FR-002,AC-002-03,TC-02.6: Step 6.5d proceeds directly to step 6.5e,positive,P1,Yes
+FR-003,AC-003-01,TC-03.1: In-memory context references in step 7b,positive,P0,Yes
+FR-003,AC-003-01,TC-03.2: No dispatch prompt re-serialization,negative,P0,Yes
+FR-003,AC-003-02,TC-03.3: No redundant Read tool calls for context,positive,P1,Yes
+FR-004,AC-004-01,TC-B01: First question latency under 15 seconds,positive,P0,No (behavioral)
+FR-005,AC-005-01,TC-B02: Conversation quality identical to subagent flow,positive,P0,No (behavioral)
+FR-005,AC-005-02,TC-B02: Conversation quality identical to subagent flow,positive,P0,No (behavioral)
+FR-006,AC-006-01,TC-04.1: Roundtable-analyst.md has protocol reference header,positive,P0,Yes
+FR-006,AC-006-01,TC-04.3: Roundtable header mentions inline execution by isdlc.md,positive,P1,Yes
+FR-006,AC-006-01,TC-06.1: isdlc.md references reading roundtable-analyst.md,positive,P0,Yes
+FR-006,AC-006-01,TC-06.3: Roundtable-analyst.md mentions execution mode in header,positive,P0,Yes
+FR-006,AC-006-02,TC-04.2: Bug-gather-analyst.md has protocol reference header,positive,P0,Yes
+FR-006,AC-006-02,TC-04.4: Bug-gather header mentions inline execution by isdlc.md,positive,P1,Yes
+FR-006,AC-006-02,TC-06.2: isdlc.md references reading bug-gather-analyst.md,positive,P0,Yes
+FR-006,AC-006-02,TC-06.4: Bug-gather-analyst.md mentions execution mode in header,positive,P0,Yes
+FR-007,AC-007-01,TC-05.1: Step 7.5a constructs session record from in-memory state,positive,P0,Yes
+FR-007,AC-007-01,TC-05.2: No SESSION_RECORD parsing from agent output,negative,P0,Yes
+FR-007,AC-007-01,TC-B04: Memory write-back succeeds from in-memory state,positive,P1,No (behavioral)
+FR-002,AC-002-01+02+03,TC-B03: Bug-gather inline produces correct artifacts,positive,P0,No (behavioral)
+NFR,Article V,TC-06.5: No new dependencies added,negative,P0,Yes
+NFR,Architecture,TC-06.6: Only 3 files are modification targets,positive,P1,Yes
