@@ -242,7 +242,8 @@ function buildCriticalConstraints(phaseKey, phaseReq, workflowModifiers, isInter
         const testIter = phaseReq.test_iteration || {};
         if (testIter.enabled) {
             const rawCoverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent);
-            const coverage = resolveCoverageThreshold(rawCoverage, state) || 80;
+            const covType = phaseKey === '07-testing' ? 'integration' : 'unit';
+            const coverage = resolveCoverageThreshold(rawCoverage, state, covType) || 80;
             constraints.push(`Do NOT advance the gate until all tests pass with >= ${coverage}% coverage.`);
         }
 
@@ -339,7 +340,8 @@ function formatBlock(phaseKey, phaseReq, resolvedPaths, articleMap, workflowModi
         if (testIter.enabled) {
             const maxIter = testIter.max_iterations || 'N/A';
             const rawCoverage = (testIter.success_criteria && testIter.success_criteria.min_coverage_percent);
-            const coverage = resolveCoverageThreshold(rawCoverage, state) || 'N/A';
+            const covType = phaseKey === '07-testing' ? 'integration' : 'unit';
+            const coverage = resolveCoverageThreshold(rawCoverage, state, covType) || 'N/A';
             lines.push(`  - test_iteration: enabled (max ${maxIter} iterations, coverage >= ${coverage}%)`);
         } else {
             lines.push('  - test_iteration: disabled');

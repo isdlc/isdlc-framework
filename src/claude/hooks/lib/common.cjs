@@ -124,6 +124,10 @@ const DEFAULT_CONFIG = {
             roundtable_context: 8,
             instructions: 9
         }
+    },
+    coverage: {
+        unit: { light: 60, standard: 80, epic: 95 },
+        integration: { light: 50, standard: 70, epic: 85 }
     }
 };
 
@@ -3707,34 +3711,46 @@ function applySizingDecision(state, intensity, sizingData = {}) {
 // =========================================================================
 
 /**
- * Resolves an intensity-aware coverage threshold from iteration-requirements.json.
- *
- * Handles both the legacy scalar format (backward compat) and the new
- * intensity-keyed object format introduced by BUG-0054-GH-52.
+ * Resolves an intensity-aware coverage threshold.
  *
  * Resolution priority:
  * 1. If minCoveragePercent is null/undefined → return null (no enforcement)
- * 2. If minCoveragePercent is a number (scalar) → return it directly
- * 3. If minCoveragePercent is an object:
- *    a. Read effective_intensity from state.active_workflow.sizing.effective_intensity
- *    b. Default to "standard" if not present (e.g., fix workflows)
- *    c. Look up minCoveragePercent[effective_intensity]
- *    d. Fall back to minCoveragePercent["standard"] if key missing
- *    e. Fall back to hardcoded 80 if "standard" key also missing
- * 4. For any other type → return hardcoded 80 (safety net)
+ * 2. Check user config override (.isdlc/config.json → coverage[coverageType][intensity])
+ *    — only when coverageType is provided ("unit" or "integration")
+ * 3. If minCoveragePercent is a number (scalar) → return it directly (backward compat)
+ * 4. If minCoveragePercent is an object → look up by intensity with fallback chain
+ * 5. For any other type → return hardcoded 80 (safety net)
  *
  * Traces to: FR-003, AC-003-01 through AC-003-07, AC-NFR-001-01, AC-NFR-002-01
  *
- * @param {number|object|null|undefined} minCoveragePercent - The raw config value
+ * @param {number|object|null|undefined} minCoveragePercent - The raw config value from iteration-requirements.json
  * @param {object|null} state - The current state.json contents
+ * @param {string} [coverageType] - "unit" or "integration" — enables user config override
  * @returns {number|null} Resolved threshold, or null if no enforcement
  */
-function resolveCoverageThreshold(minCoveragePercent, state) {
+function resolveCoverageThreshold(minCoveragePercent, state, coverageType) {
     if (minCoveragePercent == null) return null;
+
+    const intensity = state?.active_workflow?.sizing?.effective_intensity || 'standard';
+    const effectiveKey = intensity || 'standard';
+
+    // Check user config override first (fail-open)
+    if (coverageType) {
+        try {
+            const config = readConfig();
+            const userThresholds = config?.coverage?.[coverageType];
+            if (userThresholds && typeof userThresholds === 'object' && !Array.isArray(userThresholds)) {
+                const userValue = userThresholds[effectiveKey] ?? userThresholds['standard'];
+                if (typeof userValue === 'number' && userValue >= 0 && isFinite(userValue)) {
+                    return userValue;
+                }
+            }
+        } catch (_) { /* fail-open: fall through to framework defaults */ }
+    }
+
+    // Framework defaults from iteration-requirements.json
     if (typeof minCoveragePercent === 'number') return minCoveragePercent;
     if (typeof minCoveragePercent === 'object' && !Array.isArray(minCoveragePercent)) {
-        const intensity = state?.active_workflow?.sizing?.effective_intensity || 'standard';
-        const effectiveKey = intensity || 'standard';
         return minCoveragePercent[effectiveKey] ?? minCoveragePercent['standard'] ?? 80;
     }
     return 80; // hardcoded safety net for unexpected types (e.g., string)
@@ -4664,6 +4680,23 @@ function readConfig(projectRoot) {
                         }
                     }
                     // Unknown section names are silently ignored (forward-compatible)
+                }
+            }
+        }
+
+        // Merge coverage thresholds (user can override unit/integration per intensity)
+        if (parsed.coverage && typeof parsed.coverage === 'object' && !Array.isArray(parsed.coverage)) {
+            for (const type of ['unit', 'integration']) {
+                if (parsed.coverage[type] && typeof parsed.coverage[type] === 'object' && !Array.isArray(parsed.coverage[type])) {
+                    for (const [tier, val] of Object.entries(parsed.coverage[type])) {
+                        if (['light', 'standard', 'epic'].includes(tier)) {
+                            if (typeof val === 'number' && val >= 0 && val <= 100 && isFinite(val)) {
+                                merged.coverage[type][tier] = val;
+                            } else {
+                                process.stderr.write(`[config] Invalid coverage.${type}.${tier} value (${JSON.stringify(val)}), using default\n`);
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -1442,6 +1442,31 @@ describe('resolveCoverageThreshold (BUG-0054-GH-52)', () => {
         const result = common.resolveCoverageThreshold('80', stateWithIntensity('standard'));
         assert.equal(result, 80, 'String value should fall back to hardcoded 80');
     });
+
+    // User config override tests
+    it('returns user config unit threshold when coverageType is provided', () => {
+        const common = loadCommon();
+        // Without coverageType — uses framework defaults from minCoveragePercent
+        const noType = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('standard'));
+        assert.equal(noType, 80, 'Without coverageType, should use framework default');
+        // With coverageType — checks readConfig().coverage.unit first (defaults match framework)
+        const withType = common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('standard'), 'unit');
+        assert.equal(withType, 80, 'With coverageType unit + default config, should return default 80');
+    });
+
+    it('returns user config integration threshold when coverageType is integration', () => {
+        const common = loadCommon();
+        const result = common.resolveCoverageThreshold(TIERED_INTEGRATION, stateWithIntensity('light'), 'integration');
+        assert.equal(result, 50, 'With coverageType integration + light intensity, should return 50');
+    });
+
+    it('coverageType param is backward compatible — omitting it works as before', () => {
+        const common = loadCommon();
+        // All existing tests pass without coverageType, so this is a sanity check
+        assert.equal(common.resolveCoverageThreshold(TIERED_UNIT, stateWithIntensity('epic')), 95);
+        assert.equal(common.resolveCoverageThreshold(null, stateWithIntensity('standard')), null);
+        assert.equal(common.resolveCoverageThreshold(80, stateWithIntensity('light')), 80);
+    });
 });
 
 // ---------------------------------------------------------------------------

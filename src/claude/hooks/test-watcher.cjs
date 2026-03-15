@@ -552,7 +552,8 @@ function check(ctx) {
             // Coverage enforcement (fail-open: only activates when coverage data is present)
             // BUG-0054-GH-52: Resolve intensity-aware coverage threshold
             const rawCoverage = phaseReq.test_iteration?.success_criteria?.min_coverage_percent;
-            const coverageThreshold = resolveCoverageThreshold(rawCoverage, state);
+            const covType = currentPhase === '07-testing' ? 'integration' : 'unit';
+            const coverageThreshold = resolveCoverageThreshold(rawCoverage, state, covType);
             const coverage = parseCoverage(result);
             iterState.coverage = {
                 found: coverage.found,
