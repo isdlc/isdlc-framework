@@ -31,6 +31,8 @@
     "domains": ["requirements", "architecture", "design"],
     "amendment_cycles": 0
   },
+  "build_started_at": "2026-03-15T23:30:00.000Z",
+  "workflow_type": "feature",
   "recommended_scope": {
     "scope": "standard",
     "rationale": "~13 files affected, 11 FRs, integrates with existing embedding infrastructure, dual-index architecture with team sharing requirement",

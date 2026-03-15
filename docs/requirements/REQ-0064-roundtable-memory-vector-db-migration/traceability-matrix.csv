@@ -1,47 +1,175 @@
-FR_ID,AC_ID,User_Story_ID,Confidence,Source
-FR-001,AC-001-01,US-001,High,User-confirmed
-FR-001,AC-001-02,US-001,High,User-confirmed
-FR-001,AC-001-03,US-002,High,Inferred from async requirement
-FR-001,AC-001-04,US-007,High,Inferred from model consistency requirement
-FR-001,AC-001-05,US-006,High,User-confirmed backward compat
-FR-002,AC-002-01,US-002,High,User-confirmed
-FR-002,AC-002-02,US-002,High,User-confirmed
-FR-002,AC-002-03,US-002,High,User-confirmed
-FR-002,AC-002-04,US-002,High,Inferred from fail-open principle
-FR-003,AC-003-01,US-003,High,User-confirmed
-FR-003,AC-003-02,US-003,High,User-confirmed
-FR-003,AC-003-03,US-003,Medium,Inferred from existing .emb format
-FR-003,AC-003-04,US-001,High,User-confirmed dual search
-FR-003,AC-003-05,US-006,High,Inferred from fail-open principle
-FR-004,AC-004-01,US-001,High,User-confirmed
-FR-004,AC-004-02,US-001,High,User-confirmed
-FR-004,AC-004-03,US-001,High,User-confirmed
-FR-004,AC-004-04,US-001,Medium,Inferred reasonable default
-FR-004,AC-004-05,US-006,High,Consistent with REQ-0063
-FR-005,AC-005-01,US-004,High,User-confirmed
-FR-005,AC-005-02,US-004,High,User-confirmed
-FR-005,AC-005-03,US-004,High,User-confirmed
-FR-005,AC-005-04,US-004,High,Inferred from conversational UX model
-FR-006,AC-006-01,US-005,High,User-confirmed
-FR-006,AC-006-02,US-005,High,Inferred from conversational UX model
-FR-006,AC-006-03,US-005,High,Inferred from dual-layer architecture
-FR-007,AC-007-01,US-007,Medium,Inferred from .emb manifest capability
-FR-007,AC-007-02,US-007,Medium,Inferred from team sharing requirement
-FR-007,AC-007-03,US-007,High,User-confirmed no silent corruption
-FR-007,AC-007-04,US-007,Medium,Inferred resolution path
-FR-008,AC-008-01,US-008,Medium,Inferred from async failure path
-FR-008,AC-008-02,US-008,Medium,Inferred from eventual consistency model
-FR-008,AC-008-03,US-008,Medium,Inferred from fail-open principle
-FR-008,AC-008-04,US-008,Medium,Inferred from state tracking
-FR-009,AC-009-01,US-009,Medium,Inferred from compaction concept
-FR-009,AC-009-02,US-009,Medium,Inferred from vector deduplication
-FR-009,AC-009-03,US-009,Medium,Inferred from .emb rebuild
-FR-009,AC-009-04,US-009,High,User-confirmed backward compat
-FR-010,AC-010-01,US-006,High,User-confirmed
-FR-010,AC-010-02,US-006,High,Inferred from format change
-FR-010,AC-010-03,US-006,High,Inferred from roundtable agent requirements
-FR-010,AC-010-04,US-006,High,User-confirmed gradual migration
-FR-011,AC-011-01,US-006,High,Consistent with REQ-0063 ADR-005
-FR-011,AC-011-02,US-006,High,Consistent with REQ-0063 ADR-005
-FR-011,AC-011-03,US-006,High,Inferred from fail-open principle
-FR-011,AC-011-04,US-006,High,Consistent with REQ-0063 ADR-005
+Requirement,AC,Test Case,Test Type,Priority
+FR-001,AC-001-01,MX-001,positive,Must Have
+FR-001,AC-001-01,MX-002,positive,Must Have
+FR-001,AC-001-01,MX-005,positive,Must Have
+FR-001,AC-001-02,ME-003,positive,Must Have
+FR-001,AC-001-02,ME-016,boundary,Must Have
+FR-001,AC-001-03,ME-025,positive,Must Have
+FR-001,AC-001-04,ME-026,positive,Must Have
+FR-001,AC-001-05,ME-024,positive,Must Have
+FR-001,AC-001-06,MX-004,positive,Must Have
+FR-001,AC-001-06,ME-023,positive,Must Have
+FR-001,AC-001-06,ME-015,boundary,Must Have
+FR-001,AC-001-07,IT-001,positive,Must Have
+FR-002,AC-002-01,ME-001,positive,Must Have
+FR-002,AC-002-01,ME-002,positive,Must Have
+FR-002,AC-002-01,ME-028,negative,Must Have
+FR-002,AC-002-01,IT-001,positive,Must Have
+FR-002,AC-002-02,PT-003,performance,Must Have
+FR-002,AC-002-03,ME-008,negative,Must Have
+FR-002,AC-002-03,ME-009,negative,Must Have
+FR-002,AC-002-04,ME-007,positive,Must Have
+FR-002,AC-002-04,ME-008,negative,Must Have
+FR-003,AC-003-01,MSA-001,positive,Must Have
+FR-003,AC-003-01,MSA-002,positive,Must Have
+FR-003,AC-003-01,MSA-031,positive,Must Have
+FR-003,AC-003-02,MSA-004,positive,Must Have
+FR-003,AC-003-02,MSA-005,positive,Must Have
+FR-003,AC-003-03,MSA-001,positive,Must Have
+FR-003,AC-003-04,MS-002,positive,Must Have
+FR-003,AC-003-04,IT-002,positive,Must Have
+FR-003,AC-003-05,MSA-037,boundary,Must Have
+FR-003,AC-003-05,MSA-038,boundary,Must Have
+FR-003,AC-003-05,MS-011,negative,Must Have
+FR-003,AC-003-05,MS-012,negative,Must Have
+FR-003,AC-003-05,IT-017,negative,Must Have
+FR-003,AC-003-06,MSA-003,positive,Must Have
+FR-003,AC-003-06,MSA-006,positive,Must Have
+FR-004,AC-004-01,IT-002,positive,Must Have
+FR-004,AC-004-02,MS-001,positive,Must Have
+FR-004,AC-004-02,MSA-033,positive,Must Have
+FR-004,AC-004-02,MS-005,positive,Must Have
+FR-004,AC-004-02,MS-006,positive,Must Have
+FR-004,AC-004-03,MS-025,positive,Must Have
+FR-004,AC-004-03,PT-001,performance,Must Have
+FR-004,AC-004-03,PT-002,performance,Must Have
+FR-004,AC-004-04,MS-003,positive,Must Have
+FR-004,AC-004-04,MS-004,positive,Must Have
+FR-004,AC-004-05,MS-021,boundary,Must Have
+FR-004,AC-004-05,MS-026,boundary,Must Have
+FR-005,AC-005-01,IT-007,positive,Must Have
+FR-005,AC-005-02,IT-007,positive,Must Have
+FR-005,AC-005-03,IT-007,positive,Must Have
+FR-005,AC-005-04,IT-007,positive,Must Have
+FR-006,AC-006-01,IT-019,positive,Should Have
+FR-006,AC-006-02,IT-019,positive,Should Have
+FR-006,AC-006-03,IT-019,positive,Should Have
+FR-007,AC-007-01,MSA-024,positive,Must Have
+FR-007,AC-007-01,MSA-025,boundary,Must Have
+FR-007,AC-007-02,MS-022,positive,Must Have
+FR-007,AC-007-02,MS-023,negative,Must Have
+FR-007,AC-007-02,MS-024,negative,Must Have
+FR-007,AC-007-03,MS-015,negative,Must Have
+FR-007,AC-007-03,MS-016,negative,Must Have
+FR-007,AC-007-03,MS-017,negative,Must Have
+FR-007,AC-007-04,ME-018,positive,Must Have
+FR-007,AC-007-04,ME-019,positive,Must Have
+FR-007,AC-007-04,ME-020,boundary,Must Have
+FR-007,AC-007-04,ME-021,negative,Must Have
+FR-007,AC-007-04,IT-006,positive,Must Have
+FR-008,AC-008-01,MS-018,positive,Should Have
+FR-008,AC-008-02,MS-018,positive,Should Have
+FR-008,AC-008-03,MS-019,negative,Should Have
+FR-008,AC-008-04,MS-020,positive,Should Have
+FR-008,AC-008-01,IT-018,positive,Should Have
+FR-008,AC-008-02,IT-018,positive,Should Have
+FR-009,AC-009-01,MX-011,positive,Should Have
+FR-009,AC-009-01,MX-012,positive,Should Have
+FR-009,AC-009-01,MSA-029,positive,Should Have
+FR-009,AC-009-02,MX-013,positive,Should Have
+FR-009,AC-009-03,MX-014,positive,Should Have
+FR-009,AC-009-04,MX-015,positive,Should Have
+FR-009,AC-009-01,IT-015,positive,Should Have
+FR-009,AC-009-02,IT-015,positive,Should Have
+FR-009,AC-009-03,IT-015,positive,Should Have
+FR-010,AC-010-01,MX-003,positive,Must Have
+FR-010,AC-010-01,MX-015,positive,Must Have
+FR-010,AC-010-01,IT-004,positive,Must Have
+FR-010,AC-010-01,IT-005,negative,Must Have
+FR-010,AC-010-01,IT-016,positive,Must Have
+FR-010,AC-010-02,MS-025,positive,Must Have
+FR-010,AC-010-02,IT-022,positive,Must Have
+FR-010,AC-010-03,IT-022,positive,Must Have
+FR-010,AC-010-04,MX-018,negative,Must Have
+FR-010,AC-010-04,IT-016,positive,Must Have
+FR-011,AC-011-01,ME-009,negative,Must Have
+FR-011,AC-011-01,ME-010,negative,Must Have
+FR-011,AC-011-01,ME-011,negative,Must Have
+FR-011,AC-011-01,MS-014,negative,Must Have
+FR-011,AC-011-01,IT-005,negative,Must Have
+FR-011,AC-011-01,IT-017,negative,Must Have
+FR-011,AC-011-02,MS-011,negative,Must Have
+FR-011,AC-011-02,MS-012,negative,Must Have
+FR-011,AC-011-02,MS-013,negative,Must Have
+FR-011,AC-011-03,MSA-039,negative,Must Have
+FR-011,AC-011-03,MSA-040,negative,Must Have
+FR-011,AC-011-03,MS-027,negative,Must Have
+FR-011,AC-011-03,MS-028,negative,Must Have
+FR-011,AC-011-04,MS-029,negative,Must Have
+FR-012,AC-012-01,MSA-020,positive,Must Have
+FR-012,AC-012-01,IT-021,positive,Must Have
+FR-012,AC-012-02,MSA-013,positive,Must Have
+FR-012,AC-012-02,MS-030,positive,Must Have
+FR-012,AC-012-03,MSA-020,positive,Must Have
+FR-012,AC-012-03,MS-009,positive,Must Have
+FR-012,AC-012-03,MS-010,positive,Must Have
+FR-012,AC-012-04,MSA-042,positive,Must Have
+FR-013,AC-013-01,MSA-012,positive,Must Have
+FR-013,AC-013-02,MSA-007,positive,Must Have
+FR-013,AC-013-02,IT-011,positive,Must Have
+FR-013,AC-013-03,MSA-008,positive,Must Have
+FR-013,AC-013-03,MSA-019,positive,Must Have
+FR-013,AC-013-03,IT-012,positive,Must Have
+FR-013,AC-013-04,MSA-009,positive,Must Have
+FR-013,AC-013-04,MSA-010,positive,Must Have
+FR-013,AC-013-04,IT-013,positive,Must Have
+FR-013,AC-013-05,MSA-011,positive,Must Have
+FR-013,AC-013-06,ME-005,positive,Must Have
+FR-013,AC-013-06,ME-027,positive,Must Have
+FR-013,AC-013-06,MX-009,positive,Must Have
+FR-013,AC-013-07,MSA-032,positive,Must Have
+FR-013,AC-013-07,ME-022,positive,Must Have
+FR-014,AC-014-01,MX-006,positive,Should Have
+FR-014,AC-014-01,IT-024,positive,Should Have
+FR-014,AC-014-02,ME-004,positive,Should Have
+FR-014,AC-014-03,MSA-014,positive,Should Have
+FR-014,AC-014-03,IT-024,positive,Should Have
+FR-014,AC-014-04,MX-006,positive,Should Have
+FR-015,AC-015-01,MSA-015,positive,Should Have
+FR-015,AC-015-01,MSA-021,positive,Should Have
+FR-015,AC-015-01,MSA-028,positive,Should Have
+FR-015,AC-015-01,IT-008,positive,Should Have
+FR-015,AC-015-02,MSA-016,negative,Should Have
+FR-015,AC-015-02,MSA-022,positive,Should Have
+FR-015,AC-015-02,IT-009,positive,Should Have
+FR-015,AC-015-03,MSA-023,positive,Should Have
+FR-015,AC-015-03,IT-010,positive,Should Have
+FR-015,AC-015-04,IT-007,positive,Should Have
+FR-015,AC-015-04,IT-008,positive,Should Have
+FR-015,AC-015-04,IT-009,positive,Should Have
+FR-015,AC-015-05,MSA-034,positive,Should Have
+FR-015,AC-015-05,MSA-035,positive,Should Have
+FR-015,AC-015-05,MSA-036,positive,Should Have
+FR-016,AC-016-01,ME-014,positive,Should Have
+FR-016,AC-016-01,MSA-026,positive,Should Have
+FR-016,AC-016-02,MSA-027,positive,Should Have
+FR-016,AC-016-02,IT-014,positive,Should Have
+FR-016,AC-016-03,MSA-028,positive,Should Have
+FR-016,AC-016-04,ME-012,positive,Should Have
+FR-016,AC-016-04,ME-013,positive,Should Have
+FR-016,AC-016-04,PT-004,performance,Should Have
+FR-016,AC-016-05,ME-013,positive,Should Have
+FR-016,AC-016-06,MSA-041,positive,Should Have
+FR-016,AC-016-07,MSA-030,positive,Should Have
+FR-016,AC-016-07,MX-008,positive,Should Have
+FR-016,AC-016-07,MX-016,positive,Should Have
+FR-016,AC-016-07,MX-017,boundary,Should Have
+FR-016,AC-016-07,ME-017,positive,Should Have
+FR-016,AC-016-07,IT-023,positive,Should Have
+FR-017,AC-017-01,MX-007,positive,Could Have
+FR-017,AC-017-02,ME-006,positive,Could Have
+FR-017,AC-017-02,IT-020,positive,Could Have
+FR-017,AC-017-03,MSA-017,positive,Could Have
+FR-017,AC-017-03,MS-007,positive,Could Have
+FR-017,AC-017-04,MSA-018,positive,Could Have
+FR-017,AC-017-04,MS-008,positive,Could Have

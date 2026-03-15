@@ -1,61 +1,90 @@
-# Security Scan Report -- REQ-0065 Inline Roundtable Execution
+# Security Scan -- REQ-0064 Roundtable Memory Vector DB Migration
 
 **Phase**: 16-quality-loop
 **Date**: 2026-03-15
+**Verdict**: PASS -- No critical or high vulnerabilities
 
 ---
 
-## SAST Security Scan
+## SAST Security Scan (QL-008)
 
-**Status**: SKIPPED (NOT CONFIGURED)
+### Files Scanned
 
-No SAST tool is configured for this project.
+| File | Lines | Status |
+|------|-------|--------|
+| lib/memory-store-adapter.js | 937 | CLEAN |
+| lib/memory-embedder.js | 316 | CLEAN |
+| lib/memory-search.js | 242 | CLEAN |
+| lib/memory.js | 693 | CLEAN |
+
+### Vulnerability Categories
+
+| Category | Findings | Severity |
+|----------|----------|----------|
+| Hardcoded secrets | 0 | -- |
+| SQL injection | 0 | -- |
+| Code injection (eval/Function) | 0 | -- |
+| Path traversal | 0 (protected) | -- |
+| Insecure deserialization | 0 | -- |
+| Prototype pollution | 0 | -- |
+| Command injection | 0 | -- |
+
+### Security Controls Verified
+
+**SQL Injection Prevention (memory-store-adapter.js)**:
+- All 15+ SQL queries use `db.prepare()` with `?` placeholders
+- The only `db.exec()` call uses a static schema constant (`SCHEMA_SQL`)
+- The `DELETE ... IN (${placeholders})` pattern on line 427 generates `?` placeholders from an integer array (safe)
+
+**Path Traversal Prevention**:
+- `createUserStore(dbPath)`: Rejects paths containing `..` (line 167)
+- `createProjectStore(embPath)`: Rejects paths containing `..` (line 467)
+- Both validate non-empty string input
+
+**Error Handling (Article X Compliance)**:
+- 82 try/catch blocks across the 4 modules
+- All read operations fail-open (return null/empty, never throw)
+- `embedSession()` and `rebuildIndex()` return error objects instead of throwing
+- `searchMemory()` returns empty array on any failure
+
+**Input Validation**:
+- `createUserStore()`: validates dbPath is non-empty string
+- `createProjectStore()`: validates embPath is non-empty string
+- `embedSession()`: validates record.summary and engineConfig.provider
+- `searchMemory()`: validates queryText is non-empty string
+- `checkModelConsistency()`: handles null engineConfig gracefully
 
 ---
 
-## Dependency Audit
-
-**Status**: PASS
+## Dependency Audit (QL-009)
 
 ```
-npm audit --omit=dev
-found 0 vulnerabilities
+npm audit: found 0 vulnerabilities
 ```
 
-No critical, high, moderate, or low vulnerabilities found in production dependencies.
+### Dependencies
+
+| Package | Version | Type | Status |
+|---------|---------|------|--------|
+| chalk | ^5.3.0 | required | CLEAN |
+| fs-extra | ^11.2.0 | required | CLEAN |
+| js-yaml | ^4.1.1 | required | CLEAN |
+| onnxruntime-node | ^1.24.3 | required | CLEAN |
+| prompts | ^2.4.2 | required | CLEAN |
+| semver | ^7.6.0 | required | CLEAN |
+| better-sqlite3 | ^12.6.2 | optional | CLEAN |
+| faiss-node | ^0.5.1 | optional | CLEAN |
+
+No known CVEs in any dependency at time of scan.
 
 ---
 
-## Manual Security Review
+## Constitutional Compliance (Article V: Security by Design)
 
-The following security checks were performed on all changed files:
-
-### Test File: inline-roundtable-execution.test.js
-
-| Check | Result | Details |
-|-------|--------|--------|
-| Hardcoded secrets | PASS | No passwords, API keys, tokens, or credentials |
-| Path traversal | PASS | No `../` directory traversal patterns |
-| eval/exec injection | PASS | No eval(), exec(), or Function() calls |
-| Sensitive data exposure | PASS | Test file reads markdown files only, no sensitive data |
-| File system operations | PASS | Only fs.readFileSync on project source files |
-
-### Prompt Files: isdlc.md, roundtable-analyst.md, bug-gather-analyst.md
-
-| Check | Result | Details |
-|-------|--------|--------|
-| Prompt injection vectors | PASS | No user-controlled template injection points added |
-| Privilege escalation | PASS | No new tool permissions or elevated access patterns |
-| Data exfiltration | PASS | No new external network calls or data transmission |
-
----
-
-## Vulnerability Summary
-
-| Severity | Count |
-|----------|-------|
-| Critical | 0 |
-| High | 0 |
-| Moderate | 0 |
-| Low | 0 |
-| **Total** | **0** |
+| Requirement | Status | Evidence |
+|-------------|--------|----------|
+| Parameterized SQL queries | COMPLIANT | All queries use `?` placeholders |
+| Path validation | COMPLIANT | `..` traversal blocked in both store factories |
+| Fail-safe defaults | COMPLIANT | Fail-open on all read operations |
+| No hardcoded credentials | COMPLIANT | Zero secrets in source code |
+| Input validation at boundaries | COMPLIANT | All public APIs validate inputs |
