@@ -354,8 +354,6 @@
 
 **Workstream C — Provider Adapters**
 
-- #140 [ ] Vertical spike — implementation loop shared core slice [github: GH-140] → `REQ-0076-vertical-spike-implementation-loop/` -> [requirements](docs/requirements/REQ-0076-vertical-spike-implementation-loop/) **Analyzed**
-  - Phase 1. Creates src/core/ with: teams/implementation-loop.js, state/index.js, bridge/*.cjs, contracts/. **First end-to-end proof.**
 - #141 [ ] Claude parity tests for implementation loop slice [github: GH-141] → `REQ-0077-claude-parity-tests-implementation-loop/` -> [requirements](docs/requirements/REQ-0077-claude-parity-tests-implementation-loop/) **Analyzed**
   - Phase 1. Fixture-based parity: loop state, contracts, state persistence. Proves core + Claude == current.
 - #142 [ ] Codex adapter for implementation loop slice [github: GH-142] → `REQ-0078-codex-adapter-implementation-loop/` -> [requirements](docs/requirements/REQ-0078-codex-adapter-implementation-loop/) **Analyzed**
@@ -481,6 +479,8 @@ Phase 9 (Verification)
 ## Completed
 
 ### 2026-03-21
+- [x] #140: Vertical spike — implementation loop shared core slice. Creates src/core/ with ESM modules: teams/implementation-loop.js (Writer/Reviewer/Updater loop), state/index.js (StateStore), bridge/*.cjs (CJS interop), contracts/*.json (JSON Schema). 56 tests, 97.29% line coverage, 0 regressions. -> [requirements](docs/requirements/REQ-0076-vertical-spike-implementation-loop/) *(merged 7dafdce)*
+  - **Completed:** 2026-03-21
 - [x] #126: CodeBERT embedding non-functional — real BPE tokenizer, model downloader with retry/verification, analyze handler wired for hybrid search (embedSession/searchMemory), installer/updater/uninstaller embedding lifecycle. 48 new tests, TDD Red-Green in 3 iterations, 1582/1585 full suite (3 pre-existing). -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/) *(merged 604c2a9)*
 - [x] #127: Blast radius validator fails-open when coverage artifact missing — two-step flexible regex (FILE_ROW + CHANGE_TYPE_KEYWORDS), normalizeChangeType(), zero-file guard, agent prompt blast-radius sections. 90/90 tests (24 new), TDD Red/Green, 5/5 FRs, 15 ACs. -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/) *(merged 5638e1c)*
 
