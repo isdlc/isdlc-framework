@@ -1,0 +1,16 @@
+{
+  "source": "github",
+  "source_id": "GH-126",
+  "slug": "BUG-0056-codebert-embedding-non-functional-stub-tokenize",
+  "created_at": "2026-03-21T00:20:00.000Z",
+  "analysis_status": "partial",
+  "phases_completed": ["01-requirements"],
+  "codebase_hash": "e051dcf",
+  "bug_classification": {
+    "classification": "bug",
+    "reasoning": "CodeBERT adapter has stub tokenizer and stub model downloader, analyze handler not wired for hybrid search, installer lifecycle missing — entire local embedding path non-functional",
+    "confirmed_by_user": true
+  },
+  "build_started_at": "2026-03-21T10:00:00.000Z",
+  "workflow_type": "fix"
+}
