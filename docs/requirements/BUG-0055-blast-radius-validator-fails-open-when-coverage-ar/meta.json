@@ -3,8 +3,10 @@
   "source_id": "GH-127",
   "slug": "BUG-0055-blast-radius-validator-fails-open-when-coverage-ar",
   "created_at": "2026-03-21T00:00:00.000Z",
-  "analysis_status": "partial",
-  "phases_completed": ["01-requirements"],
+  "analysis_status": "completed",
+  "phases_completed": ["01-requirements", "02-tracing", "05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"],
+  "completed_at": "2026-03-21T00:18:00.000Z",
+  "merged_commit": "5638e1c",
   "codebase_hash": "9edd9bb",
   "bug_classification": {
     "classification": "bug",

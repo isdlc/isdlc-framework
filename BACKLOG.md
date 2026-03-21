@@ -5,8 +5,8 @@
 
 ## Open
 - [ ] #128 Execution observability — surface workflow trace as structured report [github: GH-128] → `REQ-0068-execution-observability-workflow-trace-report/` -> [requirements](docs/requirements/REQ-0068-execution-observability-workflow-trace-report/)
-- [~] #127 Blast radius validator fails-open when coverage artifact missing [github: GH-127] → `BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/` -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/)
-  - Gate escape: blast-radius-validator, quality loop, and code review all missed unimplemented blast radius files
+- [x] #127 Blast radius validator fails-open when coverage artifact missing [github: GH-127] → `BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/` -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/) **Completed**
+  - **Completed:** 2026-03-21
 - [x] Configurable session cache token budget — replace hardcoded limits with project-configurable token budget up to 200-300K tokens → `REQ-0067-configurable-session-cache-token-budget/` -> [requirements](docs/requirements/REQ-0067-configurable-session-cache-token-budget/) **Completed**
   - **Completed:** 2026-03-15
 - [x] Inline roundtable analysis — eliminate subagent dispatch overhead [github: GH-124] → `REQ-0065-inline-roundtable-eliminate-subagent-overhead/` -> [requirements](docs/requirements/REQ-0065-inline-roundtable-eliminate-subagent-overhead/) **Completed**
@@ -289,6 +289,9 @@
   - Depends on #108a (completed). 7 FRs, ~11 files, standard tier.
 
 ## Completed
+
+### 2026-03-21
+- [x] #127: Blast radius validator fails-open when coverage artifact missing — two-step flexible regex (FILE_ROW + CHANGE_TYPE_KEYWORDS), normalizeChangeType(), zero-file guard, agent prompt blast-radius sections. 90/90 tests (24 new), TDD Red/Green, 5/5 FRs, 15 ACs. -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/) *(merged 5638e1c)*
 
 ### 2026-03-15
 - [x] Roundtable memory vector DB migration — flat JSON to vector DB using existing embedding infrastructure. 4 new modules (memory-store-adapter, memory-embedder, memory-search, updated memory.js), 93 new tests (168 total), 91.72% line coverage, zero regressions. -> [requirements](docs/requirements/REQ-0064-roundtable-memory-vector-db-migration/) *(merged 861fd1b)*
