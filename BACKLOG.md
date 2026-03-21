@@ -4,8 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [~] #126 CodeBERT embedding non-functional — stub tokenizer, missing model download, handler not wired [github: GH-126] → `BUG-0056-codebert-embedding-non-functional-stub-tokenize/` -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/)
-  - 4 gaps: stub tokenizer, stub model downloader, analyze handler not wired, installer lifecycle missing
+- [x] #126 CodeBERT embedding non-functional — stub tokenizer, missing model download, handler not wired [github: GH-126] → `BUG-0056-codebert-embedding-non-functional-stub-tokenize/` -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/) **Completed**
+  - **Completed:** 2026-03-21
 - [A] #128 Execution observability — surface workflow trace as structured report [github: GH-128] → `REQ-0068-execution-observability-workflow-trace-report/` -> [requirements](docs/requirements/REQ-0068-execution-observability-workflow-trace-report/)
 - [x] #127 Blast radius validator fails-open when coverage artifact missing [github: GH-127] → `BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/` -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/) **Completed**
   - **Completed:** 2026-03-21
@@ -293,6 +293,7 @@
 ## Completed
 
 ### 2026-03-21
+- [x] #126: CodeBERT embedding non-functional — real BPE tokenizer, model downloader with retry/verification, analyze handler wired for hybrid search (embedSession/searchMemory), installer/updater/uninstaller embedding lifecycle. 48 new tests, TDD Red-Green in 3 iterations, 1582/1585 full suite (3 pre-existing). -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/) *(merged 604c2a9)*
 - [x] #127: Blast radius validator fails-open when coverage artifact missing — two-step flexible regex (FILE_ROW + CHANGE_TYPE_KEYWORDS), normalizeChangeType(), zero-file guard, agent prompt blast-radius sections. 90/90 tests (24 new), TDD Red/Green, 5/5 FRs, 15 ACs. -> [requirements](docs/requirements/BUG-0055-blast-radius-validator-fails-open-when-coverage-ar/) *(merged 5638e1c)*
 
 ### 2026-03-15
