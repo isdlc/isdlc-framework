@@ -1,0 +1,39 @@
+{
+  "source": "github",
+  "source_id": "GH-147",
+  "slug": "REQ-0083-extract-backlog-itemstate-service",
+  "created_at": "2026-03-22T00:00:00.000Z",
+  "analysis_status": "complete",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification"
+  ],
+  "codebase_hash": "16d4154",
+  "acceptance": {
+    "accepted_at": "2026-03-22T00:05:00.000Z",
+    "domains": {
+      "requirements": {
+        "status": "accepted",
+        "amendment_cycles": 0
+      },
+      "architecture": {
+        "status": "accepted",
+        "amendment_cycles": 0
+      },
+      "design": {
+        "status": "accepted",
+        "amendment_cycles": 0
+      }
+    }
+  }
+}
