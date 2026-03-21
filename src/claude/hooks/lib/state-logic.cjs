@@ -6,16 +6,35 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const {
     debugLog,
     logHookEvent,
     STATE_JSON_PATTERN
 } = require('./common.cjs');
 
+// Core bridge for delegating validation to src/core/state/validation.js (REQ-0080)
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'state.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else {
+            _coreBridge = null;
+        }
+    } catch (e) {
+        _coreBridge = null;
+    }
+    return _coreBridge;
+}
+
 /**
  * Validate a single phase's state data for suspicious patterns.
  */
 function validatePhase(phaseName, phaseData, filePath) {
+    const _b = _getCoreBridge(); if (_b) return _b.validatePhase(phaseName, phaseData, filePath);
     const warnings = [];
 
     // Rule V1: constitutional_validation

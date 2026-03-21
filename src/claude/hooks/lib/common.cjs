@@ -11,6 +11,28 @@
 const fs = require('fs');
 const path = require('path');
 
+// =========================================================================
+// Core Bridge (REQ-0080): Lazy-load the extracted core StateStore bridge.
+// When available, functions delegate to src/core/state/ (the canonical
+// implementation). Falls back to the inline code below when the bridge
+// is unreachable (e.g., when common.cjs is copied to a temp dir for tests).
+// =========================================================================
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'state.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else {
+            _coreBridge = null;
+        }
+    } catch (e) {
+        _coreBridge = null;
+    }
+    return _coreBridge;
+}
+
 /**
  * Detect if the framework is running within an Antigravity environment.
  * @returns {boolean} True if Antigravity is detected
@@ -178,6 +200,7 @@ const PROTECTED_STATE_FIELDS = Object.freeze([
  * @returns {boolean} True if the file exists on disk
  */
 function stateFileExistsOnDisk(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.stateFileExistsOnDisk(projectId);
     const stateFile = resolveStatePath(projectId);
     return fs.existsSync(stateFile);
 }
@@ -292,6 +315,7 @@ function _getCacheStats() {
  * @returns {boolean} True if monorepo mode is active
  */
 function isMonorepoMode() {
+    const _b = _getCoreBridge(); if (_b) return _b.isMonorepoMode();
     const projectRoot = getProjectRoot();
     return fs.existsSync(path.join(projectRoot, '.isdlc', 'monorepo.json'));
 }
@@ -301,6 +325,7 @@ function isMonorepoMode() {
  * @returns {object|null} Parsed monorepo config or null
  */
 function readMonorepoConfig() {
+    const _b = _getCoreBridge(); if (_b) return _b.readMonorepoConfig();
     const projectRoot = getProjectRoot();
     const configFile = path.join(projectRoot, '.isdlc', 'monorepo.json');
 
@@ -321,6 +346,7 @@ function readMonorepoConfig() {
  * @returns {boolean} Success
  */
 function writeMonorepoConfig(config) {
+    const _b = _getCoreBridge(); if (_b) return _b.writeMonorepoConfig(config);
     const projectRoot = getProjectRoot();
     const configFile = path.join(projectRoot, '.isdlc', 'monorepo.json');
 
@@ -338,6 +364,7 @@ function writeMonorepoConfig(config) {
  * @returns {string|null} Project ID or null if no match
  */
 function resolveProjectFromCwd() {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveProjectFromCwd();
     if (!isMonorepoMode()) {
         return null;
     }
@@ -390,6 +417,7 @@ function resolveProjectFromCwd() {
  * @returns {string|null} Project ID or null if not in monorepo mode
  */
 function getActiveProject() {
+    const _b = _getCoreBridge(); if (_b) return _b.getActiveProject();
     if (!isMonorepoMode()) {
         return null;
     }
@@ -422,6 +450,7 @@ function getActiveProject() {
  * @returns {string} Absolute path to state.json
  */
 function resolveStatePath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveStatePath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -447,6 +476,7 @@ function resolveStatePath(projectId) {
  * @returns {string} Absolute path to the effective constitution.md
  */
 function resolveConstitutionPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveConstitutionPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -492,6 +522,7 @@ function resolveConstitutionPath(projectId) {
  * @returns {string} Absolute path to docs base directory
  */
 function resolveDocsPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveDocsPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -519,6 +550,7 @@ function resolveDocsPath(projectId) {
  * @returns {string} Absolute path to external skills directory
  */
 function resolveExternalSkillsPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveExternalSkillsPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -541,6 +573,7 @@ function resolveExternalSkillsPath(projectId) {
  * @returns {string} Absolute path to external skills manifest
  */
 function resolveExternalManifestPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveExternalManifestPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -585,6 +618,7 @@ function resolveExternalManifestPath(projectId) {
  * @returns {string} Absolute path to skill customization report
  */
 function resolveSkillReportPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveSkillReportPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -629,6 +663,7 @@ function resolveSkillReportPath(projectId) {
  * @returns {string} Absolute path to tasks.md
  */
 function resolveTasksPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveTasksPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -669,6 +704,7 @@ function resolveTasksPath(projectId) {
  * @returns {string} Absolute path to test-evaluation-report.md
  */
 function resolveTestEvaluationPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveTestEvaluationPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -710,6 +746,7 @@ function resolveTestEvaluationPath(projectId) {
  * @returns {string} Absolute path to atdd-checklist.json
  */
 function resolveAtddChecklistPath(projectId, domain) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveAtddChecklistPath(projectId, domain);
     const projectRoot = getProjectRoot();
     const filename = domain ? `atdd-checklist-${domain}.json` : 'atdd-checklist.json';
 
@@ -749,6 +786,7 @@ function resolveAtddChecklistPath(projectId, domain) {
  * @returns {string} Absolute path to docs/isdlc/ or docs/isdlc/projects/{id}/
  */
 function resolveIsdlcDocsPath(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.resolveIsdlcDocsPath(projectId);
     const projectRoot = getProjectRoot();
 
     if (isMonorepoMode()) {
@@ -1259,6 +1297,7 @@ function reconcileSkillsBySource(manifest, source, incomingSkills, phasesExecute
  * @returns {any} Value at path or undefined
  */
 function readStateValue(jsonPath, projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.readStateValue(jsonPath, projectId);
     const stateFile = resolveStatePath(projectId);
 
     if (!fs.existsSync(stateFile)) {
@@ -1291,6 +1330,7 @@ function getNestedValue(obj, path) {
  * @returns {object|null} Parsed state or null
  */
 function readState(projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.readState(projectId);
     const stateFile = resolveStatePath(projectId);
 
     if (!fs.existsSync(stateFile)) {
@@ -1317,6 +1357,7 @@ function readState(projectId) {
  * @returns {boolean} Success
  */
 function writeState(state, projectId) {
+    const _b = _getCoreBridge(); if (_b) return _b.writeState(state, projectId);
     const stateFile = resolveStatePath(projectId);
 
     // Ensure directory exists (for monorepo project directories)

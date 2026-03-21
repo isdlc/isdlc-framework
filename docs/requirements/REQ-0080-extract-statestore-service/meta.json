@@ -19,6 +19,8 @@
     "specification"
   ],
   "codebase_hash": "0e555c3",
+  "build_started_at": "2026-03-21T23:58:00.000Z",
+  "workflow_type": "feature",
   "acceptance": {
     "accepted_at": "2026-03-21T23:55:00.000Z",
     "domains": {
