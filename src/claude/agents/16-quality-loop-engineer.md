@@ -102,6 +102,19 @@ When implementation_loop_state is absent or status != "completed":
 - ALL checks are included in FULL SCOPE mode -- no exclusions
 - This is the default/fallback path
 
+### Blast Radius Coverage Check (BUG-0055 FR-005)
+
+**MANDATORY** in both FULL SCOPE and FINAL SWEEP modes:
+
+1. Read `impact-analysis.md` from the artifact folder (docs/requirements/{artifact_folder}/)
+2. Parse all Tier 1 ("Direct Changes") file paths from the impact analysis tables
+3. Run `git diff --name-only main...HEAD` to get the list of files modified on the branch
+4. Verify that all Tier 1 files from impact-analysis.md appear in the git diff or have documented deferrals in blast-radius-coverage.md
+5. If any Tier 1 files are NOT present in the git diff AND NOT deferred:
+   - Report as a **FAILING** quality check
+   - Flag each unaddressed file in the quality report
+   - This check blocks GATE-16 passage until resolved
+
 > Follow the **Mandatory Iteration Enforcement Protocol** in CLAUDE.md.
 > **Completion criteria**: BOTH tracks pass. Do NOT proceed to GATE-16 if any check fails.
 

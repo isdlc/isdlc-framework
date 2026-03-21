@@ -1,0 +1,30 @@
+Requirement,AC,Test Case,Test Type,Priority,Status
+FR-001,AC-001-01,TC-PIA-20,positive/unit,P0,new (regression guard)
+FR-001,AC-001-02,TC-PIA-13,positive/unit,P0,new
+FR-001,AC-001-02,TC-PIA-14,positive/unit,P0,new
+FR-001,AC-001-02,TC-INT-11,positive/integration,P0,new
+FR-001,AC-001-02,TC-INT-12,positive/integration,P0,new
+FR-001,AC-001-02,TC-INT-13,positive/integration,P0,new
+FR-001,AC-001-03,TC-PIA-19,positive/unit,P0,new
+FR-001,AC-001-03,TC-INT-16,positive/integration,P0,new
+FR-001,AC-001-04,TC-PIA-15,positive/unit,P0,new
+FR-001,AC-001-04,TC-PIA-16,positive/unit,P0,new
+FR-001,AC-001-04,TC-PIA-17,positive/unit,P0,new
+FR-001,AC-001-04,TC-PIA-18,positive/unit,P1,new
+FR-001,AC-001-04,TC-INT-14,positive/integration,P0,new
+FR-002,AC-002-01,TC-ZFG-01,positive/unit,P1,new
+FR-002,AC-002-01,TC-ZFG-05,negative/unit,P1,new
+FR-002,AC-002-01,TC-INT-15,positive/integration,P1,new
+FR-002,AC-002-02,TC-ZFG-02,positive/unit,P1,new
+FR-002,AC-002-03,TC-ZFG-03,negative/unit,P2,new
+FR-002,AC-002-03,TC-ZFG-04,negative/unit,P2,new
+FR-002,AC-002-03,TC-ZFG-06,boundary/unit,P2,new
+FR-003,AC-003-01,TC-FIX-01,positive/regression,P0,existing (verified)
+FR-003,AC-003-02,TC-PIA-13,positive/unit,P0,new (dual-mapped to FR-001)
+FR-003,AC-003-03,TC-PIA-13,positive/unit,P0,new (dual-mapped)
+FR-003,AC-003-03,TC-PIA-14,positive/unit,P0,new (dual-mapped)
+FR-003,AC-003-04,TC-ZFG-01,positive/unit,P1,new (dual-mapped to FR-002)
+FR-004,AC-004-01,TC-AGT-01,positive/behavioral,P1,new
+FR-004,AC-004-02,TC-AGT-02,positive/behavioral,P1,new
+FR-005,AC-005-01,TC-AGT-03,positive/behavioral,P1,new
+FR-005,AC-005-02,TC-AGT-04,positive/behavioral,P1,new

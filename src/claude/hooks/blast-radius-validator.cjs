@@ -25,9 +25,22 @@ const {
 // ---------------------------------------------------------------------------
 
 /**
- * Match impact-analysis.md table rows with backtick-wrapped file paths.
- * Captures: group 1 = file path, group 2 = change type
- * Traces to: REQ-006 AC-006-01
+ * Match any markdown table row containing a backtick-wrapped file path.
+ * Captures: group 1 = file path
+ * Traces to: REQ-006 AC-006-01, BUG-0055 FR-001 AC-001-02
+ */
+const FILE_ROW = /^\|.*`([^`]+)`.*\|/;
+
+/**
+ * Scan any column for change type keywords (case-insensitive).
+ * Supports: CREATE, MODIFY, DELETE, NO CHANGE, New, Major modify, Minor modify.
+ * Traces to: BUG-0055 FR-001 AC-001-04
+ */
+const CHANGE_TYPE_KEYWORDS = /\b(CREATE|MODIFY|DELETE|NEW|NO\s*CHANGE|MAJOR\s+MODIFY|MINOR\s+MODIFY)\b/i;
+
+/**
+ * @deprecated Retained for reference only. Replaced by FILE_ROW + CHANGE_TYPE_KEYWORDS
+ * for flexible column-count support (BUG-0055).
  */
 const IMPACT_TABLE_ROW = /^\|\s*`([^`]+)`\s*\|\s*(CREATE|MODIFY|DELETE|NO CHANGE)\s*\|/;
 
@@ -61,11 +74,20 @@ function parseImpactAnalysis(content) {
     const lines = content.split('\n');
 
     for (const line of lines) {
-        const match = line.match(IMPACT_TABLE_ROW);
-        if (!match) continue;
+        // BUG-0055: Use flexible two-step matching instead of fixed-column regex.
+        // Step 1: Find any table row with a backtick-wrapped file path
+        const fileMatch = line.match(FILE_ROW);
+        if (!fileMatch) continue;
 
-        const filePath = match[1].trim();
-        const changeType = match[2].trim();
+        const filePath = fileMatch[1].trim();
+
+        // Step 2: Scan all columns for a change type keyword (case-insensitive)
+        const typeMatch = line.match(CHANGE_TYPE_KEYWORDS);
+        if (!typeMatch) continue;
+
+        // Normalize the change type to uppercase canonical form
+        const rawType = typeMatch[1].trim();
+        const changeType = normalizeChangeType(rawType);
 
         // AC-006-04: Exclude NO CHANGE entries
         if (changeType === 'NO CHANGE') continue;
@@ -83,6 +105,22 @@ function parseImpactAnalysis(content) {
     }
 
     return result;
+}
+
+/**
+ * Normalize a raw change type string to its canonical uppercase form.
+ * Maps synonyms: "New" -> "CREATE", "Major modify" -> "MODIFY", etc.
+ * Traces to: BUG-0055 FR-001 AC-001-04
+ *
+ * @param {string} rawType - Raw change type from table cell
+ * @returns {string} Normalized change type (CREATE, MODIFY, DELETE, NO CHANGE)
+ */
+function normalizeChangeType(rawType) {
+    const upper = rawType.toUpperCase().trim();
+    if (upper === 'NEW') return 'CREATE';
+    if (upper === 'MAJOR MODIFY' || upper === 'MINOR MODIFY') return 'MODIFY';
+    // Already canonical: CREATE, MODIFY, DELETE, NO CHANGE
+    return upper;
 }
 
 // ---------------------------------------------------------------------------
@@ -306,6 +344,17 @@ function check(ctx) {
             };
         }
         if (affectedFiles.length === 0) {
+            // BUG-0055 FR-002: Zero-file guard — warn when substantial content
+            // yields zero parsed files (possible format mismatch).
+            // Threshold: 100 chars to avoid false alarms on stub files.
+            // Traces to: FR-002 AC-002-01, AC-002-02, AC-002-03
+            if (content.length > 100) {
+                return {
+                    decision: 'allow',
+                    stderr: 'blast-radius-validator: impact-analysis.md has content but no affected files were parsed. Table format may not match expected pattern.',
+                    stateModified: false
+                };
+            }
             return { decision: 'allow', stateModified: false };
         }
 
@@ -382,7 +431,8 @@ module.exports = {
     parseBlastRadiusCoverage,
     getModifiedFiles,
     buildCoverageReport,
-    formatBlockMessage
+    formatBlockMessage,
+    normalizeChangeType
 };
 
 // ---------------------------------------------------------------------------

@@ -109,6 +109,94 @@ This document describes the impact of the feature.
 There are no tables here, just prose content describing the changes.
 `;
 
+// ---------------------------------------------------------------------------
+// BUG-0055 Test Fixtures — 4-column and mixed-case formats
+// Traces to: FR-001, FR-002, FR-003
+// ---------------------------------------------------------------------------
+
+/**
+ * 4-column roundtable format from REQ-0066 (File | Module | Change Type | Traces).
+ * Traces to: FR-001 AC-001-02, FR-003 AC-003-02
+ */
+const IMPACT_4COL_ROUNDTABLE = `## Tier 1: Direct Changes
+
+| File | Module | Change Type | Requirement Traces |
+|------|--------|-------------|-------------------|
+| \`lib/memory-search.js\` | memory-search | Modify | FR-001, FR-006 |
+| \`lib/memory-embedder.js\` | memory-embedder | Modify | FR-004, FR-005 |
+| \`src/claude/commands/isdlc.md\` | analyze handler | Modify | FR-001, FR-002 |
+`;
+
+/**
+ * 4-column variant format from REQ-0064 (File | Change Type | Description | Impact).
+ * Traces to: FR-001 AC-001-02, FR-003 AC-003-02
+ */
+const IMPACT_4COL_VARIANT = `## Tier 1: Direct Changes
+
+| File | Change Type | Description | REQ-0065 Impact |
+|------|-------------|-------------|-----------------|
+| \`lib/memory.js\` | New | Core memory module | None |
+| \`src/claude/commands/isdlc.md\` | Modify | Analyze handler: inject context | Shared file |
+| \`bin/isdlc.js\` | Modify | Register memory subcommand | None |
+`;
+
+/**
+ * 3-column format with mixed-case "Type" values from REQ-0063.
+ * Traces to: FR-001 AC-001-04
+ */
+const IMPACT_3COL_MIXEDCASE = `## Tier 1: Direct Changes
+
+| File | Type | Description |
+|------|------|-------------|
+| \`lib/memory.js\` | New | Core memory module |
+| \`src/claude/agents/roundtable-analyst.md\` | Modify | Add MEMORY_CONTEXT parsing |
+| \`bin/isdlc.js\` | modify | Register memory subcommand |
+`;
+
+/**
+ * Mixed sections with different column counts per section.
+ * Traces to: FR-001 AC-001-03
+ */
+const IMPACT_MIXED_SECTIONS = `## Tier 1: Direct Changes
+
+| File | Module | Change Type | Traces |
+|------|--------|-------------|--------|
+| \`src/hooks/validator.cjs\` | hooks | Modify | FR-001 |
+
+## Tier 2: Indirect Changes
+
+| File | Change Type | Risk |
+|------|-------------|------|
+| \`src/hooks/common.cjs\` | MODIFY | Low |
+| \`src/agents/dev.md\` | NO CHANGE | None |
+`;
+
+/**
+ * Substantial content but no recognized change type keywords.
+ * Triggers zero-file guard. Traces to: FR-002 AC-002-01
+ */
+const IMPACT_SUBSTANTIAL_NO_MATCH = `## Impact Analysis
+
+This is a detailed impact analysis document produced by the roundtable.
+It contains multiple paragraphs and is well over 100 characters in length.
+
+### Affected Areas
+
+| Component | Scope | Risk Assessment | Action Required |
+|-----------|-------|-----------------|-----------------|
+| \`lib/memory.js\` | Core module | High risk to stability | Needs review |
+| \`lib/search.js\` | Search layer | Medium risk | Update tests |
+
+The above table does not contain standard change type keywords like CREATE, MODIFY, DELETE, or New.
+Instead it uses non-standard column headers that the parser should not silently ignore.
+`;
+
+/**
+ * Short content below threshold for zero-file guard.
+ * Traces to: FR-002 AC-002-03
+ */
+const IMPACT_SHORT_EMPTY = `## Impact\n\nMinimal.`;
+
 const COVERAGE_ALL_COVERED = `# Blast Radius Coverage
 
 ## Coverage Checklist
@@ -1089,5 +1177,372 @@ describe('Standalone execution', () => {
             // If there is output, it should not be a block
             assert.ok(!parsed.stopReason || parsed.stopReason === undefined);
         }
+    });
+});
+
+// ===========================================================================
+// 14. BUG-0055: 4-Column Format Parsing (FR-001)
+// Traces to: FR-001 AC-001-01 through AC-001-04
+// ===========================================================================
+
+describe('BUG-0055: parseImpactAnalysis() 4-column format', () => {
+    // TC-PIA-13: Parses 4-column roundtable format (AC-001-02)
+    it('TC-PIA-13: parses 4-column roundtable format (File|Module|Change Type|Traces)', () => {
+        const result = parseImpactAnalysis(IMPACT_4COL_ROUNDTABLE);
+        assert.ok(Array.isArray(result), 'Expected array result');
+        assert.equal(result.length, 3, `Expected 3 entries, got ${result.length}`);
+        const paths = result.map(f => f.filePath);
+        assert.ok(paths.includes('lib/memory-search.js'), 'Missing lib/memory-search.js');
+        assert.ok(paths.includes('lib/memory-embedder.js'), 'Missing lib/memory-embedder.js');
+        assert.ok(paths.includes('src/claude/commands/isdlc.md'), 'Missing src/claude/commands/isdlc.md');
+    });
+
+    // TC-PIA-14: Parses 4-column variant format (AC-001-02)
+    it('TC-PIA-14: parses 4-column variant format (File|Change Type|Description|Impact)', () => {
+        const result = parseImpactAnalysis(IMPACT_4COL_VARIANT);
+        assert.ok(Array.isArray(result), 'Expected array result');
+        assert.equal(result.length, 3, `Expected 3 entries, got ${result.length}`);
+        const paths = result.map(f => f.filePath);
+        assert.ok(paths.includes('lib/memory.js'), 'Missing lib/memory.js');
+        assert.ok(paths.includes('src/claude/commands/isdlc.md'), 'Missing src/claude/commands/isdlc.md');
+        assert.ok(paths.includes('bin/isdlc.js'), 'Missing bin/isdlc.js');
+    });
+
+    // TC-PIA-15: Parses 3-column mixed-case format (AC-001-04)
+    it('TC-PIA-15: parses 3-column mixed-case format (New, Modify, modify)', () => {
+        const result = parseImpactAnalysis(IMPACT_3COL_MIXEDCASE);
+        assert.ok(Array.isArray(result), 'Expected array result');
+        assert.equal(result.length, 3, `Expected 3 entries, got ${result.length}`);
+        const paths = result.map(f => f.filePath);
+        assert.ok(paths.includes('lib/memory.js'), 'Missing lib/memory.js');
+        assert.ok(paths.includes('src/claude/agents/roundtable-analyst.md'), 'Missing roundtable-analyst.md');
+        assert.ok(paths.includes('bin/isdlc.js'), 'Missing bin/isdlc.js');
+    });
+
+    // TC-PIA-16: Normalizes "New" to "CREATE" (AC-001-04)
+    it('TC-PIA-16: normalizes "New" to "CREATE"', () => {
+        const content = `| File | Type |\n|------|------|\n| \`src/file.js\` | New |\n`;
+        const result = parseImpactAnalysis(content);
+        assert.equal(result.length, 1);
+        assert.equal(result[0].changeType, 'CREATE', `Expected CREATE but got ${result[0].changeType}`);
+    });
+
+    // TC-PIA-17: Normalizes "Modify" to "MODIFY" (AC-001-04)
+    it('TC-PIA-17: normalizes "Modify" to "MODIFY"', () => {
+        const content = `| File | Type |\n|------|------|\n| \`src/file.js\` | Modify |\n`;
+        const result = parseImpactAnalysis(content);
+        assert.equal(result.length, 1);
+        assert.equal(result[0].changeType, 'MODIFY', `Expected MODIFY but got ${result[0].changeType}`);
+    });
+
+    // TC-PIA-18: Normalizes "Major modify" to "MODIFY" (AC-001-04)
+    it('TC-PIA-18: normalizes "Major modify" to "MODIFY"', () => {
+        const content = `| File | Type |\n|------|------|\n| \`src/file.js\` | Major modify |\n`;
+        const result = parseImpactAnalysis(content);
+        assert.equal(result.length, 1);
+        assert.equal(result[0].changeType, 'MODIFY', `Expected MODIFY but got ${result[0].changeType}`);
+    });
+
+    // TC-PIA-19: Parses mixed sections with different column counts (AC-001-03)
+    it('TC-PIA-19: parses mixed sections with different column counts', () => {
+        const result = parseImpactAnalysis(IMPACT_MIXED_SECTIONS);
+        assert.ok(Array.isArray(result), 'Expected array result');
+        // Tier 1 has validator.cjs (Modify), Tier 2 has common.cjs (MODIFY) and dev.md (NO CHANGE, excluded)
+        assert.equal(result.length, 2, `Expected 2 entries, got ${result.length}`);
+        const paths = result.map(f => f.filePath);
+        assert.ok(paths.includes('src/hooks/validator.cjs'), 'Missing src/hooks/validator.cjs');
+        assert.ok(paths.includes('src/hooks/common.cjs'), 'Missing src/hooks/common.cjs');
+    });
+
+    // TC-PIA-20: Existing 3-column fixtures still parse correctly (AC-001-01, regression guard)
+    it('TC-PIA-20: existing 3-column fixtures still parse correctly (regression)', () => {
+        const result = parseImpactAnalysis(IMPACT_SINGLE_TABLE);
+        assert.ok(Array.isArray(result));
+        assert.equal(result.length, 3);
+        assert.deepStrictEqual(result[0], { filePath: 'src/claude/hooks/blast-radius-validator.cjs', changeType: 'CREATE' });
+        assert.deepStrictEqual(result[1], { filePath: 'src/claude/hooks/dispatchers/pre-task-dispatcher.cjs', changeType: 'MODIFY' });
+        assert.deepStrictEqual(result[2], { filePath: 'src/claude/agents/05-software-developer.md', changeType: 'MODIFY' });
+    });
+});
+
+// ===========================================================================
+// 15. BUG-0055: Zero-File Guard (FR-002)
+// Traces to: FR-002 AC-002-01 through AC-002-03
+// ===========================================================================
+
+describe('BUG-0055: Zero-file guard', () => {
+    let testDir;
+
+    beforeEach(() => {
+        testDir = setupTestEnv(featureWorkflowState());
+        const artifactDir = path.join(testDir, 'docs', 'requirements', 'REQ-0010-blast-radius-coverage');
+        fs.mkdirSync(artifactDir, { recursive: true });
+    });
+
+    afterEach(() => {
+        cleanupTestEnv();
+    });
+
+    function artifactPath(filename) {
+        return path.join(testDir, 'docs', 'requirements', 'REQ-0010-blast-radius-coverage', filename);
+    }
+
+    // TC-ZFG-01: Warning emitted for substantial content with zero parsed files (AC-002-01)
+    it('TC-ZFG-01: warns when substantial content yields zero parsed files', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_SUBSTANTIAL_NO_MATCH);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', 'Should still allow (fail-open)');
+        assert.ok(result.stderr, 'Expected stderr warning');
+        assert.ok(
+            result.stderr.includes('no affected files were parsed') ||
+            result.stderr.includes('content but no affected files'),
+            `Expected zero-file warning in stderr, got: ${result.stderr}`
+        );
+    });
+
+    // TC-ZFG-02: Validator still allows (fail-open) when zero-file guard fires (AC-002-02)
+    it('TC-ZFG-02: still allows (fail-open) when zero-file guard fires', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_SUBSTANTIAL_NO_MATCH);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', 'Zero-file guard must not block');
+    });
+
+    // TC-ZFG-03: Guard does NOT fire for short content (AC-002-03)
+    it('TC-ZFG-03: no warning for short content below 100-char threshold', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_SHORT_EMPTY);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow');
+        // No stderr about zero-file guard
+        if (result.stderr) {
+            assert.ok(
+                !result.stderr.includes('no affected files were parsed'),
+                `Unexpected zero-file warning for short content: ${result.stderr}`
+            );
+        }
+    });
+
+    // TC-ZFG-04: Guard does NOT fire for empty string (AC-002-03)
+    it('TC-ZFG-04: no warning for empty string input', () => {
+        const result = parseImpactAnalysis('');
+        assert.deepStrictEqual(result, [], 'Empty string should return empty array');
+        // This test verifies the parse result; the check() level guard is tested via TC-ZFG-03
+    });
+
+    // TC-ZFG-05: Guard does NOT fire when files ARE successfully parsed (AC-002-01)
+    it('TC-ZFG-05: no warning when files are successfully parsed', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_SINGLE_TABLE);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        // Should either block (git diff fails) or allow without zero-file warning
+        if (result.stderr) {
+            assert.ok(
+                !result.stderr.includes('no affected files were parsed'),
+                `Unexpected zero-file warning when files were parsed: ${result.stderr}`
+            );
+        }
+    });
+
+    // TC-ZFG-06: Guard uses 100-char threshold correctly (AC-002-03)
+    it('TC-ZFG-06: boundary test - 100 chars no warning, 101 chars triggers warning', () => {
+        // Content exactly 100 characters (no matching rows)
+        const content100 = 'A'.repeat(100);
+        fs.writeFileSync(artifactPath('impact-analysis.md'), content100);
+        let ctx = buildCtx();
+        let result = check(ctx);
+        assert.equal(result.decision, 'allow');
+        if (result.stderr) {
+            assert.ok(
+                !result.stderr.includes('no affected files were parsed'),
+                'Should NOT warn at exactly 100 chars'
+            );
+        }
+
+        // Content 101 characters (no matching rows)
+        const content101 = 'A'.repeat(101);
+        fs.writeFileSync(artifactPath('impact-analysis.md'), content101);
+        ctx = buildCtx();
+        result = check(ctx);
+        assert.equal(result.decision, 'allow');
+        assert.ok(result.stderr, 'Expected stderr warning at 101 chars');
+        assert.ok(
+            result.stderr.includes('no affected files were parsed') ||
+            result.stderr.includes('content but no affected files'),
+            `Expected zero-file warning at 101 chars, got: ${result.stderr}`
+        );
+    });
+});
+
+// ===========================================================================
+// 16. BUG-0055: Integration Tests with 4-Column Fixtures (FR-001, FR-002)
+// Traces to: FR-001, FR-002
+// ===========================================================================
+
+describe('BUG-0055: check() with 4-column fixtures and temp git repo', () => {
+    let testDir;
+
+    beforeEach(() => {
+        testDir = setupTestEnv(featureWorkflowState());
+        const artifactDir = path.join(testDir, 'docs', 'requirements', 'REQ-0010-blast-radius-coverage');
+        fs.mkdirSync(artifactDir, { recursive: true });
+    });
+
+    afterEach(() => {
+        cleanupTestEnv();
+    });
+
+    function artifactPath(filename) {
+        return path.join(testDir, 'docs', 'requirements', 'REQ-0010-blast-radius-coverage', filename);
+    }
+
+    function initGitRepo(filesToModify = []) {
+        const { execSync } = require('child_process');
+        const opts = { cwd: testDir, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] };
+        execSync('git init', opts);
+        execSync('git config user.email "test@test.com"', opts);
+        execSync('git config user.name "Test"', opts);
+        fs.writeFileSync(path.join(testDir, 'README.md'), '# Test');
+        execSync('git add -A', opts);
+        execSync('git commit -m "initial"', opts);
+        try { execSync('git branch -M main', opts); } catch (e) {}
+        execSync('git checkout -b feature/test', opts);
+        for (const filePath of filesToModify) {
+            const fullPath = path.join(testDir, filePath);
+            fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+            fs.writeFileSync(fullPath, `// Modified: ${filePath}\n`);
+        }
+        if (filesToModify.length > 0) {
+            execSync('git add -A', opts);
+            execSync('git commit -m "feature changes"', opts);
+        }
+    }
+
+    // TC-INT-11: Allow when all 4-column affected files in git diff (AC-001-02)
+    it('TC-INT-11: allows when all 4-column affected files are in git diff', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_4COL_ROUNDTABLE);
+        initGitRepo(['lib/memory-search.js', 'lib/memory-embedder.js', 'src/claude/commands/isdlc.md']);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', `Expected allow but got ${result.decision}: ${result.stopReason || ''}`);
+    });
+
+    // TC-INT-12: Block when 4-column affected files NOT in git diff (AC-001-02)
+    it('TC-INT-12: blocks when 4-column affected files are NOT all in git diff', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_4COL_ROUNDTABLE);
+        // Only modify 1 of 3 files
+        initGitRepo(['lib/memory-search.js']);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'block', 'Should block when 4-column files are unaddressed');
+        assert.ok(result.stopReason, 'Expected block message');
+        assert.ok(result.stopReason.includes('lib/memory-embedder.js'), 'Missing lib/memory-embedder.js in block message');
+        assert.ok(result.stopReason.includes('src/claude/commands/isdlc.md'), 'Missing isdlc.md in block message');
+    });
+
+    // TC-INT-13: Allow with 4-column format plus deferred files (AC-001-02, AC-001-03)
+    it('TC-INT-13: allows with 4-column format plus deferred files', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_4COL_ROUNDTABLE);
+        // Modify 2 of 3 files
+        initGitRepo(['lib/memory-search.js', 'lib/memory-embedder.js']);
+        // Defer the 3rd
+        const coverageContent = `## Coverage\n\n| File Path | Expected Change | Coverage Status | Notes |\n|---|---|---|---|\n| \`src/claude/commands/isdlc.md\` | MODIFY | deferred | Deferred to next sprint |\n`;
+        fs.writeFileSync(artifactPath('blast-radius-coverage.md'), coverageContent);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', `Expected allow but got ${result.decision}: ${result.stopReason || ''}`);
+    });
+
+    // TC-INT-14: Mixed-case change types work in full flow (AC-001-04)
+    it('TC-INT-14: mixed-case change types work in full flow', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_3COL_MIXEDCASE);
+        initGitRepo(['lib/memory.js', 'src/claude/agents/roundtable-analyst.md', 'bin/isdlc.js']);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', `Expected allow but got ${result.decision}: ${result.stopReason || ''}`);
+    });
+
+    // TC-INT-15: Zero-file guard in full flow with substantial content (AC-002-01)
+    it('TC-INT-15: zero-file guard warns in full flow with substantial unrecognized content', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_SUBSTANTIAL_NO_MATCH);
+        initGitRepo([]);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', 'Should allow (fail-open)');
+        assert.ok(result.stderr, 'Expected stderr warning');
+        assert.ok(
+            result.stderr.includes('no affected files were parsed') ||
+            result.stderr.includes('content but no affected files'),
+            `Expected zero-file warning, got: ${result.stderr}`
+        );
+    });
+
+    // TC-INT-16: Mixed sections parsed correctly in full flow (AC-001-03)
+    it('TC-INT-16: mixed sections parsed correctly in full flow', () => {
+        fs.writeFileSync(artifactPath('impact-analysis.md'), IMPACT_MIXED_SECTIONS);
+        initGitRepo(['src/hooks/validator.cjs', 'src/hooks/common.cjs']);
+        const ctx = buildCtx();
+        const result = check(ctx);
+        assert.equal(result.decision, 'allow', `Expected allow but got ${result.decision}: ${result.stopReason || ''}`);
+    });
+});
+
+// ===========================================================================
+// 17. BUG-0055: Agent Prompt Verification (FR-004, FR-005)
+// Traces to: FR-004, FR-005
+// ===========================================================================
+
+describe('BUG-0055: Agent prompt blast radius cross-checks', () => {
+    // TC-AGT-01: QA engineer prompt contains blast radius cross-check (AC-004-01)
+    it('TC-AGT-01: qa-engineer prompt contains blast radius cross-check', () => {
+        const agentPath = path.resolve(__dirname, '..', '..', 'agents', '07-qa-engineer.md');
+        const content = fs.readFileSync(agentPath, 'utf8');
+        assert.ok(
+            content.includes('impact-analysis') || content.includes('impact analysis'),
+            'QA engineer prompt must mention impact-analysis'
+        );
+        assert.ok(
+            content.includes('blast radius') || content.includes('Blast Radius') || content.includes('Tier 1'),
+            'QA engineer prompt must mention blast radius or Tier 1'
+        );
+        assert.ok(
+            content.includes('git diff') || content.includes('git-diff'),
+            'QA engineer prompt must mention git diff'
+        );
+    });
+
+    // TC-AGT-02: QA engineer prompt specifies blocking finding (AC-004-02)
+    it('TC-AGT-02: qa-engineer prompt specifies blocking finding for unaddressed files', () => {
+        const agentPath = path.resolve(__dirname, '..', '..', 'agents', '07-qa-engineer.md');
+        const content = fs.readFileSync(agentPath, 'utf8').toLowerCase();
+        assert.ok(
+            content.includes('block') || content.includes('critical') || content.includes('fail'),
+            'QA engineer prompt must specify blocking/critical finding for blast radius gaps'
+        );
+    });
+
+    // TC-AGT-03: Quality loop prompt contains blast radius check (AC-005-01)
+    it('TC-AGT-03: quality-loop prompt contains blast radius coverage check', () => {
+        const agentPath = path.resolve(__dirname, '..', '..', 'agents', '16-quality-loop-engineer.md');
+        const content = fs.readFileSync(agentPath, 'utf8');
+        assert.ok(
+            content.includes('impact-analysis') || content.includes('impact analysis'),
+            'Quality loop prompt must mention impact-analysis'
+        );
+        assert.ok(
+            content.includes('blast radius') || content.includes('Blast Radius') || content.includes('Tier 1'),
+            'Quality loop prompt must mention blast radius or Tier 1'
+        );
+    });
+
+    // TC-AGT-04: Quality loop prompt specifies failing check (AC-005-02)
+    it('TC-AGT-04: quality-loop prompt specifies failing check for unaddressed files', () => {
+        const agentPath = path.resolve(__dirname, '..', '..', 'agents', '16-quality-loop-engineer.md');
+        const content = fs.readFileSync(agentPath, 'utf8').toLowerCase();
+        assert.ok(
+            content.includes('fail') || content.includes('block') || content.includes('flag'),
+            'Quality loop prompt must specify failing check for blast radius gaps'
+        );
     });
 });

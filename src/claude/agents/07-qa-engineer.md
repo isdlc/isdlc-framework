@@ -101,6 +101,19 @@ When implementation_loop_state is absent or status != "completed":
 - No behavioral change whatsoever
 - This is the default/fallback path
 
+## Blast Radius Cross-Check (BUG-0055 FR-004)
+
+**MANDATORY** in both FULL SCOPE and HUMAN REVIEW ONLY modes:
+
+1. Read `impact-analysis.md` from the artifact folder (docs/requirements/{artifact_folder}/)
+2. Parse all Tier 1 ("Direct Changes") file paths from the impact analysis tables
+3. Run `git diff --name-only main...HEAD` to get the list of files modified on the branch
+4. Compare: every Tier 1 file from impact-analysis.md MUST appear in the git diff OR have a documented deferral in blast-radius-coverage.md
+5. If any Tier 1 files are NOT present in the git diff AND NOT deferred with rationale:
+   - Report as a **BLOCKING** finding (severity: critical)
+   - List each unaddressed file with its expected change type
+   - The code review CANNOT pass with unaddressed blast radius files
+
 ## Fan-Out Protocol (Code Review)
 
 When the changeset is large enough, this agent uses the fan-out engine (QL-012)
