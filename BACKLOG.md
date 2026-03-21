@@ -356,8 +356,8 @@
 
 - [x] #141 Claude parity tests for implementation loop slice [github: GH-141] → `REQ-0077-claude-parity-tests-implementation-loop/` -> [requirements](docs/requirements/REQ-0077-claude-parity-tests-implementation-loop/) **Completed**
   - **Completed:** 2026-03-21
-- #142 [ ] Codex adapter for implementation loop slice [github: GH-142] → `REQ-0078-codex-adapter-implementation-loop/` -> [requirements](docs/requirements/REQ-0078-codex-adapter-implementation-loop/) **Analyzed**
-  - Phase 1. Codex sub-agents (Writer/Reviewer/Updater) consume same core contracts. Lives in isdlc-codex repo.
+- [x] #142 Codex adapter for implementation loop slice [github: GH-142] → `REQ-0078-codex-adapter-implementation-loop/` -> [requirements](docs/requirements/REQ-0078-codex-adapter-implementation-loop/) **Completed**
+  - **Completed:** 2026-03-21
 - #151 [ ] Create src/providers/claude/ adapter boundary [github: GH-151] → `REQ-0087`
   - Phase 3. Depends on REQ-0080, REQ-0081, REQ-0082, REQ-0085. Hook registration, dispatchers, .claude/ projection.
 - #153 [ ] Provider-aware installer/updater/doctor/uninstaller [github: GH-153] → `REQ-0089`
