@@ -2,7 +2,7 @@
 
 # iSDLC Framework
 
-<h3><em>A development harness for AI-assisted engineering on existing codebases — opinionated defaults you can override, deterministic enforcement you can tune, and extension points at every layer.</em></h3>
+<h3><em>An AI development harness for existing codebases — opinionated defaults you can override, deterministic enforcement you can tune, and extension points at every layer.</em></h3>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Agents](https://img.shields.io/badge/Agents-64-purple.svg)](docs/AGENTS.md)
@@ -28,32 +28,30 @@
 
 **You need constraints that run outside the LLM** — deterministic enforcement the AI can't ignore, grounded in your actual codebase.
 
-## The Harness
+---
 
-**iSDLC is a hackable harness.** It ships strict — but every layer is yours to change.
+## Feature Guide
 
-Install it into your existing project and it learns your codebase first:
-
-- 23 discovery agents map your architecture, test coverage, dependencies, data models, and feature inventory — before changing a single line
-- The result is a **project constitution**: governance rules verified against your actual code, not hallucinated from training data
-- 28 hooks intercept tool calls and block non-compliant behavior — the AI doesn't get to decide when it's done, the harness does
-
-You decide how much to loosen — or tighten:
-
-| Layer | What ships | Make it yours |
-|-------|-----------|---------------|
-| **Quality gates** | 28 hooks enforce coverage, constitutional compliance, and phase sequencing — [details](docs/HOOKS.md) | • Set thresholds per profile (`rapid` / `standard` / `strict`)<br>• Drop domain-specific validators in `.isdlc/hooks/`<br>• Write your own gate logic<br>[→ Quality gates guide](docs/isdlc/quality-gates-guide.md) |
-| **Workflows** | Feature, fix, upgrade, and test workflows with adaptive sizing — [details](docs/ARCHITECTURE.md) | • Choose light/standard/epic sizing<br>• Define custom workflows with your own phase sequences<br>• Replace built-in sequences entirely<br>[→ Workflow customization guide](docs/isdlc/workflow-customization-guide.md) |
-| **Analysis** | 3-persona roundtable (business analyst, solutions architect, system designer) — [details](docs/AGENTS.md) | • Set depth (`brief` / `standard` / `deep`)<br>• Author new personas, override or disable built-in ones<br>• Change analysis modes<br>[→ Persona authoring guide](docs/isdlc/persona-authoring-guide.md) |
-| **Project knowledge** | Code scanned, chunked, and embedded during `/discover` — agents search it semantically | • Choose embedding provider<br>• Inject your own documents<br>• Build on the composable semantic engine<br>[→ Project knowledge guide](docs/PROJECT-KNOWLEDGE.md) |
-| **Constitution** | Generated from your actual codebase during `/discover` — [details](docs/CONSTITUTION-GUIDE.md) | • Edit thresholds and rules<br>• Add domain-specific articles<br>• Compose base + project constitutions for team-wide standards<br>[→ Constitution guide](docs/CONSTITUTION-GUIDE.md) |
-| **Recovery** | Retry, redo, or rollback any phase | [→ Hackability roadmap](docs/isdlc/hackability-roadmap.md) |
+| Area | What it does | Why it matters |
+|------|-------------|----------------|
+| **[Discovery](#knowledge-your-codebase-as-ground-truth)** | 23 agents analyze your architecture, tests, dependencies, data models, and features in parallel | Agents understand your codebase before changing a single line |
+| **[Roundtable](#what-you-experience)** | Business analyst, architect, and designer analyze requirements through structured debate | Three perspectives catch gaps a single prompt never will |
+| **[Workflows](#workflows-fixed-phase-sequences)** | Feature, fix, upgrade, and test workflows with fixed phases and adaptive sizing | AI can't skip steps, scope-creep, or declare "done" prematurely |
+| **[Quality Gates](#enforcement-28-hooks)** | 28 hooks enforce coverage, compliance, and sequencing — running outside the LLM | Deterministic enforcement the AI can't argue with or ignore |
+| **[Constitution](#what-you-control)** | Governance rules generated from your actual codebase during discovery | Thresholds verified against real code, not hallucinated from training data |
+| **[Project Knowledge](docs/PROJECT-KNOWLEDGE.md)** | Codebase scanned, chunked, and embedded for semantic search | Agents find relevant patterns and conventions instead of guessing |
+| **[Impact Analysis](#workflows-fixed-phase-sequences)** | Parallel sub-agents map blast radius, entry points, and risk zones before implementation | Changes are scoped precisely — no surprise side effects |
+| **[Tracing](#workflows-fixed-phase-sequences)** | 4 agents trace bugs from symptoms through execution paths to root cause | Fixes address causes, not symptoms |
+| **[Backlog](#three-verb-backlog)** | Add → Analyze → Build pipeline with GitHub Issues integration | Work progresses from idea to analysis to implementation with full traceability |
+| **[Recovery](#workflow-recovery)** | Retry, redo, or rollback any phase — interrupt workflows to fix blockers mid-flight | Mistakes and blockers don't mean starting over |
+| **[ATDD](#workflows-fixed-phase-sequences)** | Given/When/Then acceptance criteria mapped to `test.skip()` scaffolds | Red → Green → Refactor with requirement traceability |
+| **[Extensibility](#what-you-control)** | Custom personas, skills, gate profiles, multi-provider routing, monorepo isolation | Every layer ships with defaults you can override |
 
 ---
 
 ## What You Experience
 
-Despite all this structure, interaction is conversational. The harness detects intent and runs the right workflow:
+Despite all this structure, interaction is conversational. The harness detects your intent and runs the right workflow:
 
 ```
 You:     "The login page crashes when the password field is empty"
@@ -90,9 +88,8 @@ Claude:  Detects analysis is complete, picks up where it left off, starts from
 
 Each verb is a natural escalation: **add** captures the idea, **analyze** deepens understanding, **build** executes the work.
 
-### Slash commands
-
-For users who prefer explicit control:
+<details>
+<summary><strong>Slash commands</strong> — for users who prefer explicit control</summary>
 
 | Command | Description |
 |---------|-------------|
@@ -110,15 +107,28 @@ For users who prefer explicit control:
 | `/isdlc skill list` | Show registered external skills |
 | `/isdlc skill remove <name>` | Unregister a skill |
 
+</details>
+
 ---
 
 ## What You Control
 
+**iSDLC is a hackable harness.** It ships strict — but every layer is yours to change.
+
+| Layer | What ships | Make it yours |
+|-------|-----------|---------------|
+| **Quality gates** | 28 hooks enforce coverage, constitutional compliance, and phase sequencing — [details](docs/HOOKS.md) | Set thresholds per profile (`rapid` / `standard` / `strict`), drop domain-specific validators, write your own gate logic — [guide](docs/isdlc/quality-gates-guide.md) |
+| **Workflows** | Feature, fix, upgrade, and test workflows with adaptive sizing — [details](docs/ARCHITECTURE.md) | Choose light/standard/epic sizing, define custom workflows with your own phase sequences — [guide](docs/isdlc/workflow-customization-guide.md) |
+| **Analysis** | 3-persona roundtable (business analyst, solutions architect, system designer) — [details](docs/AGENTS.md) | Set depth (`brief` / `standard` / `deep`), author new personas, override or disable built-in ones — [guide](docs/isdlc/persona-authoring-guide.md) |
+| **Project knowledge** | Code scanned, chunked, and embedded during `/discover` — agents search it semantically | Choose embedding provider, inject your own documents — [guide](docs/PROJECT-KNOWLEDGE.md) |
+| **Constitution** | Generated from your actual codebase during `/discover` — [details](docs/CONSTITUTION-GUIDE.md) | Edit thresholds and rules, add domain-specific articles, compose base + project constitutions — [guide](docs/CONSTITUTION-GUIDE.md) |
+| **Recovery** | Retry, redo, or rollback any phase | [Hackability roadmap](docs/isdlc/hackability-roadmap.md) |
+
 ### Gate profiles
 
-Control how rigorous quality gates are. Set per-project or override per-workflow.
+Control how rigorous quality gates are — per-project or per-workflow:
 
-| Profile | Coverage | Constitutional Validation | Elicitation | Use Case |
+| Profile | Coverage | Constitutional Validation | Elicitation | Use case |
 |---------|----------|--------------------------|-------------|----------|
 | **rapid** | 60% | Off | 1 interaction | Spikes, simple changes, trusted developers |
 | **standard** | 80% | On | 3 interactions | Default — balanced rigor |
@@ -136,9 +146,9 @@ The roundtable adjusts how deeply it probes:
 
 Adapts automatically from signal words, or override with `--light` / `--deep`.
 
-### Personas
+### Custom personas
 
-The roundtable ships with three built-in personas (business analyst, solutions architect, system designer). Customize the roster:
+The roundtable ships with three built-in personas. Customize the roster:
 
 **Add a domain expert** — drop a markdown file in `.isdlc/personas/`:
 ```
@@ -159,9 +169,17 @@ disabled_personas:
   - ux-reviewer
 ```
 
-**Choose analysis mode** — conversational, bulleted, silent, or no-persona straight analysis. Set a default or choose per analysis.
-
 > [Persona Authoring Guide](docs/isdlc/persona-authoring-guide.md)
+
+### Custom skills
+
+Capture team best practices as reusable, agent-consumable knowledge:
+
+- **Add** — point to a SKILL.md file or create one interactively
+- **Wire** — bind a skill to specific phases and agents
+- **List/Remove** — manage registered skills
+
+Skills are injected into agent context during workflow execution. Use them for coding conventions, API patterns, domain rules — anything agents should know when working in your codebase.
 
 ### Workflow recovery
 
@@ -170,24 +188,11 @@ Made a mistake? No need to restart from scratch.
 - **Retry** — re-run the current phase with fresh state ("try again")
 - **Redo** — reset the current phase completely ("redo this phase")
 - **Rollback** — go back to an earlier phase ("go back to requirements")
+- **Interrupt** — suspend the current workflow to fix a blocking bug, then resume where you left off
 
 Artifacts on disk are preserved so agents read and revise rather than starting blind.
 
-### Custom skills
-
-Capture team best practices as reusable, agent-consumable knowledge. Say "add a new skill" and the framework walks you through defining and wiring it:
-
-- **Add** — point to a SKILL.md file or create one interactively
-- **Wire** — bind a skill to specific phases and agents (implementation, architecture, etc.)
-- **List/Remove** — manage registered skills
-
-Skills are injected into agent context during workflow execution. Use them for coding conventions, API patterns, domain rules — anything agents should know when working in your codebase.
-
-### Constitution
-
-The project constitution (`docs/isdlc/constitution.md`) codifies your governance rules: test coverage thresholds, security requirements, module system constraints, platform compatibility. Generated during `/discover`, enforced by hooks at every phase boundary. Edit it to match your team's standards — it's your document.
-
-### Coming next
+### Roadmap
 
 | Extension point | What you'll be able to do |
 |----------------|--------------------------|
@@ -201,13 +206,16 @@ The project constitution (`docs/isdlc/constitution.md`) codifies your governance
 
 ---
 
-## How the Harness Works
+## Under the Hood
 
 Three layers enforce quality independently — each runs outside the LLM conversation.
 
-### Enforcement layer: 28 hooks
+### Enforcement: 28 hooks
 
-Hooks are Node.js processes that intercept tool calls via Claude Code's `PreToolUse` and `PostToolUse` events. They are not part of the conversation — the AI cannot argue with, reinterpret, or ignore them.
+Hooks are Node.js processes that intercept tool calls via Claude Code's `PreToolUse` and `PostToolUse` events. They are not part of the conversation — the AI cannot argue with, reinterpret, or ignore them. All hooks fail open — if a hook crashes, it allows the operation rather than blocking work.
+
+<details>
+<summary><strong>Key hooks</strong></summary>
 
 | Hook | What it enforces |
 |------|-----------------|
@@ -218,22 +226,23 @@ Hooks are Node.js processes that intercept tool calls via Claude Code's `PreTool
 | `phase-sequence-guard.cjs` | Blocks out-of-order phase execution — no skipping ahead |
 | `delegation-gate.cjs` | Validates the correct agent is delegated for each phase |
 
-All hooks fail open — if a hook crashes, it allows the operation rather than blocking all work.
+</details>
 
-### Workflow layer: structured phase sequences
+### Workflows: fixed phase sequences
 
-Each workflow type defines a fixed phase sequence. The AI cannot invent extra steps or skip phases.
+Each workflow type defines a fixed, non-skippable phase sequence. The AI cannot invent extra steps or skip phases.
 
 | Workflow | Phases | Use case |
 |----------|--------|----------|
 | **Feature** | Requirements → Impact Analysis → Architecture → Design → Test Strategy → Implementation → Quality Loop → Code Review | New functionality |
+| **Feature (light)** | Requirements → Impact Analysis → Test Strategy → Implementation → Quality Loop → Code Review | Small changes — architecture and design skipped |
 | **Fix** | Requirements → Root Cause Tracing → Test Strategy → Implementation → Quality Loop → Code Review | Bug fixes (TDD: failing test first) |
 | **Upgrade** | Analysis & Planning → Execute & Test → Code Review | Dependency/runtime upgrades |
 | **Test** | Test Strategy → Implementation → Quality Loop → Code Review | Generate tests for existing code |
 
-Adaptive sizing scales workflows — light features skip architecture and design phases; simple changes get rapid gates.
+Adaptive sizing scales automatically — light features skip phases, simple changes get rapid gates, complex epics get full rigor with debate rounds.
 
-### Knowledge layer: your codebase as ground truth
+### Knowledge: your codebase as ground truth
 
 Before changing anything, `/discover` runs 23 agents that build a structured model of your project:
 
@@ -261,7 +270,8 @@ Each phase reads predecessor artifacts as input. The architect reads the require
 
 </details>
 
-### Lifecycle: Discover → Analyze → Build
+<details>
+<summary><strong>Lifecycle: Discover → Analyze → Build</strong></summary>
 
 ```mermaid
 flowchart TD
@@ -299,6 +309,8 @@ flowchart TD
     end
 ```
 
+</details>
+
 ---
 
 ## Getting Started
@@ -308,8 +320,9 @@ flowchart TD
 | Requirement | Version | Notes |
 |-------------|---------|-------|
 | **Node.js** | 20+ | Required for hooks, tools, and CLI |
-| **Claude Code** | Latest | [Optional] [Install guide](https://docs.anthropic.com/en/docs/claude-code/overview) |
-| **Antigravity** | Latest | [Optional] |
+| **Claude Code** | Latest | [Install guide](https://docs.anthropic.com/en/docs/claude-code/overview) |
+
+Supported on macOS, Linux, and Windows.
 
 ### Install
 
@@ -337,17 +350,39 @@ The installer sets up 64 agents, 273 skills, 28 hooks, and the `.isdlc/` state d
 
 ### First steps
 
-iSDLC is designed for existing codebases. Install into your project, run discovery, then work naturally:
-
 ```bash
-claude                        # start Claude Code in your project
-> /discover                   # maps architecture, tests, dependencies, conventions
-> "fix the login bug"         # harness detects intent, runs the right workflow
-> "add user authentication"   # full lifecycle: requirements → design → implement → review
-> "upgrade to Node 22"        # impact analysis, migration plan, test validation
+claude                              # start Claude Code in your project
+> /discover                         # maps architecture, tests, dependencies, conventions
 ```
 
-Discovery generates a constitution from your actual codebase — your patterns, your thresholds, your constraints. Every subsequent workflow is grounded in that knowledge.
+Discovery maps your architecture, test coverage, dependencies, and conventions. It generates a constitution from your actual codebase — your patterns, your thresholds, your constraints. Every subsequent workflow is grounded in that knowledge.
+
+### Establish your test baseline
+
+After discovery, the harness knows your test coverage gaps. Before building new features, close them:
+
+```
+> "generate tests for the auth module"    # targets uncovered code identified during discovery
+> "generate tests for the data layer"     # builds characterization tests from existing behavior
+> "run tests"                             # validates the full suite
+```
+
+Getting to 95-100% coverage across unit, integration, and system layers gives the harness its teeth — quality gates can enforce high thresholds because the baseline supports them. Without strong coverage, gate enforcement has to be lenient, and the AI has more room to cut corners.
+
+This is the highest-leverage step you can take after discovery.
+
+### Start building
+
+Then just talk naturally:
+
+```
+> "fix the login bug"               # traces root cause, writes failing test, fixes, validates
+> "add user authentication"          # full lifecycle: requirements → design → implement → review
+> "upgrade to Node 22"              # impact analysis, migration plan, test validation
+> "add dark mode to the backlog"    # captures the idea for later analysis
+> "analyze the dark mode feature"   # roundtable: requirements + architecture + design
+> "build dark mode"                 # picks up analysis artifacts, starts implementation
+```
 
 New projects are also supported — `/discover` switches to vision elicitation, tech stack selection, and project scaffolding.
 
@@ -362,22 +397,14 @@ New projects are also supported — `/discover` switches to vision elicitation, 
 | [AGENTS.md](docs/AGENTS.md) | All 64 agents with responsibilities and artifacts |
 | [DETAILED-SKILL-ALLOCATION.md](docs/DETAILED-SKILL-ALLOCATION.md) | 273 skills organized by category |
 | [CONSTITUTION-GUIDE.md](docs/CONSTITUTION-GUIDE.md) | Project governance principles |
+| [PROJECT-KNOWLEDGE.md](docs/PROJECT-KNOWLEDGE.md) | Semantic search over your codebase |
 | [Hackability Roadmap](docs/isdlc/hackability-roadmap.md) | Extension architecture and what's coming |
 | [Persona Authoring Guide](docs/isdlc/persona-authoring-guide.md) | Create, override, and configure roundtable personas |
-| [MONOREPO-GUIDE.md](docs/MONOREPO-GUIDE.md) | Multi-project setup |
-| [AUTONOMOUS-ITERATION.md](docs/AUTONOMOUS-ITERATION.md) | Self-correcting agent behavior |
-| [PROJECT-KNOWLEDGE.md](docs/PROJECT-KNOWLEDGE.md) | Embed your documents into the project knowledge base |
 | [Quality Gates Guide](docs/isdlc/quality-gates-guide.md) | Configure profiles, extend validators, write custom gate logic |
 | [Workflow Customization Guide](docs/isdlc/workflow-customization-guide.md) | Sizing, custom workflows, and phase sequence replacement |
+| [MONOREPO-GUIDE.md](docs/MONOREPO-GUIDE.md) | Multi-project setup |
+| [AUTONOMOUS-ITERATION.md](docs/AUTONOMOUS-ITERATION.md) | Self-correcting agent behavior |
 | [SKILL-ENFORCEMENT.md](docs/SKILL-ENFORCEMENT.md) | Runtime skill observability |
-
----
-
-## System Requirements
-
-- **Node.js 20+** (required)
-- **Claude Code** (CLI tool from Anthropic)
-- **macOS, Linux, or Windows** (all platforms supported)
 
 ---
 
