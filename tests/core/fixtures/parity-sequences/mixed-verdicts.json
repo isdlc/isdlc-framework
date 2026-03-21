@@ -1,0 +1,30 @@
+{
+  "description": "Mixed verdict sequence across 4 files: PASS, REVISE+PASS, PASS, REVISE+REVISE+PASS",
+  "files": [
+    { "path": "src/a.js", "type": "source", "order": 1 },
+    { "path": "src/b.js", "type": "source", "order": 2 },
+    { "path": "src/c.js", "type": "source", "order": 3 },
+    { "path": "src/d.js", "type": "source", "order": 4 }
+  ],
+  "steps": [
+    { "file": "src/a.js", "verdict": "PASS", "expected_action": "next_file", "note": "File 1 passes first try" },
+    { "file": "src/b.js", "verdict": "REVISE", "expected_action": "update", "note": "File 2 needs revision" },
+    { "file": "src/b.js", "verdict": "PASS", "expected_action": "next_file", "note": "File 2 passes after update" },
+    { "file": "src/c.js", "verdict": "PASS", "expected_action": "next_file", "note": "File 3 passes first try" },
+    { "file": "src/d.js", "verdict": "REVISE", "expected_action": "update", "note": "File 4 first revision" },
+    { "file": "src/d.js", "verdict": "REVISE", "expected_action": "update", "note": "File 4 second revision" },
+    { "file": "src/d.js", "verdict": "PASS", "expected_action": "complete", "note": "File 4 passes, loop complete" }
+  ],
+  "expected_completed_files": ["src/a.js", "src/b.js", "src/c.js", "src/d.js"],
+  "expected_verdict_count": 7,
+  "expected_cycle_per_file": {
+    "src/a.js": 1,
+    "src/b.js": 2,
+    "src/c.js": 1,
+    "src/d.js": 3
+  },
+  "findings_for_revise": {
+    "blocking": [{ "category": "correctness", "description": "Logic error in handler" }],
+    "warning": [{ "category": "style", "description": "Unused variable" }]
+  }
+}

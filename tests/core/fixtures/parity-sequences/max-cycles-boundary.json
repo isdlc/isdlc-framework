@@ -1,0 +1,27 @@
+{
+  "description": "Max cycles boundary tests — one under max (cycle 2 of 3), exactly at max (cycle 3 of 3), PASS at max cycle",
+  "files": [
+    { "path": "src/boundary.js", "type": "source", "order": 1 }
+  ],
+  "max_cycles": 3,
+  "scenarios": {
+    "one_under_max": {
+      "description": "At cycle 2 of 3, REVISE should return update (not fail)",
+      "setup_cycles": 1,
+      "verdict": "REVISE",
+      "expected_action": "update"
+    },
+    "exactly_at_max": {
+      "description": "At cycle 3 of 3, REVISE should return fail",
+      "setup_cycles": 2,
+      "verdict": "REVISE",
+      "expected_action": "fail"
+    },
+    "pass_at_max": {
+      "description": "At cycle 3 of 3, PASS should still succeed (not blocked by cycle count)",
+      "setup_cycles": 2,
+      "verdict": "PASS",
+      "expected_action": "complete"
+    }
+  }
+}

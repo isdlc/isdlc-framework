@@ -1,0 +1,710 @@
+{
+  "description": "100-file list stress test — verifies loop handles large file counts correctly",
+  "files": [
+    {
+      "path": "src/module-001.js",
+      "type": "source",
+      "order": 1
+    },
+    {
+      "path": "src/module-002.js",
+      "type": "source",
+      "order": 2
+    },
+    {
+      "path": "src/module-003.js",
+      "type": "source",
+      "order": 3
+    },
+    {
+      "path": "src/module-004.js",
+      "type": "source",
+      "order": 4
+    },
+    {
+      "path": "src/module-005.js",
+      "type": "source",
+      "order": 5
+    },
+    {
+      "path": "src/module-006.js",
+      "type": "source",
+      "order": 6
+    },
+    {
+      "path": "src/module-007.js",
+      "type": "source",
+      "order": 7
+    },
+    {
+      "path": "src/module-008.js",
+      "type": "source",
+      "order": 8
+    },
+    {
+      "path": "src/module-009.js",
+      "type": "source",
+      "order": 9
+    },
+    {
+      "path": "src/module-010.js",
+      "type": "source",
+      "order": 10
+    },
+    {
+      "path": "src/module-011.js",
+      "type": "source",
+      "order": 11
+    },
+    {
+      "path": "src/module-012.js",
+      "type": "source",
+      "order": 12
+    },
+    {
+      "path": "src/module-013.js",
+      "type": "source",
+      "order": 13
+    },
+    {
+      "path": "src/module-014.js",
+      "type": "source",
+      "order": 14
+    },
+    {
+      "path": "src/module-015.js",
+      "type": "source",
+      "order": 15
+    },
+    {
+      "path": "src/module-016.js",
+      "type": "source",
+      "order": 16
+    },
+    {
+      "path": "src/module-017.js",
+      "type": "source",
+      "order": 17
+    },
+    {
+      "path": "src/module-018.js",
+      "type": "source",
+      "order": 18
+    },
+    {
+      "path": "src/module-019.js",
+      "type": "source",
+      "order": 19
+    },
+    {
+      "path": "src/module-020.js",
+      "type": "source",
+      "order": 20
+    },
+    {
+      "path": "src/module-021.js",
+      "type": "source",
+      "order": 21
+    },
+    {
+      "path": "src/module-022.js",
+      "type": "source",
+      "order": 22
+    },
+    {
+      "path": "src/module-023.js",
+      "type": "source",
+      "order": 23
+    },
+    {
+      "path": "src/module-024.js",
+      "type": "source",
+      "order": 24
+    },
+    {
+      "path": "src/module-025.js",
+      "type": "source",
+      "order": 25
+    },
+    {
+      "path": "src/module-026.js",
+      "type": "source",
+      "order": 26
+    },
+    {
+      "path": "src/module-027.js",
+      "type": "source",
+      "order": 27
+    },
+    {
+      "path": "src/module-028.js",
+      "type": "source",
+      "order": 28
+    },
+    {
+      "path": "src/module-029.js",
+      "type": "source",
+      "order": 29
+    },
+    {
+      "path": "src/module-030.js",
+      "type": "source",
+      "order": 30
+    },
+    {
+      "path": "src/module-031.js",
+      "type": "source",
+      "order": 31
+    },
+    {
+      "path": "src/module-032.js",
+      "type": "source",
+      "order": 32
+    },
+    {
+      "path": "src/module-033.js",
+      "type": "source",
+      "order": 33
+    },
+    {
+      "path": "src/module-034.js",
+      "type": "source",
+      "order": 34
+    },
+    {
+      "path": "src/module-035.js",
+      "type": "source",
+      "order": 35
+    },
+    {
+      "path": "src/module-036.js",
+      "type": "source",
+      "order": 36
+    },
+    {
+      "path": "src/module-037.js",
+      "type": "source",
+      "order": 37
+    },
+    {
+      "path": "src/module-038.js",
+      "type": "source",
+      "order": 38
+    },
+    {
+      "path": "src/module-039.js",
+      "type": "source",
+      "order": 39
+    },
+    {
+      "path": "src/module-040.js",
+      "type": "source",
+      "order": 40
+    },
+    {
+      "path": "src/module-041.js",
+      "type": "source",
+      "order": 41
+    },
+    {
+      "path": "src/module-042.js",
+      "type": "source",
+      "order": 42
+    },
+    {
+      "path": "src/module-043.js",
+      "type": "source",
+      "order": 43
+    },
+    {
+      "path": "src/module-044.js",
+      "type": "source",
+      "order": 44
+    },
+    {
+      "path": "src/module-045.js",
+      "type": "source",
+      "order": 45
+    },
+    {
+      "path": "src/module-046.js",
+      "type": "source",
+      "order": 46
+    },
+    {
+      "path": "src/module-047.js",
+      "type": "source",
+      "order": 47
+    },
+    {
+      "path": "src/module-048.js",
+      "type": "source",
+      "order": 48
+    },
+    {
+      "path": "src/module-049.js",
+      "type": "source",
+      "order": 49
+    },
+    {
+      "path": "src/module-050.js",
+      "type": "source",
+      "order": 50
+    },
+    {
+      "path": "src/module-051.js",
+      "type": "source",
+      "order": 51
+    },
+    {
+      "path": "src/module-052.js",
+      "type": "source",
+      "order": 52
+    },
+    {
+      "path": "src/module-053.js",
+      "type": "source",
+      "order": 53
+    },
+    {
+      "path": "src/module-054.js",
+      "type": "source",
+      "order": 54
+    },
+    {
+      "path": "src/module-055.js",
+      "type": "source",
+      "order": 55
+    },
+    {
+      "path": "src/module-056.js",
+      "type": "source",
+      "order": 56
+    },
+    {
+      "path": "src/module-057.js",
+      "type": "source",
+      "order": 57
+    },
+    {
+      "path": "src/module-058.js",
+      "type": "source",
+      "order": 58
+    },
+    {
+      "path": "src/module-059.js",
+      "type": "source",
+      "order": 59
+    },
+    {
+      "path": "src/module-060.js",
+      "type": "source",
+      "order": 60
+    },
+    {
+      "path": "src/module-061.js",
+      "type": "source",
+      "order": 61
+    },
+    {
+      "path": "src/module-062.js",
+      "type": "source",
+      "order": 62
+    },
+    {
+      "path": "src/module-063.js",
+      "type": "source",
+      "order": 63
+    },
+    {
+      "path": "src/module-064.js",
+      "type": "source",
+      "order": 64
+    },
+    {
+      "path": "src/module-065.js",
+      "type": "source",
+      "order": 65
+    },
+    {
+      "path": "src/module-066.js",
+      "type": "source",
+      "order": 66
+    },
+    {
+      "path": "src/module-067.js",
+      "type": "source",
+      "order": 67
+    },
+    {
+      "path": "src/module-068.js",
+      "type": "source",
+      "order": 68
+    },
+    {
+      "path": "src/module-069.js",
+      "type": "source",
+      "order": 69
+    },
+    {
+      "path": "src/module-070.js",
+      "type": "source",
+      "order": 70
+    },
+    {
+      "path": "src/module-071.js",
+      "type": "source",
+      "order": 71
+    },
+    {
+      "path": "src/module-072.js",
+      "type": "source",
+      "order": 72
+    },
+    {
+      "path": "src/module-073.js",
+      "type": "source",
+      "order": 73
+    },
+    {
+      "path": "src/module-074.js",
+      "type": "source",
+      "order": 74
+    },
+    {
+      "path": "src/module-075.js",
+      "type": "source",
+      "order": 75
+    },
+    {
+      "path": "src/module-076.js",
+      "type": "source",
+      "order": 76
+    },
+    {
+      "path": "src/module-077.js",
+      "type": "source",
+      "order": 77
+    },
+    {
+      "path": "src/module-078.js",
+      "type": "source",
+      "order": 78
+    },
+    {
+      "path": "src/module-079.js",
+      "type": "source",
+      "order": 79
+    },
+    {
+      "path": "src/module-080.js",
+      "type": "source",
+      "order": 80
+    },
+    {
+      "path": "src/module-081.js",
+      "type": "source",
+      "order": 81
+    },
+    {
+      "path": "src/module-082.js",
+      "type": "source",
+      "order": 82
+    },
+    {
+      "path": "src/module-083.js",
+      "type": "source",
+      "order": 83
+    },
+    {
+      "path": "src/module-084.js",
+      "type": "source",
+      "order": 84
+    },
+    {
+      "path": "src/module-085.js",
+      "type": "source",
+      "order": 85
+    },
+    {
+      "path": "src/module-086.js",
+      "type": "source",
+      "order": 86
+    },
+    {
+      "path": "src/module-087.js",
+      "type": "source",
+      "order": 87
+    },
+    {
+      "path": "src/module-088.js",
+      "type": "source",
+      "order": 88
+    },
+    {
+      "path": "src/module-089.js",
+      "type": "source",
+      "order": 89
+    },
+    {
+      "path": "src/module-090.js",
+      "type": "source",
+      "order": 90
+    },
+    {
+      "path": "src/module-091.js",
+      "type": "source",
+      "order": 91
+    },
+    {
+      "path": "src/module-092.js",
+      "type": "source",
+      "order": 92
+    },
+    {
+      "path": "src/module-093.js",
+      "type": "source",
+      "order": 93
+    },
+    {
+      "path": "src/module-094.js",
+      "type": "source",
+      "order": 94
+    },
+    {
+      "path": "src/module-095.js",
+      "type": "source",
+      "order": 95
+    },
+    {
+      "path": "src/module-096.js",
+      "type": "source",
+      "order": 96
+    },
+    {
+      "path": "src/module-097.js",
+      "type": "source",
+      "order": 97
+    },
+    {
+      "path": "src/module-098.js",
+      "type": "source",
+      "order": 98
+    },
+    {
+      "path": "src/module-099.js",
+      "type": "source",
+      "order": 99
+    },
+    {
+      "path": "src/module-100.js",
+      "type": "source",
+      "order": 100
+    }
+  ],
+  "verdicts_sequence": [
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS"
+  ],
+  "expected_completed_files": [
+    "src/module-001.js",
+    "src/module-002.js",
+    "src/module-003.js",
+    "src/module-004.js",
+    "src/module-005.js",
+    "src/module-006.js",
+    "src/module-007.js",
+    "src/module-008.js",
+    "src/module-009.js",
+    "src/module-010.js",
+    "src/module-011.js",
+    "src/module-012.js",
+    "src/module-013.js",
+    "src/module-014.js",
+    "src/module-015.js",
+    "src/module-016.js",
+    "src/module-017.js",
+    "src/module-018.js",
+    "src/module-019.js",
+    "src/module-020.js",
+    "src/module-021.js",
+    "src/module-022.js",
+    "src/module-023.js",
+    "src/module-024.js",
+    "src/module-025.js",
+    "src/module-026.js",
+    "src/module-027.js",
+    "src/module-028.js",
+    "src/module-029.js",
+    "src/module-030.js",
+    "src/module-031.js",
+    "src/module-032.js",
+    "src/module-033.js",
+    "src/module-034.js",
+    "src/module-035.js",
+    "src/module-036.js",
+    "src/module-037.js",
+    "src/module-038.js",
+    "src/module-039.js",
+    "src/module-040.js",
+    "src/module-041.js",
+    "src/module-042.js",
+    "src/module-043.js",
+    "src/module-044.js",
+    "src/module-045.js",
+    "src/module-046.js",
+    "src/module-047.js",
+    "src/module-048.js",
+    "src/module-049.js",
+    "src/module-050.js",
+    "src/module-051.js",
+    "src/module-052.js",
+    "src/module-053.js",
+    "src/module-054.js",
+    "src/module-055.js",
+    "src/module-056.js",
+    "src/module-057.js",
+    "src/module-058.js",
+    "src/module-059.js",
+    "src/module-060.js",
+    "src/module-061.js",
+    "src/module-062.js",
+    "src/module-063.js",
+    "src/module-064.js",
+    "src/module-065.js",
+    "src/module-066.js",
+    "src/module-067.js",
+    "src/module-068.js",
+    "src/module-069.js",
+    "src/module-070.js",
+    "src/module-071.js",
+    "src/module-072.js",
+    "src/module-073.js",
+    "src/module-074.js",
+    "src/module-075.js",
+    "src/module-076.js",
+    "src/module-077.js",
+    "src/module-078.js",
+    "src/module-079.js",
+    "src/module-080.js",
+    "src/module-081.js",
+    "src/module-082.js",
+    "src/module-083.js",
+    "src/module-084.js",
+    "src/module-085.js",
+    "src/module-086.js",
+    "src/module-087.js",
+    "src/module-088.js",
+    "src/module-089.js",
+    "src/module-090.js",
+    "src/module-091.js",
+    "src/module-092.js",
+    "src/module-093.js",
+    "src/module-094.js",
+    "src/module-095.js",
+    "src/module-096.js",
+    "src/module-097.js",
+    "src/module-098.js",
+    "src/module-099.js",
+    "src/module-100.js"
+  ],
+  "expected_final_action": "complete"
+}

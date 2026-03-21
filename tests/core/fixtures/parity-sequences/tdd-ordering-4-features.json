@@ -1,0 +1,28 @@
+{
+  "description": "4 feature pairs with TDD ordering — test file always precedes its production file",
+  "files": [
+    { "path": "src/auth.js", "type": "source", "order": 1 },
+    { "path": "tests/auth.test.js", "type": "test", "order": 2 },
+    { "path": "src/db.js", "type": "source", "order": 3 },
+    { "path": "tests/db.test.js", "type": "test", "order": 4 },
+    { "path": "src/router.js", "type": "source", "order": 5 },
+    { "path": "tests/router.test.js", "type": "test", "order": 6 },
+    { "path": "src/middleware.js", "type": "source", "order": 7 },
+    { "path": "tests/middleware.test.js", "type": "test", "order": 8 }
+  ],
+  "expected_tdd_order": [
+    "tests/auth.test.js", "src/auth.js",
+    "tests/db.test.js", "src/db.js",
+    "tests/router.test.js", "src/router.js",
+    "tests/middleware.test.js", "src/middleware.js"
+  ],
+  "expected_types_order": ["test", "source", "test", "source", "test", "source", "test", "source"],
+  "verdicts_sequence": ["PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS"],
+  "expected_completed_files": [
+    "tests/auth.test.js", "src/auth.js",
+    "tests/db.test.js", "src/db.js",
+    "tests/router.test.js", "src/router.js",
+    "tests/middleware.test.js", "src/middleware.js"
+  ],
+  "expected_final_action": "complete"
+}

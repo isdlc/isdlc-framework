@@ -1,0 +1,9 @@
+{
+  "description": "Single file loop — trivial case where one file passes on first review",
+  "files": [
+    { "path": "src/config.js", "type": "source", "order": 1 }
+  ],
+  "verdicts_sequence": ["PASS"],
+  "expected_completed_files": ["src/config.js"],
+  "expected_final_action": "complete"
+}

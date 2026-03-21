@@ -1,0 +1,7 @@
+{
+  "description": "Empty file list edge case — loop should be immediately complete with no files to process",
+  "files": [],
+  "verdicts_sequence": [],
+  "expected_completed_files": [],
+  "expected_final_action": "complete"
+}
