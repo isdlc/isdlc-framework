@@ -668,7 +668,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
    - **Jira** (if source is "jira" and source_id matches PROJECT-N pattern): Call `getAccessibleAtlassianResources` to resolve cloudId (use first accessible resource if multiple), then call `getJiraIssue(cloudId, source_id)` to fetch the ticket --> issueData (summary, description, issuetype, priority). If the Jira fetch fails, fail fast: "Could not fetch Jira ticket {source_id}: {error}" and STOP (matching GitHub fail-fast behavior). Pass fetched Jira content into draft.md: use the summary as the draft heading, the description body as context, and include acceptance criteria if present in the Jira description.
    - `Grep "GH-N"` (or source_id) across `docs/requirements/*/meta.json` --> existingMatch (slug and directory if found, null if not)
    - `Glob docs/requirements/{TYPE}-*` --> folderList (for sequence number calculation)
-   - **Memory read** (REQ-0063, FR-003): Read roundtable memory in parallel with other Group 1 operations. Call `readUserProfile()` and `readProjectMemory(projectRoot)` from `lib/memory.js`. Both are fail-open: null on any error. Then `mergeMemory(userProfile, projectMemory)` and `formatMemoryContext(merged)` to produce `memoryContextBlock`. If the result is empty string, `MEMORY_CONTEXT` is omitted from the dispatch prompt.
+   - **Memory read** (REQ-0063, FR-003; BUG-0056, FR-003): Read roundtable memory in parallel with other Group 1 operations. Prefer hybrid path: call `searchMemory()` from `lib/memory-search.js` with `{ codebaseIndexPath: 'docs/.embeddings/codebase.emb', traverseLinks: true, includeProfile: true, profilePath }`. If hybrid search returns non-empty results, call `formatHybridMemoryContext(result)` to produce `memoryContextBlock`. If hybrid search returns empty (no vector indexes exist on first run), fall back to legacy path: call `readUserProfile()` and `readProjectMemory(projectRoot)` from `lib/memory.js`, then `mergeMemory(userProfile, projectMemory)` and `formatMemoryContext(merged)`. If the result is empty string, `MEMORY_CONTEXT` is omitted from the dispatch prompt.
    - **Persona + topic files** (REQ-0001 FR-006): Check if session context contains `<!-- SECTION: ROUNDTABLE_CONTEXT -->`.
      If found:
        - Extract persona content from `### Persona: Business Analyst`, `### Persona: Solutions Architect`, `### Persona: System Designer` headings --> personaContent
@@ -822,11 +822,12 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
    - Re-read meta.json using `readMetaJson(slugDir)` to get the lead's updates
    - The lead will have populated phases_completed, topics_covered, and written artifacts
 
-7.5a. **Memory write-back** (REQ-0063, FR-006; REQ-0065, FR-007): After the roundtable conversation completes inline:
-   - Construct session record from in-memory conversation state: `{ topics_covered, depth_preferences_observed, overrides, session_timestamp }` -- no parsing of agent output needed since the conversation ran inline
-   - Call `writeSessionRecord(record, projectRoot, userMemoryDir)` from `lib/memory.js`
-   - This writes the session record to both `~/.isdlc/user-memory/sessions/{timestamp}.json` and `.isdlc/roundtable-memory.json`
-   - Write failures are non-blocking: the result `{ userWritten, projectWritten }` is logged internally but does not affect the analyze flow (AC-006-04, AC-008-05)
+7.5a. **Memory write-back** (REQ-0063, FR-006; REQ-0065, FR-007; BUG-0056, FR-003): After the roundtable conversation completes inline:
+   - Construct an EnrichedSessionRecord from in-memory conversation state: `{ session_id, timestamp, topics_covered, depth_preferences_observed, overrides, summary, context_notes, playbook_entry, importance }`. The `summary` is a 1-2 sentence description of the session outcome. `context_notes` are topic-specific observations (array of `{ topic, content, relationship_hint }`). `playbook_entry` is the key takeaway. `importance` is 0-10 rating.
+   - Call `writeSessionRecord(enrichedRecord, projectRoot, userMemoryDir)` from `lib/memory.js`
+   - This writes the enriched session record to both `~/.isdlc/user-memory/sessions/{session_id}.json` and `.isdlc/roundtable-memory.json`
+   - After write succeeds, trigger async embedding: spawn `embedSession(enrichedRecord, userStore, projectStore, engineConfig)` from `lib/memory-embedder.js`. This generates vector embeddings for semantic search. Embedding failure is non-blocking (fail-open, Article X).
+   - Write failures are non-blocking: the result `{ userWritten, projectWritten, enriched }` is logged internally but does not affect the analyze flow (AC-006-04, AC-008-05)
 
 7.6. **SIZING TRIGGER** (GH-57, fires after dispatch returns):
    IF meta.sizing_decision is NOT already set AND meta.phases_completed includes '02-impact-analysis':

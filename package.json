@@ -58,6 +58,7 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^12.6.2",
-    "faiss-node": "^0.5.1"
+    "faiss-node": "^0.5.1",
+    "tokenizers": "^0.20.3"
   }
 }
