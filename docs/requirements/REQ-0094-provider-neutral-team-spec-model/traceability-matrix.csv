@@ -1,0 +1,32 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File
+FR-001,AC-001-01,TS-01,positive,P0,tests/core/teams/specs.test.js
+FR-001,AC-001-02,TS-02,positive,P0,tests/core/teams/specs.test.js
+FR-001,AC-001-03,TS-03,positive,P0,tests/core/teams/specs.test.js
+FR-001,AC-001-04,TS-04,positive,P0,tests/core/teams/specs.test.js
+FR-003,AC-003-01,TS-05,positive,P0,tests/core/teams/specs.test.js
+FR-003,AC-003-02,TS-06,positive,P1,tests/core/teams/specs.test.js
+FR-003,AC-003-03,TS-07,positive,P1,tests/core/teams/specs.test.js
+FR-003,AC-003-03,TS-08,positive,P1,tests/core/teams/specs.test.js
+FR-003,AC-003-04,TS-09,positive,P0,tests/core/teams/specs.test.js
+FR-005,AC-005-01,TS-10,negative,P1,tests/core/teams/specs.test.js
+FR-005,AC-005-01,TS-11,negative,P1,tests/core/teams/specs.test.js
+FR-005,AC-005-01,TS-12,positive,P1,tests/core/teams/specs.test.js
+FR-004,AC-004-01,TS-13,positive,P0,tests/core/teams/specs.test.js
+FR-004,AC-004-02,TS-14,positive,P0,tests/core/teams/specs.test.js
+FR-004,AC-004-03,TS-15,positive,P0,tests/core/teams/specs.test.js
+FR-003,AC-003-01,TS-16,positive,P1,tests/core/teams/specs.test.js
+FR-002,AC-002-01,TR-01,positive,P0,tests/core/teams/registry.test.js
+FR-002,AC-002-01,TR-02,positive,P0,tests/core/teams/registry.test.js
+FR-002,AC-002-01,TR-03,positive,P0,tests/core/teams/registry.test.js
+FR-002,AC-002-01,TR-04,positive,P0,tests/core/teams/registry.test.js
+FR-002,AC-002-02,TR-05,negative,P0,tests/core/teams/registry.test.js
+FR-002,AC-002-02,TR-06,negative,P1,tests/core/teams/registry.test.js
+FR-002,AC-002-02,TR-07,negative,P1,tests/core/teams/registry.test.js
+FR-002,AC-002-03,TR-08,positive,P0,tests/core/teams/registry.test.js
+FR-005,AC-005-02,TR-09,positive,P1,tests/core/teams/registry.test.js
+FR-002,AC-002-01,TR-10,positive,P0,tests/core/teams/registry.test.js
+FR-006,AC-006-01,TB-01,positive,P0,tests/core/teams/bridge-team-specs.test.js
+FR-006,AC-006-03,TB-02,positive,P0,tests/core/teams/bridge-team-specs.test.js
+FR-006,AC-006-03,TB-03,positive,P0,tests/core/teams/bridge-team-specs.test.js
+FR-006,AC-006-01,TB-04,negative,P1,tests/core/teams/bridge-team-specs.test.js
+FR-004,AC-004-04,--,positive,P0,(existing test suite — no new tests needed)
