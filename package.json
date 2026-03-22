@@ -45,7 +45,8 @@
     "test:char": "node --test tests/characterization/*.test.js",
     "test:e2e": "node --test tests/e2e/*.test.js",
     "test:core": "node --test tests/core/**/*.test.js",
-    "test:all": "npm test && npm run test:hooks && npm run test:char && npm run test:e2e && npm run test:core",
+    "test:providers": "node --test tests/providers/**/*.test.js",
+    "test:all": "npm test && npm run test:hooks && npm run test:char && npm run test:e2e && npm run test:core && npm run test:providers",
     "lint": "echo 'No linter configured'",
     "prepare": "echo 'Package ready'"
   },
