@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "skills": [
+    {
+      "name": "external-skill-a",
+      "file": "/path/to/external-skill-a.md",
+      "source": "user",
+      "description": "An external skill matching phase and agent",
+      "bindings": {
+        "phases": ["06-implementation"],
+        "agents": ["test-agent"],
+        "injection_mode": "always",
+        "delivery_type": "context"
+      }
+    },
+    {
+      "name": "external-skill-b",
+      "file": "/path/to/external-skill-b.md",
+      "source": "user",
+      "description": "An external skill matching agent but different phase",
+      "bindings": {
+        "phases": ["01-requirements"],
+        "agents": ["test-agent"],
+        "injection_mode": "always",
+        "delivery_type": "instruction"
+      }
+    },
+    {
+      "name": "external-skill-c",
+      "file": "/path/to/external-skill-c.md",
+      "source": "user",
+      "description": "An external skill with injection_mode manual (should be excluded)",
+      "bindings": {
+        "phases": ["06-implementation"],
+        "agents": ["test-agent"],
+        "injection_mode": "manual",
+        "delivery_type": "context"
+      }
+    },
+    {
+      "name": "external-skill-d",
+      "file": "/path/to/external-skill-d.md",
+      "source": "user",
+      "description": "Phase-specific binding for 06-implementation",
+      "bindings": {
+        "phases": ["06-implementation"],
+        "agents": ["test-agent"],
+        "injection_mode": "always",
+        "delivery_type": "reference"
+      }
+    }
+  ]
+}

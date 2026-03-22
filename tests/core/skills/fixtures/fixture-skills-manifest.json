@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-03-22T00:00:00.000Z",
+  "total_skills": 5,
+  "enforcement_mode": "log",
+  "cross_agent_delegation": false,
+  "ownership": {
+    "test-agent": {
+      "agent_id": "99",
+      "phase": "06-implementation",
+      "skill_count": 3,
+      "skills": ["TEST-001", "TEST-002", "TEST-003"]
+    },
+    "other-agent": {
+      "agent_id": "98",
+      "phase": "01-requirements",
+      "skill_count": 2,
+      "skills": ["OTHER-001", "OTHER-002"]
+    }
+  },
+  "skill_lookup": {
+    "TEST-001": "test-agent",
+    "TEST-002": "test-agent",
+    "TEST-003": "test-agent",
+    "OTHER-001": "other-agent",
+    "OTHER-002": "other-agent"
+  }
+}

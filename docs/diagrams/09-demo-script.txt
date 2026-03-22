@@ -1,0 +1,280 @@
+ ====================================================================
+ ||          L I V E   D E M O   S C R I P T                      ||
+ ||          Showing injection, handover, and proof                ||
+ ====================================================================
+
+
+ BEFORE THE DEMO
+ ===============
+
+  Prep (5 min):
+
+  1. Open terminal in the isdlc-framework project
+  2. Make sure the project has a valid constitution:
+     cat docs/isdlc/constitution.md | head -20
+  3. Make sure state.json has no active workflow:
+     cat .isdlc/state.json | grep active_workflow
+  4. Have these files open in tabs for quick reference:
+     - .isdlc/session-cache.md
+     - src/claude/hooks/inject-session-cache.cjs
+     - src/claude/agents/00-sdlc-orchestrator.md (search "DISCOVERY CONTEXT")
+     - src/claude/agents/02-solution-architect.md (search "Step 1")
+     - src/claude/hooks/constitution-validator.cjs
+
+
+ ====================================================================
+ PART 1: SHOW THE VISUAL (5 min)
+ ====================================================================
+
+  Open docs/diagrams/08-knowledge-injection.txt
+
+  Walk through 3 questions:
+    1. "How is knowledge injected?" --> 3 mechanisms (A, B, C)
+    2. "How is it kept fresh?" --> 3 freshness checks
+    3. "How does handover work?" --> artifact-driven, not messages
+
+  Key talking points:
+    - "Discovery runs once. Every conversation after that starts
+       with full project knowledge pre-loaded."
+    - "Each phase agent has an explicit INPUT section naming the
+       exact files from the previous phase."
+    - "27 hooks run OUTSIDE the LLM. The AI literally cannot skip
+       a phase or bypass a gate."
+
+
+ ====================================================================
+ PART 2: PROVE INJECTION IS REAL (5 min, no workflow needed)
+ ====================================================================
+
+  STEP 1: Show the session cache exists and has content
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  $ cat .isdlc/session-cache.md | head -5
+
+  Expected output:
+    <!-- SESSION CACHE: Generated 2026-03-XX | Sources: 252 | Hash: XXXXXXXX -->
+    <!-- SECTION: CONSTITUTION -->
+    ...
+
+  POINT: "This file is built from actual project files. It's not
+  static -- the hash changes when source files change."
+
+
+  STEP 2: Show the injection hook
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  $ cat src/claude/hooks/inject-session-cache.cjs
+
+  POINT: "This 8-line file runs on every session start.
+  It reads the cache and writes it to stdout, which goes
+  directly into the LLM's context window. That's the injection."
+
+
+  STEP 3: Show what the orchestrator does with it
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  $ grep -n "DISCOVERY CONTEXT" src/claude/agents/00-sdlc-orchestrator.md | head -10
+
+  POINT: "The orchestrator extracts the DISCOVERY_CONTEXT section
+  from the session context and includes it in every delegation
+  prompt to Phases 01, 02, and 03."
+
+
+  STEP 4: Show an agent's explicit input section
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  $ grep -n -A5 "^## Step 1" src/claude/agents/02-solution-architect.md | head -10
+
+  POINT: "The Solution Architect's first step is literally
+  'Read requirements-spec.md, nfr-matrix.md, user-stories.json'.
+  This is not optional -- it's baked into the agent protocol."
+
+
+  STEP 5: Show the constitution validator hook
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  $ grep -n "PHASE COMPLETION BLOCKED" src/claude/hooks/constitution-validator.cjs
+
+  POINT: "If an agent tries to complete a phase without checking
+  constitutional articles, this hook fires and blocks it.
+  The agent is forced to read the constitution, check compliance,
+  and fix violations before it can advance."
+
+
+ ====================================================================
+ PART 3: LIVE DEMO -- ADD, ANALYZE, BUILD (15-20 min)
+ ====================================================================
+
+  This demonstrates the full three-verb lifecycle with visible
+  handover at each stage.
+
+
+  STEP 1: ADD (1 min)
+  ~~~~~~~~~~~~~~~~~~~~
+
+  In Claude Code, type:
+
+    /isdlc add "Add a health check endpoint that returns
+    build version and uptime"
+
+  SHOW:
+    - docs/requirements/REQ-NNNN-health-check/draft.md created
+    - docs/requirements/REQ-NNNN-health-check/meta.json created
+    - BACKLOG.md updated with [ ] marker
+
+  $ cat docs/requirements/REQ-NNNN-health-check/meta.json
+
+  POINT: "The item is tracked. analysis_status is 'raw'.
+  codebase_hash captures the current git HEAD. Nothing else
+  happens -- add is just bookkeeping."
+
+
+  STEP 2: ANALYZE (8-10 min)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  In Claude Code, type:
+
+    /isdlc analyze "REQ-NNNN"    (use the actual REQ number)
+
+  WATCH FOR:
+    - Roundtable personas loaded (Alex, Jordan, Sam)
+    - Quick scan runs (scope estimate)
+    - Requirements conversation with the user
+    - Architecture discussion
+    - Design discussion
+    - User accepts 3 domains
+
+  AFTER IT COMPLETES, SHOW:
+
+    $ cat docs/requirements/REQ-NNNN-health-check/meta.json
+
+    POINT: "analysis_status is now 'analyzed'.
+    phases_completed shows [00,01,02,03,04].
+    acceptance shows all 3 domains accepted."
+
+    $ ls docs/requirements/REQ-NNNN-health-check/
+
+    POINT: "These artifacts are the handover. requirements-spec.md,
+    architecture-overview.md, module-design.md -- each one is input
+    for the build phase."
+
+    $ head -20 docs/requirements/REQ-NNNN-health-check/requirements-spec.md
+
+    POINT: "This is what Phase 05 (test strategy) and Phase 06
+    (implementation) will read. It's not in the LLM's memory --
+    it's on disk, in git, traceable."
+
+    $ cat BACKLOG.md | grep REQ-NNNN
+
+    POINT: "Marker changed from [ ] to [A] -- analyzed and ready
+    to build."
+
+
+  STEP 3: BUILD (8-10 min)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  In Claude Code, type:
+
+    /isdlc build "REQ-NNNN"     (use the actual REQ number)
+
+  WATCH FOR:
+    a. "Analysis complete. Starting at Phase 05." (skips 00-04)
+    b. Phase 05: Test strategy created from requirements-spec.md
+       --> PROOF: test cases reference requirements from Phase 01
+    c. Phase 06: TDD cycle -- failing tests first, then implementation
+       --> PROOF: code follows architecture-overview.md patterns
+    d. Phase 16: Quality loop runs tests, security, lint in parallel
+    e. Phase 08: Code review checks ALL prior artifacts
+
+  DURING THE BUILD, SHOW THE HANDOVER IN REAL TIME:
+
+    When Phase 05 starts:
+    $ cat .isdlc/state.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('active_workflow',{}).get('current_phase','none'))"
+
+    POINT: "state.json shows current_phase is '05-test-strategy'.
+    The phase-loop-controller hook reads this to enforce sequencing."
+
+    When Phase 06 starts:
+    $ ls docs/requirements/REQ-NNNN-health-check/
+
+    POINT: "test-strategy.md and test-cases/ now exist from Phase 05.
+    Phase 06 reads these to drive TDD. This is the handover."
+
+    When Phase 08 starts:
+    POINT: "The QA engineer reads EVERY prior artifact:
+    requirements-spec, architecture, design, test strategy,
+    source code, quality report. Full traceability."
+
+
+  STEP 4: SHOW THE RESULT
+  ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    $ cat BACKLOG.md | grep REQ-NNNN
+
+    POINT: "Marker is now [x] -- completed."
+
+    $ cat .isdlc/state.json | python3 -c "
+    import sys,json
+    d=json.load(sys.stdin)
+    for w in d.get('workflow_history',[]):
+        if 'health-check' in w.get('slug',''):
+            print(json.dumps(w, indent=2))
+    "
+
+    POINT: "workflow_history records every phase, every iteration,
+    wall clock time, test results, merged commit hash.
+    This is institutional memory."
+
+    $ git log --oneline -5
+
+    POINT: "The code is merged. The artifacts are committed.
+    Everything is traceable from requirement to code to test."
+
+
+ ====================================================================
+ PART 4: ANSWER FOLLOW-UP QUESTIONS (5 min)
+ ====================================================================
+
+  "What if I disconnect mid-build?"
+  --> Run /isdlc with no args. It shows Scenario 4 (In-Progress)
+      with options to continue, check gate, or cancel.
+      state.json persists the exact phase you were in.
+
+  "What if the codebase changes after analysis?"
+  --> Run /isdlc analyze "REQ-NNNN" again. It compares
+      codebase_hash and warns: "Codebase changed since analysis."
+      Options: re-analyze or cancel.
+
+  "Can the AI skip a phase?"
+  --> No. phase-sequence-guard hook blocks it. Show:
+      $ grep "BLOCKED" src/claude/hooks/phase-loop-controller.cjs | head -5
+
+  "Can the AI ignore the constitution?"
+  --> No. constitution-validator hook blocks phase completion
+      until all articles are checked. Show:
+      $ grep "PHASE COMPLETION BLOCKED" src/claude/hooks/constitution-validator.cjs
+
+  "What if a hook crashes?"
+  --> Fail-open design. Show:
+      $ grep "fail-open\|fail_open\|failopen" src/claude/hooks/*.cjs | head -5
+      Framework bugs never block user work.
+
+
+ ====================================================================
+ TIMING GUIDE
+ ====================================================================
+
+  Part 1: Visual walkthrough          5 min
+  Part 2: Prove injection is real     5 min
+  Part 3: Live add/analyze/build     15-20 min
+  Part 4: Follow-up questions         5 min
+                                     --------
+  Total:                             30-35 min
+
+  TIP: If short on time, skip Part 3's build phase (longest).
+  Show add + analyze, then show a completed workflow from
+  workflow_history to prove the full chain works.
+
+  TIP: Keep .isdlc/state.json and BACKLOG.md visible in a split
+  terminal during the live demo so the audience can see state
+  changes in real time.

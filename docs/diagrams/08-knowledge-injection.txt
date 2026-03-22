@@ -1,0 +1,600 @@
+ ====================================================================
+ ||   H O W   P R O J E C T   K N O W L E D G E   F L O W S      ||
+ ||   ( discover --> capture --> inject --> handover --> refresh )   ||
+ ====================================================================
+
+
+
+ STAGE 1: DISCOVER SCANS THE EXISTING PROJECT
+ =============================================
+ (runs once via /discover -- builds the project's knowledge base)
+
+  /discover
+      |
+      v
+  Existing codebase detected (has source files, package.json, etc.)
+      |
+      v
+  4 ANALYSIS AGENTS LAUNCH IN PARALLEL:
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |  D1: Architecture Analyzer                                       |
+  |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~                                    |
+  |  scans: package.json, tsconfig, imports, folder structure        |
+  |  extracts:                                                       |
+  |    - tech stack (languages, frameworks, versions)                |
+  |    - module boundaries (src/, lib/, hooks/, agents/)             |
+  |    - dependency graph (internal + external)                      |
+  |    - integration points (APIs, databases, message queues)        |
+  |    - architecture patterns (hooks-based, supervisor tree, etc.)  |
+  |                                                                  |
+  |  D2: Test Evaluator                                              |
+  |  ~~~~~~~~~~~~~~~~~~~                                             |
+  |  scans: test files, config (vitest, jest, mocha), CI pipelines   |
+  |  extracts:                                                       |
+  |    - test count by type (unit, integration, e2e)                 |
+  |    - coverage percentage and thresholds                          |
+  |    - test frameworks in use                                      |
+  |    - gaps (untested modules, missing integration tests)          |
+  |    - test naming conventions and patterns                        |
+  |                                                                  |
+  |  D5: Data Model Analyzer                                         |
+  |  ~~~~~~~~~~~~~~~~~~~~~~~~                                        |
+  |  scans: schemas, migrations, models, type definitions            |
+  |  extracts:                                                       |
+  |    - entity relationships                                        |
+  |    - data store types (SQL, NoSQL, file-based)                   |
+  |    - schema validation patterns                                  |
+  |    - state management approach                                   |
+  |                                                                  |
+  |  D6: Feature Mapper + Behavior Extractor                         |
+  |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                        |
+  |  scans: routes, handlers, components, business logic             |
+  |  extracts:                                                       |
+  |    - API endpoints and their contracts                           |
+  |    - UI pages/components and their props                         |
+  |    - business domains and bounded contexts                       |
+  |    - observable behavior as Given-When-Then AC                   |
+  |    - existing error handling patterns                            |
+  |                                                                  |
+  +------------------------------------------------------------------+
+      |
+      |  all 4 agents complete, results merged
+      |
+      v
+  OPTIONAL DEEP ANALYSIS (standard+ depth):
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |  D16: Security Reviewer (LLM-based code review)                 |
+  |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                 |
+  |  Claude reads code and checks for:                               |
+  |    - hardcoded secrets, API keys, passwords in source            |
+  |    - raw SQL / unsanitized input patterns                        |
+  |    - weak auth (MD5, missing JWT expiry, no bcrypt)              |
+  |    - missing input validation at boundaries                      |
+  |    - findings categorized against OWASP Top 10                   |
+  |  NOTE: this is LLM code review, not automated SAST/DAST.        |
+  |        no external tools (npm audit, Snyk, ZAP) are invoked.    |
+  |        see ROADMAP at the bottom of this file.                   |
+  |                                                                  |
+  |  D17: Tech Debt Analyzer  --> code smells, outdated deps, TODOs |
+  |  D18: Performance Profiler --> bottlenecks, N+1 queries, caching|
+  |  D19: Ops Readiness       --> logging, monitoring, health checks|
+  |                                                                  |
+  +------------------------------------------------------------------+
+      |
+      v
+  D3: CONSTITUTION GENERATOR
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  reads all analysis results + project type
+  generates governance articles tailored to THIS project:
+
+    Article I:   Specification Primacy
+    Article II:  Test-First Development
+    Article III: Security by Design
+    Article IV:  Explicit Over Implicit
+    Article V:   Simplicity First
+    Article VI:  Code Review Required
+    Article VII: Artifact Traceability
+    ...up to 14 articles
+
+  thresholds calibrated to actual project:
+    - coverage gate set to current baseline (e.g., 82%), not arbitrary
+    - test types required based on what D2 found exists
+    - security articles tuned to project's auth patterns
+      |
+      v
+  DISCOVERY OUTPUTS (committed to git):
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |  docs/isdlc/constitution.md                                      |
+  |    --> 14 governance articles, project-specific thresholds       |
+  |    --> enforced by hooks on EVERY phase, EVERY gate              |
+  |                                                                  |
+  |  docs/project-discovery-report.md                                |
+  |    --> unified analysis: tech stack, architecture, patterns      |
+  |    --> baseline for all future design decisions                  |
+  |                                                                  |
+  |  docs/isdlc/test-evaluation-report.md                            |
+  |    --> coverage by type, gaps, framework details                 |
+  |    --> read by test strategy + implementation agents             |
+  |                                                                  |
+  |  docs/requirements/reverse-engineered/                           |
+  |    --> Given-When-Then AC extracted from existing code           |
+  |    --> behavior captured BEFORE any changes are made             |
+  |                                                                  |
+  |  tests/characterization/                                         |
+  |    --> test.skip() scaffolds documenting current behavior        |
+  |    --> regression safety net for future changes                  |
+  |                                                                  |
+  +------------------------------------------------------------------+
+      |
+      |  These files now exist on disk, in git.
+      |  They are the project's knowledge base.
+      |
+      v
+  DISCOVERY COMPLETE. Project is ready for workflows.
+
+
+
+ STAGE 2: SESSION-START CAPTURES KNOWLEDGE INTO CACHE
+ ====================================================
+ (automatic, runs at the start of EVERY conversation)
+
+  User opens a new Claude Code session
+      |
+      v
+  Framework initialization fires
+      |
+      v
+  rebuildSessionCache()                       [hooks/lib/common.cjs:4321]
+      |
+      |  READS FROM DISK (the discovery outputs + more):
+      |
+      |  +-- docs/isdlc/constitution.md         (governance articles)
+      |  +-- docs/project-discovery-report.md    (project knowledge)
+      |  +-- docs/isdlc/test-evaluation-report.md(test baseline)
+      |  +-- .isdlc/roundtable.yaml             (persona config)
+      |  +-- persona-*.md files                 (team member profiles)
+      |  +-- topic-*.md files                   (discussion topics)
+      |  +-- 252 source files hashed            (freshness tracking)
+      |
+      v
+  BUILDS: .isdlc/session-cache.md
+  +------------------------------------------------------------------+
+  | <!-- SESSION CACHE: Generated 2026-03-22 | Sources: 252          |
+  |                                          | Hash: 0f56e68d -->    |
+  |                                                                  |
+  | <!-- SECTION: CONSTITUTION -->                                   |
+  |   Article I: Specification Primacy                               |
+  |   Article II: Test-First Development                             |
+  |   ...14 articles with project-specific thresholds...             |
+  | <!-- /SECTION: CONSTITUTION -->                                  |
+  |                                                                  |
+  | <!-- SECTION: DISCOVERY_CONTEXT -->                              |
+  |   Tech stack: Node.js 22, Angular 21, Vitest                    |
+  |   Architecture: hooks-based enforcement, supervisor tree         |
+  |   Module boundaries: src/claude/agents, hooks, skills            |
+  |   Test baseline: 1,247 tests, 82% coverage                      |
+  |   Patterns: ESM for lib, CJS for hooks, single-line bash        |
+  |   Integration: GitHub API, Claude CLI, MCP servers               |
+  | <!-- /SECTION: DISCOVERY_CONTEXT -->                             |
+  |                                                                  |
+  | <!-- SECTION: ROUNDTABLE_CONTEXT -->                             |
+  |   Persona: Alex (Business Analyst)                               |
+  |   Persona: Jordan (Solutions Architect)                          |
+  |   Persona: Sam (System Designer)                                 |
+  |   Topics: requirements, architecture, design, testing...         |
+  | <!-- /SECTION: ROUNDTABLE_CONTEXT -->                            |
+  +------------------------------------------------------------------+
+      |
+      v
+  SessionStart hook fires:
+  inject-session-cache.cjs                    [hooks/inject-session-cache.cjs:17]
+      |
+      |  const content = fs.readFileSync(cachePath, 'utf8');
+      |  process.stdout.write(content);
+      |
+      |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |  THIS IS THE INJECTION POINT.
+      |  8 lines of code. stdout goes directly
+      |  into the LLM's context window.
+      |
+      v
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |  LLM CONTEXT WINDOW NOW CONTAINS:                               |
+  |                                                                  |
+  |  - Full constitution (governance)                                |
+  |  - Full discovery context (project knowledge)                    |
+  |  - Roundtable personas and topics                                |
+  |                                                                  |
+  |  EVERY conversation starts with the project's complete           |
+  |  knowledge base pre-loaded. No agent needs to "discover"         |
+  |  the project again.                                              |
+  |                                                                  |
+  +------------------------------------------------------------------+
+
+
+
+ STAGE 3: KNOWLEDGE FLOWS DOWNWARD INTO PHASES
+ ==============================================
+ (orchestrator extracts sections and injects into each agent)
+
+
+  LAYER 1: ORCHESTRATOR EXTRACTS AND DELEGATES
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Orchestrator reads its session context          [00-sdlc-orchestrator.md:906]
+      |
+      |  finds <!-- SECTION: DISCOVERY_CONTEXT -->
+      |  extracts the full section
+      |
+      v
+  Builds delegation prompt for EACH phase agent:
+  +------------------------------------------------------------------+
+  | TASK: {phase-specific task description}                          |
+  |                                                                  |
+  | DISCOVERY CONTEXT:                                               |
+  |   Tech stack: Node.js 22, Angular 21, Vitest                    |
+  |   Architecture: hooks-based enforcement, supervisor tree         |
+  |   Test baseline: 1,247 tests, 82% coverage                      |
+  |   Patterns: ESM for lib, CJS for hooks...                       |
+  |                                                                  |
+  | IMPORTANT: Use discovery as your baseline.                       |
+  | Extend existing architecture -- do not redesign from scratch.    |
+  |                                                                  |
+  | ARTIFACT FOLDER: docs/requirements/REQ-0042-dark-mode/           |
+  +------------------------------------------------------------------+
+
+  Phase-specific enrichment:
+  +-------------------+--------------------------------------------+
+  | Phase 01          | Discovery context (full)                   |
+  | Phase 02          | + test-evaluation-report.md                |
+  |                   | + "extend existing, don't redesign"        |
+  | Phase 03          | + "follow existing patterns, justify       |
+  |                   |    deviations"                             |
+  | Phases 04-08      | Discovery via skills (tech-stack-specific) |
+  +-------------------+--------------------------------------------+
+
+
+  LAYER 2: PHASE-TO-PHASE ARTIFACT HANDOVER
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Each agent has an explicit INPUT section naming exact files
+  from the previous phase. This is NOT message-passing --
+  it is file-reading from disk.
+
+  Phase 01: Requirements Analyst
+  INPUT: project brief, discovery context
+  OUTPUT: requirements-spec.md, user-stories.json, nfr-matrix.md
+                |
+                |  (written to docs/requirements/{slug}/)
+                v
+  Phase 02: Solution Architect               [02-solution-architect.md:100]
+  INPUT: "Requirements Specification, NFR Matrix, User Stories
+          (from Requirements Analyst)"
+  STEP 1: "Read requirements-spec.md, nfr-matrix.md, user-stories.json"
+  OUTPUT: architecture-overview.md, tech-stack-decision.md, ADRs/
+                |
+                v
+  Phase 03: System Designer                  [03-system-designer.md:95]
+  INPUT: "Architecture Overview, Tech Stack, Database Design
+          (from Solution Architect)"
+  PRE-CHECK: "Check if delegation prompt contains DISCOVERY CONTEXT"
+  OUTPUT: openapi.yaml, module-designs/, wireframes/
+                |
+                v
+  Phase 04: Test Design Engineer             [04-test-design-engineer.md:80]
+  INPUT: "Requirements, Design Specs, Interface Specifications
+          (from previous phases)"
+  PRE-CHECK: "Check docs/isdlc/test-evaluation-report.md"
+  OUTPUT: test-strategy.md, test-cases/, traceability-matrix.csv
+                |
+                v
+  Phase 05: Software Developer               [05-software-developer.md:105]
+  INPUT: "Design Specifications, Module Designs, Test Strategy
+          (from previous phases)"
+  PRE-CHECK: "Check docs/isdlc/test-evaluation-report.md"
+  TDD: RED (failing test) --> GREEN (implement) --> REFACTOR
+  OUTPUT: source code, unit tests, coverage report
+                |
+                v
+  Phase 16: Quality Loop Engineer             [16-quality-loop-engineer.md:29]
+  INPUT: "Source code + tests from Phase 06 (Implementation)"
+  PARALLEL: tests | security review (LLM) | lint | e2e
+  OUTPUT: quality-report.md
+                |
+                v
+  Phase 08: QA Engineer                       [07-qa-engineer.md:13]
+  INPUT: "Source Code, Test Results (from previous phases)"
+  REVIEWS: ALL prior artifacts for final sign-off
+  OUTPUT: code-review-report.md, qa-sign-off.md
+
+
+  LAYER 3: ROUNDTABLE MEMORY (team decisions across sessions)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  /isdlc analyze "REQ-0042"
+      |
+      |  reads:
+      |    .isdlc/roundtable-memory.json     (past decisions)
+      |    ~/.isdlc/user-memory/profile.json  (user preferences)
+      |
+      v
+  Builds MEMORY_CONTEXT block:
+  +------------------------------------------------------------------+
+  | --- topic: security ---                                          |
+  | depth: brief (observed 3 sessions)                               |
+  | override: deep when auth tokens involved (session 2026-03-10)   |
+  | decision: "direct integration over middleware" (2026-03-08)      |
+  | --- topic: testing ---                                           |
+  | depth: deep (consistent)                                         |
+  | playbook: "always ask about edge cases for payment flows"        |
+  +------------------------------------------------------------------+
+      |
+      v
+  Roundtable analyst receives memory          [roundtable-analyst.md:69]
+      |
+      |  parses per-topic entries
+      |  consults during conversation
+      |  "From past sessions, you prefer brief on security..."
+      |
+      v
+  After roundtable completes:
+  writeSessionRecord()                        [isdlc.md:825]
+      |
+      |  writes enriched record to:
+      |    .isdlc/roundtable-memory.json      (project-level)
+      |    ~/.isdlc/user-memory/sessions/     (user-level)
+      |
+      v
+  Next session sees this session's decisions.
+
+
+  LAYER 4: HOOKS ENFORCE THE CHAIN (outside LLM)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  What if the AI tries to skip reading prior artifacts?
+
+  phase-loop-controller.cjs             [phase-loop-controller.cjs:72]
+      +-- Phase not "in_progress"? --> BLOCKED
+      +-- Trying to jump ahead?    --> BLOCKED
+
+  gate-blocker.cjs
+      +-- Artifacts missing?       --> BLOCKED
+      +-- Gate criteria not met?   --> BLOCKED
+
+  constitution-validator.cjs            [constitution-validator.cjs:45]
+      +-- Articles not checked?    --> BLOCKED
+      +-- "PHASE COMPLETION BLOCKED: Constitutional validation
+      |    required. Read constitution. Check compliance.
+      |    Fix violations. Iteration 1/3."
+
+  iteration-corridor.cjs
+      +-- Tests failing?           --> STAY IN PHASE (cannot advance)
+
+
+
+ STAGE 4: KNOWLEDGE IS KEPT FRESH
+ =================================
+ (3 mechanisms prevent stale knowledge from causing bad decisions)
+
+
+  FRESHNESS 1: CODEBASE HASH (detects drift between add and build)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  /isdlc add "feature"
+      |
+      v
+  meta.json: { "codebase_hash": "a3f8b21" }    [git rev-parse --short HEAD]
+      |
+      |  ... time passes, team pushes code ...
+      |
+      v
+  /isdlc analyze "REQ-0042"   or   /isdlc build "REQ-0042"
+      |
+      v
+  Compare: meta.codebase_hash ("a3f8b21") vs HEAD ("f92c1d4")
+      |
+      +-- match?  --> "Analysis current. Proceed."
+      +-- differ? --> "Codebase changed since analysis ({N} commits)."
+                      [R] Re-analyze  |  [C] Cancel
+
+
+  FRESHNESS 2: SESSION CACHE HASH (detects framework/source changes)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  rebuildSessionCache() hashes 252 source files  [common.cjs:4321]
+      |
+      v
+  <!-- SESSION CACHE: Hash: 0f56e68d -->
+      |
+      |  If ANY source file changes, hash changes.
+      |  Cache is rebuilt on next session start.
+      |
+      v
+  Every conversation gets FRESH project knowledge.
+
+
+  FRESHNESS 3: CONSTITUTION VALIDATION (enforced every phase exit)
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Agent tries to declare phase complete
+      |
+      v
+  constitution-validator.cjs reads:
+    docs/isdlc/constitution.md       (the CURRENT file on disk)
+    state.phases[phase].constitutional_validation
+      |
+      +-- Articles not checked --> BLOCKED (must read and comply)
+      +-- All compliant        --> PASS (advance to next phase)
+      |
+      v
+  Constitution is ALWAYS read fresh from disk at gate time.
+  Even if the constitution was updated mid-workflow,
+  the next gate check picks up the changes.
+
+
+
+ THE FULL CHAIN (end to end):
+ ============================
+
+  /discover (once)
+      |
+      v
+  constitution.md + discovery-report.md + test-evaluation.md
+  (project knowledge captured from actual codebase)
+      |
+      v
+  rebuildSessionCache()
+  (knowledge packed into session-cache.md with HTML delimiters)
+      |
+      v
+  inject-session-cache.cjs --> stdout --> LLM CONTEXT WINDOW
+  (8 lines of code. knowledge enters every conversation.)
+      |
+      v
+  Orchestrator extracts <!-- SECTION: DISCOVERY_CONTEXT -->
+  (pulls project knowledge from session context)
+      |
+      v
+  Delegation prompt to Phase 01 (with DISCOVERY CONTEXT block)
+  ("Use discovery as baseline. Extend, don't redesign.")
+      |
+      v
+  Phase 01 produces requirements-spec.md (reads discovery + user input)
+      |
+      v
+  state.json updated (phase 01 complete)
+  phase-loop-controller allows Phase 02
+      |
+      v
+  Phase 02 reads requirements-spec.md + discovery context
+  (explicit file read, not memory)
+      |
+      v
+  Phase 02 produces architecture-overview.md
+      |
+      v
+  constitution-validator checks compliance (reads constitution from disk)
+      |
+      v
+  Phase 03 reads architecture-overview.md + discovery context
+      |
+      v
+  ... each phase reads previous phase's files ...
+      |
+      v
+  Phase 08 reads ALL prior artifacts for final review
+      |
+      v
+  Merge to main. Workflow archived in workflow_history.
+  Roundtable memory updated. Codebase hash refreshed.
+
+
+
+ ====================================================================
+ ||                    R O A D M A P                                ||
+ ||          Security tooling -- from LLM review to real scanners  ||
+ ====================================================================
+
+  TODAY (v0.1.0-alpha): LLM-BASED REVIEW ONLY
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  What works now:
+  +------------------------------------------------------------------+
+  |  D16 Security Reviewer: Claude reads code and flags              |
+  |    - hardcoded secrets, API keys in source                       |
+  |    - raw SQL, unsanitized input patterns                         |
+  |    - weak auth (MD5, no bcrypt, missing JWT expiry)              |
+  |    - missing input validation at boundaries                      |
+  |    - findings mapped to OWASP Top 10 categories                  |
+  |                                                                  |
+  |  Phase 16 Quality Loop: Claude reviews for security patterns     |
+  |  Phase 08 Security Auditor: Claude reviews + compliance check    |
+  |                                                                  |
+  |  Limitation: no external tools invoked. Reports are LLM-         |
+  |  generated from code reading, not from automated scanners.       |
+  |  Skill stubs exist (DISC-1601-1605, QL-008, QL-009) but         |
+  |  have no implementation behind them.                             |
+  +------------------------------------------------------------------+
+
+
+  NEXT: WIRE REAL TOOLS INTO EXISTING SKILL STUBS
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The skill slots are already defined. Implementation means
+  filling in the stub SKILL.md files with actual tool invocations.
+
+  +------------------+-------------------+---------------------------+
+  | Skill Stub       | Tool to Wire      | What It Would Do          |
+  +------------------+-------------------+---------------------------+
+  |                  |                   |                           |
+  | DISC-1601        | npm audit         | Dependency CVE scan       |
+  | (dependency-     | or Snyk           | at discovery time.        |
+  |  vulnerability-  | or Trivy          | Feeds into constitution   |
+  |  scan)           |                   | threshold calibration.    |
+  |                  |                   |                           |
+  | DISC-1602        | gitleaks          | Automated secret          |
+  | (secret-         | or trufflehog     | detection across          |
+  |  detection)      |                   | entire repo history.      |
+  |                  |                   |                           |
+  | DISC-1603        | semgrep           | Auth pattern analysis     |
+  | (auth-pattern-   | (with auth rules) | using static analysis     |
+  |  analysis)       |                   | rules, not LLM guessing.  |
+  |                  |                   |                           |
+  | DISC-1604        | semgrep           | Input validation audit    |
+  | (input-          | or CodeQL         | with taint tracking.      |
+  |  validation-     |                   | Finds real injection      |
+  |  audit)          |                   | paths, not patterns.      |
+  |                  |                   |                           |
+  | DISC-1605        | OWASP ZAP         | Automated OWASP Top 10    |
+  | (owasp-risk-     | (baseline scan)   | assessment against        |
+  |  assessment)     |                   | running application.      |
+  |                  |                   |                           |
+  | QL-008           | semgrep           | SAST on changed files     |
+  | (security-       | or CodeQL         | during quality loop.      |
+  |  scan-sast)      |                   | Runs per-build, not       |
+  |                  |                   | just at discovery.        |
+  |                  |                   |                           |
+  | QL-009           | npm audit         | Dependency audit on       |
+  | (dependency-     | or Snyk           | every build, not just     |
+  |  audit)          |                   | at discovery.             |
+  |                  |                   |                           |
+  +------------------+-------------------+---------------------------+
+
+  Wiring pattern (same for all):
+    1. Implement SKILL.md with tool invocation command
+    2. Skill runs tool via Bash, captures JSON/SARIF output
+    3. Agent parses output into findings
+    4. Findings feed into existing report templates
+    5. Gate criteria change from "report exists" to
+       "0 critical findings in tool output"
+
+
+  FUTURE: FULL OWASP INTEGRATION
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |  Discovery (D16):                                                |
+  |    npm audit + Snyk + gitleaks + semgrep                         |
+  |    --> baseline vulnerability count                              |
+  |    --> constitution sets "0 new critical vulns" as gate          |
+  |                                                                  |
+  |  Every Build (Phase 16 Quality Loop):                            |
+  |    semgrep on changed files (SAST)                               |
+  |    npm audit on updated deps                                     |
+  |    --> gate blocks merge if new vulns introduced                 |
+  |                                                                  |
+  |  Phase 08 (Security Auditor):                                    |
+  |    OWASP ZAP baseline scan (DAST) against staging               |
+  |    --> full OWASP Top 10 report with tool evidence               |
+  |    --> gate requires 0 critical, 0 high                          |
+  |                                                                  |
+  |  LLM review remains as SUPPLEMENTARY layer:                      |
+  |    catches logic flaws that tools miss                           |
+  |    (business logic auth bypass, IDOR, race conditions)           |
+  |                                                                  |
+  +------------------------------------------------------------------+

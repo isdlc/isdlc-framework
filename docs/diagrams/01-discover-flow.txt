@@ -16,8 +16,9 @@
   |                                devops, feasibility,              |
   v                                domain, test, data)              |
   D16-D19 Deep analysis            |                                |
-  (security, tech debt,            v                                |
-   performance, ops)        D3 Constitution generation               |
+  (LLM-based code review:         v                                |
+   security, tech debt,     D3 Constitution generation               |
+   performance, ops)                                                |
   |                         Project scaffolding                      |
   v                                |                                |
   D3 Constitution generation       |                                |
