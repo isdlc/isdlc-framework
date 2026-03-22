@@ -13,5 +13,7 @@
   "acceptance": "2026-03-22T23:30:00.000Z",
   "created": "2026-03-22T23:30:00.000Z",
   "updated": "2026-03-22T23:30:00.000Z",
-  "analysis_status": "complete"
+  "analysis_status": "complete",
+  "build_started_at": "2026-03-23T00:00:00.000Z",
+  "workflow_type": "feature"
 }
