@@ -1,0 +1,44 @@
+ ====================================================================
+ ||           D I S C O V E R   ( runs once, prerequisite )        ||
+ ====================================================================
+
+  /discover
+      |
+      v
+  +-- existing project? --------+---- new project? -----------------+
+  |                              |                                   |
+  v                              v                                   |
+  4 agents in parallel        D7 Vision elicitation                  |
+  D1 Architecture             D8 Architecture blueprint              |
+  D2 Test evaluator           D9-D15 Inception Party                 |
+  D5 Data model                  (7 debate rounds:                   |
+  D6 Feature mapper               architect, security,              |
+  |                                devops, feasibility,              |
+  v                                domain, test, data)              |
+  D16-D19 Deep analysis            |                                |
+  (security, tech debt,            v                                |
+   performance, ops)        D3 Constitution generation               |
+  |                         Project scaffolding                      |
+  v                                |                                |
+  D3 Constitution generation       |                                |
+  Reverse-engineered AC            |                                |
+  Characterization tests           |                                |
+  |                                |                                |
+  +----------------+---------------+                                |
+                   |                                                |
+                   v                                                |
+  +-------------------------------+                                 |
+  | OUTPUTS (committed to git):   |                                 |
+  |                               |                                 |
+  |  constitution.md              | <-- governance for ALL phases   |
+  |  discovery-report.md          | <-- project context baseline    |
+  |  test-evaluation-report.md    | <-- coverage thresholds         |
+  |  reverse-engineered AC/       | <-- existing behavior captured  |
+  |  characterization tests/      | <-- regression safety net       |
+  +-------------------------------+                                 |
+                   |                                                |
+                   |  injected into Phases 01, 02, 03               |
+                   |  referenced by ALL gates                       |
+                   v                                                |
+              SYSTEM READY                                          |
+              (Scenario 3)                                          |

@@ -1,0 +1,54 @@
+ ====================================================================
+ ||      A R T I F A C T S   A S   G O V E R N A N C E            ||
+ ====================================================================
+
+  Each artifact anchors a gate. No artifact = gate fails = cannot advance.
+
+  PHASE        ARTIFACT                     GOVERNS / REVIEWED BY
+  ~~~~~        ~~~~~~~~                     ~~~~~~~~~~~~~~~~~~~~~~
+  discover     constitution.md              ALL phases, ALL gates
+               discovery-report.md          Phases 01-03 context
+
+  01           requirements-spec.md         Phase 03 reads this
+               user-stories.json            Phase 05 traces to this
+               nfr-matrix.md               Phase 03 architecture
+
+  02           impact-analysis.md           Phase 03 scoping
+               (feature)                    Sizing decision
+
+  02           trace-analysis.md            Phase 05 test target
+               diagnosis.json              Phase 06 fix target
+               (fix)
+
+  03           architecture-overview.md     Phase 04 reads this
+               tech-stack-decision.md       Phase 06 follows this
+               ADRs/                        Phase 08 reviews these
+
+  04           openapi.yaml                 Phase 06 implements this
+               module-designs/              Phase 06 follows this
+               wireframes/                  Phase 08 reviews these
+
+  05           test-strategy.md             Phase 06 writes tests to this
+               test-cases/                  Phase 16 executes these
+               traceability-matrix.csv      Phase 08 audits this
+
+  06           source code                  Phase 16 tests this
+               unit tests                   Phase 08 reviews this
+               coverage report              Gate: >= 80% threshold
+
+  16           quality-report.md            Phase 08 reads this
+               security scan               Gate: 0 critical vulns
+               lint report                 Gate: 0 errors
+
+  08           code-review-report.md        Final sign-off
+               qa-sign-off.md              Workflow completion
+
+
+  TRACEABILITY CHAIN:
+
+  requirement --> architecture --> design --> test case --> code --> review
+       |              |             |            |          |         |
+       v              v             v            v          v         v
+  user-stories  ADRs       openapi.yaml  traceability  coverage  qa-sign-off
+  .json                    module-       matrix.csv    report    .md
+                           designs/

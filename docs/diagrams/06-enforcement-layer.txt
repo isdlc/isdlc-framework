@@ -1,0 +1,54 @@
+ ====================================================================
+ ||          E N F O R C E M E N T   ( outside LLM )               ||
+ ====================================================================
+
+  All hooks run as Node.js processes OUTSIDE the LLM context.
+  The AI cannot skip, bypass, or prompt-inject around them.
+
+  User says         Hook fires            Effect
+  ~~~~~~~~~~        ~~~~~~~~~~            ~~~~~~
+  skip phase   -->  phase-sequence-guard  --> BLOCKED
+  skip gate    -->  gate-blocker          --> BLOCKED
+  code w/o plan ->  plan-surfacer         --> BLOCKED
+  write in scan ->  explore-readonly      --> BLOCKED
+  commit main  -->  branch-guard          --> BLOCKED
+  edit state   -->  state-file-guard      --> BLOCKED
+  tests fail   -->  iteration-corridor    --> STAY IN LOOP
+  run solo     -->  skill-delegation      --> BLOCKED
+                                              (must use orchestrator)
+
+  +-------------------------------+    +-------------------------------+
+  | PreToolUse BLOCKERS (13)      |    | PostToolUse OBSERVERS (11)    |
+  |                               |    |                               |
+  | phase-sequence-guard          |    | log-skill-usage               |
+  | gate-blocker                  |    | menu-tracker                  |
+  | iteration-corridor            |    | walkthrough-tracker           |
+  | constitution-validator        |    | discover-menu-guard           |
+  | constitutional-iteration-val  |    | phase-transition-enforcer     |
+  | plan-surfacer                 |    | menu-halt-enforcer            |
+  | phase-loop-controller         |    | state-write-validator         |
+  | test-adequacy-blocker         |    | output-format-validator       |
+  | branch-guard                  |    | review-reminder               |
+  | explore-readonly-enforcer     |    | atdd-completeness-validator   |
+  | state-file-guard              |    | skill-validator               |
+  | skill-delegation-enforcer     |    |                               |
+  | delegation-gate (Stop)        |    +-------------------------------+
+  +-------------------------------+
+                                       +-------------------------------+
+                                       | STATE MANAGERS (3)            |
+                                       |                               |
+                                       | test-watcher                  |
+                                       |   (track iterations,          |
+                                       |    circuit-break on 3         |
+                                       |    identical failures)        |
+                                       | workflow-completion-enforcer  |
+                                       |   (clean up completed         |
+                                       |    workflows)                 |
+                                       | model-provider-router         |
+                                       |   (route LLM provider/model  |
+                                       |    based on phase)            |
+                                       +-------------------------------+
+
+  Design principle: FAIL-OPEN
+  If a hook crashes, the operation is ALLOWED.
+  Framework bugs never block user work.

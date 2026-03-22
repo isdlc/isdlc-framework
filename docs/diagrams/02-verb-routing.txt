@@ -1,0 +1,59 @@
+ ====================================================================
+ ||         8   V E R B S   ( the user-facing interface )          ||
+ ====================================================================
+
+                         USER INPUT
+                            |
+            +---------------+---------------+
+            |                               |
+    natural language                  slash command
+    "fix the login bug"              /isdlc fix "..."
+    "build dark mode"                /isdlc build "..."
+    "add payment idea"               /isdlc add "..."
+            |                               |
+            v                               |
+  +--------------------+                    |
+  | INTENT DETECTION   |                    |
+  | (signal words)     |                    |
+  |                    |                    |
+  | "add,track,note"   +---> add            |
+  | "analyze,plan"     +---> analyze        |
+  | "build,implement"  +---> build/feature  |
+  | "fix,broken,bug"   +---> fix            |
+  | "run tests"        +---> test run       |
+  | "write tests"      +---> test generate  |
+  | "upgrade,bump"     +---> upgrade        |
+  | "add skill,wire"   +---> skill          |
+  +--------------------+                    |
+            |                               |
+            +---------------+---------------+
+                            |
+                            v
+  +------------------------------------------------------------------+
+  |                     /isdlc  (no args = interactive menu)         |
+  |                                                                  |
+  |  Scenario 0: Monorepo         --> project picker                 |
+  |  Scenario 1: New project      --> /discover                     |
+  |  Scenario 2: Existing, no     --> /discover                     |
+  |              constitution                                        |
+  |  Scenario 3: Ready            --> verb menu:                     |
+  |     [1] Add         [5] Test Run                                 |
+  |     [2] Analyze     [6] Test Generate                            |
+  |     [3] Build       [7] Upgrade                                  |
+  |     [4] Fix         [8] Skill Mgmt                               |
+  |  Scenario 4: In-progress      --> continue / gate / cancel       |
+  +------------------------------------------------------------------+
+                            |
+                            v
+
+  VERB         HANDLER           WORKFLOW?    PHASES
+  ~~~~         ~~~~~~~           ~~~~~~~~~    ~~~~~~
+  add          inline            no           --
+  analyze      inline            no           --
+  build        orchestrator      feature      00 01 02 03 04 05 06 16 08
+  build -light orchestrator      feature-lt   00 01 02 __ __ 05 06 16 08
+  fix          orchestrator      fix             01 02 05 06 16 08
+  test run     orchestrator      test-run                 11 07
+  test gen     orchestrator      test-gen            05 06 16 08
+  upgrade      orchestrator      upgrade          15-plan 15-exec 08
+  skill        inline            no           --

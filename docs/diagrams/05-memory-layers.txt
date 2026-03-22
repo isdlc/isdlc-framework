@@ -1,0 +1,92 @@
+ ====================================================================
+ ||          M E M O R Y   L A Y E R S                             ||
+ ====================================================================
+
+  +------------------------------------------------------------------+
+  |  LAYER 1: GOVERNANCE MEMORY (immutable, git-committed)           |
+  |                                                                  |
+  |  constitution.md ----------> 14 articles enforced by hooks       |
+  |  discovery-report.md ------> project baseline (tech, tests, etc) |
+  |                                                                  |
+  |  Written once by /discover. Read by every phase, every gate.     |
+  +------------------------------------------------------------------+
+                            |
+                            v
+  +------------------------------------------------------------------+
+  |  LAYER 2: WORKFLOW MEMORY (state.json, persists across sessions) |
+  |                                                                  |
+  |  active_workflow -----> resume after disconnect (Scenario 4)     |
+  |  workflow_history ----> completed work + metrics + commit hashes  |
+  |  skill_usage_log -----> audit trail of all skill invocations     |
+  |  counters ------------> next REQ/BUG/UPG number                  |
+  |                                                                  |
+  |  Enables: "where was I?" / "what did we build?" / "how long?"   |
+  +------------------------------------------------------------------+
+                            |
+                            v
+  +------------------------------------------------------------------+
+  |  LAYER 3: ITEM MEMORY (per backlog item, git-committed)          |
+  |                                                                  |
+  |  draft.md -------------> original problem statement              |
+  |  meta.json ------------> analysis status, phases done, sizing    |
+  |  requirements-spec.md -> what to build                           |
+  |  architecture-overview -> how to build it                        |
+  |  module-design.md -----> detailed contracts                      |
+  |  BACKLOG.md markers ---> [ ] raw  [~] partial  [A] analyzed     |
+  |                          [x] completed                           |
+  |                                                                  |
+  |  Enables: add in Monday's session, analyze Tuesday, build Friday |
+  +------------------------------------------------------------------+
+                            |
+                            v
+  +------------------------------------------------------------------+
+  |  LAYER 4: TEAM MEMORY (roundtable, persists across sessions)     |
+  |                                                                  |
+  |  roundtable-memory.json -> past decisions, discussion history    |
+  |  user-memory/profile.json -> user preferences by topic           |
+  |  session records ---------> enriched metadata per conversation   |
+  |  vector embeddings -------> semantic search over past sessions   |
+  |                                                                  |
+  |  Enables: "last time you preferred brief on security"            |
+  |           "team decided direct integration over middleware"       |
+  +------------------------------------------------------------------+
+                            |
+                            v
+  +------------------------------------------------------------------+
+  |  LAYER 5: SESSION CACHE (single conversation only)               |
+  |                                                                  |
+  |  session-cache.md -------> pre-loaded constitution, personas,    |
+  |                            discovery context                     |
+  |                                                                  |
+  |  Enables: fast turn-to-turn context without re-reading files     |
+  +------------------------------------------------------------------+
+
+
+  MEMORY FLOW ACROSS CONVERSATIONS:
+
+  Session 1          Session 2            Session 3
+  /isdlc add         /isdlc analyze       /isdlc build
+     |                  |                    |
+     v                  v                    v
+  draft.md  -------> read draft.md -----> read meta.json
+  meta.json           + user memory        (phases_completed:
+  (raw)               + project memory       [00,01,02,03,04])
+     |                  |                    |
+     |                  v                    v
+     |               requirements-        computeStartPhase()
+     |               spec.md              --> skip to Phase 05
+     |               architecture-           |
+     |               overview.md             v
+     |               module-design.md     Phase-Loop from 05
+     |               meta.json               |
+     |               (analyzed)              v
+     |                  |                 workflow_history
+     |                  v                 (completed, metrics,
+     |               roundtable-memory     merged_commit)
+     |               .json updated
+     |                  |
+     +------------------+--------------------+
+                        |
+                        v
+                  ALL PERSISTED TO DISK
+                  (survives any disconnect)

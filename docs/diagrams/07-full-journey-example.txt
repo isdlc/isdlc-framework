@@ -1,0 +1,223 @@
+ ====================================================================
+ ||          F U L L   J O U R N E Y   E X A M P L E              ||
+ ||          add  -->  analyze  -->  build                         ||
+ ====================================================================
+
+
+  SESSION 1 (Monday morning)
+  ==========================
+
+  User: "I want to add dark mode support"
+    |
+    v
+  Intent detected: ADD
+  /isdlc add "dark mode support"
+    |
+    v
+  Creates:
+    docs/requirements/REQ-0042-dark-mode/draft.md
+    docs/requirements/REQ-0042-dark-mode/meta.json  (status: "raw")
+    BACKLOG.md appended: [ ] REQ-0042 dark mode support
+    |
+    v
+  Done. Item tracked. No workflow started.
+
+
+  SESSION 2 (Tuesday afternoon)
+  =============================
+
+  User: "let's analyze the dark mode item"
+    |
+    v
+  Intent detected: ANALYZE
+  /isdlc analyze "REQ-0042"
+    |
+    |  reads: draft.md, meta.json
+    |  loads: roundtable-memory.json, user-memory/profile.json
+    |  injects: constitution.md, discovery context
+    |
+    v
+  +-------------------------------------------------------+
+  |  ROUNDTABLE CONVERSATION                               |
+  |                                                        |
+  |  Personas loaded from roundtable.yaml:                 |
+  |    Alex (Business Analyst)                             |
+  |    Jordan (Solutions Architect)                        |
+  |    Sam (System Designer)                               |
+  |                                                        |
+  |  Memory context: "From past sessions, user prefers     |
+  |  brief on security. Last override: deep when auth      |
+  |  tokens were involved."                                |
+  |                                                        |
+  |  Phase 00: Quick scan                                  |
+  |    "12 files affected, standard tier"                  |
+  |    --> sizing_decision: "standard"                     |
+  |                                                        |
+  |  Phase 01: Requirements discovery                      |
+  |    User + Alex discuss scope, edge cases               |
+  |    --> requirements-spec.md                            |
+  |    --> user-stories.json                               |
+  |                                                        |
+  |  Phase 02: Impact analysis                             |
+  |    Jordan maps affected components, APIs               |
+  |    --> impact-analysis.md                              |
+  |                                                        |
+  |  Phase 03: Architecture                                |
+  |    Jordan proposes CSS custom properties + context API  |
+  |    --> architecture-overview.md                        |
+  |    --> ADR: theme-system-approach.md                   |
+  |                                                        |
+  |  Phase 04: Design                                      |
+  |    Sam specifies component contracts, data flow        |
+  |    --> module-design.md                                |
+  |    --> wireframes/                                     |
+  |                                                        |
+  |  User accepts 3 domains:                               |
+  |    [x] Requirements  [x] Architecture  [x] Design     |
+  +-------------------------------------------------------+
+    |
+    |  writes:
+    |    meta.json --> analysis_status: "analyzed"
+    |                  phases_completed: [00,01,02,03,04]
+    |                  acceptance: {req, arch, des}
+    |                  codebase_hash: "a3f8b21"
+    |    BACKLOG.md --> [A] REQ-0042 dark mode support
+    |    roundtable-memory.json --> new session record
+    |
+    v
+  Done. Analysis complete. Ready to build.
+
+
+  SESSION 3 (Friday morning)
+  ==========================
+
+  User: "let's build dark mode"
+    |
+    v
+  Intent detected: BUILD
+  /isdlc build "REQ-0042"
+    |
+    |  reads meta.json
+    |  computeStartPhase():
+    |    analysis_status: "analyzed"
+    |    phases_completed: [00,01,02,03,04]
+    |    --> start at Phase 05 (skip 00-04)
+    |
+    |  staleness check:
+    |    codebase_hash "a3f8b21" vs current HEAD
+    |    --> match (no code changed since analysis)
+    |
+    |  workflows.json lookup: "feature"
+    |  remaining phases: [05, 06, 16, 08]
+    |
+    v
+  Orchestrator MODE: init-only
+    creates: feature/REQ-0042-dark-mode branch
+    sets: state.json active_workflow
+    |
+    v
+  PHASE-LOOP CONTROLLER starts
+    |
+    |
+    v
+  +-----------------------------------------------------------+
+  | Phase 05: TEST STRATEGY                                    |
+  | Agent: Test Design Engineer + Critic + Refiner (debate)    |
+  |                                                            |
+  | Reads: requirements-spec.md, architecture-overview.md,     |
+  |        module-design.md, constitution (Article II)         |
+  |                                                            |
+  | Produces:                                                  |
+  |   test-strategy.md (unit, integration, e2e plan)           |
+  |   test-cases/ (47 test cases)                              |
+  |   traceability-matrix.csv (requirement -> test mapping)    |
+  |                                                            |
+  | GATE: traceability complete, all requirements covered      |
+  | --> PASS                                                   |
+  +-----------------------------------------------------------+
+    |
+    v
+  +-----------------------------------------------------------+
+  | Phase 06: IMPLEMENTATION                                   |
+  | Agent: Software Developer + Reviewer + Updater             |
+  |                                                            |
+  | Reads: test-strategy.md, test-cases/, module-design.md,    |
+  |        architecture-overview.md, constitution (Article II) |
+  |                                                            |
+  | TDD cycle:                                                 |
+  |   Iteration 1: writes failing tests first                  |
+  |                 implements ThemeProvider, useTheme hook     |
+  |                 3 component tests still failing             |
+  |                 --> iteration-corridor: STAY IN PHASE       |
+  |                                                            |
+  |   Iteration 2: fixes remaining components                  |
+  |                 all 47 tests passing                        |
+  |                 coverage: 87%                               |
+  |                 --> GATE: coverage >= 80%, tests pass       |
+  |                 --> PASS                                    |
+  +-----------------------------------------------------------+
+    |
+    v
+  +-----------------------------------------------------------+
+  | Phase 16: QUALITY LOOP                                     |
+  | Agent: Quality Loop Engineer                               |
+  |                                                            |
+  | Runs in parallel:                                          |
+  |   tests -----> 1,247 pass, 0 fail                         |
+  |   security --> 0 critical vulns, 0 high                    |
+  |   lint ------> 0 errors, 2 warnings (acceptable)          |
+  |   e2e -------> theme toggle, persistence, SSR all pass     |
+  |                                                            |
+  | Produces: quality-report.md                                |
+  |                                                            |
+  | GATE: all green, no vulnerabilities                        |
+  | --> PASS                                                   |
+  +-----------------------------------------------------------+
+    |
+    v
+  +-----------------------------------------------------------+
+  | Phase 08: CODE REVIEW + QA                                 |
+  | Agent: QA Engineer                                         |
+  |                                                            |
+  | Reads: all artifacts, quality-report.md,                   |
+  |        traceability-matrix.csv, constitution               |
+  |                                                            |
+  | Reviews:                                                   |
+  |   Per-file categorization (must-review, should, glance)    |
+  |   Constitutional compliance (14 articles checked)          |
+  |   Artifact traceability (requirement -> code -> test)      |
+  |                                                            |
+  | Produces:                                                  |
+  |   code-review-report.md                                    |
+  |   qa-sign-off.md                                           |
+  |                                                            |
+  | GATE: no blockers, constitutional compliance               |
+  | --> PASS                                                   |
+  +-----------------------------------------------------------+
+    |
+    v
+  FINALIZE
+    |
+    |  merge: feature/REQ-0042-dark-mode --> main
+    |  commit: c7a2e1f
+    |
+    |  state.json updates:
+    |    active_workflow --> null
+    |    workflow_history += {
+    |      id: "REQ-0042",
+    |      status: "completed",
+    |      phases: [05, 06, 16, 08],
+    |      phase_snapshots: [
+    |        {phase: 05, wall_clock: 8min, iterations: 1},
+    |        {phase: 06, wall_clock: 18min, iterations: 2},
+    |        {phase: 16, wall_clock: 5min, iterations: 1},
+    |        {phase: 08, wall_clock: 7min, iterations: 1}
+    |      ],
+    |      metrics: {total: 38min, iterations: 5},
+    |      merged_commit: "c7a2e1f"
+    |    }
+    |
+    |  BACKLOG.md: [x] REQ-0042 dark mode support
+    |
+    v
+  Back to Scenario 3 menu (ready for next verb)

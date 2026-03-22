@@ -1,0 +1,136 @@
+ ====================================================================
+ ||           A D D  -->  A N A L Y Z E  -->  B U I L D            ||
+ ||                  ( the three-verb lifecycle )                   ||
+ ====================================================================
+
+  /isdlc add "dark mode support"
+      |
+      |  creates backlog item
+      |
+      v
+  docs/requirements/REQ-0042-dark-mode/
+  +------------------+      +-------------------+
+  | draft.md         |      | meta.json         |
+  | (original idea)  |      | analysis_status:  |
+  |                  |      |   "raw"           |
+  +------------------+      | phases_completed: |
+                             |   []              |
+  BACKLOG.md:                | codebase_hash:    |
+  [ ] REQ-0042 dark mode     |   "a3f8b21"      |
+                             +-------------------+
+      |
+      |  user returns later (new conversation)
+      |
+      v
+  /isdlc analyze "REQ-0042"
+      |
+      |  reads draft.md + meta.json + roundtable memory
+      |  loads user profile + past session context
+      |
+      v
+  +-------------------------------------------------------+
+  |  ROUNDTABLE CONVERSATION (inline, no orchestrator)     |
+  |                                                        |
+  |  Personas: Business Analyst, Solutions Architect,      |
+  |            System Designer (from roundtable.yaml)      |
+  |                                                        |
+  |  Phase 00: Quick scan      --> scope estimate          |
+  |  Phase 01: Requirements    --> requirements-spec.md    |
+  |  Phase 02: Impact analysis --> impact-analysis.md      |
+  |  Phase 03: Architecture    --> architecture-overview.md|
+  |  Phase 04: Design          --> module-design.md        |
+  |                                                        |
+  |  User accepts 3 domains:                               |
+  |    [x] Requirements  [x] Architecture  [x] Design     |
+  +-------------------------------------------------------+
+      |
+      |  updates meta.json + BACKLOG.md + roundtable memory
+      |
+      v
+  docs/requirements/REQ-0042-dark-mode/
+  +------------------+      +-------------------+
+  | draft.md         |      | meta.json         |
+  | requirements-    |      | analysis_status:  |
+  |   spec.md        |      |   "analyzed"      |
+  | architecture-    |      | phases_completed: |
+  |   overview.md    |      |   [00,01,02,03,04]|
+  | module-design.md |      | sizing_decision:  |
+  | impact-          |      |   "standard"      |
+  |   analysis.md    |      | acceptance:       |
+  | test-strategy.md |      |   {req,arch,des}  |
+  +------------------+      +-------------------+
+
+  BACKLOG.md:
+  [A] REQ-0042 dark mode
+      |
+      |  user returns later (another new conversation)
+      |
+      v
+  /isdlc build "REQ-0042"
+      |
+      |  reads meta.json
+      |  computeStartPhase() --> "analyzed", skip 00-04
+      |  staleness check: codebase_hash matches? yes
+      |
+      v
+  +------+------+
+  | workflows   |
+  | .json       |
+  | lookup:     |
+  | "feature"   |
+  +------+------+
+         |
+         |  phases remaining: [05, 06, 16, 08]
+         |
+         v
+  PHASE-LOOP CONTROLLER
+         |
+         v
+
+  +-------------+     +---------------+     +-----------+     +----------+
+  | Phase 05    |     | Phase 06      |     | Phase 16  |     | Phase 08 |
+  | TEST        | --> | IMPLEMENT     | --> | QUALITY   | --> | CODE     |
+  | STRATEGY    |     |               |     | LOOP      |     | REVIEW   |
+  |             |     | Developer     |     |           |     |          |
+  | Test Eng +  |     | + Reviewer    |     | parallel: |     | QA Eng   |
+  | Critic +    |     | + Updater     |     | tests     |     |          |
+  | Refiner     |     |               |     | security  |     |          |
+  | (debate)    |     | TDD: fail     |     | lint      |     |          |
+  |             |     | first, then   |     | e2e       |     |          |
+  |             |     | pass          |     |           |     |          |
+  +------+------+     +-------+-------+     +-----+-----+     +----+-----+
+         |                    |                    |                 |
+         v                    v                    v                 v
+  ARTIFACTS:           ARTIFACTS:           ARTIFACTS:         ARTIFACTS:
+  test-strategy.md     source code          quality-report.md  review-report.md
+  test-cases/          unit tests           security scan      qa-sign-off.md
+  traceability-        coverage report      lint report
+  matrix.csv
+         |                    |                    |                 |
+         v                    v                    v                 v
+  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+  ~  GATE           GATE            GATE              GATE               ~
+  ~  traceability   coverage >=80%  all green         no blockers        ~
+  ~  complete       tests pass      no vulns          constitutional     ~
+  ~                                                   compliance         ~
+  ~  FAIL: stay     FAIL: iterate   FAIL: iterate     FAIL: iterate      ~
+  ~  in phase       (corridor hook) (corridor hook)   (corridor hook)    ~
+  +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
+                                                          |
+                                                         PASS
+                                                          |
+                                                          v
+                                                    FINALIZE
+                                                    merge branch
+                                                    --> main
+                                                          |
+                                                          v
+                                                  BACKLOG.md:
+                                                  [x] REQ-0042 dark mode
+
+                                                  workflow_history:
+                                                  { id: "REQ-0042",
+                                                    status: "completed",
+                                                    metrics: {38 min,
+                                                      6 iterations},
+                                                    merged_commit: "c7a2e1f" }

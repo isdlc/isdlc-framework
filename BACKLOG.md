@@ -347,7 +347,7 @@
   - **Completed:** 2026-03-21
 - [x] #189 Gate profiles and JSON schemas to shared core [github: GH-189] → `REQ-0125-gate-profiles-schemas-to-core/` -> [requirements](docs/requirements/REQ-0125-gate-profiles-schemas-to-core/) **Completed**
   - **Completed:** 2026-03-21
-- #190 [ ] Skill injection planner [github: GH-190] → `REQ-0126`
+- #190 [ ] Skill injection planner [github: GH-190] → `REQ-0126` -> [requirements](docs/requirements/REQ-0126-skill-injection-planner/) **Analyzed**
   - Phase 4. Depends on REQ-0094, REQ-0084. Provider-neutral injection by workflow/phase/role/skills/precedence.
 - [x] #191 Provider routing shared service [github: GH-191] → `REQ-0127-provider-routing-shared-service/` -> [requirements](docs/requirements/REQ-0127-provider-routing-shared-service/) **Completed**
   - **Completed:** 2026-03-22
@@ -362,11 +362,11 @@
   - **Completed:** 2026-03-22
 - [x] #153 Provider-aware installer/updater/doctor/uninstaller [github: GH-153] → `REQ-0089-provider-aware-installer/` -> [requirements](docs/requirements/REQ-0089-provider-aware-installer/) **Completed**
   - **Completed:** 2026-03-22
-- #159 [ ] Impact analysis team port to shared orchestration [github: GH-159] → `REQ-0095`
+- #159 [ ] Impact analysis team port to shared orchestration [github: GH-159] → `REQ-0095` -> [requirements](docs/requirements/REQ-0095-impact-analysis-team-port/) **Analyzed**
   - Phase 4. Depends on REQ-0094, REQ-0087. M1/M2/M3 + verifier fan-out.
-- #160 [ ] Tracing team port to shared orchestration [github: GH-160] → `REQ-0096`
+- #160 [ ] Tracing team port to shared orchestration [github: GH-160] → `REQ-0096` -> [requirements](docs/requirements/REQ-0096-tracing-team-port/) **Analyzed**
   - Phase 4. Depends on REQ-0094, REQ-0087. T1/T2/T3 fan-out.
-- #161 [ ] Quality loop team port to shared orchestration [github: GH-161] → `REQ-0097`
+- #161 [ ] Quality loop team port to shared orchestration [github: GH-161] → `REQ-0097` -> [requirements](docs/requirements/REQ-0097-quality-loop-team-port/) **Analyzed**
   - Phase 4. Depends on REQ-0094, REQ-0087. Track A/B + fan-out chunks.
 - #162 [ ] Debate team orchestration pattern [github: GH-162] → `REQ-0098`
   - Phase 5. Depends on REQ-0094. Creator → critic → refiner for requirements, architecture, design, test strategy.
