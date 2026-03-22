@@ -41,6 +41,22 @@ const {
     appendToArchive
 } = require('./lib/common.cjs');
 
+const fs = require('fs');
+const path = require('path');
+
+// REQ-0091: Bridge-first delegation to core workflow
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', 'core', 'bridge', 'workflow.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else { _coreBridge = null; }
+    } catch (e) { _coreBridge = null; }
+    return _coreBridge;
+}
+
 /**
  * Regex to match state.json paths (single-project and monorepo, cross-platform).
  */

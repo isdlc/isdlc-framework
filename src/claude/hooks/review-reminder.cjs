@@ -15,6 +15,22 @@ const {
     debugLog
 } = require('./lib/common.cjs');
 
+const fs = require('fs');
+const path = require('path');
+
+// REQ-0092: Bridge-first delegation to core observability
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', 'core', 'bridge', 'observability.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else { _coreBridge = null; }
+    } catch (e) { _coreBridge = null; }
+    return _coreBridge;
+}
+
 /**
  * Check if a command is a git commit variant
  * @param {string} command - The bash command string
