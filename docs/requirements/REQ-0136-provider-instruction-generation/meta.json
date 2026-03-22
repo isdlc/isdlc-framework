@@ -6,5 +6,7 @@
   "source_id": "GH-202",
   "codebase_hash": "7c39814",
   "acceptance": "2026-03-23T00:30:00.000Z",
-  "analysis_status": "complete"
+  "analysis_status": "complete",
+  "build_started_at": "2026-03-22T17:35:32.998Z",
+  "workflow_type": "feature"
 }
