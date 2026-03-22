@@ -341,8 +341,8 @@
   - **Completed:** 2026-03-22
 - [x] #150 Split three-verb-utils.cjs structural logic [github: GH-150] → `REQ-0086-split-three-verb-utils/` -> [requirements](docs/requirements/REQ-0086-split-three-verb-utils/) **Completed**
   - **Completed:** 2026-03-22
-- #158 [ ] Provider-neutral team spec model [github: GH-158] → `REQ-0094` -> [requirements](docs/requirements/REQ-0094-provider-neutral-team-spec-model/) **Analyzed**
-  - Phase 4. Depends on REQ-0082, REQ-0081. team_type, members, parallelism, contracts, merge/retry policy.
+- [x] #158 Provider-neutral team spec model [github: GH-158] → `REQ-0094-provider-neutral-team-spec-model/` -> [requirements](docs/requirements/REQ-0094-provider-neutral-team-spec-model/) **Completed**
+  - **Completed:** 2026-03-22
 - [x] #188 State schema versioning and migration [github: GH-188] → `REQ-0124-state-schema-versioning-migration/` -> [requirements](docs/requirements/REQ-0124-state-schema-versioning-migration/) **Completed**
   - **Completed:** 2026-03-21
 - [x] #189 Gate profiles and JSON schemas to shared core [github: GH-189] → `REQ-0125-gate-profiles-schemas-to-core/` -> [requirements](docs/requirements/REQ-0125-gate-profiles-schemas-to-core/) **Completed**
