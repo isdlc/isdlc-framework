@@ -368,7 +368,7 @@
   - **Completed:** 2026-03-22
 - [x] #162 Debate team orchestration pattern [github: GH-162] → `REQ-0098` -> [requirements](docs/requirements/REQ-0098-debate-team-orchestration-pattern/) **Completed**
   - **Completed:** 2026-03-22
-- #182 [ ] Parity verification suite [github: GH-182] → `REQ-0118`
+- #182 [ ] Parity verification suite [github: GH-182] → `REQ-0118` -> [requirements](docs/requirements/REQ-0118-parity-verification/) **Analyzed**
   - Phase 9. Depends on REQ-0087, REQ-0114. state.json, artifacts, BACKLOG.md, meta.json, memory, validator outcomes.
 
 **Workstream D — Content Model**
@@ -400,13 +400,13 @@
 
 **Workstream F — Verification**
 
-- #183 [ ] Golden fixture test suite [github: GH-183] → `REQ-0119`
+- #183 [ ] Golden fixture test suite [github: GH-183] → `REQ-0119` -> [requirements](docs/requirements/REQ-0119-golden-fixture-suite/) **Analyzed**
   - Phase 9. Depends on REQ-0118. Fixtures for discover, feature, fix, upgrade, analyze, implementation loop, quality loop.
-- #184 [ ] State migration verification [github: GH-184] → `REQ-0120`
+- #184 [ ] State migration verification [github: GH-184] → `REQ-0120` -> [requirements](docs/requirements/REQ-0120-state-migration-verification/) **Analyzed**
   - Phase 9. Depends on REQ-0080, REQ-0082. Schema versioning, forward migration, in-flight compatibility, doctor repair.
-- #185 [ ] Performance validation [github: GH-185] → `REQ-0121`
+- #185 [ ] Performance validation [github: GH-185] → `REQ-0121` -> [requirements](docs/requirements/REQ-0121-performance-validation/) **Analyzed**
   - Phase 9. Depends on REQ-0114, REQ-0087. Checkpoints <100ms, artifact validation <500ms, no regressions.
-- #186 [ ] Provider support matrix [github: GH-186] → `REQ-0122`
+- #186 [ ] Provider support matrix [github: GH-186] → `REQ-0122` -> [requirements](docs/requirements/REQ-0122-provider-support-matrix/) **Analyzed**
   - Phase 9. Depends on REQ-0114, REQ-0117. Per-feature Claude vs Codex differences, honest scope statement.
 
 **Dependency Summary**
