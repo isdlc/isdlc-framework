@@ -360,8 +360,8 @@
   - **Completed:** 2026-03-21
 - [x] #151 Create src/providers/claude/ adapter boundary [github: GH-151] → `REQ-0087-claude-adapter-boundary/` -> [requirements](docs/requirements/REQ-0087-claude-adapter-boundary/) **Completed**
   - **Completed:** 2026-03-22
-- #153 [ ] Provider-aware installer/updater/doctor/uninstaller [github: GH-153] → `REQ-0089-provider-aware-installer/` -> [requirements](docs/requirements/REQ-0089-provider-aware-installer/) **Analyzed**
-  - Phase 3. Split into installCore() + installProvider(). ~2867 lines across 4 ESM files.
+- [x] #153 Provider-aware installer/updater/doctor/uninstaller [github: GH-153] → `REQ-0089-provider-aware-installer/` -> [requirements](docs/requirements/REQ-0089-provider-aware-installer/) **Completed**
+  - **Completed:** 2026-03-22
 - #159 [ ] Impact analysis team port to shared orchestration [github: GH-159] → `REQ-0095`
   - Phase 4. Depends on REQ-0094, REQ-0087. M1/M2/M3 + verifier fan-out.
 - #160 [ ] Tracing team port to shared orchestration [github: GH-160] → `REQ-0096`
@@ -479,6 +479,8 @@ Phase 9 (Verification)
 ## Completed
 
 ### 2026-03-22
+- [x] #153: Provider-aware installer/updater/doctor/uninstaller -> [requirements](docs/requirements/REQ-0089-provider-aware-installer/) *(merged 3da26cd)*
+  - **Completed:** 2026-03-22
 - [x] #154: Hook conversion — 9 core validator hooks to bridge-first delegation via core ESM validators. -> [requirements](docs/requirements/REQ-0090-hook-conversion-core-validators/) *(merged 0246662)*
   - **Completed:** 2026-03-22
 - [x] #155: Hook conversion — 7 workflow guard hooks to bridge-first delegation via core engine rules. -> [requirements](docs/requirements/REQ-0091-hook-conversion-workflow-guards/) *(merged 0246662)*
