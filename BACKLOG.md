@@ -335,12 +335,12 @@
   - **Completed:** 2026-03-21
 - [x] #147 Extract BacklogService and ItemStateService [github: GH-147] → `REQ-0083-extract-backlog-itemstate-service/` -> [requirements](docs/requirements/REQ-0083-extract-backlog-itemstate-service/) **Completed**
   - **Completed:** 2026-03-21
-- #148 [ ] Extract search and memory service boundaries [github: GH-148] → `REQ-0084-extract-search-memory-boundaries/` -> [requirements](docs/requirements/REQ-0084-extract-search-memory-boundaries/) **Analyzed**
-  - Phase 2. Extract from lib/search/, lib/embedding/, lib/memory.js into src/core/search/ and src/core/memory/.
-- #149 [ ] Decompose common.cjs [github: GH-149] → `REQ-0085-decompose-common-cjs/` -> [requirements](docs/requirements/REQ-0085-decompose-common-cjs/) **Analyzed**
-  - Phase 2. Wire remaining bridge delegates + extract skills/config/session-cache groups. Leave Claude-specific utilities in place.
-- #150 [ ] Split three-verb-utils.cjs structural logic [github: GH-150] → `REQ-0086-split-three-verb-utils/` -> [requirements](docs/requirements/REQ-0086-split-three-verb-utils/) **Analyzed**
-  - Phase 2. Wire bridge delegation to core/backlog/ modules (already extracted in Batch 2, just not wired).
+- [x] #148 Extract search and memory service boundaries [github: GH-148] → `REQ-0084-extract-search-memory-boundaries/` -> [requirements](docs/requirements/REQ-0084-extract-search-memory-boundaries/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #149 Decompose common.cjs [github: GH-149] → `REQ-0085-decompose-common-cjs/` -> [requirements](docs/requirements/REQ-0085-decompose-common-cjs/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #150 Split three-verb-utils.cjs structural logic [github: GH-150] → `REQ-0086-split-three-verb-utils/` -> [requirements](docs/requirements/REQ-0086-split-three-verb-utils/) **Completed**
+  - **Completed:** 2026-03-22
 - #158 [ ] Provider-neutral team spec model [github: GH-158] → `REQ-0094`
   - Phase 4. Depends on REQ-0082, REQ-0081. team_type, members, parallelism, contracts, merge/retry policy.
 - [x] #188 State schema versioning and migration [github: GH-188] → `REQ-0124-state-schema-versioning-migration/` -> [requirements](docs/requirements/REQ-0124-state-schema-versioning-migration/) **Completed**
@@ -477,6 +477,14 @@ Phase 9 (Verification)
 ```
 
 ## Completed
+
+### 2026-03-22
+- [x] #148: Extract search and memory service boundaries — src/core/search/ and src/core/memory/ service objects with bridge loaders. -> [requirements](docs/requirements/REQ-0084-extract-search-memory-boundaries/) *(merged ecc942b)*
+  - **Completed:** 2026-03-22
+- [x] #149: Decompose common.cjs — wire bridge delegates for validators, workflow, backlog to core modules. -> [requirements](docs/requirements/REQ-0085-decompose-common-cjs/) *(merged ecc942b)*
+  - **Completed:** 2026-03-22
+- [x] #150: Split three-verb-utils.cjs structural logic — wire 5 bridge functions to core/backlog modules. -> [requirements](docs/requirements/REQ-0086-split-three-verb-utils/) *(merged ecc942b)*
+  - **Completed:** 2026-03-22
 
 ### 2026-03-21
 - [x] #143: Create src/core/ scaffold — expanded scaffold with validators/, workflow/, skills/, search/, memory/, providers/, content/ stub modules. -> [requirements](docs/requirements/REQ-0079-create-src-core-scaffold/) *(merged 4c02e72)*
