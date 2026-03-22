@@ -464,8 +464,8 @@ Phase 10 (Provider-Neutral Orchestration)
 
 **Workstream G — Provider-Neutral Orchestration**
 
-- #194 [ ] ProviderRuntime interface contract [github: GH-194] → `REQ-0128` -> [requirements](docs/requirements/REQ-0128-provider-runtime-interface/) **Analyzed**
-  - Phase 10. Interface: executeTask(), executeParallel(), presentInteractive(), readUserResponse(). Each provider implements this.
+- [x] #194 ProviderRuntime interface contract [github: GH-194] → `REQ-0128` -> [requirements](docs/requirements/REQ-0128-provider-runtime-interface/) **Completed**
+  - **Completed:** 2026-03-22
 - #195 [ ] Provider-neutral phase-loop orchestrator [github: GH-195] → `REQ-0129`
   - Phase 10. Depends on REQ-0128. Extracts Phase-Loop Controller from isdlc.md into core.
 - #196 [ ] Provider-neutral fan-out orchestrator [github: GH-196] → `REQ-0130`
@@ -488,6 +488,8 @@ Phase 10 (Provider-Neutral Orchestration)
 ## Completed
 
 ### 2026-03-22
+- [x] #194: ProviderRuntime interface contract -> [requirements](docs/requirements/REQ-0128-provider-runtime-interface/) *(merged b3b02d2)*
+  - **Completed:** 2026-03-22
 - [x] #182: Parity verification suite -> [requirements](docs/requirements/REQ-0118-parity-verification/) *(merged 00eade8)*
   - **Completed:** 2026-03-22
 - [x] #183: Golden fixture test suite -> [requirements](docs/requirements/REQ-0119-golden-fixture-suite/) *(merged 00eade8)*
