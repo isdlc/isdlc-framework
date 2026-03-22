@@ -132,6 +132,47 @@
       |  These files now exist on disk, in git.
       |
       v
+  PROJECT SKILLS DISTILLATION (Step 2a in discover-orchestrator):
+  +------------------------------------------------------------------+
+  |                                                     [line 1528]  |
+  |  Discovery report is TOO LARGE for the session cache.            |
+  |  So the orchestrator DISTILLS it into 4 focused skill files      |
+  |  (max 5,000 chars each) that DO get injected into every phase.   |
+  |                                                                  |
+  |  Source agents --> Distilled skill files:                         |
+  |                                                                  |
+  |  D1 (architecture) --> PROJ-001: project-architecture.md         |
+  |    components, boundaries, data flow, key patterns               |
+  |                                                                  |
+  |  D1 (architecture) --> PROJ-002: project-conventions.md          |
+  |    coding standards, naming, file structure, module system        |
+  |                                                                  |
+  |  D6 (features)     --> PROJ-003: project-domain.md               |
+  |    business domains, entities, bounded contexts                  |
+  |                                                                  |
+  |  D2 (tests)        --> PROJ-004: project-test-landscape.md       |
+  |    test types, coverage, frameworks, gaps, conventions            |
+  |                                                                  |
+  |  Written to: .claude/skills/external/                            |
+  |  Registered in: docs/isdlc/external-skills-manifest.json         |
+  |  Bindings: phases=all, agents=all, injection_mode=always         |
+  |  Delivery: "instruction" (agents MUST follow these)              |
+  |                                                                  |
+  |  Then: node bin/rebuild-cache.js                                 |
+  |  --> skills appear in EXTERNAL_SKILLS section of session cache   |
+  |  --> injected into EVERY phase delegation via Skill Injection    |
+  |      Steps A/B/C                                                 |
+  |                                                                  |
+  |  THIS IS THE BRIDGE between discovery and build/test phases.     |
+  |  The raw discovery report stays on disk. The distilled skills    |
+  |  carry the actionable knowledge into every conversation.         |
+  |                                                                  |
+  |  Also runs on incremental rediscovery (/discover -> [2]):        |
+  |  re-scans codebase, re-distills PROJ-001 to PROJ-004.            |
+  |                                                                  |
+  +------------------------------------------------------------------+
+      |
+      v
   EMBEDDING PIPELINE (runs during or after discovery):
   +------------------------------------------------------------------+
   |                                                                  |
@@ -216,15 +257,25 @@
       v
   rebuildSessionCache()                       [hooks/lib/common.cjs:4321]
       |
-      |  READS FROM DISK (the discovery outputs + more):
+      |  READS FROM DISK:
       |
-      |  +-- docs/isdlc/constitution.md         (governance articles)
-      |  +-- docs/project-discovery-report.md    (project knowledge)
-      |  +-- docs/isdlc/test-evaluation-report.md(test baseline)
-      |  +-- .isdlc/roundtable.yaml             (persona config)
-      |  +-- persona-*.md files                 (team member profiles)
-      |  +-- topic-*.md files                   (discussion topics)
-      |  +-- 252 source files hashed            (freshness tracking)
+      |  +-- docs/isdlc/constitution.md                (Section 1)
+      |  +-- src/isdlc/config/workflows.json           (Section 2)
+      |  +-- iteration-requirements.json               (Section 3)
+      |  +-- artifact-paths.json                       (Section 4)
+      |  +-- skills-manifest.json                      (Section 5)
+      |  +-- per-agent skill index                     (Section 6)
+      |  +-- external-skills-manifest.json             (Section 7)
+      |  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+      |  |     THIS is where PROJ-001 to PROJ-004 live.
+      |  |     The distilled project skills from discovery.
+      |  +-- persona-*.md + topic-*.md files           (Section 8)
+      |  +-- 252 source files hashed                   (freshness)
+      |
+      |  NOTE: discovery-report.md and test-evaluation-report.md
+      |  are deliberately NOT in the cache (confirmed by tests
+      |  TC-BUILD-16 and TC-BUILD-17). Discovery knowledge reaches
+      |  phases via the distilled PROJ skills, not raw reports.
       |
       v
   BUILDS: .isdlc/session-cache.md
@@ -238,14 +289,18 @@
   |   ...14 articles with project-specific thresholds...             |
   | <!-- /SECTION: CONSTITUTION -->                                  |
   |                                                                  |
-  | <!-- SECTION: DISCOVERY_CONTEXT -->                              |
-  |   Tech stack: Node.js 22, Angular 21, Vitest                    |
-  |   Architecture: hooks-based enforcement, supervisor tree         |
-  |   Module boundaries: src/claude/agents, hooks, skills            |
-  |   Test baseline: 1,247 tests, 82% coverage                      |
-  |   Patterns: ESM for lib, CJS for hooks, single-line bash        |
-  |   Integration: GitHub API, Claude CLI, MCP servers               |
-  | <!-- /SECTION: DISCOVERY_CONTEXT -->                             |
+  | <!-- SECTION: EXTERNAL_SKILLS -->                                |
+  |   PROJ-001: project-architecture                                 |
+  |     components, boundaries, data flow, key patterns              |
+  |   PROJ-002: project-conventions                                  |
+  |     coding standards, naming, file structure, module system      |
+  |   PROJ-003: project-domain                                       |
+  |     business domains, entities, bounded contexts                 |
+  |   PROJ-004: project-test-landscape                               |
+  |     test types, coverage, frameworks, gaps                       |
+  |   + any skills from skills.sh (D4)                               |
+  |   + any user-added skills (/isdlc skill add)                     |
+  | <!-- /SECTION: EXTERNAL_SKILLS -->                               |
   |                                                                  |
   | <!-- SECTION: ROUNDTABLE_CONTEXT -->                             |
   |   Persona: Alex (Business Analyst)                               |
@@ -253,6 +308,9 @@
   |   Persona: Sam (System Designer)                                 |
   |   Topics: requirements, architecture, design, testing...         |
   | <!-- /SECTION: ROUNDTABLE_CONTEXT -->                            |
+  |                                                                  |
+  | (+ WORKFLOW_CONFIG, ITERATION_REQUIREMENTS, ARTIFACT_PATHS,      |
+  |    SKILLS_MANIFEST, SKILL_INDEX sections)                        |
   +------------------------------------------------------------------+
       |
       v
@@ -289,39 +347,59 @@
  (orchestrator extracts sections and injects into each agent)
 
 
-  LAYER 1: ORCHESTRATOR EXTRACTS AND DELEGATES
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  LAYER 1: SKILL INJECTION INTO EVERY PHASE DELEGATION
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Orchestrator reads its session context          [00-sdlc-orchestrator.md:906]
+  Phase-Loop Controller runs 3 injection steps     [isdlc.md:1632]
+  BEFORE building each phase's delegation prompt:
+
+  STEP A: Built-in Skill Index
+      |  extracts <!-- SECTION: SKILL_INDEX --> from cache
+      |  finds skills owned by the current phase agent
       |
-      |  finds <!-- SECTION: DISCOVERY_CONTEXT -->
-      |  extracts the full section
+  STEP B: External Skills (where PROJ-001 to PROJ-004 live)
+      |  extracts <!-- SECTION: EXTERNAL_SKILLS --> from cache
+      |  filters: phases=all, agents=all, injection_mode=always
+      |  ALL 4 project skills match --> included in prompt
+      |  + any skills.sh skills matching this phase
+      |  + any user-added skills matching this phase
+      |
+  STEP C: Assemble into delegation prompt
       |
       v
   Builds delegation prompt for EACH phase agent:
   +------------------------------------------------------------------+
   | TASK: {phase-specific task description}                          |
   |                                                                  |
-  | DISCOVERY CONTEXT:                                               |
-  |   Tech stack: Node.js 22, Angular 21, Vitest                    |
-  |   Architecture: hooks-based enforcement, supervisor tree         |
-  |   Test baseline: 1,247 tests, 82% coverage                      |
-  |   Patterns: ESM for lib, CJS for hooks...                       |
+  | EXTERNAL SKILL INSTRUCTION (project-architecture):               |
+  |   You MUST follow these guidelines:                              |
+  |   Components: hooks/, agents/, skills/, lib/embedding/...        |
+  |   Data flow: session-cache -> inject hook -> context window      |
+  |   Patterns: hooks-based enforcement, supervisor tree...          |
   |                                                                  |
-  | IMPORTANT: Use discovery as your baseline.                       |
-  | Extend existing architecture -- do not redesign from scratch.    |
+  | EXTERNAL SKILL INSTRUCTION (project-conventions):                |
+  |   You MUST follow these guidelines:                              |
+  |   ESM for lib/, CJS for hooks/, single-line bash...              |
+  |                                                                  |
+  | EXTERNAL SKILL INSTRUCTION (project-domain):                     |
+  |   You MUST follow these guidelines:                              |
+  |   Business domains, entities, bounded contexts...                |
+  |                                                                  |
+  | EXTERNAL SKILL INSTRUCTION (project-test-landscape):             |
+  |   You MUST follow these guidelines:                              |
+  |   Vitest, 1247 tests, 82% coverage, test patterns...            |
   |                                                                  |
   | ARTIFACT FOLDER: docs/requirements/REQ-0042-dark-mode/           |
   +------------------------------------------------------------------+
 
-  Phase-specific enrichment:
+  This means EVERY phase (01 through 08) receives the same
+  project knowledge. Not just Phases 01-03.
+
+  Phase agents also read files from disk directly:
   +-------------------+--------------------------------------------+
-  | Phase 01          | Discovery context (full)                   |
-  | Phase 02          | + test-evaluation-report.md                |
-  |                   | + "extend existing, don't redesign"        |
-  | Phase 03          | + "follow existing patterns, justify       |
-  |                   |    deviations"                             |
-  | Phases 04-08      | Discovery via skills (tech-stack-specific) |
+  | Phase 04 (test)   | reads docs/isdlc/test-evaluation-report.md |
+  | Phase 05 (impl)   | reads docs/isdlc/test-evaluation-report.md |
+  | Phase 02          | reads discovery report for impact scoping   |
   +-------------------+--------------------------------------------+
 
 
@@ -510,47 +588,59 @@
   /discover (once)
       |
       v
-  constitution.md + discovery-report.md + test-evaluation.md
-  (project knowledge captured from actual codebase)
+  D1, D2, D5, D6 analyze codebase in parallel
+  --> discovery-report.md, test-evaluation-report.md (on disk)
       |
       v
-  rebuildSessionCache()
-  (knowledge packed into session-cache.md with HTML delimiters)
+  D3 generates constitution.md (governance articles)
+      |
+      v
+  Step 2a: PROJECT SKILLS DISTILLATION
+  --> PROJ-001 project-architecture.md  (from D1)
+  --> PROJ-002 project-conventions.md   (from D1)
+  --> PROJ-003 project-domain.md        (from D6)
+  --> PROJ-004 project-test-landscape.md(from D2)
+  (5,000 char max each, written to .claude/skills/external/)
+      |
+      v
+  Registered in external-skills-manifest.json
+  node bin/rebuild-cache.js
+      |
+      v
+  Session cache now contains:
+    CONSTITUTION section     (governance)
+    EXTERNAL_SKILLS section  (PROJ-001 to PROJ-004 + skills.sh skills)
+    ROUNDTABLE_CONTEXT       (personas + topics)
+    + workflow config, skill index, iteration requirements
       |
       v
   inject-session-cache.cjs --> stdout --> LLM CONTEXT WINDOW
   (8 lines of code. knowledge enters every conversation.)
       |
       v
-  Orchestrator extracts <!-- SECTION: DISCOVERY_CONTEXT -->
-  (pulls project knowledge from session context)
+  Phase-Loop Controller runs Skill Injection Steps A/B/C
+  --> extracts EXTERNAL_SKILLS matching current phase/agent
+  --> PROJ-001 to PROJ-004 match ALL phases (bound to "all")
+  --> included as EXTERNAL SKILL INSTRUCTION blocks in prompt
       |
       v
-  Delegation prompt to Phase 01 (with DISCOVERY CONTEXT block)
-  ("Use discovery as baseline. Extend, don't redesign.")
-      |
-      v
-  Phase 01 produces requirements-spec.md (reads discovery + user input)
+  Phase 01 receives: project skills + constitution
+  --> produces requirements-spec.md
       |
       v
   state.json updated (phase 01 complete)
   phase-loop-controller allows Phase 02
       |
       v
-  Phase 02 reads requirements-spec.md + discovery context
-  (explicit file read, not memory)
-      |
-      v
-  Phase 02 produces architecture-overview.md
+  Phase 02 receives: project skills + constitution
+  --> reads requirements-spec.md from disk (artifact handover)
+  --> produces architecture-overview.md
       |
       v
   constitution-validator checks compliance (reads constitution from disk)
       |
       v
-  Phase 03 reads architecture-overview.md + discovery context
-      |
-      v
-  ... each phase reads previous phase's files ...
+  ... each phase receives project skills + reads previous artifacts ...
       |
       v
   Phase 08 reads ALL prior artifacts for final review
@@ -558,6 +648,10 @@
       v
   Merge to main. Workflow archived in workflow_history.
   Roundtable memory updated. Codebase hash refreshed.
+
+  INCREMENTAL REDISCOVERY (/discover -> [2]):
+  Re-scans codebase, re-distills PROJ-001 to PROJ-004,
+  rebuilds cache. Keeps existing constitution.
 
 
 
