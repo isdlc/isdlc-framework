@@ -33,6 +33,63 @@ function _getCoreBridge() {
     return _coreBridge;
 }
 
+// =========================================================================
+// Core Bridge — Validators (REQ-0085): Lazy-load validators bridge.
+// =========================================================================
+let _validatorsBridge;
+function _getValidatorsBridge() {
+    if (_validatorsBridge !== undefined) return _validatorsBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'validators.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _validatorsBridge = require(bridgePath);
+        } else {
+            _validatorsBridge = null;
+        }
+    } catch (e) {
+        _validatorsBridge = null;
+    }
+    return _validatorsBridge;
+}
+
+// =========================================================================
+// Core Bridge — Workflow (REQ-0085): Lazy-load workflow bridge.
+// =========================================================================
+let _workflowBridge;
+function _getWorkflowBridge() {
+    if (_workflowBridge !== undefined) return _workflowBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'workflow.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _workflowBridge = require(bridgePath);
+        } else {
+            _workflowBridge = null;
+        }
+    } catch (e) {
+        _workflowBridge = null;
+    }
+    return _workflowBridge;
+}
+
+// =========================================================================
+// Core Bridge — Backlog (REQ-0085): Lazy-load backlog bridge.
+// =========================================================================
+let _backlogBridge;
+function _getBacklogBridge() {
+    if (_backlogBridge !== undefined) return _backlogBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'backlog.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _backlogBridge = require(bridgePath);
+        } else {
+            _backlogBridge = null;
+        }
+    } catch (e) {
+        _backlogBridge = null;
+    }
+    return _backlogBridge;
+}
+
 /**
  * Detect if the framework is running within an Antigravity environment.
  * @returns {boolean} True if Antigravity is detected
@@ -2490,6 +2547,7 @@ const PHASE_KEY_ALIASES = Object.freeze({
  * @returns {string} Canonical phase key
  */
 function normalizePhaseKey(key) {
+    const _wb = _getWorkflowBridge(); if (_wb?.normalizePhaseKey) return _wb.normalizePhaseKey(key);
     if (!key || typeof key !== 'string') return key;
     return PHASE_KEY_ALIASES[key] || key;
 }

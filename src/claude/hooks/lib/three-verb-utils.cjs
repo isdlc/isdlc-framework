@@ -17,6 +17,28 @@ const path = require('path');
 const childProcess = require('child_process');
 const { execSync } = require('child_process');
 
+// =========================================================================
+// Core Bridge (REQ-0086): Lazy-load the extracted core BacklogService bridge.
+// When available, functions delegate to src/core/backlog/ (the canonical
+// implementation). Falls back to the inline code below when the bridge
+// is unreachable (e.g., when three-verb-utils.cjs is copied to a temp dir).
+// =========================================================================
+let _backlogBridge;
+function _getBacklogBridge() {
+    if (_backlogBridge !== undefined) return _backlogBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'backlog.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _backlogBridge = require(bridgePath);
+        } else {
+            _backlogBridge = null;
+        }
+    } catch (e) {
+        _backlogBridge = null;
+    }
+    return _backlogBridge;
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -72,6 +94,7 @@ const MARKER_REGEX = /^(\s*-\s+)(\d+\.\d+)\s+\[([ ~Ax])\]\s+(.+)$/;
  * @returns {string} Sanitized slug (max 50 chars)
  */
 function generateSlug(description) {
+    const _b = _getBacklogBridge(); if (_b?.generateSlug) return _b.generateSlug(description);
     if (!description || typeof description !== 'string') {
         return 'untitled-item';
     }
@@ -108,6 +131,7 @@ function generateSlug(description) {
  * @returns {{ source: string, source_id: string|null, description: string }}
  */
 function detectSource(input, options) {
+    const _b = _getBacklogBridge(); if (_b?.detectSource) return _b.detectSource(input, options);
     if (!input || typeof input !== 'string') {
         return { source: 'manual', source_id: null, description: '' };
     }
@@ -311,6 +335,7 @@ function createGitHubIssue(title, body) {
  * @returns {'raw'|'partial'|'analyzed'}
  */
 function deriveAnalysisStatus(phasesCompleted, sizingDecision) {
+    const _b = _getBacklogBridge(); if (_b?.deriveAnalysisStatus) return _b.deriveAnalysisStatus(phasesCompleted, sizingDecision);
     if (!Array.isArray(phasesCompleted)) {
         return 'raw';
     }
@@ -349,6 +374,7 @@ function deriveAnalysisStatus(phasesCompleted, sizingDecision) {
  * @returns {string} Marker character: ' ', '~', or 'A'
  */
 function deriveBacklogMarker(analysisStatus) {
+    const _b = _getBacklogBridge(); if (_b?.deriveBacklogMarker) return _b.deriveBacklogMarker(analysisStatus);
     switch (analysisStatus) {
         case 'raw':      return ' ';
         case 'partial':  return '~';
@@ -1034,6 +1060,7 @@ function getTierDescription(tier) {
  * @returns {{ prefix: string, itemNumber: string, marker: string, description: string }|null}
  */
 function parseBacklogLine(line) {
+    const _b = _getBacklogBridge(); if (_b?.parseBacklogLine) return _b.parseBacklogLine(line);
     const match = line.match(MARKER_REGEX);
     if (!match) return null;
     return {
