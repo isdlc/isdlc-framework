@@ -1,0 +1,17 @@
+{
+  "id": "REQ-0129",
+  "slug": "REQ-0129-phase-loop-orchestrator",
+  "title": "Provider-neutral phase-loop orchestrator",
+  "status": "analyzed",
+  "github_issue": 195,
+  "source": "github",
+  "source_id": "GH-195",
+  "codex_id": "CODEX-060",
+  "phase": 10,
+  "batch": 2,
+  "codebase_hash": "0ec9b08",
+  "acceptance": "2026-03-22T23:30:00.000Z",
+  "created": "2026-03-22T23:30:00.000Z",
+  "updated": "2026-03-22T23:30:00.000Z",
+  "analysis_status": "complete"
+}

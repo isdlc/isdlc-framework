@@ -1,0 +1,17 @@
+{
+  "id": "REQ-0132",
+  "slug": "REQ-0132-discover-orchestrator-core",
+  "title": "Provider-neutral discover orchestrator",
+  "status": "analyzed",
+  "github_issue": 198,
+  "source": "github",
+  "source_id": "GH-198",
+  "codex_id": "CODEX-063",
+  "phase": 10,
+  "batch": 2,
+  "codebase_hash": "0ec9b08",
+  "acceptance": "2026-03-22T23:30:00.000Z",
+  "created": "2026-03-22T23:30:00.000Z",
+  "updated": "2026-03-22T23:30:00.000Z",
+  "analysis_status": "complete"
+}

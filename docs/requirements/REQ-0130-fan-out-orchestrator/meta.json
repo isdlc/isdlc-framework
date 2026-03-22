@@ -1,0 +1,17 @@
+{
+  "id": "REQ-0130",
+  "slug": "REQ-0130-fan-out-orchestrator",
+  "title": "Provider-neutral fan-out orchestrator",
+  "status": "analyzed",
+  "github_issue": 196,
+  "source": "github",
+  "source_id": "GH-196",
+  "codex_id": "CODEX-061",
+  "phase": 10,
+  "batch": 2,
+  "codebase_hash": "0ec9b08",
+  "acceptance": "2026-03-22T23:30:00.000Z",
+  "created": "2026-03-22T23:30:00.000Z",
+  "updated": "2026-03-22T23:30:00.000Z",
+  "analysis_status": "complete"
+}
