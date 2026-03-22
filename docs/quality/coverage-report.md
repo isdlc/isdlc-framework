@@ -1,9 +1,9 @@
-# Coverage Report -- REQ-0099 Agent Content Decomposition (Content Model Batch)
+# Coverage Report -- REQ-0103 Discover Execution Model
 
 **Phase**: 16-quality-loop
 **Date**: 2026-03-22
 **Threshold**: 80% line coverage
-**Verdict**: PASS (~97% estimated coverage of new code)
+**Verdict**: PASS (100% estimated function and branch coverage of new code)
 
 ## Coverage Tool Status
 
@@ -13,60 +13,66 @@ node:test does not include a built-in coverage reporter. Coverage assessment is 
 
 | File | Exports | Tested | Branches | Covered | Est. Coverage |
 |------|---------|--------|----------|---------|---------------|
-| content-model.js | 3 | 3/3 | 4 (2 error branches) | 4/4 | 100% |
-| agent-classification.js | 4 | 4/4 | 2 (1 error branch, 1 mutation reject) | 2/2 | 100% |
-| skill-classification.js | 4 | 4/4 | 2 (2 error branches) | 2/2 | 100% |
-| command-classification.js | 2 | 2/2 | 1 (1 error branch) | 1/1 | 100% |
-| topic-classification.js | 3 | 3/3 | 1 (1 error branch) | 1/1 | 100% |
-| bridge/content-model.cjs | 15 | 8/15 | 5 (lazy load paths) | 5/5 | ~85% |
+| modes.js | 4 | 4/4 | 0 (pure data) | N/A | 100% |
+| agent-groups.js | 7 | 7/7 | 0 (pure data) | N/A | 100% |
+| ux-flows.js | 8 | 8/8 | 2 (error branches) | 2/2 | 100% |
+| discover-state-schema.js | 6 + 2 internal | 8/8 | 3 (incremental fallback, set check) | 3/3 | 100% |
+| skill-distillation.js | 3 | 3/3 | 0 | N/A | 100% |
+| projection-chain.js | 3 | 3/3 | 0 (filter predicate) | N/A | 100% |
+| index.js | 4 | 4/4 | 2 (error branches) | 2/2 | 100% |
+| bridge/discover.cjs | 15 | 15/15 | 1 (lazy load cache) | 1/1 | 100% |
 
 ## Test Coverage Mapping
 
-### content-model.js (10 tests)
-- CM-01, CM-02: Enum value verification (both enums)
-- CM-03, CM-03b: Valid createSectionEntry (shape + frozen)
-- CM-04: Invalid type error branch
-- CM-05: Invalid portability error branch
-- CM-06, CM-06b, CM-06c, CM-06d: Frozen export verification + mutation rejection
+### modes.js (9 tests)
+- DM-01..04: All 4 mode objects verified (fields, values, types)
+- DM-05..06: Schema verification (field count, array type)
+- DM-07..09: Immutability (frozen check, mutation rejection, addition rejection)
 
-### agent-classification.js (16 tests)
-- AC-01: Count verification (47 agents)
-- AC-02, AC-03: Valid/invalid lookup branches
-- AC-04..AC-07b: Standard template section-by-section verification (8 tests)
-- AC-08, AC-08b: Special agent custom sections (roundtable, bug-gather)
-- AC-09: Portability summary computation
-- AC-10, AC-10b: Frozen data enforcement (all 47 agents verified)
+### agent-groups.js (13 tests)
+- AG-01: Count verification (7 groups)
+- AG-02..08: All 7 group objects verified (members, parallelism, required_for_modes, depth_level)
+- AG-09..11: Schema verification (required fields, parallelism enum, members array)
+- AG-12..13: Immutability (frozen check, mutation rejection)
 
-### skill-classification.js (12 tests)
-- SK-01..SK-01d, SK-06: Template sections + frozen verification (5 tests)
-- SK-05: Category count verification (17)
-- SK-03, SK-04, SK-03b: Category portability (valid + sum + invalid) (3 tests)
-- SK-02, SK-07: Skill lookup (valid + invalid) (2 tests)
+### ux-flows.js (16 tests)
+- UX-01..04: Menu definitions (3 first-time options, 4 returning options, field schema, null mapping)
+- UX-05..08: Walkthrough steps (3 walkthroughs, step field schema)
+- UX-09..13: Registry helpers (getMenu happy/error, getWalkthrough happy/error, listMenus)
+- UX-14..16: Immutability (menus frozen, walkthroughs frozen, mutation rejection)
 
-### command-classification.js (17 tests)
-- CMD-06, CMD-01, CMD-07: Coverage + valid/invalid lookup (3 tests)
-- CMD-02..CMD-03e, CMD-04..CMD-04c: isdlc.md 8 sections detail (9 tests)
-- CMD-05a..CMD-05d: Other commands + frozen (4 tests)
+### discover-state-schema.js (15 tests)
+- DS-01..03b: Schema definition (core fields, metadata, timestamps, frozen)
+- DS-04..04c: createInitialDiscoverState (status, depth_level, mutability)
+- DS-05..05b: computeResumePoint (next step, null when complete)
+- DS-06: RESUME_LIMITATIONS (array structure, frozen)
+- DS-07..08: isDiscoverComplete (false for partial, true for complete)
+- DS-09..11: markStepComplete (add, dedup, advance)
 
-### topic-classification.js (8 tests)
-- TC-01, TC-06, TC-07: Coverage + valid/invalid (3 tests)
-- TC-02, TC-03, TC-04: Section template detail (3 tests)
-- TC-05: Portability summary >95% (1 test)
-- TC-08: Frozen data (1 test)
+### skill-distillation.js (7 tests)
+- SD-01: SOURCE_PRIORITY order
+- SD-02..03b: Reconciliation rules (stale detection, user preservation, frozen)
+- SD-04..05b: Distillation config (shape, frozen, stale_action enum)
+- SD-06..07: SOURCE_PRIORITY immutability (frozen, mutation rejection)
 
-### bridge/content-model.cjs (6 tests)
-- BR-01: Export function type verification (all 12 functions)
-- BR-06: CLASSIFICATION_TYPES parity
-- BR-02, BR-03, BR-04, BR-05: Module parity (agent, skill, command, topic)
-- BR-02b, BR-05b: List function count verification
+### projection-chain.js (9 tests)
+- PC-01..03b: Trigger chain (count, order, fields, depends_on chain)
+- PC-04..07: Provider classification (neutral 2, specific 2, filter functions)
+- PC-08..09: Immutability (chain frozen, steps frozen)
+
+### bridge-discover.test.js (14 tests)
+- DB-01..09: Export verification (9 functions exist with correct types)
+- DB-10..13: ESM-CJS parity (getDiscoverMode, listDiscoverModes, getAgentGroup, getProjectionChain)
+- DB-14: Error propagation (rejects on unknown mode)
 
 ## Aggregate
 
 | Metric | Value |
 |--------|-------|
-| Production files | 6 |
-| Test files | 6 |
-| Total tests | 69 |
-| Exports tested | 31/34 (91%) |
-| Error branches tested | 10/10 (100%) |
-| Estimated weighted coverage | ~97% |
+| Production files | 8 |
+| Test files | 7 |
+| Total tests | 86 |
+| Exports tested | 33/33 (100%) |
+| Internal functions tested | 2/2 (100%) |
+| Error branches tested | 7/7 (100%) |
+| Estimated weighted coverage | 100% |

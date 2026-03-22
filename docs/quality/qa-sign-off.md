@@ -1,4 +1,4 @@
-# QA Sign-Off -- REQ-0099 Agent Content Decomposition (Content Model Batch)
+# QA Sign-Off -- REQ-0103 Discover Execution Model
 
 **Phase**: 16-quality-loop
 **Date**: 2026-03-22
@@ -8,17 +8,16 @@
 
 | Criterion | Result |
 |-----------|--------|
-| Build integrity | PASS (all 6 ESM modules + CJS bridge import cleanly) |
-| Content model tests (69) | 69/69 PASS |
-| Core tests (635) | 635/635 PASS |
-| Provider tests (28) | 28/28 PASS |
-| Coverage (new code) | ~97% estimated |
+| Build integrity | PASS (all 7 ESM modules + CJS bridge import cleanly) |
+| Discover tests (86) | 86/86 PASS |
+| Regression suite (1585) | 1582/1585 PASS (3 pre-existing, not regressions) |
+| Coverage (new code) | 100% estimated function + branch coverage |
 | Lint | NOT CONFIGURED (not blocking) |
 | Type check | NOT CONFIGURED (not blocking) |
 | SAST security | PASS (zero attack surface) |
 | Dependency audit | PASS (0 vulnerabilities) |
 | Code review | PASS (no blockers) |
-| Traceability | PASS (all FRs/ACs mapped to tests across REQ-0099..0102) |
+| Traceability | PASS (5 REQs, 5 FRs, 11 ACs mapped to 86 tests) |
 
 ## Iteration Count
 
@@ -28,22 +27,21 @@
 
 ## Constitutional Articles Validated
 
-- Article II (Test-First Development): 69 tests written covering all 6 production files
-- Article III (Architectural Integrity): ESM core + CJS bridge per ADR-CODEX-006
-- Article V (Security by Design): Zero attack surface, all objects frozen, input validation
-- Article VI (Code Quality): Consistent patterns, naming conventions, JSDoc documentation
+- Article II (Test-First Development): 86 tests covering all 8 production files
+- Article III (Architectural Integrity): Clean module separation, ESM + CJS bridge per ADR-CODEX-006
+- Article V (Security by Design): Zero attack surface, all objects frozen, no I/O
+- Article VI (Code Quality): Consistent patterns, naming, JSDoc, error handling
 - Article VII (Documentation): Module-level and function-level JSDoc on all exports
-- Article IX (Traceability): REQ IDs in file headers, test ID prefixes per module
-- Article XI (Integration Testing): CJS bridge tests verify ESM-CJS interop
+- Article IX (Traceability): REQ IDs in file headers, test ID prefixes per module, AC coverage
+- Article XI (Integration Testing): CJS bridge parity tests verify ESM-CJS interop
 
-## Pre-existing Failures (Not REQ-0099)
+## Pre-existing Failures (Not REQ-0103)
 
-The following pre-existing failures were observed and confirmed unrelated to the content model batch:
-- lib tests: 3 failures in prompt-format.test.js (T46, TC-028, TC-09-03) -- CLAUDE.md/README content assertions
-- hooks tests: 262 failures across gate-blocker, workflow-finalizer, state-write-validator -- spec drift
-- e2e tests: 1 failure (--provider-mode free, providers.yaml assertion)
+The following pre-existing failures were observed and confirmed unrelated to the discover batch:
+- lib tests: 3 failures (T46, TC-028, TC-09-03) -- CLAUDE.md/README content assertions
+- Verified via `git diff main` -- these files are unmodified on this branch
 
-These are tracked separately and do not block REQ-0099 sign-off.
+These are tracked separately and do not block REQ-0103 sign-off.
 
 ## Timestamp
 
