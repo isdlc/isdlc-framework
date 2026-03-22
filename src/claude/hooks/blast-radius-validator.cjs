@@ -20,6 +20,19 @@ const {
     logHookEvent
 } = require('./lib/common.cjs');
 
+// REQ-0090: Bridge-first delegation to core validators
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', 'core', 'bridge', 'validators.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else { _coreBridge = null; }
+    } catch (e) { _coreBridge = null; }
+    return _coreBridge;
+}
+
 // ---------------------------------------------------------------------------
 // Constants -- Regex patterns for markdown table parsing (ADR-0002)
 // ---------------------------------------------------------------------------

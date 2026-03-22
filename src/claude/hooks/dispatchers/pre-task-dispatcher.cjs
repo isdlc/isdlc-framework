@@ -47,6 +47,22 @@ const {
     PHASE_PREFIXES
 } = require('../lib/common.cjs');
 
+const fs = require('fs');
+const path = require('path');
+
+// REQ-0093: Bridge-first delegation to core checkpoint-router for routing
+let _checkpointRouter;
+function _getCheckpointRouter() {
+    if (_checkpointRouter !== undefined) return _checkpointRouter;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'checkpoint-router.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _checkpointRouter = require(bridgePath);
+        } else { _checkpointRouter = null; }
+    } catch (e) { _checkpointRouter = null; }
+    return _checkpointRouter;
+}
+
 // Import hook check functions
 const { check: iterationCorridorCheck } = require('../iteration-corridor.cjs');
 const { check: skillValidatorCheck } = require('../skill-validator.cjs');

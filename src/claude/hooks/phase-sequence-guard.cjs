@@ -18,6 +18,22 @@ const {
     detectPhaseDelegation
 } = require('./lib/common.cjs');
 
+const fs = require('fs');
+const path = require('path');
+
+// REQ-0091: Bridge-first delegation to core workflow
+let _coreBridge;
+function _getCoreBridge() {
+    if (_coreBridge !== undefined) return _coreBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', 'core', 'bridge', 'workflow.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _coreBridge = require(bridgePath);
+        } else { _coreBridge = null; }
+    } catch (e) { _coreBridge = null; }
+    return _coreBridge;
+}
+
 /**
  * Dispatcher-compatible check function.
  * @param {object} ctx - { input, state, manifest, requirements, workflows }
