@@ -310,14 +310,14 @@
   - Phase 0. **Decision: ESM core + thin CJS bridge** for Claude hooks. External consumers (Codex, Antigravity) via npm package. ADR-CODEX-006.
 - [x] #152 Implement enforcement layering protocol [github: GH-152] → `REQ-0088-enforcement-layering-protocol/` -> [requirements](docs/requirements/REQ-0088-enforcement-layering-protocol/) **Completed**
   - **Completed:** 2026-03-22
-- #154 [ ] Hook conversion — core validators to provider-neutral modules [github: GH-154] → `REQ-0090-hook-conversion-core-validators/` -> [requirements](docs/requirements/REQ-0090-hook-conversion-core-validators/) **Analyzed**
-  - Phase 3. 9 hooks → bridge-first delegation to core validators. Enforcement layering pattern.
-- #155 [ ] Hook conversion — workflow guards to engine rules [github: GH-155] → `REQ-0091-hook-conversion-workflow-guards/` -> [requirements](docs/requirements/REQ-0091-hook-conversion-workflow-guards/) **Analyzed**
-  - Phase 3. 7 hooks → bridge-first delegation to core workflow engine rules.
-- #156 [ ] Hook conversion — observability to provider-neutral services [github: GH-156] → `REQ-0092-hook-conversion-observability/` -> [requirements](docs/requirements/REQ-0092-hook-conversion-observability/) **Analyzed**
-  - Phase 3. 6 hooks → core telemetry services. Non-blocking, simplest conversion.
-- #157 [ ] Dispatcher layer refactor [github: GH-157] → `REQ-0093-dispatcher-layer-refactor/` -> [requirements](docs/requirements/REQ-0093-dispatcher-layer-refactor/) **Analyzed**
-  - Phase 3. 5 dispatchers → core checkpoint routing. Tool matching stays Claude-specific.
+- [x] #154 Hook conversion — core validators to provider-neutral modules [github: GH-154] → `REQ-0090-hook-conversion-core-validators/` -> [requirements](docs/requirements/REQ-0090-hook-conversion-core-validators/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #155 Hook conversion — workflow guards to engine rules [github: GH-155] → `REQ-0091-hook-conversion-workflow-guards/` -> [requirements](docs/requirements/REQ-0091-hook-conversion-workflow-guards/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #156 Hook conversion — observability to provider-neutral services [github: GH-156] → `REQ-0092-hook-conversion-observability/` -> [requirements](docs/requirements/REQ-0092-hook-conversion-observability/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #157 Dispatcher layer refactor [github: GH-157] → `REQ-0093-dispatcher-layer-refactor/` -> [requirements](docs/requirements/REQ-0093-dispatcher-layer-refactor/) **Completed**
+  - **Completed:** 2026-03-22
 - #181 [ ] Codex governance checkpoint integration [github: GH-181] → `REQ-0117`
   - Phase 8. Depends on REQ-0071, REQ-0088, REQ-0114. Wire workflow-driven checkpoints; document irreducible gaps.
 - #187 [ ] Dual-provider runtime constraints [github: GH-187] → `REQ-0123`
@@ -479,6 +479,14 @@ Phase 9 (Verification)
 ## Completed
 
 ### 2026-03-22
+- [x] #154: Hook conversion — 9 core validator hooks to bridge-first delegation via core ESM validators. -> [requirements](docs/requirements/REQ-0090-hook-conversion-core-validators/) *(merged 0246662)*
+  - **Completed:** 2026-03-22
+- [x] #155: Hook conversion — 7 workflow guard hooks to bridge-first delegation via core engine rules. -> [requirements](docs/requirements/REQ-0091-hook-conversion-workflow-guards/) *(merged 0246662)*
+  - **Completed:** 2026-03-22
+- [x] #156: Hook conversion — 6 observability hooks to bridge-first delegation via core telemetry services. -> [requirements](docs/requirements/REQ-0092-hook-conversion-observability/) *(merged 0246662)*
+  - **Completed:** 2026-03-22
+- [x] #157: Dispatcher layer refactor — 5 dispatchers to core checkpoint routing with Claude-specific tool matching. -> [requirements](docs/requirements/REQ-0093-dispatcher-layer-refactor/) *(merged 0246662)*
+  - **Completed:** 2026-03-22
 - [x] #151: Create src/providers/claude/ adapter boundary — adapter-specific logic wrapping core services. -> [requirements](docs/requirements/REQ-0087-claude-adapter-boundary/) *(merged 43d4d09)*
   - **Completed:** 2026-03-22
 - [x] #152: Implement enforcement layering protocol — 5-layer model, core validates, hooks verify evidence. -> [requirements](docs/requirements/REQ-0088-enforcement-layering-protocol/) *(merged 43d4d09)*
