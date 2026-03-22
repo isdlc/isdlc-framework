@@ -1,0 +1,8 @@
+{
+  "expected_artifacts": ["coverage-report.html"],
+  "expected_state_mutations": {
+    "schema_version": 1,
+    "active_workflow.current_phase": "16-quality-loop",
+    "phases.16-quality-loop.status": "in-progress"
+  }
+}

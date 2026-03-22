@@ -1,0 +1,5 @@
+{
+  "action": "run_tests",
+  "test_command": "npm test",
+  "expected_coverage": 80
+}

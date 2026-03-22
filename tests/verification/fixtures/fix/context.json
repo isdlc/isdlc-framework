@@ -1,0 +1,5 @@
+{
+  "action": "implement_fix",
+  "target_file": "src/module.js",
+  "bug_description": "Null reference in handler"
+}

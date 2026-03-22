@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "fix",
+    "item_id": "BUG-0010",
+    "current_phase": "06-implementation"
+  },
+  "phases": {
+    "01-requirements": { "status": "complete" },
+    "02-architecture": { "status": "complete" },
+    "06-implementation": { "status": "in-progress" }
+  },
+  "workflow_history": []
+}

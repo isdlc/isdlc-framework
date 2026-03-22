@@ -1,0 +1,6 @@
+{
+  "expected_artifacts": ["test-evaluation-report.md"],
+  "expected_state_mutations": {
+    "schema_version": 1
+  }
+}

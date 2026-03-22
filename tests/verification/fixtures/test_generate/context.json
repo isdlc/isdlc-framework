@@ -1,0 +1,5 @@
+{
+  "action": "generate_tests",
+  "target_module": "src/auth/login.js",
+  "coverage_target": 80
+}

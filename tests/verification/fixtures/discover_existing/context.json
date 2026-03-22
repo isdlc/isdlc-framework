@@ -1,0 +1,5 @@
+{
+  "action": "discover",
+  "workflow_type": "discover_existing",
+  "project_root": "/tmp/test-project"
+}

@@ -1,0 +1,6 @@
+{
+  "action": "advance_phase",
+  "from_phase": "03-design",
+  "to_phase": "04-tracing",
+  "artifacts_produced": ["module-design.md"]
+}

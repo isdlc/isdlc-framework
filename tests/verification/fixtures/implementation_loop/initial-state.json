@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "feature",
+    "item_id": "REQ-0060",
+    "current_phase": "06-implementation"
+  },
+  "phases": {
+    "05-test-strategy": { "status": "complete" },
+    "06-implementation": {
+      "status": "in-progress",
+      "iterations": { "current": 2, "max": 10 }
+    }
+  },
+  "workflow_history": []
+}

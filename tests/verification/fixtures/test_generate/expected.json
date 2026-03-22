@@ -1,0 +1,7 @@
+{
+  "expected_artifacts": ["test-strategy.md"],
+  "expected_state_mutations": {
+    "schema_version": 1,
+    "active_workflow.type": "test_generate"
+  }
+}

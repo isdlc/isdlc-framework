@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "feature",
+    "item_id": "REQ-0001",
+    "current_phase": "03-design"
+  },
+  "phases": {
+    "01-requirements": { "status": "complete" },
+    "02-architecture": { "status": "complete" },
+    "03-design": { "status": "in-progress" }
+  },
+  "workflow_history": []
+}

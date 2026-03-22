@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "test_generate",
+    "item_id": "TST-0001",
+    "current_phase": "05-test-strategy"
+  },
+  "phases": {
+    "05-test-strategy": { "status": "in-progress" }
+  },
+  "workflow_history": []
+}

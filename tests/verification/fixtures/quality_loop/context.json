@@ -1,0 +1,5 @@
+{
+  "action": "quality_check",
+  "checks_passed": ["linting", "type-check"],
+  "checks_failed": ["coverage"]
+}

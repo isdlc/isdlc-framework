@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "analyze",
+    "item_id": "REQ-0050",
+    "current_phase": "01-requirements"
+  },
+  "phases": {
+    "01-requirements": { "status": "in-progress" }
+  },
+  "workflow_history": []
+}

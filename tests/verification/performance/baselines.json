@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-03-22T22:30:00.000Z",
+  "entries": [
+    {
+      "operation": "migrateState",
+      "median_ms": 1,
+      "threshold_ms": 20,
+      "samples": 10
+    },
+    {
+      "operation": "getTeamSpec",
+      "median_ms": 0.5,
+      "threshold_ms": 10,
+      "samples": 10
+    },
+    {
+      "operation": "getProviderSupportMatrix",
+      "median_ms": 0.2,
+      "threshold_ms": 10,
+      "samples": 10
+    },
+    {
+      "operation": "getGovernanceModel",
+      "median_ms": 0.2,
+      "threshold_ms": 10,
+      "samples": 10
+    },
+    {
+      "operation": "getGovernanceDeltas",
+      "median_ms": 1,
+      "threshold_ms": 20,
+      "samples": 10
+    },
+    {
+      "operation": "validateCheckpoint",
+      "median_ms": 1,
+      "threshold_ms": 100,
+      "samples": 10
+    }
+  ]
+}

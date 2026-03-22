@@ -1,0 +1,7 @@
+{
+  "action": "iterate",
+  "iteration": 3,
+  "test_result": "FAILED",
+  "failures": 2,
+  "errors": ["TypeError: Cannot read property 'id' of undefined"]
+}

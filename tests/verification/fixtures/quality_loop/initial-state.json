@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "active_workflow": {
+    "type": "feature",
+    "item_id": "REQ-0070",
+    "current_phase": "16-quality-loop"
+  },
+  "phases": {
+    "08-code-review": { "status": "complete" },
+    "16-quality-loop": {
+      "status": "in-progress",
+      "iterations": { "current": 1, "max": 5 }
+    }
+  },
+  "workflow_history": []
+}
