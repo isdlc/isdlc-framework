@@ -480,14 +480,18 @@ Phase 10 (Provider-Neutral Orchestration)
   - **Completed:** 2026-03-22
 - [x] #201 Codex ProviderRuntime adapter [github: GH-201] → `REQ-0135` -> [requirements](docs/requirements/REQ-0135-codex-runtime-adapter/) **Completed**
   - **Completed:** 2026-03-22
-- #202 [ ] Provider instruction generation [github: GH-202] → `REQ-0136` -> [requirements](docs/requirements/REQ-0136-provider-instruction-generation/) **Analyzed**
-  - Phase 10. Depends on REQ-0128. CLAUDE.md / CODEX.md / .cursorrules / .windsurfrules generation.
-- #203 [ ] Unified CLI with provider auto-detection [github: GH-203] → `REQ-0137` -> [requirements](docs/requirements/REQ-0137-unified-cli/) **Analyzed**
-  - Phase 10. Depends on REQ-0134, REQ-0135, REQ-0136. Single bin/isdlc.js entry point.
+- [x] #202 Provider instruction generation [github: GH-202] → `REQ-0136` -> [requirements](docs/requirements/REQ-0136-provider-instruction-generation/) **Completed**
+  - **Completed:** 2026-03-22
+- [x] #203 Unified CLI with provider auto-detection [github: GH-203] → `REQ-0137` -> [requirements](docs/requirements/REQ-0137-unified-cli/) **Completed**
+  - **Completed:** 2026-03-22
 
 ## Completed
 
 ### 2026-03-22
+- [x] #202: Provider instruction generation -> [requirements](docs/requirements/REQ-0136-provider-instruction-generation/) *(merged a3af941)*
+  - **Completed:** 2026-03-22
+- [x] #203: Unified CLI with provider auto-detection -> [requirements](docs/requirements/REQ-0137-unified-cli/) *(merged a3af941)*
+  - **Completed:** 2026-03-22
 - [x] #200: Claude ProviderRuntime adapter -> [requirements](docs/requirements/REQ-0134-claude-runtime-adapter/) *(merged 3557a07)*
   - **Completed:** 2026-03-22
 - [x] #201: Codex ProviderRuntime adapter -> [requirements](docs/requirements/REQ-0135-codex-runtime-adapter/) *(merged 3557a07)*
