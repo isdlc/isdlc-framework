@@ -1,0 +1,10 @@
+{
+  "id": "REQ-0137",
+  "slug": "REQ-0137-unified-cli",
+  "status": "analyzed",
+  "source": "github",
+  "source_id": "GH-203",
+  "codebase_hash": "7c39814",
+  "acceptance": "2026-03-23T00:30:00.000Z",
+  "analysis_status": "complete"
+}
