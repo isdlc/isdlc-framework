@@ -19,6 +19,8 @@
     "specification"
   ],
   "codebase_hash": "ecc942b",
+  "build_started_at": "2026-03-22T02:10:00.000Z",
+  "workflow_type": "feature",
   "acceptance": {
     "accepted_at": "2026-03-22T02:05:00.000Z",
     "domains": {

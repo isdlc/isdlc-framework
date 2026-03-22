@@ -16,6 +16,28 @@ const https = require('https');
 const { getProjectRoot, readState, writeState } = require('./common.cjs');
 
 // ============================================================================
+// Core Bridge (REQ-0127): Lazy-load the extracted core providers bridge.
+// When available, functions delegate to src/core/providers/ (the canonical
+// implementation). Falls back to the inline code below when the bridge
+// is unreachable (e.g., when provider-utils.cjs is run standalone).
+// ============================================================================
+let _providersBridge;
+function _getProvidersBridge() {
+    if (_providersBridge !== undefined) return _providersBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'providers.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _providersBridge = require(bridgePath);
+        } else {
+            _providersBridge = null;
+        }
+    } catch (e) {
+        _providersBridge = null;
+    }
+    return _providersBridge;
+}
+
+// ============================================================================
 // YAML PARSING (Minimal implementation - no external dependency)
 // ============================================================================
 
@@ -385,6 +407,11 @@ function resolveModelId(config, providerName, modelAlias) {
  * @returns {object} Selection result {provider, model, source, rationale, fallback}
  */
 function selectProvider(config, state, context) {
+    // Bridge-first delegation (REQ-0127): try core providers if loaded
+    const bridge = _getProvidersBridge();
+    if (bridge && bridge._syncRouting) {
+        try { return bridge.selectProvider(config, state, context); } catch (e) { /* fallback to inline */ }
+    }
     const { subagent_type } = context;
     // BUG-0005 (AC-03f): prefer active_workflow.current_phase over top-level
     const currentPhase = state?.active_workflow?.current_phase || state?.current_phase || 'unknown';
