@@ -318,8 +318,6 @@
   - **Completed:** 2026-03-22
 - [x] #157 Dispatcher layer refactor [github: GH-157] → `REQ-0093-dispatcher-layer-refactor/` -> [requirements](docs/requirements/REQ-0093-dispatcher-layer-refactor/) **Completed**
   - **Completed:** 2026-03-22
-- #181 [ ] Codex governance checkpoint integration [github: GH-181] → `REQ-0117` -> [requirements](docs/requirements/REQ-0117-codex-governance-checkpoints/) **Analyzed**
-  - Phase 8. Depends on REQ-0071, REQ-0088, REQ-0114. Wire workflow-driven checkpoints; document irreducible gaps.
 - #187 [ ] Dual-provider runtime constraints [github: GH-187] → `REQ-0123`
   - Phase 0. Depends on REQ-0070. One active provider per workflow; cross-provider resume rules.
 
@@ -370,12 +368,6 @@
   - **Completed:** 2026-03-22
 - [x] #162 Debate team orchestration pattern [github: GH-162] → `REQ-0098` -> [requirements](docs/requirements/REQ-0098-debate-team-orchestration-pattern/) **Completed**
   - **Completed:** 2026-03-22
-- #178 [ ] Create src/providers/codex/ adapter [github: GH-178] → `REQ-0114` -> [requirements](docs/requirements/REQ-0114-codex-adapter/) **Analyzed**
-  - Phase 8. Depends on REQ-0087, REQ-0094, REQ-0098. Runtime projection, instruction packaging, commands, teams.
-- #179 [ ] Codex installation and doctor paths [github: GH-179] → `REQ-0115` -> [requirements](docs/requirements/REQ-0115-codex-installer-doctor/) **Analyzed**
-  - Phase 8. Depends on REQ-0089, REQ-0114.
-- #180 [ ] Codex instruction projection service [github: GH-180] → `REQ-0116` -> [requirements](docs/requirements/REQ-0116-codex-instruction-projection/) **Analyzed**
-  - Phase 8. Depends on REQ-0085, REQ-0114. Per-task/subagent/session projection. Session cache compatibility.
 - #182 [ ] Parity verification suite [github: GH-182] → `REQ-0118`
   - Phase 9. Depends on REQ-0087, REQ-0114. state.json, artifacts, BACKLOG.md, meta.json, memory, validator outcomes.
 
@@ -466,6 +458,14 @@ Phase 9 (Verification)
 ## Completed
 
 ### 2026-03-22
+- [x] #178: Create src/providers/codex/ adapter -> [requirements](docs/requirements/REQ-0114-codex-adapter/) *(merged 71ab3a5)*
+  - **Completed:** 2026-03-22
+- [x] #179: Codex installation and doctor paths -> [requirements](docs/requirements/REQ-0115-codex-installer-doctor/) *(merged 71ab3a5)*
+  - **Completed:** 2026-03-22
+- [x] #180: Codex instruction projection service -> [requirements](docs/requirements/REQ-0116-codex-instruction-projection/) *(merged 71ab3a5)*
+  - **Completed:** 2026-03-22
+- [x] #181: Codex governance checkpoint integration -> [requirements](docs/requirements/REQ-0117-codex-governance-checkpoints/) *(merged 71ab3a5)*
+  - **Completed:** 2026-03-22
 - [x] #167: Discover execution model design -> [requirements](docs/requirements/REQ-0103-discover-execution-model/) *(merged e16e18b)*
   - **Completed:** 2026-03-22
 - [x] #168: Discover interactive UX layer -> [requirements](docs/requirements/REQ-0104-discover-interactive-ux/) *(merged e16e18b)*
