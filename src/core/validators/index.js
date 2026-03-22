@@ -48,3 +48,7 @@ export {
   buildCriticalConstraints,
   buildConstraintReminder
 } from './gate-requirements.js';
+
+export {
+  validateAndProduceEvidence
+} from './enforcement.js';
