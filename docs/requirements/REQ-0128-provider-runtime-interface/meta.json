@@ -1,0 +1,31 @@
+{
+  "source": "github",
+  "source_id": "GH-194",
+  "slug": "REQ-0128-provider-runtime-interface",
+  "created_at": "2026-03-22T23:00:00.000Z",
+  "analysis_status": "complete",
+  "phases_completed": [
+    "requirements",
+    "architecture",
+    "design",
+    "traceability",
+    "summary"
+  ],
+  "topics_covered": [
+    "requirements",
+    "architecture",
+    "design",
+    "traceability",
+    "summary"
+  ],
+  "codebase_hash": "369bf01",
+  "acceptance": {
+    "accepted_at": "2026-03-22T23:05:00.000Z",
+    "domains_accepted": [
+      "requirements",
+      "architecture",
+      "design"
+    ],
+    "amendment_cycles": 0
+  }
+}

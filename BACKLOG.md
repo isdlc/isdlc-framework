@@ -453,7 +453,37 @@ Phase 8 (Codex Adapter)
 
 Phase 9 (Verification)
   REQ-0118-0122 (parity, fixtures, migration, performance, matrix)
+
+Phase 10 (Provider-Neutral Orchestration)
+  REQ-0128 (ProviderRuntime interface) ──> REQ-0129-0133 (orchestrators, parallel)
+                                      ──> REQ-0134 (Claude runtime)
+                                      ──> REQ-0135 (Codex runtime)
+  REQ-0129-0133 + REQ-0134-0135 ──> REQ-0136 (instruction generation)
+  REQ-0136 ──> REQ-0137 (unified CLI)
 ```
+
+**Workstream G — Provider-Neutral Orchestration**
+
+- #194 [ ] ProviderRuntime interface contract [github: GH-194] → `REQ-0128` -> [requirements](docs/requirements/REQ-0128-provider-runtime-interface/) **Analyzed**
+  - Phase 10. Interface: executeTask(), executeParallel(), presentInteractive(), readUserResponse(). Each provider implements this.
+- #195 [ ] Provider-neutral phase-loop orchestrator [github: GH-195] → `REQ-0129`
+  - Phase 10. Depends on REQ-0128. Extracts Phase-Loop Controller from isdlc.md into core.
+- #196 [ ] Provider-neutral fan-out orchestrator [github: GH-196] → `REQ-0130`
+  - Phase 10. Depends on REQ-0128. Parallel sub-agent dispatch with merge policy.
+- #197 [ ] Provider-neutral dual-track orchestrator [github: GH-197] → `REQ-0131`
+  - Phase 10. Depends on REQ-0128. Track A/B parallel with retry.
+- #198 [ ] Provider-neutral discover orchestrator [github: GH-198] → `REQ-0132`
+  - Phase 10. Depends on REQ-0128. Discover flow: mode → steps → agents → state.
+- #199 [ ] Provider-neutral analyze orchestrator [github: GH-199] → `REQ-0133`
+  - Phase 10. Depends on REQ-0128. Analyze flow: routing → roundtable → confirmation → finalization.
+- #200 [ ] Claude ProviderRuntime adapter [github: GH-200] → `REQ-0134`
+  - Phase 10. Depends on REQ-0128. Task tool + agent .md delegation.
+- #201 [ ] Codex ProviderRuntime adapter [github: GH-201] → `REQ-0135`
+  - Phase 10. Depends on REQ-0128. codex exec + instruction prompts.
+- #202 [ ] Provider instruction generation [github: GH-202] → `REQ-0136`
+  - Phase 10. Depends on REQ-0128. CLAUDE.md / CODEX.md / .cursorrules / .windsurfrules generation.
+- #203 [ ] Unified CLI with provider auto-detection [github: GH-203] → `REQ-0137`
+  - Phase 10. Depends on REQ-0134, REQ-0135, REQ-0136. Single bin/isdlc.js entry point.
 
 ## Completed
 
