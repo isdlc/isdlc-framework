@@ -160,6 +160,14 @@ export async function installCore(projectRoot, options = {}) {
     await writeJson(path.join(isdlcTarget, 'state.json'), state);
   }
 
+  // --- .codex/ directory (REQ-0138 FR-009) ---
+  if (providerMode.includes('codex')) {
+    const codexDir = path.join(projectRoot, '.codex');
+    if (!dryRun) {
+      await ensureDir(codexDir);
+    }
+  }
+
   // --- BACKLOG.md ---
   const backlogPath = path.join(projectRoot, 'BACKLOG.md');
   if (!(await exists(backlogPath))) {

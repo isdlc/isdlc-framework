@@ -1,7 +1,7 @@
 /**
  * Codex Adapter — Projection
  * ============================
- * Codex instruction projection management (REQ-0114, REQ-0116).
+ * Codex instruction projection management (REQ-0114, REQ-0116, REQ-0138).
  *
  * Manages provider configuration, instruction directory paths, and
  * the instruction projection service that assembles core models into
@@ -10,6 +10,8 @@
  * @module src/providers/codex/projection
  */
 
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { getTeamSpec, listTeamTypes } from '../../core/teams/registry.js';
 import { getTeamInstancesByPhase } from '../../core/teams/instance-registry.js';
 import { getAgentClassification } from '../../core/content/agent-classification.js';
@@ -52,6 +54,31 @@ export function getProjectionPaths() {
     providerConfig: '.codex/config.json'
   });
 }
+
+// ---------------------------------------------------------------------------
+// FR-007 (REQ-0138): Session Cache Section Parser
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse session cache content into named sections using delimiter comments.
+ * Sections are delimited by `<!-- SECTION: NAME -->` and `<!-- /SECTION: NAME -->`.
+ * Names must match between opening and closing tags.
+ *
+ * @param {string} content - Raw session-cache.md content
+ * @returns {Object<string, string>} Map of section name -> trimmed content
+ */
+export function parseCacheSections(content) {
+  const sections = {};
+  const regex = /<!-- SECTION: (\w+) -->([\s\S]*?)<!-- \/SECTION: \1 -->/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    sections[match[1]] = match[2].trim();
+  }
+  return sections;
+}
+
+/** Sections to inject from session cache (REQ-0138 FR-007) */
+const CACHE_SECTIONS_TO_INJECT = ['CONSTITUTION', 'WORKFLOW_CONFIG', 'SKILL_INDEX', 'ITERATION_REQUIREMENTS'];
 
 // ---------------------------------------------------------------------------
 // FR-001 (REQ-0116): Instruction Projection Service
@@ -175,7 +202,7 @@ export function projectInstructions(phase, agent, options = {}) {
   }
 
   // 5. Assemble markdown
-  const content = assembleMarkdown({
+  let content = assembleMarkdown({
     teamSpec,
     teamInstances,
     agentClassification,
@@ -184,6 +211,26 @@ export function projectInstructions(phase, agent, options = {}) {
     agent
   });
 
+  // 6. Inject session cache sections if available (REQ-0138 FR-007)
+  const cacheSectionsInjected = [];
+  if (options.projectRoot) {
+    try {
+      const cachePath = join(options.projectRoot, '.isdlc', 'session-cache.md');
+      if (existsSync(cachePath)) {
+        const cacheContent = readFileSync(cachePath, 'utf-8');
+        const sections = parseCacheSections(cacheContent);
+        for (const sectionName of CACHE_SECTIONS_TO_INJECT) {
+          if (sections[sectionName]) {
+            content += `\n\n---\n\n## Cached: ${sectionName}\n\n${sections[sectionName]}`;
+            cacheSectionsInjected.push(sectionName);
+          }
+        }
+      }
+    } catch {
+      // Fail-open: missing or malformed cache file is non-fatal (REQ-0138 FR-008)
+    }
+  }
+
   return {
     content,
     metadata: {
@@ -191,6 +238,7 @@ export function projectInstructions(phase, agent, options = {}) {
       agent,
       skills_injected: (injectionPlan.merged || []).map(s => s.skillId || s.name),
       team_type: teamSpec?.team_type ?? 'unknown',
+      ...(cacheSectionsInjected.length > 0 && { cache_sections_injected: cacheSectionsInjected }),
       ...(warnings.length > 0 && { warnings })
     }
   };

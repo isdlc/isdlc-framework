@@ -27,5 +27,7 @@
       "design"
     ],
     "amendment_cycles": 0
-  }
+  },
+  "build_started_at": "2026-03-24T01:30:00.000Z",
+  "workflow_type": "feature"
 }

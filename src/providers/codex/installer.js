@@ -2,6 +2,7 @@
  * Codex Provider Installer — Codex-Specific Installation Logic
  * ==============================================================
  * REQ-0115: Codex Installation and Doctor Paths
+ * REQ-0138: AGENTS.md template copy and backup/refresh
  *
  * Implements install/update/uninstall/doctor for the Codex provider.
  * Simpler than the Claude installer: no hooks, no settings.json merge,
@@ -19,7 +20,21 @@ import {
   readdirSync, rmSync, statSync
 } from 'node:fs';
 
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 import { getCodexConfig, getProjectionPaths } from './projection.js';
+
+/**
+ * Resolve the path to the AGENTS.md.template shipped with the package.
+ * Located at src/codex/AGENTS.md.template relative to the package root.
+ * @returns {string} Absolute path to AGENTS.md.template
+ */
+function getAgentsTemplatePath() {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  // From src/providers/codex/ -> src/codex/
+  return join(__dirname, '..', '..', 'codex', 'AGENTS.md.template');
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -151,6 +166,17 @@ export async function installCodex(projectRoot, options = {}) {
     writeConfigMeta(configPath, configData);
     filesCreated.push(paths.providerConfig);
 
+    // 5. Copy AGENTS.md.template to project root as AGENTS.md (REQ-0138 FR-006)
+    const agentsTarget = join(projectRoot, 'AGENTS.md');
+    if (!existsSync(agentsTarget)) {
+      const templatePath = getAgentsTemplatePath();
+      if (existsSync(templatePath)) {
+        const templateContent = readFileSync(templatePath, 'utf-8');
+        writeFileSync(agentsTarget, templateContent, 'utf-8');
+        filesCreated.push('AGENTS.md');
+      }
+    }
+
   } catch (err) {
     errors.push(err.message);
   }
@@ -218,6 +244,19 @@ export async function updateCodex(projectRoot, options = {}) {
       fileHashes: newHashes,
       updatedAt: new Date().toISOString()
     });
+
+    // Backup and refresh AGENTS.md at project root (REQ-0138 FR-006)
+    const agentsTarget = join(projectRoot, 'AGENTS.md');
+    const templatePath = getAgentsTemplatePath();
+    if (existsSync(templatePath)) {
+      const templateContent = readFileSync(templatePath, 'utf-8');
+      if (existsSync(agentsTarget)) {
+        const existingContent = readFileSync(agentsTarget, 'utf-8');
+        writeFileSync(join(projectRoot, 'AGENTS.md.backup'), existingContent, 'utf-8');
+      }
+      writeFileSync(agentsTarget, templateContent, 'utf-8');
+      filesUpdated.push('AGENTS.md');
+    }
 
   } catch (err) {
     errors.push(err.message);

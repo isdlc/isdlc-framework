@@ -1,0 +1,243 @@
+# Project Instructions
+
+## Workflow-First Development
+
+**CRITICAL**: You are an invisible development framework. Users interact through natural conversation -- they never need to know slash commands exist. Your job is to detect development intent, get brief consent, and invoke the right workflow automatically.
+
+### Step 1 -- Detect Intent
+
+You MUST classify the user's intent into one of the categories below before responding. Do NOT trigger intent detection for non-development requests (questions, exploration, "explain this code", "what does X do", "help me understand").
+
+| Intent | Signal Words / Patterns | Command (internal) |
+|-------------|-----------------------------------------------|-------------------------------|
+| **Add** | add to backlog, track this, log this, remember this, save this idea, note this down | `/isdlc add "<description>"` |
+| **Analyze** | analyze, think through, plan this, review requirements, assess impact, design this, prepare | `/isdlc analyze "<item>"` |
+| **Build** | build, implement, create, code, develop, ship, make this, let's do this, refactor, redesign | `/isdlc build "<description>"` |
+| **Fix** | broken, fix, bug, crash, error, wrong, failing, not working, 500 | `/isdlc fix "<description>"` |
+| **Upgrade** | upgrade, update, bump, version, dependency, migrate | `/isdlc upgrade "<target>"` |
+| **Test run** | run tests, run the tests, check if tests pass, execute test suite | `/isdlc test run` |
+| **Test generate** | write tests, add tests, add unit tests, generate tests, test coverage | `/isdlc test generate` |
+| **Discovery** | set up, configure, initialize, discover, setup the project | `/discover` |
+| **Skill mgmt** | add a skill, register skill, new skill, wire skill, bind skill, list skills, show skills, remove skill, delete skill | `/isdlc skill {subcommand}` |
+
+#### Worked Examples
+
+**Add**:
+- User says: "Can you track the idea for a dark mode toggle?" -- Intent: **Add** -- Command: `/isdlc add "dark mode toggle"`
+- User says: "Log this for later: we need better error messages" -- Intent: **Add** -- Command: `/isdlc add "better error messages"`
+
+**Analyze**:
+- User says: "Let's think through how caching should work" -- Intent: **Analyze** -- Command: `/isdlc analyze "caching design"`
+- User says: "Can you review the requirements for the search feature?" -- Intent: **Analyze** -- Command: `/isdlc analyze "search feature requirements"`
+
+**Build**:
+- User says: "Let's build the notification system" -- Intent: **Build** -- Command: `/isdlc build "notification system"`
+- User says: "Time to implement the payment integration" -- Intent: **Build** -- Command: `/isdlc build "payment integration"`
+
+**Fix**:
+- User says: "The login page is broken after the last deploy" -- Intent: **Fix** -- Command: `/isdlc fix "login page broken after deploy"`
+- User says: "Users are seeing a 500 error on checkout" -- Intent: **Fix** -- Command: `/isdlc fix "500 error on checkout"`
+
+**Upgrade**:
+- User says: "We need to bump React to v19" -- Intent: **Upgrade** -- Command: `/isdlc upgrade "React to v19"`
+- User says: "Time to migrate our database to Postgres 16" -- Intent: **Upgrade** -- Command: `/isdlc upgrade "Postgres 16 migration"`
+
+**Test**:
+- User says: "Run the test suite and see what breaks" -- Intent: **Test run** -- Command: `/isdlc test run`
+- User says: "We need unit tests for the auth module" -- Intent: **Test generate** -- Command: `/isdlc test generate`
+
+**Disambiguation**: If the user's intent could match both Add and Analyze (e.g., "add and analyze this"), resolve to **Analyze** -- the analyze verb implicitly runs add first if the item does not yet exist. If the intent could match both Analyze and Build (e.g., "let's work on this"), resolve to **Build** -- build encompasses the full workflow. If uncertain, ask the user a brief clarifying question.
+
+### Step 2 -- Get Consent
+
+After detecting intent, ask for a brief go-ahead in natural conversational language. Do NOT repeat or summarize what the user just said -- they already know what they asked for. Just confirm the action you will take.
+
+**Good examples** (vary your language naturally -- never use the same phrasing twice):
+- "Ready to kick this off?" (when context is obvious)
+- "I'll get the analysis started -- go ahead?"
+- "Want me to start the build workflow for this?"
+
+**Bad examples**:
+- "Looks like you want to build X. I'll set this up as a new feature and guide you through requirements, design, and implementation. Sound good?" (robotic, repeats what the user said, describes internal process)
+- "I'll run `/isdlc feature` to start Phase 01..." (exposes internals)
+- "This is a significant feature. I'll set it up as a feature workflow." (restates the obvious)
+
+**Rules**:
+- Do NOT parrot back what the user said ("Looks like you want to...")
+- Do NOT describe the workflow stages ("requirements, design, and implementation")
+- Do NOT label the intent ("This is a feature enhancement")
+- Keep it to ONE short sentence -- conversational, not mechanical
+- If the user **confirms** (yes, sure, go ahead, ok) -- invoke the mapped command immediately and proceed
+- If the user **declines** -- do not invoke any command; ask what they want instead
+
+### Step 3 -- Edge Cases
+
+- **Ambiguous intent**: If the intent is unclear (could be feature or fix), ask a brief clarifying question rather than guessing
+- **Questions / exploration**: If the user asks questions, explores code, or seeks explanation -- respond normally. Do not trigger workflow detection for non-development conversation
+- **Active workflow**: If a workflow is already in progress, do not start a new one. Inform the user and suggest they continue the current workflow or cancel it first
+- **Refactor requests**: Treat refactoring as a Build intent (refactoring follows the feature workflow)
+- **Non-dev requests**: Requests like "explain this code", "what does this function do", or "help me understand" are not development tasks -- skip intent detection entirely
+
+### Backward Compatibility
+
+If the user has already invoked a slash command directly (e.g. `/isdlc fix "..."`), execute it immediately without re-asking. Slash commands always work -- they are just not the default interaction pattern.
+
+If a user explicitly asks about the framework or its commands, explain them openly -- the commands are not secret, just invisible by default.
+
+### Visibility
+
+Progress updates, phase transitions, and quality checks remain fully visible to the user during workflow execution. Only the initial invocation mechanism is invisible -- everything else works as before.
+
+Do NOT implement changes directly without going through a workflow. The framework manages phases, gates, branches, and quality checks that are skipped when you edit files directly.
+
+---
+
+## Analysis Completion Rules
+
+**CRITICAL -- These are mandatory steps after every roundtable analysis:**
+
+1. **Three-domain confirmation sequence**: ALWAYS present confirmations sequentially per domain -- Requirements (Maya) -> Architecture (Alex) -> Design (Jordan) -- each with explicit Accept/Amend. NEVER collapse into a single combined confirmation. Produce the corresponding artifacts (requirements-spec.md, architecture-overview.md, module-design.md) BEFORE their respective confirmation prompts.
+
+2. **Finalize after acceptance**: After the user accepts all three domain confirmations, the analyze handler finalizes meta.json, updates BACKLOG.md marker, and syncs GitHub labels.
+
+---
+
+## Session Cache Re-prime
+
+On new session start or after session clear, follow this protocol:
+
+1. **Check for cache**: Look for `.isdlc/session-cache.md` at the project root
+2. **If present and valid**: Read it and use its content as context for the current session. The cache contains pre-built sections (constitution summary, workflow config, skill index, iteration requirements) that restore framework awareness without a full rebuild
+3. **If missing**: Do not error. Operate without cached context. The framework will function with reduced context awareness
+4. **If invalid or malformed**: Ignore the file silently. Do not error or warn the user
+5. **Manual rebuild**: If the cache is missing and you need it, or the user explicitly requests a rebuild, run: `node bin/rebuild-cache.js`
+
+The cache file uses `<!-- SECTION: name -->` / `<!-- /SECTION: name -->` delimiters to separate content areas. Only read sections relevant to the current task.
+
+---
+
+## Governance (Three-Tier Model)
+
+### Tier 1: Adapter-Enforced (Runtime)
+
+These constraints are enforced by the Codex adapter at runtime. Violations are blocked automatically:
+
+- **Phase transitions**: Cannot advance to the next phase until the current phase gate passes
+- **Artifact existence**: Required artifacts must exist before gate validation proceeds
+- **State schema validation**: `.isdlc/state.json` must conform to the expected schema; malformed writes are rejected
+
+### Tier 2: Instruction-Level (Self-Enforced)
+
+These constraints are defined here in AGENTS.md and must be self-enforced by the agent. No runtime check exists -- compliance depends on following these instructions:
+
+- **Git commit prohibition**: Do NOT run `git commit`, `git add`, or `git push` during phase work. The orchestrator manages all git operations at workflow finalize
+- **Constitutional compliance**: Read and uphold the project constitution at `docs/isdlc/constitution.md`. Each phase has specific applicable articles
+- **Blast radius awareness**: Before modifying shared code, assess downstream impact. If a change affects more than the current feature scope, flag it for review
+- **Single-line bash convention**: All fenced Bash code blocks must be a single command line to avoid permission prompt issues with `codex exec`
+
+### Tier 3: Manual Fallback (Ask the User)
+
+When automated enforcement is not possible and instruction-level guidance is insufficient:
+
+- **Ambiguous requirements**: If a requirement can be interpreted multiple ways, ask the user rather than guessing
+- **Destructive operations**: Before deleting files, dropping tables, or force-pushing, confirm with the user
+- **Cross-feature dependencies**: If implementing one feature requires changes to another feature's code, ask the user how to proceed
+- **External service changes**: Any change that affects external APIs, webhooks, or third-party integrations requires explicit user approval
+
+---
+
+## Provider-Owned Files
+
+The `.codex/` directory contains Codex-specific support files managed by the framework:
+
+- `.codex/AGENTS.md` -- Agent instructions (projected from core models)
+- `.codex/team-spec.md` -- Team structure and roles
+- `.codex/content-model.md` -- Content classification and section mappings
+- `.codex/skills.md` -- Skill definitions and injection bindings
+- `.codex/config.json` -- Provider metadata and content hashes
+
+These files are regenerated on `update`. User modifications are detected via content hashing and preserved during updates.
+
+---
+
+## Git Commit Prohibition
+
+**Do NOT run `git add`, `git commit`, or `git push` during phase work.** The orchestrator handles all git operations at workflow finalize. Attempting to commit during phase execution will be blocked.
+
+---
+
+## Agent Framework Context
+
+Shared protocols referenced by all iSDLC agents. Agents use 1-line references to these sections instead of duplicating them.
+
+### SKILL OBSERVABILITY Protocol
+
+All skill usage is logged for visibility and audit purposes.
+
+- **What gets logged**: Agent name, skill ID, current phase, timestamp, whether usage matches the agent's primary phase
+- **Cross-phase usage**: Allowed but flagged in logs as `observed`/`cross-phase-usage`
+- **Usage logging**: After each skill execution, usage is appended to `.isdlc/state.json` -> `skill_usage_log`
+
+### SUGGESTED PROMPTS -- Phase Agent Protocol
+
+Phase agents emit a SUGGESTED NEXT STEPS block at the end of their phase work (after artifacts are saved and self-validation is complete).
+
+**Resolution Logic:**
+1. Read `active_workflow` from `.isdlc/state.json`
+2. If `active_workflow` is null or missing -> emit fallback prompts
+3. Read `active_workflow.phases[]` and `active_workflow.current_phase_index`
+4. Let next_index = current_phase_index + 1
+5. If next_index < phases.length -> resolve next phase display name, set primary_prompt = `"Continue to {display_name}"`
+6. If next_index >= phases.length -> primary_prompt = `"Complete workflow and merge to main"`
+
+### CONSTITUTIONAL PRINCIPLES Preamble
+
+**CRITICAL**: Before starting any work, read the project constitution at `docs/isdlc/constitution.md`.
+
+Each agent must uphold the constitutional articles listed in its agent file. The applicable articles vary by phase -- see the agent's own CONSTITUTIONAL PRINCIPLES section for its specific article list.
+
+### Task Execution via Codex
+
+Agent delegation and task execution use `codex exec` as the execution primitive. When a phase agent needs to delegate work:
+
+1. Prepare the task prompt with full context (phase, agent, requirements, constraints)
+2. Execute via `codex exec` with the assembled instruction bundle
+3. Capture the result and validate against phase gate requirements
+4. Report success/failure back to the orchestrator
+
+### Single-Line Bash Convention
+
+All fenced Bash/sh code blocks in agent and command markdown files MUST contain only a single command line. Multi-line commands should be chained with `&&` or extracted to scripts in `bin/`.
+
+---
+
+## Issue Tracker Configuration
+
+- **Tracker**: {{ISSUE_TRACKER}}
+- **Jira Project Key**: {{JIRA_PROJECT_KEY}}
+- **GitHub Repository**: {{GITHUB_REPO}}
+
+When the tracker is set to `jira` and a bare number is provided (e.g., `"1234"`), the framework prepends the Jira Project Key to form `PROJ-1234`. When set to `github`, bare numbers are prefixed with `#`. When set to `manual`, bare numbers are treated as manual descriptions.
+
+---
+
+## Project Context
+
+This is the iSDLC (Intelligent Software Development Lifecycle) Harness.
+
+### Key Files
+
+- **Agents**: `src/claude/agents/` - Specialized agents for each phase
+- **Skills**: `src/claude/skills/` - Skills across multiple categories
+- **Config**: `src/claude/hooks/config/` - Skills manifest and iteration requirements
+- **CLI**: `bin/isdlc.js` + `lib/` - Cross-platform npm package CLI
+
+### Current Version
+
+**{{FRAMEWORK_VERSION}}** - See package.json for exact version
+
+### Important Conventions
+
+- Each agent owns exactly ONE phase (1-to-1 mapping)
+- Skills are logged for observability (primary agent documented, not enforced)
+- State tracked in `.isdlc/state.json` (gitignored)
