@@ -13,6 +13,7 @@
 let _gateLogicModule;
 let _profileLoaderModule;
 let _gateRequirementsModule;
+let _validatePhaseModule;
 
 // =========================================================================
 // Lazy loaders
@@ -33,6 +34,12 @@ async function loadGateRequirements() {
   return _gateRequirementsModule;
 }
 
+// BUG-0057: Lazy loader for validate-phase ESM module
+async function loadValidatePhase() {
+  if (!_validatePhaseModule) _validatePhaseModule = await import('../validators/validate-phase.js');
+  return _validatePhaseModule;
+}
+
 // =========================================================================
 // Sync preload cache
 // =========================================================================
@@ -40,6 +47,7 @@ async function loadGateRequirements() {
 let _syncGateLogic = null;
 let _syncProfileLoader = null;
 let _syncGateRequirements = null;
+let _syncValidatePhase = null;
 
 // =========================================================================
 // Gate Logic functions
@@ -83,6 +91,22 @@ function checkArtifactPresenceRequirement(phaseState, phaseRequirements, state, 
 function check(ctx) {
   if (_syncGateLogic) return _syncGateLogic.check(ctx);
   return { decision: 'allow' }; // fail-open
+}
+
+// BUG-0057: Async traceability check via core validators
+async function checkTraceabilityRequirement(phaseState, phaseRequirements, inputs) {
+  if (_syncGateLogic) return _syncGateLogic.checkTraceabilityRequirement(phaseState, phaseRequirements, inputs);
+  return { satisfied: true, reason: 'bridge_not_loaded' };
+}
+
+// BUG-0057: Async validatePhase via core validators
+async function validatePhase(phaseKey, inputs, options) {
+  try {
+    const mod = await loadValidatePhase();
+    return mod.validatePhase(phaseKey, inputs, options);
+  } catch (err) {
+    return { pass: true, failures: [], details: {}, validator_errors: ['bridge_error: ' + err.message] };
+  }
 }
 
 // =========================================================================
@@ -172,12 +196,13 @@ function _mergeRequirementsSync(base, overrides) {
 // =========================================================================
 
 async function preload() {
-  const [gl, pl, gr] = await Promise.all([
-    loadGateLogic(), loadProfileLoader(), loadGateRequirements()
+  const [gl, pl, gr, vp] = await Promise.all([
+    loadGateLogic(), loadProfileLoader(), loadGateRequirements(), loadValidatePhase()
   ]);
   _syncGateLogic = gl;
   _syncProfileLoader = pl;
   _syncGateRequirements = gr;
+  _syncValidatePhase = vp;
 }
 
 module.exports = {
@@ -189,7 +214,11 @@ module.exports = {
   checkElicitationRequirement,
   checkAgentDelegationRequirement,
   checkArtifactPresenceRequirement,
+  checkTraceabilityRequirement,
   check,
+
+  // BUG-0057: Phase validation
+  validatePhase,
 
   // Profile Loader
   resolveProfileOverrides,

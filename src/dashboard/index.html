@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iSDLC Workflow Dashboard</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --pending: #374151;
+    --pending-stroke: #6b7280;
+    --running: #1e40af;
+    --running-stroke: #3b82f6;
+    --completed: #065f46;
+    --completed-stroke: #10b981;
+    --failed: #991b1b;
+    --failed-stroke: #ef4444;
+    --skipped: #374151;
+    --claude-color: #e86d35;
+    --codex-color: #10a37f;
+    --antigravity-color: #7c3aed;
+    --unknown-color: #6b7280;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 16px; font-weight: 600; }
+  .header .meta { font-size: 13px; color: var(--text-muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; margin-left: 8px; }
+  .badge-feature { background: #1e40af; }
+  .badge-fix { background: #7c2d12; }
+  .badge-upgrade { background: #7c3aed; }
+
+  /* Main layout */
+  .main { display: flex; height: calc(100vh - 57px); }
+  .dag-container { flex: 1; overflow: auto; padding: 24px; }
+  .detail-panel { width: 320px; border-left: 1px solid var(--border); padding: 16px; overflow-y: auto; }
+  .detail-panel h2 { font-size: 14px; margin-bottom: 12px; color: var(--text-muted); }
+  .detail-row { margin-bottom: 8px; font-size: 13px; }
+  .detail-label { color: var(--text-muted); }
+
+  /* DAG nodes */
+  .phase-group { cursor: pointer; }
+  .phase-rect { rx: 6; ry: 6; }
+  .phase-label { font-size: 12px; fill: var(--text); font-family: inherit; pointer-events: none; }
+  .sub-node { rx: 4; ry: 4; }
+  .sub-label { font-size: 10px; fill: var(--text); font-family: inherit; pointer-events: none; }
+
+  /* Provider badges */
+  .provider-badge { font-size: 9px; fill: white; font-weight: bold; font-family: inherit; }
+
+  /* Status colors */
+  .status-pending { fill: var(--pending); stroke: var(--pending-stroke); }
+  .status-running { fill: var(--running); stroke: var(--running-stroke); }
+  .status-completed { fill: var(--completed); stroke: var(--completed-stroke); }
+  .status-failed { fill: var(--failed); stroke: var(--failed-stroke); }
+  .status-skipped { fill: var(--skipped); stroke: var(--pending-stroke); opacity: 0.5; }
+
+  /* Pulse animation */
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+
+  /* Edge paths */
+  .edge-path { fill: none; stroke: var(--border); stroke-width: 2; marker-end: url(#arrowhead); }
+
+  /* Footer */
+  .footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 8px 24px; background: var(--surface); border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot-connected { background: var(--completed-stroke); }
+  .dot-reconnecting { background: var(--failed-stroke); }
+
+  /* No workflow state */
+  .no-workflow { text-align: center; padding: 80px 24px; color: var(--text-muted); }
+  .no-workflow h2 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1 id="title">iSDLC Workflow Dashboard</h1>
+  </div>
+  <div class="meta" id="header-meta">Loading...</div>
+</div>
+
+<div class="main">
+  <div class="dag-container" id="dag-container">
+    <svg id="dag-svg" width="100%" height="100%">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#475569" />
+        </marker>
+      </defs>
+    </svg>
+  </div>
+  <div class="detail-panel" id="detail-panel">
+    <h2>Phase Details</h2>
+    <p class="detail-row" style="color: var(--text-muted);">Click a phase node to view details.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <div><span class="status-dot dot-connected" id="status-dot"></span><span id="poll-status">Connected</span></div>
+  <div id="footer-info">--</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const POLL_ACTIVE = 2000;
+  const POLL_HISTORY = 10000;
+  const PHASE_WIDTH = 200;
+  const PHASE_HEIGHT = 40;
+  const SUB_NODE_WIDTH = 120;
+  const SUB_NODE_HEIGHT = 28;
+  const PHASE_GAP_Y = 60;
+  const SUB_GAP_X = 16;
+  const SUB_GAP_Y = 36;
+  const MARGIN_LEFT = 40;
+  const MARGIN_TOP = 20;
+
+  const PROVIDER_COLORS = {
+    claude: '#e86d35',
+    codex: '#10a37f',
+    antigravity: '#7c3aed',
+    unknown: '#6b7280'
+  };
+
+  const PROVIDER_LETTERS = {
+    claude: 'C',
+    codex: 'X',
+    antigravity: 'A',
+    unknown: '?'
+  };
+
+  let lastData = null;
+  let selectedPhase = null;
+
+  // Check if viewing a specific historical workflow
+  const urlParams = new URLSearchParams(window.location.search);
+  const historyWorkflowId = urlParams.get('workflow');
+
+  // -----------------------------------------------------------------------
+  // Polling
+  // -----------------------------------------------------------------------
+
+  async function poll() {
+    try {
+      let data;
+      if (historyWorkflowId) {
+        // Fetch specific historical workflow
+        const histRes = await fetch(`/api/history/${encodeURIComponent(historyWorkflowId)}`);
+        if (histRes.ok) {
+          const entry = await histRes.json();
+          // Normalize history entry to look like /api/state response
+          data = normalizeHistoryEntry(entry);
+        } else {
+          // Workflow not found in history, fall back to live state
+          const res = await fetch('/api/state');
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+        }
+      } else {
+        const res = await fetch('/api/state');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        data = await res.json();
+      }
+      lastData = data;
+      updateUI(data);
+      setStatus('connected');
+    } catch (err) {
+      setStatus('reconnecting');
+    }
+    // Historical views poll slowly, active workflows poll fast
+    const interval = historyWorkflowId ? POLL_HISTORY : (lastData && lastData.active_workflow ? POLL_ACTIVE : POLL_HISTORY);
+    setTimeout(poll, interval);
+  }
+
+  function normalizeHistoryEntry(entry) {
+    // Convert a workflow_history entry into the shape updateUI expects
+    const phases = entry.phases || entry.phase_sequence || [];
+    const phaseStatus = {};
+    const phasesDetail = {};
+
+    // Build phase data from the history entry's phase_snapshots or phases_completed
+    if (entry.phase_snapshots) {
+      for (const snap of entry.phase_snapshots) {
+        const key = snap.phase || snap.phase_key;
+        if (!key) continue;
+        phaseStatus[key] = snap.status || 'completed';
+        phasesDetail[key] = {
+          status: snap.status || 'completed',
+          provider: snap.provider || 'claude',
+          timing: snap.timing || {
+            wall_clock_minutes: snap.wall_clock_minutes,
+            retries: snap.iterations_used != null ? snap.iterations_used - 1 : undefined
+          },
+          summary: snap.summary || '',
+          constitutional_status: snap.constitutional_status || ''
+        };
+      }
+    }
+
+    // Mark all phases as completed if no snapshots but we know it completed
+    if (!entry.phase_snapshots && entry.status === 'completed') {
+      for (const p of phases) {
+        phaseStatus[p] = 'completed';
+        phasesDetail[p] = { status: 'completed', provider: 'claude', timing: {} };
+      }
+    }
+
+    return {
+      active_workflow: {
+        type: entry.type || entry.workflow_type || 'feature',
+        slug: entry.slug || entry.artifact_folder || historyWorkflowId,
+        current_phase: null,
+        phases: phases,
+        phase_status: phaseStatus,
+        sub_agent_log: entry.sub_agent_log || [],
+        hook_events: entry.hook_events || [],
+        artifacts_produced: entry.artifacts_produced || [],
+        status: entry.status || 'completed'
+      },
+      phases: phasesDetail,
+      topology: {},
+      workflow_type: entry.type || entry.workflow_type || 'feature',
+      timestamp: new Date().toISOString(),
+      _historical: true
+    };
+  }
+
+  function setStatus(state) {
+    const dot = document.getElementById('status-dot');
+    const text = document.getElementById('poll-status');
+    if (state === 'connected') {
+      dot.className = 'status-dot dot-connected';
+      text.textContent = 'Connected';
+    } else {
+      dot.className = 'status-dot dot-reconnecting';
+      text.textContent = 'Reconnecting...';
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // UI Update
+  // -----------------------------------------------------------------------
+
+  function updateUI(data) {
+    updateHeader(data);
+    renderDAG(data);
+    updateFooter(data);
+    if (selectedPhase) {
+      updateDetailPanel(data, selectedPhase);
+    } else {
+      showWorkflowSummary(data);
+    }
+  }
+
+  function updateHeader(data) {
+    const title = document.getElementById('title');
+    const meta = document.getElementById('header-meta');
+    const wf = data.active_workflow;
+
+    if (wf) {
+      const type = wf.type || 'workflow';
+      const slug = wf.slug || wf.artifact_folder || '';
+      title.textContent = `${slug}`;
+      const badgeClass = type === 'fix' ? 'badge-fix' : type === 'upgrade' ? 'badge-upgrade' : 'badge-feature';
+      const phaseInfo = data._historical ? `Status: ${wf.status || 'completed'}` : `Phase: ${wf.current_phase || '--'}`;
+      meta.innerHTML = `<span class="badge ${badgeClass}">${type}</span> ${phaseInfo}`;
+    } else {
+      title.textContent = 'iSDLC Workflow Dashboard';
+      meta.textContent = 'No active workflow';
+    }
+  }
+
+  function updateFooter(data) {
+    const info = document.getElementById('footer-info');
+    info.textContent = data.timestamp ? `Last update: ${new Date(data.timestamp).toLocaleTimeString()}` : '--';
+  }
+
+  // -----------------------------------------------------------------------
+  // DAG Rendering
+  // -----------------------------------------------------------------------
+
+  function renderDAG(data) {
+    const svg = document.getElementById('dag-svg');
+    const wf = data.active_workflow;
+    if (!wf || !wf.phases) {
+      svg.innerHTML = '';
+      document.getElementById('dag-container').innerHTML = '<div class="no-workflow"><h2>No Active Workflow</h2><p>Start a workflow to see the execution DAG.</p></div>';
+      return;
+    }
+
+    // Restore SVG if replaced by no-workflow message
+    const container = document.getElementById('dag-container');
+    if (!container.querySelector('svg')) {
+      container.innerHTML = '<svg id="dag-svg" width="100%" height="100%"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#475569" /></marker></defs></svg>';
+    }
+
+    const svgEl = document.getElementById('dag-svg');
+    // Clear previous content but keep defs
+    const defs = svgEl.querySelector('defs');
+    svgEl.innerHTML = '';
+    if (defs) svgEl.appendChild(defs);
+
+    const phases = wf.phases;
+    const phaseStatus = wf.phase_status || {};
+    const topology = data.topology || {};
+    let y = MARGIN_TOP;
+
+    for (let i = 0; i < phases.length; i++) {
+      const phase = phases[i];
+      const status = resolveStatus(phaseStatus[phase], data.phases?.[phase]?.status);
+      const topo = topology[phase];
+      const phaseY = y;
+
+      // Draw phase node
+      const g = createSvgElement('g', { class: 'phase-group', 'data-phase': phase });
+      g.addEventListener('click', () => selectPhase(phase));
+
+      const rect = createSvgElement('rect', {
+        x: MARGIN_LEFT, y: phaseY,
+        width: PHASE_WIDTH, height: PHASE_HEIGHT,
+        class: `phase-rect status-${status}`,
+        'stroke-width': 2
+      });
+      if (status === 'running' || status === 'in_progress') rect.classList.add('pulse');
+      g.appendChild(rect);
+
+      // Phase label
+      const label = createSvgElement('text', {
+        x: MARGIN_LEFT + 10, y: phaseY + 24,
+        class: 'phase-label'
+      });
+      label.textContent = phase;
+      g.appendChild(label);
+
+      // Provider badge
+      const provider = data.phases?.[phase]?.provider || 'unknown';
+      const badgeX = MARGIN_LEFT + PHASE_WIDTH - 20;
+      const badgeCircle = createSvgElement('circle', {
+        cx: badgeX, cy: phaseY + 20, r: 8,
+        fill: PROVIDER_COLORS[provider] || PROVIDER_COLORS.unknown
+      });
+      g.appendChild(badgeCircle);
+      const badgeText = createSvgElement('text', {
+        x: badgeX, y: phaseY + 24,
+        class: 'provider-badge',
+        'text-anchor': 'middle'
+      });
+      badgeText.textContent = PROVIDER_LETTERS[provider] || '?';
+      g.appendChild(badgeText);
+
+      svgEl.appendChild(g);
+
+      // Sub-agent nodes (if topology exists and has multiple nodes)
+      if (topo && topo.nodes && topo.nodes.length > 1) {
+        const subStartX = MARGIN_LEFT + PHASE_WIDTH + 30;
+        const subStartY = phaseY;
+
+        for (let j = 0; j < topo.nodes.length; j++) {
+          const node = topo.nodes[j];
+          const nx = subStartX + (j % 3) * (SUB_NODE_WIDTH + SUB_GAP_X);
+          const ny = subStartY + Math.floor(j / 3) * SUB_GAP_Y;
+
+          const subRect = createSvgElement('rect', {
+            x: nx, y: ny,
+            width: SUB_NODE_WIDTH, height: SUB_NODE_HEIGHT,
+            class: `sub-node status-${status}`,
+            'stroke-width': 1
+          });
+          svgEl.appendChild(subRect);
+
+          const subLabel = createSvgElement('text', {
+            x: nx + 6, y: ny + 18,
+            class: 'sub-label'
+          });
+          subLabel.textContent = `${node.id}: ${node.label}`;
+          svgEl.appendChild(subLabel);
+        }
+
+        // Adjust y for sub-agent rows
+        const subRows = Math.ceil(topo.nodes.length / 3);
+        y += Math.max(PHASE_HEIGHT, subRows * SUB_GAP_Y);
+      } else {
+        y += PHASE_HEIGHT;
+      }
+
+      // Draw edge to next phase
+      if (i < phases.length - 1) {
+        const edgeY1 = phaseY + PHASE_HEIGHT;
+        const edgeY2 = y + PHASE_GAP_Y - PHASE_HEIGHT;
+        const path = createSvgElement('line', {
+          x1: MARGIN_LEFT + PHASE_WIDTH / 2, y1: edgeY1,
+          x2: MARGIN_LEFT + PHASE_WIDTH / 2, y2: edgeY2,
+          class: 'edge-path'
+        });
+        svgEl.appendChild(path);
+      }
+
+      y += PHASE_GAP_Y - PHASE_HEIGHT;
+    }
+
+    // Set SVG height
+    svgEl.setAttribute('height', y + 40);
+  }
+
+  function resolveStatus(phaseStatusVal, detailedStatus) {
+    return detailedStatus || phaseStatusVal || 'pending';
+  }
+
+  // -----------------------------------------------------------------------
+  // Detail Panel
+  // -----------------------------------------------------------------------
+
+  function showWorkflowSummary(data) {
+    const panel = document.getElementById('detail-panel');
+    const wf = data.active_workflow;
+    if (!wf) {
+      panel.innerHTML = '<h2>Phase Details</h2><p class="detail-row" style="color: var(--text-muted);">Click a phase node to view details.</p>';
+      return;
+    }
+
+    const phases = wf.phases || [];
+    const phasesDetail = data.phases || {};
+
+    // Compute totals
+    let totalMinutes = 0;
+    let totalIterations = 0;
+    let allCompliant = true;
+    const providers = new Set();
+
+    for (const p of phases) {
+      const pd = phasesDetail[p] || {};
+      const t = pd.timing || {};
+      if (t.wall_clock_minutes != null) totalMinutes += t.wall_clock_minutes;
+      totalIterations += (t.retries != null ? t.retries + 1 : 1);
+      if (pd.constitutional_status && pd.constitutional_status !== 'compliant') allCompliant = false;
+      providers.add(pd.provider || 'unknown');
+    }
+
+    // Artifacts count
+    const artifacts = wf.artifacts_produced || [];
+    const subAgents = wf.sub_agent_log || [];
+    const hookEvents = wf.hook_events || [];
+
+    let html = '<h2>Workflow Summary</h2>';
+    html += `<div class="detail-row"><span class="detail-label">Status:</span> ${wf.status || 'active'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Type:</span> ${wf.type || '--'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Phases:</span> ${phases.length} (${phases.filter(p => (phasesDetail[p]?.status || '').match(/complete/)).length} complete)</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Total Duration:</span> ${totalMinutes > 0 ? totalMinutes + ' min' : '--'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Total Iterations:</span> ${totalIterations}/${phases.length}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Constitutional:</span> ${allCompliant ? 'all compliant' : 'violations detected'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Provider(s):</span> ${[...providers].join(', ')}</div>`;
+
+    if (artifacts.length > 0) {
+      html += `<div class="detail-row"><span class="detail-label">Artifacts:</span> ${artifacts.length}</div>`;
+    }
+    if (subAgents.length > 0) {
+      html += `<div class="detail-row"><span class="detail-label">Sub-agents:</span> ${subAgents.length}</div>`;
+    }
+    if (hookEvents.length > 0) {
+      html += `<div class="detail-row"><span class="detail-label">Hook events:</span> ${hookEvents.length}</div>`;
+    }
+
+    // Phase summaries
+    html += '<h2 style="margin-top:16px;">Phase Summaries</h2>';
+    for (const p of phases) {
+      const pd = phasesDetail[p] || {};
+      const t = pd.timing || {};
+      const mins = t.wall_clock_minutes != null ? `${t.wall_clock_minutes}m` : '--';
+      const summary = pd.summary || '';
+      html += `<div class="detail-row" style="margin-bottom:12px;"><strong>${p}</strong> (${mins})<br/><span style="color: var(--text-muted); font-size: 12px;">${summary || 'No summary'}</span></div>`;
+    }
+
+    html += '<p class="detail-row" style="color: var(--text-muted); margin-top: 16px; font-size: 11px;">Click a phase node for detailed view.</p>';
+    panel.innerHTML = html;
+  }
+
+  function selectPhase(phase) {
+    selectedPhase = phase;
+    if (lastData) updateDetailPanel(lastData, phase);
+  }
+
+  function updateDetailPanel(data, phase) {
+    const panel = document.getElementById('detail-panel');
+    const phaseData = data.phases?.[phase] || {};
+    const timing = phaseData.timing || {};
+    const provider = phaseData.provider || 'unknown';
+    const wf = data.active_workflow || {};
+
+    // Sub-agents for this phase
+    const subAgents = (wf.sub_agent_log || []).filter(sa => sa.phase === phase);
+    const hookEvents = (wf.hook_events || []).filter(he => he.phase === phase);
+    const artifacts = (wf.artifacts_produced || []).filter(a => a.phase === phase);
+
+    let html = `<h2>Phase: ${phase}</h2>`;
+    html += `<div class="detail-row"><span class="detail-label">Status:</span> ${phaseData.status || 'pending'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Provider:</span> ${provider}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Duration:</span> ${timing.wall_clock_minutes != null ? timing.wall_clock_minutes + 'm' : '--'}</div>`;
+    html += `<div class="detail-row"><span class="detail-label">Iterations:</span> ${timing.retries != null ? timing.retries + 1 : '--'}</div>`;
+
+    if (subAgents.length > 0) {
+      html += `<h2 style="margin-top:16px;">Sub-Agents (${subAgents.length})</h2>`;
+      for (const sa of subAgents) {
+        html += `<div class="detail-row">${sa.agent} - ${sa.status || 'unknown'} ${sa.duration_ms != null ? `(${Math.round(sa.duration_ms / 1000)}s)` : ''}</div>`;
+      }
+    }
+
+    if (hookEvents.length > 0) {
+      html += `<h2 style="margin-top:16px;">Hook Events (${hookEvents.length})</h2>`;
+      for (const he of hookEvents) {
+        html += `<div class="detail-row">${he.hook}: ${he.action} - ${he.reason || ''}</div>`;
+      }
+    }
+
+    if (artifacts.length > 0) {
+      html += `<h2 style="margin-top:16px;">Artifacts (${artifacts.length})</h2>`;
+      for (const a of artifacts) {
+        html += `<div class="detail-row">${a.file_path} (${a.action})</div>`;
+      }
+    }
+
+    panel.innerHTML = html;
+  }
+
+  // -----------------------------------------------------------------------
+  // SVG Helpers
+  // -----------------------------------------------------------------------
+
+  function createSvgElement(tag, attrs) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      el.setAttribute(key, value);
+    }
+    return el;
+  }
+
+  // -----------------------------------------------------------------------
+  // Init
+  // -----------------------------------------------------------------------
+
+  poll();
+})();
+</script>
+
+</body>
+</html>

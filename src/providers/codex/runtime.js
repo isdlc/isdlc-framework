@@ -23,6 +23,7 @@ import { execSync as nodeExecSync, execFile as nodeExecFile, spawn as nodeSpawn 
 import * as nodeReadline from 'node:readline';
 import { projectInstructions as coreProjectInstructions } from './projection.js';
 import { resolveVerb } from './verb-resolver.js';
+import { validatePhase } from '../../core/validators/validate-phase.js';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -351,4 +352,33 @@ export function createRuntime(config = {}) {
       }
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// BUG-0057 (FR-009): Phase Gate Validation for Codex Runtime
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate phase gate before allowing phase advancement in Codex runtime.
+ * Imports validatePhase directly (ESM to ESM) — no CJS bridge needed.
+ *
+ * BUG-0057 (FR-009, AC-009-01..05)
+ *
+ * @param {string} phaseKey - Phase key (e.g., "06-implementation")
+ * @param {object} inputs - Artifact contents for validation
+ * @param {object} [options={}] - Validation options
+ * @returns {Promise<{ pass: boolean, failures: object[], details: object, validator_errors: string[] }>}
+ */
+export async function validatePhaseGate(phaseKey, inputs, options = {}) {
+  try {
+    return await validatePhase(phaseKey, inputs, options);
+  } catch (err) {
+    // Fail-open on validator code errors (ADR-004)
+    return {
+      pass: true,
+      failures: [],
+      details: {},
+      validator_errors: [`validatePhaseGate error: ${err.message}`]
+    };
+  }
 }

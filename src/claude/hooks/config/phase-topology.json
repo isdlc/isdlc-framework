@@ -1,0 +1,145 @@
+{
+  "version": "1.0.0",
+  "description": "Sub-agent DAG topology per phase. Used by the observability dashboard to render phase internals.",
+  "phases": {
+    "00-quick-scan": {
+      "nodes": [
+        { "id": "QS", "agent": "quick-scan-agent", "label": "Quick Scan" }
+      ],
+      "edges": []
+    },
+    "01-requirements": {
+      "nodes": [
+        { "id": "RA", "agent": "requirements-analyst", "label": "Requirements Analyst" }
+      ],
+      "edges": []
+    },
+    "01-requirements-debate": {
+      "nodes": [
+        { "id": "CR", "agent": "requirements-analyst", "label": "Creator" },
+        { "id": "CK", "agent": "requirements-critic", "label": "Critic" },
+        { "id": "RF", "agent": "requirements-refiner", "label": "Refiner" }
+      ],
+      "edges": [
+        { "from": "CR", "to": "CK" },
+        { "from": "CK", "to": "RF" }
+      ]
+    },
+    "02-impact-analysis": {
+      "nodes": [
+        { "id": "IA0", "agent": "impact-analysis-orchestrator", "label": "Orchestrator" },
+        { "id": "M1", "agent": "impact-analyzer", "label": "Dependency Analyzer" },
+        { "id": "M2", "agent": "impact-analyzer", "label": "Blast Radius Analyzer" },
+        { "id": "M3", "agent": "impact-analyzer", "label": "Risk Analyzer" },
+        { "id": "M4", "agent": "impact-verifier", "label": "Verifier" }
+      ],
+      "edges": [
+        { "from": "IA0", "to": "M1" },
+        { "from": "IA0", "to": "M2" },
+        { "from": "IA0", "to": "M3" },
+        { "from": "M1", "to": "M4" },
+        { "from": "M2", "to": "M4" },
+        { "from": "M3", "to": "M4" }
+      ]
+    },
+    "02-tracing": {
+      "nodes": [
+        { "id": "T0", "agent": "tracing-orchestrator", "label": "Orchestrator" },
+        { "id": "T1", "agent": "trace-analyst", "label": "Code Trace" },
+        { "id": "T2", "agent": "trace-analyst", "label": "State Trace" },
+        { "id": "T3", "agent": "trace-analyst", "label": "Log Trace" }
+      ],
+      "edges": [
+        { "from": "T0", "to": "T1" },
+        { "from": "T0", "to": "T2" },
+        { "from": "T0", "to": "T3" }
+      ]
+    },
+    "03-architecture": {
+      "nodes": [
+        { "id": "SA", "agent": "solution-architect", "label": "Solution Architect" }
+      ],
+      "edges": []
+    },
+    "03-architecture-debate": {
+      "nodes": [
+        { "id": "CR", "agent": "solution-architect", "label": "Creator" },
+        { "id": "CK", "agent": "architecture-critic", "label": "Critic" },
+        { "id": "RF", "agent": "architecture-refiner", "label": "Refiner" }
+      ],
+      "edges": [
+        { "from": "CR", "to": "CK" },
+        { "from": "CK", "to": "RF" }
+      ]
+    },
+    "04-design": {
+      "nodes": [
+        { "id": "SD", "agent": "system-designer", "label": "System Designer" }
+      ],
+      "edges": []
+    },
+    "04-design-debate": {
+      "nodes": [
+        { "id": "CR", "agent": "system-designer", "label": "Creator" },
+        { "id": "CK", "agent": "design-critic", "label": "Critic" },
+        { "id": "RF", "agent": "design-refiner", "label": "Refiner" }
+      ],
+      "edges": [
+        { "from": "CR", "to": "CK" },
+        { "from": "CK", "to": "RF" }
+      ]
+    },
+    "05-test-strategy": {
+      "nodes": [
+        { "id": "TE", "agent": "test-design-engineer", "label": "Test Design Engineer" }
+      ],
+      "edges": []
+    },
+    "05-test-strategy-debate": {
+      "nodes": [
+        { "id": "CR", "agent": "test-design-engineer", "label": "Creator" },
+        { "id": "CK", "agent": "test-strategy-critic", "label": "Critic" },
+        { "id": "RF", "agent": "test-strategy-refiner", "label": "Refiner" }
+      ],
+      "edges": [
+        { "from": "CR", "to": "CK" },
+        { "from": "CK", "to": "RF" }
+      ]
+    },
+    "06-implementation": {
+      "nodes": [
+        { "id": "SW", "agent": "software-developer", "label": "Software Developer" },
+        { "id": "IR", "agent": "implementation-reviewer", "label": "Implementation Reviewer" },
+        { "id": "IU", "agent": "implementation-updater", "label": "Implementation Updater" }
+      ],
+      "edges": [
+        { "from": "SW", "to": "IR" },
+        { "from": "IR", "to": "IU" }
+      ]
+    },
+    "16-quality-loop": {
+      "nodes": [
+        { "id": "QL", "agent": "quality-loop-engineer", "label": "Quality Loop" }
+      ],
+      "edges": []
+    },
+    "08-code-review": {
+      "nodes": [
+        { "id": "QA", "agent": "qa-engineer", "label": "QA Engineer" }
+      ],
+      "edges": []
+    },
+    "15-upgrade-plan": {
+      "nodes": [
+        { "id": "UE", "agent": "upgrade-engineer", "label": "Upgrade Engineer" }
+      ],
+      "edges": []
+    },
+    "15-upgrade-execute": {
+      "nodes": [
+        { "id": "UE", "agent": "upgrade-engineer", "label": "Upgrade Engineer" }
+      ],
+      "edges": []
+    }
+  }
+}

@@ -300,6 +300,94 @@ export function checkArtifactPresenceRequirement(phaseState, phaseRequirements, 
 }
 
 /**
+ * Check traceability requirement using core validators.
+ * BUG-0057 (FR-008, AC-008-01..05)
+ *
+ * @param {object} phaseState - Current phase state
+ * @param {object} phaseRequirements - Phase requirements from iteration-requirements.json
+ * @param {object} [inputs] - Artifact contents for validation
+ * @returns {Promise<{ satisfied: boolean, reason: string, details?: object }>}
+ */
+export async function checkTraceabilityRequirement(phaseState, phaseRequirements, inputs) {
+  const traceReq = phaseRequirements?.traceability_validation;
+  if (!traceReq || !traceReq.enabled) {
+    return { satisfied: true, reason: 'not_required' };
+  }
+
+  try {
+    const safeInputs = inputs || {};
+    const checks = traceReq.checks || [];
+    const failures = [];
+
+    // Run requested checks directly (not via validatePhase, which uses phase mapping)
+    if (checks.includes('requirements_to_tests')) {
+      const { validateRequirementsToTests } = await import('./traceability-validator.js');
+      const result = validateRequirementsToTests(
+        safeInputs.requirementsSpec || null,
+        safeInputs.testStrategy || null
+      );
+      if (!result.pass) {
+        const orphanInfo = result.details?.orphan_acs?.length > 0
+          ? ` Orphan ACs: ${result.details.orphan_acs.join(', ')}`
+          : '';
+        failures.push(`requirements_to_tests: ${result.failure_reason}${orphanInfo}`);
+      }
+    }
+
+    if (checks.includes('test_implementation')) {
+      const { validateTestImplementation } = await import('./test-implementation-validator.js');
+      const result = validateTestImplementation(
+        safeInputs.testStrategy || null,
+        safeInputs.testFiles || null,
+        safeInputs.modifiedFiles || null
+      );
+      if (!result.pass) {
+        failures.push(`test_implementation: ${result.failure_reason}`);
+      }
+    }
+
+    if (checks.includes('test_execution')) {
+      const { validateTestExecution } = await import('./test-execution-validator.js');
+      const result = validateTestExecution(
+        safeInputs.testStrategy || null,
+        safeInputs.testExecutionOutput || null
+      );
+      if (!result.pass) {
+        failures.push(`test_execution: ${result.failure_reason}`);
+      }
+    }
+
+    if (checks.includes('coverage_presence')) {
+      const { validateCoveragePresence } = await import('./coverage-presence-validator.js');
+      const result = validateCoveragePresence(
+        safeInputs.testExecutionOutput || null,
+        { required: safeInputs.coverageRequired !== false }
+      );
+      if (!result.pass) {
+        failures.push(`coverage_presence: ${result.failure_reason}`);
+      }
+    }
+
+    if (failures.length === 0) {
+      return { satisfied: true, reason: 'traceability_verified' };
+    }
+
+    return {
+      satisfied: false,
+      reason: `Traceability validation failed: ${failures.join('; ')}`,
+      action_required: 'FIX_TRACEABILITY',
+      details: { failures }
+    };
+  } catch (err) {
+    // Fail-open on validator code errors (ADR-004)
+    return {
+      satisfied: true,
+      reason: `validator_error: ${err.message}`
+    };
+  }
+}
+
+/**
  * Main gate check function.
  * @param {object} ctx - { input, state, requirements, manifest, helpers }
  * @returns {{ decision: string, stopReason?: string, stderr?: string, stateModified?: boolean }}

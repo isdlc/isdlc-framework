@@ -165,6 +165,10 @@
           "XI"
         ]
       },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["requirements_to_tests"]
+      },
       "artifact_validation": {
         "enabled": true,
         "paths": [
@@ -193,6 +197,10 @@
       "timeout_minutes": 90,
       "interactive_elicitation": {
         "enabled": false
+      },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["test_implementation", "coverage_presence"]
       },
       "test_iteration": {
         "enabled": true,
@@ -266,6 +274,10 @@
       "timeout_minutes": 60,
       "interactive_elicitation": {
         "enabled": false
+      },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["test_execution", "coverage_presence"]
       },
       "test_iteration": {
         "enabled": true,
