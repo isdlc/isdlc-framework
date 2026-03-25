@@ -2,46 +2,55 @@
 
 **ID**: REQ-0068
 **Source**: GitHub Issue #128
-**Status**: Analyzed
+**Status**: Re-analyzed (multi-provider update)
 **Labels**: hackability, user-experience
+**Re-analysis date**: 2026-03-24
+**Reason**: Original analysis (2026-03-21) predates multi-provider architecture (Codex, Antigravity adapters). All observability features must work provider-neutrally.
 
 ---
 
 ## 1. Business Context
 
-iSDLC tracks extensive execution data in state.json and hook logs — phases run, hooks blocked, iterations used, artifacts produced, coverage metrics, constitutional compliance status — but none of it is surfaced to the user in a consumable form. Understanding what happened during a workflow requires reading raw JSON. The completion dashboard (REQ-0022) renders timing and budget after workflow completion, but provides no mid-workflow visibility, no historical query, and no visual representation.
+iSDLC tracks extensive execution data in state.json and hook logs -- phases run, hooks blocked, iterations used, artifacts produced, coverage metrics, constitutional compliance status -- but none of it is surfaced to the user in a consumable form. Understanding what happened during a workflow requires reading raw JSON. The completion dashboard (REQ-0022) renders timing and budget after workflow completion, but provides no mid-workflow visibility, no historical query, and no visual representation.
 
-**Success metric**: Users can see what's happening during a workflow and review what happened in past workflows without reading state.json.
+Since the original analysis, the framework now supports multiple execution providers (Claude Code, Codex CLI, Antigravity) via the ProviderRuntime interface (`src/core/orchestration/provider-runtime.js`). Phase execution flows through provider-neutral orchestrators (`phase-loop.js`, `fan-out.js`, `dual-track.js`), each returning a standard `TaskResult { status, output, duration_ms, error }`. Observability must work identically regardless of which provider executes the work.
 
-**Driving factor**: Inspired by Arcturus "Runs" — execution graph showing agent tasks, intermediate outputs, and orchestration state. Adapted for iSDLC's CLI-first, phase-based workflow model.
+**Success metric**: Users can see what's happening during a workflow and review what happened in past workflows without reading state.json -- on any provider.
+
+**Driving factor**: Inspired by Arcturus "Runs" -- execution graph showing agent tasks, intermediate outputs, and orchestration state. Adapted for iSDLC's CLI-first, phase-based, multi-provider workflow model.
 
 ---
 
 ## 2. Stakeholders and Personas
 
 ### Primary User: Developer using iSDLC
-- **Role**: Runs iSDLC workflows (feature, fix, upgrade, test) on their codebase
-- **Goals**: Understand workflow progress, identify slow phases, review past execution, tune gate profiles with data
-- **Pain points**: Current task list shows phase names but no timing, no sub-agent visibility, no hook events. Completion dashboard is timing-only and ephemeral
+- **Role**: Runs iSDLC workflows (feature, fix, upgrade, test) on their codebase, potentially using Claude Code, Codex, or Antigravity as the execution provider
+- **Goals**: Understand workflow progress, identify slow phases, review past execution, tune gate profiles with data, compare provider performance
+- **Pain points**: Current task list shows phase names but no timing, no sub-agent visibility, no hook events. Completion dashboard is timing-only and ephemeral. No way to see whether Codex or Claude ran a given phase.
 
 ---
 
 ## 3. User Journeys
 
 ### Journey 1: Monitoring an active workflow
-- **Entry**: User starts a build workflow
-- **Flow**: As phases complete, enriched CLI output shows timing, iterations, coverage per phase. If `live_dashboard: true` in CLAUDE.md, browser opens with a live DAG visualization showing phase and sub-agent nodes updating in real-time
-- **Exit**: Workflow completes, completion dashboard shows full summary
+- **Entry**: User starts a build workflow (on any provider)
+- **Flow**: As phases complete, enriched CLI output shows timing, iterations, coverage per phase. The provider name appears in detailed mode. If `live_dashboard: true` in CLAUDE.md (or equivalent provider config), browser opens with a live DAG visualization showing phase and sub-agent nodes updating in real-time
+- **Exit**: Workflow completes, completion dashboard shows full summary including provider attribution
 
 ### Journey 2: Reviewing a past workflow
 - **Entry**: User says `/isdlc status -inline REQ-0066` or `/isdlc status -visual #125`
-- **Flow**: System resolves the identifier, finds the workflow in history, renders structured report (CLI) or opens browser with DAG visualization (visual)
-- **Exit**: User has full picture of what happened — timing, sub-agents, hook events, coverage, artifacts
+- **Flow**: System resolves the identifier, finds the workflow in history, renders structured report (CLI) or opens browser with DAG visualization (visual). Provider info shown per phase.
+- **Exit**: User has full picture of what happened -- timing, sub-agents, hook events, coverage, artifacts, provider used
 
 ### Journey 3: Quick status check
 - **Entry**: User says `/isdlc status` with no arguments and no active workflow
 - **Flow**: System shows summary of last 5 workflows with status, duration, coverage
 - **Exit**: User picks one to drill into or moves on
+
+### Journey 4: Cross-provider comparison (new)
+- **Entry**: User runs same feature on Claude and Codex at different times
+- **Flow**: Historical review shows provider used per phase, duration differences, iteration count differences
+- **Exit**: User has data to inform provider mode selection (budget vs quality vs hybrid)
 
 ---
 
@@ -49,8 +58,15 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 
 - **Existing data**: `workflow_history[]`, `phase_snapshots[]`, `skill_usage_log[]`, per-phase timing (REQ-0022), test/coverage metrics, code review findings all captured in state.json
 - **Existing presentation**: Completion dashboard (`formatCompletionDashboard()` in `performance-budget.cjs`), Phase-Loop Controller task list
-- **Gaps**: No sub-agent tracking, no hook event history, no artifact inventory, no browser visualization, no historical query
-- **Constraints**: Node.js 20+ required (already a prerequisite). No external dependencies for the dashboard. CLI-first — browser is additive
+- **Multi-provider architecture** (new since original analysis):
+  - `ProviderRuntime` interface: `executeTask()`, `executeParallel()`, `presentInteractive()`, `readUserResponse()`, `validateRuntime()`
+  - Standard `TaskResult`: `{ status, output, duration_ms, error }` -- same shape across all providers
+  - Provider-neutral orchestrators: `phase-loop.js` (sequential), `fan-out.js` (parallel), `dual-track.js` (two-track with retry)
+  - Provider adapters: `src/providers/claude/runtime.js` (delegation shim), `src/providers/codex/runtime.js` (process spawning), `src/providers/antigravity/` (planned)
+  - Provider routing: `src/core/providers/routing.js` selects provider per phase based on mode
+  - Provider usage tracking: `src/core/providers/usage.js` logs per-call stats
+- **Gaps**: No sub-agent tracking, no hook event history in state, no artifact inventory, no browser visualization, no historical query. Provider attribution missing from phase snapshots.
+- **Constraints**: Node.js 20+ required (already a prerequisite). No external dependencies for the dashboard. CLI-first -- browser is additive. All observability data must be written to state.json by provider-neutral code, never by provider adapters directly.
 
 ---
 
@@ -61,7 +77,8 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 | Performance | Critical | Dashboard must not block or slow workflow execution (NFR-001) |
 | Portability | High | Works on macOS, Linux, Windows; browser visual works offline (NFR-003) |
 | Simplicity | High | Zero new npm dependencies (NFR-002) |
-| Configurability | High | Display level configurable via CLAUDE.md |
+| Configurability | High | Display level configurable via CLAUDE.md or equivalent provider config |
+| Provider neutrality | Critical | All observability features must work identically across providers (NFR-004) |
 | Graceful degradation | Medium | Historical workflows without new tracking data show phase-level only |
 
 | Risk | Likelihood | Impact | Mitigation |
@@ -70,6 +87,9 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 | Port conflict on localhost | Low | Low | Try ports 3456-3460, report chosen port |
 | state.json concurrent write corruption from hook_events | Low | High | Assumption A3: verify atomic writeState() in common.cjs |
 | Token usage per sub-agent unavailable from Task tool | Medium | Low | Assumption RA6: show when available, omit when not |
+| Codex adapter returns less metadata than Claude adapter | Medium | Medium | Observability code must handle missing fields gracefully; provider-neutral `TaskResult` is the contract |
+| Antigravity adapter not yet implemented | High | Low | KNOWN_PROVIDERS includes it; observability handles it as "unknown" provider with graceful degradation |
+| Provider-specific hooks (Claude PreToolUse) vs instruction-based checks (Codex) produce different hook_events | Medium | Medium | Normalize hook events at the observability layer, not at the provider layer |
 
 ---
 
@@ -78,29 +98,31 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 ### FR-001: Enriched CLI output during workflows
 **Confidence**: High
 
-- **AC-001-01**: Given `display_level: standard` in CLAUDE.md, when a phase completes, then the CLI shows phase name, wall-clock duration, and iteration count
-- **AC-001-02**: Given `display_level: detailed`, when a phase completes, then the CLI additionally shows sub-agent breakdown, hook events encountered, and artifacts produced
+- **AC-001-01**: Given `display_level: standard` in CLAUDE.md (or equivalent provider config), when a phase completes, then the CLI shows phase name, wall-clock duration, and iteration count
+- **AC-001-02**: Given `display_level: detailed`, when a phase completes, then the CLI additionally shows sub-agent breakdown, hook events encountered, artifacts produced, and provider name
 - **AC-001-03**: Given `display_level: minimal` or no `## Observability` section, when a phase completes, then current behavior is preserved (task list only)
 - **AC-001-04**: Given no `## Observability` section in CLAUDE.md, when a workflow starts, then `display_level` defaults to `standard`
+- **AC-001-05** (new): Given any provider (Claude, Codex, Antigravity), when enriched CLI output is emitted, then the output format is identical -- provider differences are limited to the "provider" field value
 
 ### FR-002: Live browser dashboard
 **Confidence**: High
 
-- **AC-002-01**: Given `live_dashboard: true` in CLAUDE.md, when a workflow starts, then a local HTTP server starts and the browser opens to the dashboard URL
-- **AC-002-02**: Given an active workflow, when the browser polls `/api/state`, then it receives current phase status, sub-agent status, timing, and hook events
+- **AC-002-01**: Given `live_dashboard: true` in CLAUDE.md (or equivalent provider config), when a workflow starts, then a local HTTP server starts and the browser opens to the dashboard URL
+- **AC-002-02**: Given an active workflow, when the browser polls `/api/state`, then it receives current phase status, sub-agent status, timing, hook events, and provider attribution
 - **AC-002-03**: Given a phase completes during a workflow, when the browser polls within 2 seconds, then the corresponding DAG node transitions from running to completed with timing displayed
 - **AC-002-04**: Given the dashboard server is running, when the workflow completes, then the server auto-stops (if auto-started) and the browser shows the final state
 - **AC-002-05**: Given `live_dashboard: false` or missing, when a workflow starts, then no server starts and no browser opens
+- **AC-002-06** (new): Given a Codex-executed workflow, when `live_dashboard: true`, then the dashboard server is started by the `isdlc` CLI wrapper (not by isdlc.md, which is Claude-specific)
 
-### FR-003: Status command — inline mode
+### FR-003: Status command -- inline mode
 **Confidence**: High
 
-- **AC-003-01**: Given `/isdlc status -inline REQ-0066`, when the command executes, then it resolves the identifier and renders a structured CLI report with phase timeline, sub-agent tree, hook events, coverage, and artifacts
+- **AC-003-01**: Given `/isdlc status -inline REQ-0066`, when the command executes, then it resolves the identifier and renders a structured CLI report with phase timeline, sub-agent tree, hook events, coverage, artifacts, and provider used per phase
 - **AC-003-02**: Given `/isdlc status -inline #125`, when the command executes, then it resolves the GitHub issue to the corresponding workflow in history
 - **AC-003-03**: Given `/isdlc status -inline last`, when the command executes, then it shows the most recently completed workflow
 - **AC-003-04**: Given a workflow completed before this feature shipped (no sub_agent_log), when status is requested, then it shows phase-level data only without error
 
-### FR-004: Status command — visual mode
+### FR-004: Status command -- visual mode
 **Confidence**: High
 
 - **AC-004-01**: Given `/isdlc status -visual REQ-0066`, when the command executes, then it starts the dashboard server and opens the browser showing that workflow's DAG
@@ -118,10 +140,20 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 ### FR-006: State tracking enhancements
 **Confidence**: High
 
-- **AC-006-01**: Given a phase agent delegates to a sub-agent via Task tool, when the delegation occurs, then a `sub_agent_log` entry is appended with parent_agent, agent, phase, started_at
-- **AC-006-02**: Given a sub-agent completes, when the Task result returns, then the `sub_agent_log` entry is updated with completed_at, status, and tokens_used (if available)
-- **AC-006-03**: Given a hook blocks an action, when the block occurs, then a `hook_events` entry is appended with timestamp, hook name, phase, action, reason
+- **AC-006-01**: Given a phase agent delegates to a sub-agent via Task tool (Claude) or spawns a subprocess (Codex), when the delegation occurs, then a `sub_agent_log` entry is appended with parent_agent, agent, phase, started_at, and provider
+- **AC-006-02**: Given a sub-agent completes, when the Task result returns (or subprocess exits), then the `sub_agent_log` entry is updated with completed_at, status, duration_ms, and tokens_used (if available)
+- **AC-006-03**: Given a hook blocks an action (Claude) or a governance check fails (Codex), when the block occurs, then a `hook_events` entry is appended with timestamp, hook name, phase, action, reason
 - **AC-006-04**: Given a workflow completes, when `collectPhaseSnapshots()` runs, then `sub_agent_log`, `hook_events`, and `artifacts_produced` are preserved in the `workflow_history` entry
+- **AC-006-05** (new): Given any provider, when state tracking writes occur, then they go through the provider-neutral `writeState()` function in `common.cjs`, never directly from provider adapter code
+- **AC-006-06** (new): Given a phase executed by Codex, when `sub_agent_log` is recorded, then `tokens_used` may be null (Codex does not expose per-task token counts) and this is not treated as an error
+
+### FR-007: Provider attribution in observability (new)
+**Confidence**: High
+
+- **AC-007-01**: Given a phase is executed, when state tracking records the phase result, then the `phase_snapshots` entry includes a `provider` field (e.g., "claude", "codex", "antigravity")
+- **AC-007-02**: Given a workflow runs in `hybrid` mode with different providers per phase, when the inline report is rendered, then each phase row shows which provider executed it
+- **AC-007-03**: Given provider usage is tracked by `src/core/providers/usage.js`, when observability data is collected, then it references the existing usage log rather than duplicating tracking
+- **AC-007-04**: Given a workflow ran before provider tracking was added, when viewed in status, then the provider field shows "unknown" (graceful degradation)
 
 ---
 
@@ -129,11 +161,13 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 
 | Item | Reason | Dependency |
 |------|--------|------------|
-| Intervention (pause/message/reassign mid-workflow) | Separate ticket — requires different interaction model | Creates separate GH issue |
+| Intervention (pause/message/reassign mid-workflow) | Separate ticket -- requires different interaction model | Creates separate GH issue |
 | Re-run / replay (re-execute a single phase from history) | Complex state management, not needed for observability | Future feature |
 | Hackable report formats (custom formatters, export to Grafana) | Deferred to follow-up hackability feature | GH #130 (diagnostics dashboard) |
 | WebSocket for real-time updates | Polling at 2s is sufficient for phase-level granularity | Reconsider if sub-second updates needed |
 | Multi-workflow dashboard | Single active workflow constraint (backlog #30) | Parallel workflow support |
+| Provider-specific observability features | Each provider sees same data; no Claude-only or Codex-only views | Maintain neutrality |
+| Provider performance benchmarking | Data is available in history for manual comparison; automated benchmarking is a separate feature | Future feature |
 
 ---
 
@@ -145,8 +179,9 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 | FR-002 | Live browser dashboard | Must Have | Core visual feature, primary differentiator |
 | FR-003 | Status inline | Must Have | Historical review without browser |
 | FR-004 | Status visual | Should Have | Depends on FR-002 infrastructure |
-| FR-005 | Sub-agent visibility | Must Have | Key user requirement — phase-level alone isn't enough |
+| FR-005 | Sub-agent visibility | Must Have | Key user requirement -- phase-level alone isn't enough |
 | FR-006 | State tracking | Must Have | Data foundation for FR-001 through FR-005 |
+| FR-007 | Provider attribution | Must Have | Multi-provider architecture requires knowing which provider ran each phase |
 
 ---
 
@@ -156,9 +191,13 @@ iSDLC tracks extensive execution data in state.json and hook logs — phases run
 |---|-----------|----------------|------------|
 | RA1 | Users have a modern browser available on their development machine | Browser dashboard (FR-002, FR-004) unusable for headless/SSH environments | CLI inline mode (FR-001, FR-003) is always available as full-featured fallback |
 | RA2 | Existing completion dashboard (REQ-0022) is replaced by enriched CLI, not run alongside | Users depending on current format get different output | Keep current dashboard as `display_level: minimal` |
-| RA3 | `/isdlc status` replaces the existing basic status handler | Users expecting old behavior get different output | New command is a superset — basic info included |
+| RA3 | `/isdlc status` replaces the existing basic status handler | Users expecting old behavior get different output | New command is a superset -- basic info included |
 | RA4 | `-inline` and `-visual` flags accept any identifier format | Requires same resolution logic as analyze/build | Reuse `resolveItem()` from three-verb-utils.cjs |
 | RA5 | Sub-agent data unavailable for pre-existing workflows | Historical views show phase-level only | Degrade gracefully, no backfill |
-| RA6 | Token/cost per sub-agent may not be available from Task tool | FR-005 token display incomplete | Show when available, omit when not |
-| RA7 | `## Observability` section is new — no existing projects have it | Users won't get enriched output until added | Default to `standard` when section missing |
+| RA6 | Token/cost per sub-agent may not be available from Task tool or Codex | FR-005 token display incomplete | Show when available, omit when not |
+| RA7 | `## Observability` section is new -- no existing projects have it | Users won't get enriched output until added | Default to `standard` when section missing |
 | RA8 | Intervention is cleanly separable | Dashboard UI may need retrofit later | Reserve panel area in layout for future controls |
+| RA9 | All providers return `TaskResult { status, output, duration_ms, error }` | Observability data inconsistent across providers | This is enforced by `validateProviderRuntime()` -- any provider missing these fields fails validation |
+| RA10 | Codex does not expose token counts per task execution | `tokens_used` is null for Codex phases | Show "N/A" in reports; no error. Claude may provide this data. |
+| RA11 | Antigravity adapter is in KNOWN_PROVIDERS but not yet implemented | Provider field may be "antigravity" with no adapter | Treat as any other provider string; observability is data-agnostic |
+| RA12 | Provider routing decisions are already tracked by `src/core/providers/usage.js` | Observability duplicates tracking | Reference existing usage log; do not duplicate. Extend usage log if needed. |

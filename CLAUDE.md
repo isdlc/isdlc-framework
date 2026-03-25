@@ -1,3 +1,5 @@
+@.isdlc/at-import-probe.md
+
 # iSDLC Framework - Project Instructions
 
 This is a dogfooding project setup to develop the iSDLC framework.

@@ -4,6 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [A] #205 Codex reserved verb routing for Add, Analyze, and Build [github: GH-205] → `REQ-0139-codex-reserved-verb-routing/` -> [requirements](docs/requirements/REQ-0139-codex-reserved-verb-routing/)
+- [ ] #206 Conversational enforcement via Stop hook — bulleted format, three-domain confirmation, roundtable skip [github: GH-206]
 - [ ] #133 Memory infrastructure scale-out — HNSW indexing, remote vector store, incremental indexing [github: GH-133] → `REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/` -> [requirements](docs/requirements/REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/)
   - Depends on REQ-0064, REQ-0066, BUG-0056. Not urgent for dogfooding; critical for enterprise adoption.
 - [x] #126 CodeBERT embedding non-functional — stub tokenizer, missing model download, handler not wired [github: GH-126] → `BUG-0056-codebert-embedding-non-functional-stub-tokenize/` -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/) **Completed**
