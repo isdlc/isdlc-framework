@@ -1,0 +1,30 @@
+{
+  "source": "github",
+  "source_id": "GH-209",
+  "slug": "BUG-0057-gate-blocker-traceability-verification",
+  "created_at": "2026-03-25T01:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification",
+    "security"
+  ],
+  "codebase_hash": "64f0afc",
+  "acceptance": {
+    "accepted_at": "2026-03-25T02:00:00.000Z",
+    "domains": ["requirements", "architecture", "design"],
+    "amendment_cycles": 0
+  },
+  "build_started_at": "2026-03-25T21:17:35.839Z",
+  "workflow_type": "feature"
+}
