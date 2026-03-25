@@ -1,0 +1,79 @@
+Requirement,AC,Test Case,Test Type,Priority,Description
+FR-001,AC-001-01,TC-001,positive,P0,Load valid rule definitions — all fields parsed
+FR-001,AC-001-01,TC-005,positive,P2,Rule with all optional fields populated
+FR-001,AC-001-02,TC-008,positive,P0,Filter by trigger_condition — config match
+FR-001,AC-001-02,TC-009,negative,P0,Filter by trigger_condition — config mismatch
+FR-001,AC-001-02,TC-010,negative,P1,Filter by trigger_condition — workflow mismatch
+FR-001,AC-001-02,TC-050,negative,P1,Missing roundtable.yaml — config rules skipped
+FR-001,AC-001-03,TC-006,positive,P0,Filter by provider_scope — claude only
+FR-001,AC-001-03,TC-007,positive,P0,Filter by provider_scope — codex only
+FR-001,AC-001-04,TC-002,negative,P0,Skip invalid rules with warning
+FR-001,AC-001-04,TC-004,negative,P1,Malformed JSON in rules file
+FR-001,AC-001-05,TC-003,negative,P0,Missing rules file returns empty set
+FR-001,AC-001-05,TC-047,negative,P0,Missing rules file — hook allows through
+FR-002,AC-002-01,TC-053,positive,P1,Extract rules from CLAUDE.md behavioral instructions
+FR-002,AC-002-02,TC-054,positive,P1,Extract sequence rules from agent state machine
+FR-002,AC-002-03,TC-055,positive,P0,Manual rule takes precedence over extracted rule
+FR-002,AC-002-04,TC-057,positive,P2,Extract rules from AGENTS.md
+FR-002,AC-002-05,TC-056,positive,P1,Low-confidence rules default to warn severity
+FR-002,N/A,TC-058,negative,P2,No behavioral keywords — empty result
+FR-003,AC-003-01,TC-035,positive,P0,Valid stop hook input processed correctly
+FR-003,AC-003-01,TC-038,positive,P0,Allow decision returns empty stdout
+FR-003,AC-003-01,TC-071,positive,P0,Hook chain — delegation-gate allows then compliance blocks
+FR-003,AC-003-01,TC-072,positive,P1,Hook chain — both hooks allow
+FR-003,AC-003-02,TC-037,positive,P0,Block decision returns correct JSON
+FR-003,AC-003-02,TC-041,positive,P0,First violation blocks with corrective guidance
+FR-003,AC-003-03,TC-039,positive,P1,Warn violation logged but allowed through
+FR-003,AC-003-04,TC-033,positive,P0,Multiple violations — highest severity wins
+FR-003,AC-003-05,TC-051,negative,P0,Engine throws — allow through
+FR-003,AC-003-05,TC-052,negative,P1,Timeout approaching — short-circuit and allow
+FR-003,N/A,TC-036,negative,P0,Malformed stdin — fail-open
+FR-003,N/A,TC-040,negative,P1,stop_hook_active is false — allow through
+FR-004,AC-004-01,TC-041,positive,P0,First violation blocks with corrective guidance
+FR-004,AC-004-01,TC-042,positive,P0,Second consecutive violation still blocks
+FR-004,AC-004-02,TC-043,positive,P0,Third retry triggers escalation
+FR-004,AC-004-03,TC-044,positive,P0,Retry counter resets on success
+FR-004,AC-004-03,TC-045,positive,P1,Retry counter resets when different rule violated
+FR-004,AC-004-04,TC-041,positive,P0,Corrective guidance specific enough for self-correction
+FR-004,AC-004-05,TC-043,positive,P0,After 3 retries response presented with warning
+FR-004,AC-004-06,TC-046,positive,P1,Auto-retry invisible to user
+FR-005,AC-005-01,TC-012,positive,P0,100% bullet lines passes
+FR-005,AC-005-01,TC-013,positive,P0,>30% prose lines triggers violation
+FR-005,AC-005-01,TC-014,boundary,P1,Exactly 30% prose — no violation
+FR-005,AC-005-01,TC-015,boundary,P1,31% prose — violation triggered
+FR-005,AC-005-01,TC-016,positive,P1,Headings excluded from prose count
+FR-005,AC-005-01,TC-017,positive,P1,Code blocks excluded from prose count
+FR-005,AC-005-01,TC-018,positive,P1,Table rows excluded from prose count
+FR-005,AC-005-01,TC-019,positive,P2,Numbered list items excluded
+FR-005,AC-005-01,TC-020,boundary,P2,Empty response — no violation
+FR-005,AC-005-01,TC-073,positive,P0,End-to-end bulleted format enforcement
+FR-005,AC-005-02,TC-021,positive,P0,Single-domain confirmation passes
+FR-005,AC-005-02,TC-022,positive,P0,Collapsed three-domain triggers violation
+FR-005,AC-005-02,TC-023,positive,P0,Two-domain collapse triggers violation
+FR-005,AC-005-02,TC-074,positive,P0,End-to-end domain confirmation enforcement
+FR-005,AC-005-03,TC-027,positive,P0,Response with elicitation question passes
+FR-005,AC-005-03,TC-028,positive,P0,Analysis complete without question triggers violation
+FR-005,AC-005-03,TC-029,positive,P1,Response with both question and analysis passes
+FR-005,AC-005-03,TC-030,positive,P1,Elicitation check skipped in PRESENTING_* state
+FR-005,AC-005-03,TC-075,positive,P0,End-to-end elicitation-first enforcement
+FR-005,AC-005-04,TC-022,positive,P0,Requirements + Architecture + Design in one message blocked
+FR-005,AC-005-04,TC-021,positive,P0,Single domain at correct state passes
+FR-005,AC-005-05,TC-024,positive,P1,Architecture confirmation when state is PRESENTING_ARCHITECTURE
+FR-005,AC-005-05,TC-025,negative,P1,Architecture confirmation when state is PRESENTING_REQUIREMENTS
+FR-005,AC-005-05,TC-026,positive,P1,Confirmation check skipped when state is IDLE
+FR-005,AC-005-05,TC-011,negative,P0,State-dependent rule skipped when roundtable state is null
+FR-006,AC-006-01,TC-059,positive,P0,Codex output validation detects bulleted violation
+FR-006,AC-006-02,TC-060,positive,P0,Codex re-invoked with corrective guidance on block
+FR-006,AC-006-03,TC-061,positive,P0,Codex retry limit — escalation after 3
+FR-006,AC-006-04,TC-062,positive,P1,Codex reads state.json for context
+FR-006,AC-006-05,TC-063,negative,P1,Codex-only rule not evaluated in Claude hook
+FR-006,AC-006-05,TC-007,positive,P0,Filter by provider_scope — codex only
+FR-006,AC-006-06,TC-064,positive,P0,Codex validates output via runtime-side inspection
+FR-006,AC-006-06,TC-069,positive,P1,Codex validation — no violation passes through
+FR-006,AC-006-07,TC-059,positive,P0,Non-bulleted Codex output rejected and retried
+FR-006,AC-006-08,TC-065,positive,P0,Collapsed domain confirmation blocked in Codex
+FR-006,AC-006-09,TC-066,positive,P0,Analysis without elicitation blocked in Codex
+FR-006,AC-006-10,TC-064,positive,P0,Implemented via runtime-side inspection not hooks
+FR-006,AC-006-11,TC-067,negative,P0,Codex fail-open on parsing error
+FR-006,AC-006-11,TC-068,negative,P0,Codex fail-open on state lookup failure
+FR-006,AC-006-12,TC-070,positive,P1,Automated tests cover retry/correction behavior
