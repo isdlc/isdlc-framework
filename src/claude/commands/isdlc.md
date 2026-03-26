@@ -2569,6 +2569,24 @@ After the orchestrator returns from finalize, execute this cleanup loop immediat
 3. This loop processes ALL tasks (workflow phase tasks AND sub-agent tasks) — do not attempt to filter or identify which tasks "belong" to the workflow. After finalize, every remaining task is stale by definition. Delete them all so the screen is clean for the next workflow.
 4. Do NOT exit the Phase-Loop Controller until this cleanup loop has completed.
 
+**INDEX REFRESH (post-finalize, non-blocking):**
+
+After task cleanup completes, refresh all search indexes so the next workflow or conversation sees the current codebase state. All steps are fail-open — index refresh failures MUST NOT block workflow completion.
+
+5. **Code index refresh**: Call `mcp__code-index-mcp__refresh_index` to rebuild the shallow file index, then call `mcp__code-index-mcp__build_deep_index` for symbol-level indexing. If either MCP call fails (tool unavailable, timeout), log a warning and continue.
+
+6. **Session cache rebuild**: Run `node bin/rebuild-cache.js` to refresh the SessionStart skill/config cache with any new or modified skills, contracts, or config files from this workflow. If the command fails, log a warning and continue.
+
+7. **Contract regeneration**: Run `node bin/generate-contracts.js` to regenerate shipped contracts reflecting any config changes made during this workflow (new skills added, workflows.json modified, etc.). Also regenerate project-local contracts: `node bin/generate-contracts.js --output .isdlc/config/contracts`. If either command fails, log a warning and continue.
+
+**Non-workflow index refresh**: The same 3 steps (code index, session cache, contracts) also run at the end of:
+- `/isdlc analyze` — after step 9 (GitHub label sync), before returning
+- `/discover` — after discovery finalization
+- `/isdlc test generate` — after STEP 4 finalize (already covered above via Phase-Loop Controller)
+- `/isdlc upgrade` — after STEP 4 finalize (already covered above via Phase-Loop Controller)
+
+For non-workflow contexts, call the same 3 steps inline. Failures are non-blocking.
+
 #### Flow Summary
 
 ```
