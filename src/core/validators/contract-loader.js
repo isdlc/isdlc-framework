@@ -14,6 +14,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { validateContract } from './contract-schema.js';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +65,28 @@ function findEntry(contracts, executionUnit, context) {
   return { entry: null, contractFile: null };
 }
 
+/**
+ * Auto-regenerate contracts by invoking bin/generate-contracts.js.
+ * Fail-open: returns true on success, false on failure (caller continues with stale contract).
+ * @param {string} projectRoot
+ * @param {string} outputDir - Target directory for regenerated contracts
+ * @returns {boolean}
+ */
+function autoRegenerate(projectRoot, outputDir) {
+  try {
+    const generatorPath = join(projectRoot, 'bin', 'generate-contracts.js');
+    if (!existsSync(generatorPath)) return false;
+    execFileSync('node', [generatorPath, '--output', outputDir], {
+      cwd: projectRoot,
+      timeout: 10000,
+      stdio: 'pipe'
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -88,12 +111,26 @@ export function loadContractEntry(executionUnit, context, options = {}) {
     const overrideDir = options.overridePath || join(projectRoot, '.isdlc', 'config', 'contracts');
 
     // 1. Check override first (full replacement, ADR-007)
-    const overrideContracts = scanContractDir(overrideDir);
-    const overrideResult = findEntry(overrideContracts, executionUnit, context);
+    let overrideContracts = scanContractDir(overrideDir);
+    let overrideResult = findEntry(overrideContracts, executionUnit, context);
     if (overrideResult.entry) {
       const staleness = overrideResult.contractFile?._generation_metadata
         ? checkStaleness(overrideResult.contractFile._generation_metadata, projectRoot)
         : { stale: false, reason: null, changedFiles: [] };
+
+      // Auto-regenerate on staleness
+      if (staleness.stale) {
+        const regenerated = autoRegenerate(projectRoot, overrideDir);
+        if (regenerated) {
+          overrideContracts = scanContractDir(overrideDir);
+          overrideResult = findEntry(overrideContracts, executionUnit, context);
+          if (overrideResult.entry) {
+            return { entry: overrideResult.entry, stale: false, staleReason: null, source: 'override' };
+          }
+        }
+        // Regeneration failed — continue with stale contract (fail-open)
+      }
+
       return {
         entry: overrideResult.entry,
         stale: staleness.stale,
@@ -103,12 +140,26 @@ export function loadContractEntry(executionUnit, context, options = {}) {
     }
 
     // 2. Fall back to shipped contracts
-    const shippedContracts = scanContractDir(shippedDir);
-    const shippedResult = findEntry(shippedContracts, executionUnit, context);
+    let shippedContracts = scanContractDir(shippedDir);
+    let shippedResult = findEntry(shippedContracts, executionUnit, context);
     if (shippedResult.entry) {
       const staleness = shippedResult.contractFile?._generation_metadata
         ? checkStaleness(shippedResult.contractFile._generation_metadata, projectRoot)
         : { stale: false, reason: null, changedFiles: [] };
+
+      // Auto-regenerate on staleness
+      if (staleness.stale) {
+        const regenerated = autoRegenerate(projectRoot, shippedDir);
+        if (regenerated) {
+          shippedContracts = scanContractDir(shippedDir);
+          shippedResult = findEntry(shippedContracts, executionUnit, context);
+          if (shippedResult.entry) {
+            return { entry: shippedResult.entry, stale: false, staleReason: null, source: 'shipped' };
+          }
+        }
+        // Regeneration failed — continue with stale contract (fail-open)
+      }
+
       return {
         entry: shippedResult.entry,
         stale: staleness.stale,
