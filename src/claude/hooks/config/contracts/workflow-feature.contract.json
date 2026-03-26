@@ -1,0 +1,310 @@
+{
+  "_generation_metadata": {
+    "generated_at": "2026-03-26T07:34:52.900Z",
+    "generator_version": "1.0.0",
+    "input_files": [
+      {
+        "hash": "6254c4389cd53cfc285b8917796abffbac63783b6db5d0c8b69c928ea876b884",
+        "path": ".claude/hooks/config/artifact-paths.json"
+      },
+      {
+        "hash": "05c7e94343ff4314df013c62cdfab5e3c28388bf7c6933925b247cd6494bfdaa",
+        "path": ".claude/hooks/config/iteration-requirements.json"
+      },
+      {
+        "hash": "c1bc8b8dc6d836021e5a4748acae404a91be53b9a134ab197882e2dc04f7414a",
+        "path": ".claude/hooks/config/skills-manifest.json"
+      },
+      {
+        "hash": "ddd1d03b4183fdf40854ecf682cc0777c3bac6c831690f599ea97dbff64c45ad",
+        "path": ".isdlc/roundtable.yaml"
+      },
+      {
+        "hash": "74ed23ed6cc212dab5dc327df4e965eaf1b91070f72f74966559b7f1782f1547",
+        "path": "src/isdlc/config/workflows.json"
+      }
+    ]
+  },
+  "entries": [
+    {
+      "context": "feature:standard",
+      "execution_unit": "01-requirements",
+      "expectations": {
+        "agent": "requirements-analyst",
+        "artifacts_produced": {
+          "$ref": "artifact-paths",
+          "phase": "01-requirements"
+        },
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "requirements-analyst"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.01-requirements.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "02-impact-analysis",
+      "expectations": {
+        "agent": "impact-analysis-orchestrator",
+        "artifacts_produced": null,
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "impact-analysis-orchestrator"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.02-impact-analysis.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "03-architecture",
+      "expectations": {
+        "agent": "solution-architect",
+        "artifacts_produced": {
+          "$ref": "artifact-paths",
+          "phase": "03-architecture"
+        },
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "solution-architect"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.03-architecture.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "04-design",
+      "expectations": {
+        "agent": "system-designer",
+        "artifacts_produced": {
+          "$ref": "artifact-paths",
+          "phase": "04-design"
+        },
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "system-designer"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.04-design.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "05-test-strategy",
+      "expectations": {
+        "agent": "test-design-engineer",
+        "artifacts_produced": {
+          "$ref": "artifact-paths",
+          "phase": "05-test-strategy"
+        },
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "test-design-engineer"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.05-test-strategy.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "06-implementation",
+      "expectations": {
+        "agent": "software-developer",
+        "artifacts_produced": null,
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "software-developer"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.06-implementation.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "08-code-review",
+      "expectations": {
+        "agent": "qa-engineer",
+        "artifacts_produced": {
+          "$ref": "artifact-paths",
+          "phase": "08-code-review"
+        },
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "qa-engineer"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.08-code-review.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    },
+    {
+      "context": "feature:standard",
+      "execution_unit": "16-quality-loop",
+      "expectations": {
+        "agent": "quality-loop-engineer",
+        "artifacts_produced": null,
+        "cleanup": [],
+        "presentation": {
+          "completion_summary": null,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": "task-list"
+        },
+        "skills_required": {
+          "$ref": "skills-manifest",
+          "agent": "quality-loop-engineer"
+        },
+        "state_assertions": [
+          {
+            "equals": "completed",
+            "path": "phases.16-quality-loop.status"
+          }
+        ]
+      },
+      "violation_response": {
+        "agent_not_engaged": "block",
+        "artifacts_missing": "block",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    }
+  ],
+  "version": "1.0.0"
+}

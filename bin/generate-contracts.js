@@ -167,7 +167,14 @@ function deterministicStringify(obj) {
  */
 function buildWorkflowEntries(workflowType, phaseAgentMap, artifactPaths, skillsManifest, workflowDef) {
   const entries = [];
-  const phases = workflowDef?.phases || Object.keys(phaseAgentMap);
+
+  if (!workflowDef?.phases || !Array.isArray(workflowDef.phases) || workflowDef.phases.length === 0) {
+    // No workflow definition found — do not silently emit all phases
+    process.stderr.write(`WARNING: No phase sequence found for workflow "${workflowType}". Skipping.\n`);
+    return entries;
+  }
+
+  const phases = workflowDef.phases;
 
   for (const phase of phases) {
     const agent = phaseAgentMap[phase];
@@ -338,7 +345,11 @@ export function generateContracts(options = {}) {
   const configPaths = {
     artifactPaths: join(projectRoot, '.claude', 'hooks', 'config', 'artifact-paths.json'),
     skillsManifest: join(projectRoot, '.claude', 'hooks', 'config', 'skills-manifest.json'),
-    workflows: join(projectRoot, '.claude', 'hooks', 'config', 'workflows.json'),
+    workflows: existsSync(join(projectRoot, '.isdlc', 'config', 'workflows.json'))
+      ? join(projectRoot, '.isdlc', 'config', 'workflows.json')
+      : existsSync(join(projectRoot, 'src', 'isdlc', 'config', 'workflows.json'))
+        ? join(projectRoot, 'src', 'isdlc', 'config', 'workflows.json')
+        : join(projectRoot, '.claude', 'hooks', 'config', 'workflows.json'),
     externalSkills: join(projectRoot, 'docs', 'isdlc', 'external-skills-manifest.json'),
     roundtable: join(projectRoot, '.isdlc', 'roundtable.yaml'),
     iterationReqs: join(projectRoot, '.claude', 'hooks', 'config', 'iteration-requirements.json')

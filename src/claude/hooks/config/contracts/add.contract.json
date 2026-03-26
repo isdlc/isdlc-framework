@@ -1,0 +1,58 @@
+{
+  "_generation_metadata": {
+    "generated_at": "2026-03-26T07:34:52.900Z",
+    "generator_version": "1.0.0",
+    "input_files": [
+      {
+        "hash": "6254c4389cd53cfc285b8917796abffbac63783b6db5d0c8b69c928ea876b884",
+        "path": ".claude/hooks/config/artifact-paths.json"
+      },
+      {
+        "hash": "05c7e94343ff4314df013c62cdfab5e3c28388bf7c6933925b247cd6494bfdaa",
+        "path": ".claude/hooks/config/iteration-requirements.json"
+      },
+      {
+        "hash": "c1bc8b8dc6d836021e5a4748acae404a91be53b9a134ab197882e2dc04f7414a",
+        "path": ".claude/hooks/config/skills-manifest.json"
+      },
+      {
+        "hash": "ddd1d03b4183fdf40854ecf682cc0777c3bac6c831690f599ea97dbff64c45ad",
+        "path": ".isdlc/roundtable.yaml"
+      },
+      {
+        "hash": "74ed23ed6cc212dab5dc327df4e965eaf1b91070f72f74966559b7f1782f1547",
+        "path": "src/isdlc/config/workflows.json"
+      }
+    ]
+  },
+  "entries": [
+    {
+      "context": "add",
+      "execution_unit": "add-item",
+      "expectations": {
+        "agent": null,
+        "artifacts_produced": null,
+        "cleanup": [
+          "BACKLOG.md updated with new item"
+        ],
+        "presentation": {
+          "completion_summary": true,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": null
+        },
+        "skills_required": null,
+        "state_assertions": []
+      },
+      "violation_response": {
+        "agent_not_engaged": "report",
+        "artifacts_missing": "warn",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    }
+  ],
+  "version": "1.0.0"
+}
