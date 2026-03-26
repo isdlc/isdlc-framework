@@ -21,17 +21,18 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('FR-001: Finalization Chain', () => {
-  it('FC-01: chain has exactly 6 steps (AC-001-01)', () => {
+  it('FC-01: chain has exactly 7 steps (AC-001-01, REQ-GH-208)', () => {
     const chain = getFinalizationChain();
-    assert.equal(chain.length, 6);
+    assert.equal(chain.length, 7);
   });
 
-  it('FC-02: steps are in correct order (AC-001-01)', () => {
+  it('FC-02: steps are in correct order (AC-001-01, REQ-GH-208)', () => {
     const chain = getFinalizationChain();
     const ids = chain.map(s => s.id);
     assert.deepEqual(ids, [
       'meta_status_update', 'backlog_marker_update', 'github_sync',
-      'sizing_computation', 'memory_writeback', 'async_enrichment'
+      'sizing_computation', 'memory_writeback', 'async_enrichment',
+      'task_breakdown_write'
     ]);
   });
 
@@ -119,11 +120,12 @@ describe('FR-003: Provider Classification', () => {
 // ---------------------------------------------------------------------------
 
 describe('FR-004: Registry Functions', () => {
-  it('FC-11: getProviderNeutralSteps returns 5 steps (AC-004-02)', () => {
+  it('FC-11: getProviderNeutralSteps returns 6 steps (AC-004-02, REQ-GH-208)', () => {
     const neutral = getProviderNeutralSteps();
-    assert.equal(neutral.length, 5);
+    assert.equal(neutral.length, 6);
     const ids = neutral.map(s => s.id);
     assert.ok(!ids.includes('github_sync'));
+    assert.ok(ids.includes('task_breakdown_write'));
   });
 
   it('FC-12: getAsyncSteps returns 3 steps (AC-004-03)', () => {
@@ -155,6 +157,39 @@ describe('Finalization Chain Immutability', () => {
     const chain = getFinalizationChain();
     for (const step of chain) {
       assert.ok(Object.isFrozen(step.depends_on), `${step.id}.depends_on should be frozen`);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REQ-GH-208: tasks.md in Finalization Chain (FR-003 AC-003-01)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-208: tasks.md artifact in finalization chain', () => {
+  it('FC-16: finalization chain includes tasks.md artifact reference (FR-003 AC-003-01)', () => {
+    const chain = getFinalizationChain();
+    const hasTasksRef = chain.some(step =>
+      step.action.toLowerCase().includes('tasks.md') ||
+      step.id.includes('task')
+    );
+    assert.ok(hasTasksRef, 'At least one step should reference tasks.md');
+  });
+
+  it('FC-17: tasks.md artifact step is guarded for non-light tiers (FR-002 AC-002-05, FR-003 AC-003-01)', () => {
+    const chain = getFinalizationChain();
+    const taskStep = chain.find(step =>
+      step.action.toLowerCase().includes('tasks.md') ||
+      step.id.includes('task')
+    );
+    assert.ok(taskStep, 'Task step should exist');
+    assert.equal(taskStep.fail_open, true, 'Task artifact step should be fail-open (guarded)');
+  });
+
+  it('FC-18: finalization chain immutability preserved after update (FR-003 AC-003-01)', () => {
+    const chain = getFinalizationChain();
+    assert.ok(Object.isFrozen(chain), 'Chain should be frozen');
+    for (const step of chain) {
+      assert.ok(Object.isFrozen(step), `step ${step.id} should be frozen`);
     }
   });
 });

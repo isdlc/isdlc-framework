@@ -5,6 +5,8 @@
 
 ## Open
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
+- [ ] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/)
+  - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
 - [ ] #208 Generate structured task breakdown artifact from analysis before build [github: GH-208] -> [requirements](docs/requirements/REQ-GH-208-generate-structured-task-breakdown-artifact/) **Analyzed**
 - [x] #206 Conversational enforcement via Stop hook — bulleted format, three-domain confirmation, roundtable skip [github: GH-206] → `REQ-0140-conversational-enforcement-stop-hook/` -> [requirements](docs/requirements/REQ-0140-conversational-enforcement-stop-hook/) **Completed**
   - **Completed:** 2026-03-25

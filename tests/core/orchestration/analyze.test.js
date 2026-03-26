@@ -238,15 +238,15 @@ describe('FR-005: Confirmation state machine', () => {
     assert.ok(domains.includes('design'));
   });
 
-  it('AZ-12: accept advances to next domain', async () => {
+  it('AZ-12: accept advances to next domain (REQ-GH-208: 4 domains)', async () => {
     const responses = [
       'req...', '__TOPICS_COMPLETE__',
-      'accept', 'accept', 'accept'
+      'accept', 'accept', 'accept', 'accept'
     ];
     const runtime = createInteractiveRuntime(responses);
     const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
 
-    assert.equal(result.confirmation_record.length, 3);
+    assert.equal(result.confirmation_record.length, 4);
     assert.ok(result.confirmation_record.every(r => r.outcome === 'accept'));
   });
 
@@ -373,5 +373,167 @@ describe('Analyze edge cases', () => {
     const result = await runAnalyze(runtime, makeBugItem(), makeOptions());
 
     assert.ok(Array.isArray(result.confirmation_record));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REQ-GH-208: PRESENTING_TASKS as 4th Confirmation Domain (FR-002)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-208: PRESENTING_TASKS confirmation domain', () => {
+  it('AZ-22: standard sizing presents 4 confirmation domains (FR-002 AC-002-01, AC-002-02)', async () => {
+    const responses = [
+      'req...', 'arch...', 'design...', '__TOPICS_COMPLETE__',
+      'accept',  // requirements
+      'accept',  // architecture
+      'accept',  // design
+      'accept'   // tasks
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    assert.equal(result.confirmation_record.length, 4);
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.deepEqual(domains, ['requirements', 'architecture', 'design', 'tasks']);
+  });
+
+  it('AZ-23: PRESENTING_TASKS domain shows after PRESENTING_DESIGN accept (FR-002 AC-002-01)', async () => {
+    const responses = [
+      'req...', 'arch...', 'design...', '__TOPICS_COMPLETE__',
+      'accept', 'accept', 'accept', 'accept'
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.equal(domains[2], 'design');
+    assert.equal(domains[3], 'tasks');
+  });
+
+  it('AZ-24: accept on tasks domain transitions to finalization (FR-002 AC-002-03)', async () => {
+    const responses = [
+      'req...', 'arch...', 'design...', '__TOPICS_COMPLETE__',
+      'accept', 'accept', 'accept', 'accept'
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    assert.equal(result.finalization_status.completed, true);
+    const taskRecord = result.confirmation_record.find(r => r.domain === 'tasks');
+    assert.ok(taskRecord);
+    assert.equal(taskRecord.outcome, 'accept');
+  });
+
+  it('AZ-25: amend on tasks domain loops back to tasks confirmation (FR-002 AC-002-04)', async () => {
+    const responses = [
+      'req...', '__TOPICS_COMPLETE__',
+      'accept', 'accept', 'accept',  // req, arch, design
+      'amend', 'remove Polish phase tasks',  // amend tasks
+      'accept'  // re-accept tasks
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    // All 4 domains should eventually be accepted
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.ok(domains.includes('tasks'));
+    const taskRecord = result.confirmation_record.find(r => r.domain === 'tasks');
+    assert.equal(taskRecord.outcome, 'accept');
+    assert.ok(taskRecord.amendCount >= 1, 'Should have at least 1 amend');
+  });
+
+  it('AZ-26: light sizing skips PRESENTING_TASKS (FR-002 AC-002-05)', async () => {
+    const responses = [
+      'req...', '__TOPICS_COMPLETE__',
+      'accept',  // requirements
+      'accept'   // design (no architecture, no tasks)
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), {
+      ...makeOptions(),
+      sizing: 'light'
+    });
+
+    assert.equal(result.confirmation_record.length, 2);
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.ok(!domains.includes('tasks'), 'Light flow should not include tasks domain');
+  });
+
+  it('AZ-27: trivial sizing skips PRESENTING_TASKS (FR-002 AC-002-05)', async () => {
+    const responses = [
+      'req...', '__TOPICS_COMPLETE__',
+      'accept'
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), {
+      ...makeOptions(),
+      sizing: 'trivial'
+    });
+
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.ok(!domains.includes('tasks'), 'Trivial flow should not include tasks domain');
+  });
+
+  it('AZ-28: task generation failure transitions gracefully — fail-open (FR-001 AC-001-01)', async () => {
+    let callIndex = 0;
+    const runtime = createMockRuntime({
+      presentInteractive: async (prompt) => {
+        callIndex++;
+        // Roundtable conversation
+        if (callIndex <= 2) return callIndex === 2 ? '__TOPICS_COMPLETE__' : 'req...';
+        // Confirmation responses
+        if (prompt.type === 'confirmation') {
+          if (prompt.domain === 'tasks') {
+            throw new Error('Task generation failed');
+          }
+          return 'accept';
+        }
+        return 'accept';
+      }
+    });
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    // Should still complete finalization despite task domain failure
+    assert.equal(result.finalization_status.completed, true);
+    // The other 3 domains should still be accepted
+    const acceptedDomains = result.confirmation_record
+      .filter(r => r.outcome === 'accept')
+      .map(r => r.domain);
+    assert.ok(acceptedDomains.includes('requirements'));
+    assert.ok(acceptedDomains.includes('architecture'));
+    assert.ok(acceptedDomains.includes('design'));
+  });
+
+  it('AZ-29: stateToDomain maps PRESENTING_TASKS to tasks (FR-002 AC-002-01)', async () => {
+    // We verify through the orchestrator output — the domain name in confirmation_record
+    const responses = [
+      'req...', '__TOPICS_COMPLETE__',
+      'accept', 'accept', 'accept', 'accept'
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    const taskRecord = result.confirmation_record.find(r => r.domain === 'tasks');
+    assert.ok(taskRecord, 'Should have a tasks domain in confirmation record');
+  });
+
+  it('AZ-30: CONFIRMATION_DOMAINS includes tasks as 4th element (FR-002 AC-002-01)', async () => {
+    const responses = [
+      'req...', '__TOPICS_COMPLETE__',
+      'accept', 'accept', 'accept', 'accept'
+    ];
+    const runtime = createInteractiveRuntime(responses);
+    const result = await runAnalyze(runtime, makeFeatureItem(), makeOptions());
+
+    const domains = result.confirmation_record.map(r => r.domain);
+    assert.equal(domains.length, 4);
+    assert.equal(domains[3], 'tasks');
+  });
+
+  it('AZ-31: bug items skip PRESENTING_TASKS entirely (FR-002 AC-002-05)', async () => {
+    const runtime = createInteractiveRuntime(['bug details gathered']);
+    const result = await runAnalyze(runtime, makeBugItem(), makeOptions());
+
+    assert.deepEqual(result.confirmation_record, []);
   });
 });
