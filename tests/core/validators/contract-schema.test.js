@@ -275,3 +275,97 @@ describe('Contract Schema - boundary tests', () => {
     assert.equal(result.valid, true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// REQ-GH-208: task_display and task_scope fields (FR-006, FR-007)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-208: task_display and task_scope validation', () => {
+  it('CS-22: validateContractEntry accepts presentation with task_display field (FR-007 AC-007-01)', () => {
+    const entry = validEntry({
+      expectations: {
+        ...validEntry().expectations,
+        presentation: {
+          confirmation_sequence: ['requirements', 'architecture', 'design', 'tasks'],
+          persona_format: null,
+          progress_format: null,
+          completion_summary: true,
+          task_display: 'counter'
+        }
+      }
+    });
+    const result = validateContractEntry(entry);
+    assert.equal(result.valid, true);
+  });
+
+  it('CS-23: validateContractEntry accepts presentation with task_scope field (FR-006 AC-006-01)', () => {
+    const entry = validEntry({
+      expectations: {
+        ...validEntry().expectations,
+        presentation: {
+          confirmation_sequence: null,
+          persona_format: null,
+          progress_format: null,
+          completion_summary: null,
+          task_scope: 'full-workflow'
+        }
+      }
+    });
+    const result = validateContractEntry(entry);
+    assert.equal(result.valid, true);
+  });
+
+  it('CS-24: validateContractEntry accepts all valid task_display enum values (FR-007 AC-007-01..03)', () => {
+    for (const value of ['counter', 'expanded', 'phase-only']) {
+      const entry = validEntry({
+        expectations: {
+          ...validEntry().expectations,
+          presentation: {
+            confirmation_sequence: null,
+            persona_format: null,
+            progress_format: null,
+            completion_summary: null,
+            task_display: value
+          }
+        }
+      });
+      const result = validateContractEntry(entry);
+      assert.equal(result.valid, true, `task_display '${value}' should be valid`);
+    }
+  });
+
+  it('CS-25: validateContractEntry accepts all valid task_scope enum values (FR-006 AC-006-01..02)', () => {
+    for (const value of ['full-workflow', 'implementation-only']) {
+      const entry = validEntry({
+        expectations: {
+          ...validEntry().expectations,
+          presentation: {
+            confirmation_sequence: null,
+            persona_format: null,
+            progress_format: null,
+            completion_summary: null,
+            task_scope: value
+          }
+        }
+      });
+      const result = validateContractEntry(entry);
+      assert.equal(result.valid, true, `task_scope '${value}' should be valid`);
+    }
+  });
+
+  it('CS-26: validateContractEntry accepts presentation without task_display/task_scope — optional fields (FR-006, FR-007)', () => {
+    const entry = validEntry({
+      expectations: {
+        ...validEntry().expectations,
+        presentation: {
+          confirmation_sequence: ['requirements', 'architecture', 'design'],
+          persona_format: 'bulleted',
+          progress_format: 'task-list',
+          completion_summary: true
+        }
+      }
+    });
+    const result = validateContractEntry(entry);
+    assert.equal(result.valid, true, 'Existing contracts without task fields should remain valid');
+  });
+});

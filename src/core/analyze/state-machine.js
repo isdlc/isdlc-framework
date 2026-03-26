@@ -18,6 +18,7 @@ const STATES = Object.freeze({
   PRESENTING_REQUIREMENTS:   'PRESENTING_REQUIREMENTS',
   PRESENTING_ARCHITECTURE:   'PRESENTING_ARCHITECTURE',
   PRESENTING_DESIGN:         'PRESENTING_DESIGN',
+  PRESENTING_TASKS:          'PRESENTING_TASKS',
   AMENDING:                  'AMENDING',
   FINALIZING:                'FINALIZING',
   COMPLETE:                  'COMPLETE'
@@ -39,8 +40,10 @@ const transitionTable = Object.freeze({
   'PRESENTING_REQUIREMENTS:amend':        'AMENDING',
   'PRESENTING_ARCHITECTURE:accept':       'PRESENTING_DESIGN',
   'PRESENTING_ARCHITECTURE:amend':        'AMENDING',
-  'PRESENTING_DESIGN:accept':             'FINALIZING',
+  'PRESENTING_DESIGN:accept':             'PRESENTING_TASKS',
   'PRESENTING_DESIGN:amend':              'AMENDING',
+  'PRESENTING_TASKS:accept':              'FINALIZING',
+  'PRESENTING_TASKS:amend':               'AMENDING',
   'AMENDING:accept':                      null,  // resolved at runtime — depends on which domain triggered amendment
   'FINALIZING:finalize_complete':         'COMPLETE'
 });
@@ -50,7 +53,7 @@ const transitionTable = Object.freeze({
 // ---------------------------------------------------------------------------
 
 const tierPaths = Object.freeze({
-  standard: Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN']),
+  standard: Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']),
   light:    Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN']),
   trivial:  Object.freeze(['FINALIZING'])
 });

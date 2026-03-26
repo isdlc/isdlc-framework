@@ -301,3 +301,51 @@ describe('Contract Generator - output paths', () => {
     assert.ok(existsSync(join(customDir, 'workflow-feature.contract.json')));
   });
 });
+
+// ---------------------------------------------------------------------------
+// REQ-GH-208: task_display and task_scope defaults (FR-006, FR-007)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-208: task_display and task_scope defaults in generated contracts', () => {
+  it('CG-26: Generated contract includes task_display default in presentation (FR-007 AC-007-01)', () => {
+    const outputDir = createTempOutputDir();
+    generateContracts({ projectRoot: PROJECT_ROOT, outputDir });
+    const contract = JSON.parse(readFileSync(join(outputDir, 'analyze.contract.json'), 'utf8'));
+    const entry = contract.entries.find(e => e.execution_unit === 'roundtable');
+    assert.equal(entry.expectations.presentation.task_display, 'counter');
+  });
+
+  it('CG-27: Generated contract includes task_scope default in presentation (FR-006 AC-006-01)', () => {
+    const outputDir = createTempOutputDir();
+    generateContracts({ projectRoot: PROJECT_ROOT, outputDir });
+    const contract = JSON.parse(readFileSync(join(outputDir, 'analyze.contract.json'), 'utf8'));
+    const entry = contract.entries.find(e => e.execution_unit === 'roundtable');
+    assert.equal(entry.expectations.presentation.task_scope, 'full-workflow');
+  });
+
+  it('CG-28: Generated contracts with presentation pass schema validation (FR-006, FR-007)', () => {
+    const outputDir = createTempOutputDir();
+    generateContracts({ projectRoot: PROJECT_ROOT, outputDir });
+    for (const file of ['analyze.contract.json']) {
+      const contract = JSON.parse(readFileSync(join(outputDir, file), 'utf8'));
+      const validation = validateContract(contract);
+      assert.equal(validation.valid, true, `${file} should pass validation with task fields: ${validation.errors.join(', ')}`);
+    }
+  });
+
+  it('CG-29: task_display defaults to counter when not configured (FR-007 AC-007-01)', () => {
+    const outputDir = createTempOutputDir();
+    generateContracts({ projectRoot: PROJECT_ROOT, outputDir });
+    const contract = JSON.parse(readFileSync(join(outputDir, 'analyze.contract.json'), 'utf8'));
+    const entry = contract.entries.find(e => e.execution_unit === 'roundtable');
+    assert.equal(entry.expectations.presentation.task_display, 'counter');
+  });
+
+  it('CG-30: task_scope defaults to full-workflow when not configured (FR-006 AC-006-01)', () => {
+    const outputDir = createTempOutputDir();
+    generateContracts({ projectRoot: PROJECT_ROOT, outputDir });
+    const contract = JSON.parse(readFileSync(join(outputDir, 'analyze.contract.json'), 'utf8'));
+    const entry = contract.entries.find(e => e.execution_unit === 'roundtable');
+    assert.equal(entry.expectations.presentation.task_scope, 'full-workflow');
+  });
+});

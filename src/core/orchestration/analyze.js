@@ -27,14 +27,15 @@ const MAX_ROUNDTABLE_TURNS = 30;
 /** Signal string indicating all topics are covered. */
 const TOPICS_COMPLETE_SIGNAL = '__TOPICS_COMPLETE__';
 
-/** Confirmation domains in order. */
-const CONFIRMATION_DOMAINS = Object.freeze(['requirements', 'architecture', 'design']);
+/** Confirmation domains in order. REQ-GH-208: tasks added as 4th domain. */
+const CONFIRMATION_DOMAINS = Object.freeze(['requirements', 'architecture', 'design', 'tasks']);
 
-/** State machine state names mapped to domains. */
+/** State machine state names mapped to domains. REQ-GH-208: PRESENTING_TASKS added. */
 const DOMAIN_TO_STATE = Object.freeze({
   requirements: 'PRESENTING_REQUIREMENTS',
   architecture: 'PRESENTING_ARCHITECTURE',
-  design:       'PRESENTING_DESIGN'
+  design:       'PRESENTING_DESIGN',
+  tasks:        'PRESENTING_TASKS'
 });
 
 // ---------------------------------------------------------------------------
@@ -267,42 +268,49 @@ async function runConfirmationSequence(runtime, item, sizing, conversationHistor
     let amendCount = 0;
     let accepted = false;
 
-    while (!accepted && amendCount <= MAX_AMEND_LOOPS) {
-      const prompt = {
-        type: 'confirmation',
-        domain,
-        stateName,
-        item,
-        conversationHistory,
-        amendCount
-      };
-
-      const response = await runtime.presentInteractive(prompt);
-
-      if (response === 'accept') {
-        record.push({ domain, outcome: 'accept', amendCount });
-        accepted = true;
-      } else if (response === 'amend') {
-        amendCount++;
-        // Get revision content
-        const revisionPrompt = {
-          type: 'amend_revision',
+    // REQ-GH-208: Fail-open for tasks domain — if task generation/presentation
+    // throws, skip the domain and continue to finalization (ADR-001 error handling)
+    try {
+      while (!accepted && amendCount <= MAX_AMEND_LOOPS) {
+        const prompt = {
+          type: 'confirmation',
           domain,
+          stateName,
           item,
-          conversationHistory
+          conversationHistory,
+          amendCount
         };
-        const revision = await runtime.presentInteractive(revisionPrompt);
-        conversationHistory.push({ role: 'amend', domain, content: revision });
-      } else {
-        // Treat anything else as accept (graceful)
-        record.push({ domain, outcome: 'accept', amendCount });
-        accepted = true;
-      }
-    }
 
-    // If max amends reached without accept, force accept
-    if (!accepted) {
-      record.push({ domain, outcome: 'accept', amendCount, forced: true });
+        const response = await runtime.presentInteractive(prompt);
+
+        if (response === 'accept') {
+          record.push({ domain, outcome: 'accept', amendCount });
+          accepted = true;
+        } else if (response === 'amend') {
+          amendCount++;
+          // Get revision content
+          const revisionPrompt = {
+            type: 'amend_revision',
+            domain,
+            item,
+            conversationHistory
+          };
+          const revision = await runtime.presentInteractive(revisionPrompt);
+          conversationHistory.push({ role: 'amend', domain, content: revision });
+        } else {
+          // Treat anything else as accept (graceful)
+          record.push({ domain, outcome: 'accept', amendCount });
+          accepted = true;
+        }
+      }
+
+      // If max amends reached without accept, force accept
+      if (!accepted) {
+        record.push({ domain, outcome: 'accept', amendCount, forced: true });
+      }
+    } catch (err) {
+      // REQ-GH-208 FR-001: Fail-open — skip failed domain, continue sequence
+      record.push({ domain, outcome: 'skipped', amendCount, error: err.message });
     }
   }
 

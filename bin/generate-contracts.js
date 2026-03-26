@@ -243,10 +243,12 @@ function buildAnalyzeEntries(roundtableConfig) {
       state_assertions: [],
       cleanup: [],
       presentation: {
-        confirmation_sequence: ['requirements', 'architecture', 'design'],
+        confirmation_sequence: ['requirements', 'architecture', 'design', 'tasks'],
         persona_format: personaFormat,
         progress_format: null,
-        completion_summary: true
+        completion_summary: true,
+        task_display: 'counter',
+        task_scope: 'full-workflow'
       }
     },
     violation_response: {

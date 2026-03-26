@@ -21,10 +21,10 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('FR-001: FSM Definition', () => {
-  it('SM-01: STATES enum has 7 members (AC-001-01)', () => {
+  it('SM-01: STATES enum has 8 members (AC-001-01)', () => {
     const { STATES } = getStateMachine();
     const keys = Object.keys(STATES);
-    assert.equal(keys.length, 7);
+    assert.equal(keys.length, 8);
   });
 
   it('SM-02: STATES contains exact expected values (AC-001-01)', () => {
@@ -79,8 +79,8 @@ describe('FR-002: Transitions', () => {
     assert.equal(getTransition('PRESENTING_ARCHITECTURE', 'accept'), 'PRESENTING_DESIGN');
   });
 
-  it('SM-10: PRESENTING_DESIGN + accept -> FINALIZING', () => {
-    assert.equal(getTransition('PRESENTING_DESIGN', 'accept'), 'FINALIZING');
+  it('SM-10: PRESENTING_DESIGN + accept -> PRESENTING_TASKS (REQ-GH-208)', () => {
+    assert.equal(getTransition('PRESENTING_DESIGN', 'accept'), 'PRESENTING_TASKS');
   });
 
   it('SM-11: any PRESENTING + amend -> AMENDING (AC-002-01)', () => {
@@ -114,10 +114,10 @@ describe('FR-002: Transitions', () => {
 // ---------------------------------------------------------------------------
 
 describe('FR-003: Tier Paths', () => {
-  it('SM-16: standard tier has 3 domains (AC-003-01)', () => {
+  it('SM-16: standard tier has 4 domains (AC-003-01, REQ-GH-208)', () => {
     const path = getTierPath('standard');
     assert.deepEqual(path, [
-      'PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN'
+      'PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN', 'PRESENTING_TASKS'
     ]);
   });
 
@@ -142,5 +142,51 @@ describe('FR-003: Tier Paths', () => {
     assert.ok(Object.isFrozen(standard));
     assert.ok(Object.isFrozen(light));
     assert.ok(Object.isFrozen(trivial));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REQ-GH-208: PRESENTING_TASKS State (FR-002 AC-002-01..05)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-208: PRESENTING_TASKS state', () => {
+  it('SM-21: STATES enum has 8 members after update (FR-002 AC-002-01)', () => {
+    const { STATES } = getStateMachine();
+    const keys = Object.keys(STATES);
+    assert.equal(keys.length, 8);
+  });
+
+  it('SM-22: STATES contains PRESENTING_TASKS value (FR-002 AC-002-01)', () => {
+    const { STATES } = getStateMachine();
+    assert.equal(STATES.PRESENTING_TASKS, 'PRESENTING_TASKS');
+  });
+
+  it('SM-23: PRESENTING_DESIGN + accept -> PRESENTING_TASKS (FR-002 AC-002-01)', () => {
+    assert.equal(getTransition('PRESENTING_DESIGN', 'accept'), 'PRESENTING_TASKS');
+  });
+
+  it('SM-24: PRESENTING_TASKS + accept -> FINALIZING (FR-002 AC-002-01, AC-002-03)', () => {
+    assert.equal(getTransition('PRESENTING_TASKS', 'accept'), 'FINALIZING');
+  });
+
+  it('SM-25: PRESENTING_TASKS + amend -> AMENDING (FR-002 AC-002-04)', () => {
+    assert.equal(getTransition('PRESENTING_TASKS', 'amend'), 'AMENDING');
+  });
+
+  it('SM-26: standard tier path includes PRESENTING_TASKS as 4th element (FR-002 AC-002-01, FR-005 AC-005-01)', () => {
+    const path = getTierPath('standard');
+    assert.deepEqual(path, [
+      'PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN', 'PRESENTING_TASKS'
+    ]);
+  });
+
+  it('SM-27: light tier path does NOT include PRESENTING_TASKS (FR-002 AC-002-05)', () => {
+    const path = getTierPath('light');
+    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN']);
+  });
+
+  it('SM-28: trivial tier path unchanged — no PRESENTING_TASKS (FR-002 AC-002-05)', () => {
+    const path = getTierPath('trivial');
+    assert.deepEqual(path, ['FINALIZING']);
   });
 });

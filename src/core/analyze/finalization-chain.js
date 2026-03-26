@@ -67,6 +67,16 @@ const finalizationChain = Object.freeze([
     provider_specific: false,
     fail_open: true,
     async: true
+  }),
+  // REQ-GH-208 FR-003: Write tasks.md to requirement folder if task breakdown was generated
+  Object.freeze({
+    id: 'task_breakdown_write',
+    order: 7,
+    action: 'Write tasks.md to requirement artifact folder (guarded: only when task_breakdown_generated)',
+    depends_on: Object.freeze(['meta_status_update']),
+    provider_specific: false,
+    fail_open: true,
+    async: false
   })
 ]);
 
