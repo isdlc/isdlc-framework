@@ -54,7 +54,7 @@ const transitionTable = Object.freeze({
 
 const tierPaths = Object.freeze({
   standard: Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_ARCHITECTURE', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']),
-  light:    Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN']),
+  light:    Object.freeze(['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']),
   trivial:  Object.freeze(['FINALIZING'])
 });
 

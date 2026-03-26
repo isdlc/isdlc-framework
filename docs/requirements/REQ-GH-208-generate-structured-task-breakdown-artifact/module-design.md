@@ -183,7 +183,7 @@ artifacts: [
 ]
 ```
 
-Guard: only include `tasks.md` if `PRESENTING_TASKS` was in the confirmation sequence (i.e., not light/trivial tiers).
+Guard: only include `tasks.md` if `PRESENTING_TASKS` was in the confirmation sequence (i.e., not trivial tier — light tier DOES include tasks).
 
 ---
 
@@ -203,7 +203,7 @@ IDLE → PRESENTING_REQUIREMENTS → (Accept) → PRESENTING_ARCHITECTURE → (A
 
 **Entry**: After `PRESENTING_DESIGN` Accept.
 
-**Guard**: Skip if `sizing_decision.effective_intensity === "light"` (light workflows have no design artifacts to derive tasks from). Transition directly to `FINALIZING`.
+**Guard**: Skip only if `sizing_decision.effective_intensity === "trivial"`. Light workflows DO present tasks — requirements + impact analysis provide enough detail (affected files, FR/AC traces, blast radius) to derive a file-level task breakdown even without formal architecture/design artifacts.
 
 **Presentation format** (summary, not full dump):
 

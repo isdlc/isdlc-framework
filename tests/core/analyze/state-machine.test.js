@@ -121,9 +121,9 @@ describe('FR-003: Tier Paths', () => {
     ]);
   });
 
-  it('SM-17: light tier has 2 domains (AC-003-02)', () => {
+  it('SM-17: light tier has 3 domains including tasks (AC-003-02)', () => {
     const path = getTierPath('light');
-    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN']);
+    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']);
   });
 
   it('SM-18: trivial tier has 1 entry (AC-003-03)', () => {
@@ -180,9 +180,10 @@ describe('REQ-GH-208: PRESENTING_TASKS state', () => {
     ]);
   });
 
-  it('SM-27: light tier path does NOT include PRESENTING_TASKS (FR-002 AC-002-05)', () => {
+  it('SM-27: light tier path DOES include PRESENTING_TASKS (FR-002 AC-002-05)', () => {
     const path = getTierPath('light');
-    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN']);
+    assert.ok(path.includes('PRESENTING_TASKS'), 'Light tier should include PRESENTING_TASKS');
+    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']);
   });
 
   it('SM-28: trivial tier path unchanged — no PRESENTING_TASKS (FR-002 AC-002-05)', () => {

@@ -129,7 +129,7 @@ Present the task breakdown as the 4th step in the roundtable confirmation sequen
 - **AC-002-02**: Given the `PRESENTING_TASKS` state, When the summary is presented, Then it shows: total task count, phase breakdown (tasks per phase), critical path length, parallel tier count, total files affected (CREATE + MODIFY)
 - **AC-002-03**: Given the summary, When the user responds with Accept, Then the state transitions to `FINALIZING` and the batch write includes tasks.md
 - **AC-002-04**: Given the summary, When the user responds with Amend, Then the roundtable re-enters conversation to adjust tasks (remove tasks, defer phases, adjust dependencies) and re-presents the summary
-- **AC-002-05**: Given a light workflow (no architecture/design phases), When the confirmation sequence runs, Then the `PRESENTING_TASKS` step is skipped (not enough design detail for file-level breakdown)
+- **AC-002-05**: Given a light workflow (no architecture/design phases), When the confirmation sequence runs, Then the `PRESENTING_TASKS` step is still presented — requirements + impact analysis provide enough detail (affected files, FR/AC traces, blast radius) to derive tasks. Only trivial tier skips task confirmation.
 
 ### FR-003: Task List Artifact Persistence
 **Confidence**: High

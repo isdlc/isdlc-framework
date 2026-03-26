@@ -442,11 +442,12 @@ describe('REQ-GH-208: PRESENTING_TASKS confirmation domain', () => {
     assert.ok(taskRecord.amendCount >= 1, 'Should have at least 1 amend');
   });
 
-  it('AZ-26: light sizing skips PRESENTING_TASKS (FR-002 AC-002-05)', async () => {
+  it('AZ-26: light sizing includes PRESENTING_TASKS (FR-002 AC-002-05)', async () => {
     const responses = [
       'req...', '__TOPICS_COMPLETE__',
       'accept',  // requirements
-      'accept'   // design (no architecture, no tasks)
+      'accept',  // design (no architecture)
+      'accept'   // tasks
     ];
     const runtime = createInteractiveRuntime(responses);
     const result = await runAnalyze(runtime, makeFeatureItem(), {
@@ -454,9 +455,9 @@ describe('REQ-GH-208: PRESENTING_TASKS confirmation domain', () => {
       sizing: 'light'
     });
 
-    assert.equal(result.confirmation_record.length, 2);
+    assert.equal(result.confirmation_record.length, 3);
     const domains = result.confirmation_record.map(r => r.domain);
-    assert.ok(!domains.includes('tasks'), 'Light flow should not include tasks domain');
+    assert.ok(domains.includes('tasks'), 'Light flow should include tasks domain');
   });
 
   it('AZ-27: trivial sizing skips PRESENTING_TASKS (FR-002 AC-002-05)', async () => {
