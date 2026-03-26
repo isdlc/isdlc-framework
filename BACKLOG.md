@@ -261,11 +261,8 @@
 
 ### Process Enforcement
 
-- #118 [ ] Phase-work guard hook — warning-only `PreToolUse[Edit,Write]` hook that detects when an active workflow's phase agent has not been engaged before code changes begin. Checks `skill_usage_log` for any entry matching the current phase. Emits a visible notification (not a block) so the AI and user see "No phase agent engaged yet for {phase}. Follow the Build Protocol." Must be custom-workflow-aware: read phase-to-agent mapping from custom workflow definitions (#102) and pass through for phases with no mapped agent.
-  - **Priority**: Should Have
-  - **Complexity**: Low-medium
-  - **Depends on**: #102 (custom workflow definitions)
-  - **Root cause**: No hook enforces structured agent engagement during phase work. The AI can skip reading phase agent files and edit code directly. Gate validation catches missing artifacts but not missing process. Discovered 2026-03-10 when #102 build session skipped orchestrator engagement entirely.
+- [x] #118 Phase-work guard hook [github: GH-118] → `REQ-0141` -> [requirements](docs/requirements/REQ-0141-phase-work-guard-hook/) *(merged 1662ce2)*
+  - **Completed:** 2026-03-26
 - #120 [ ] Required skill execution enforcement — gate-blocker 6th check: before advancing, verify that required skills for the current phase were actually executed (present in `skill_usage_log`). Add `required_skills` array to each phase in `iteration-requirements.json` (subset of the agent's `owned_skills` — mandatory per invocation, not the full ownership list). Skill ownership remains shared (any agent can use any skill), but phase completion requires the listed skills to have been invoked. Config-driven: phases with no `required_skills` key skip this check.
   - **Priority**: Must Have
   - **Complexity**: Medium
@@ -491,6 +488,10 @@ Phase 10 (Provider-Neutral Orchestration)
   - **Completed:** 2026-03-22
 
 ## Completed
+
+### 2026-03-26
+- [x] #118: Phase-work guard hook (Execution Contract System) -> [requirements](docs/requirements/REQ-0141-phase-work-guard-hook/) *(merged 1662ce2)*
+  - **Completed:** 2026-03-26
 
 ### 2026-03-25
 - [x] #206: Conversational enforcement via Stop hook -> [requirements](docs/requirements/REQ-0140-conversational-enforcement-stop-hook/) *(merged f533427)*
