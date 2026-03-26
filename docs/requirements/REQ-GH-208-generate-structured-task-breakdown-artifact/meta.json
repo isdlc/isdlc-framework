@@ -1,0 +1,35 @@
+{
+  "source": "github",
+  "source_id": "GH-208",
+  "slug": "REQ-GH-208-generate-structured-task-breakdown-artifact",
+  "created_at": "2026-03-26T07:45:00.000Z",
+  "analysis_status": "complete",
+  "phases_completed": [
+    "00-quick-scan",
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "problem-discovery",
+    "requirements-definition",
+    "technical-analysis",
+    "architecture",
+    "specification"
+  ],
+  "codebase_hash": "30bdb1f",
+  "acceptance": {
+    "accepted_at": "2026-03-26T14:30:00.000Z",
+    "domains": {
+      "requirements": "accepted",
+      "architecture": "accepted",
+      "design": "accepted"
+    },
+    "amendment_cycles": {
+      "requirements": 0,
+      "architecture": 0,
+      "design": 1
+    }
+  }
+}

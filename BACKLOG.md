@@ -5,7 +5,7 @@
 
 ## Open
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
-- [ ] #208 Generate structured task breakdown artifact from analysis before build [github: GH-208]
+- [ ] #208 Generate structured task breakdown artifact from analysis before build [github: GH-208] -> [requirements](docs/requirements/REQ-GH-208-generate-structured-task-breakdown-artifact/) **Analyzed**
 - [x] #206 Conversational enforcement via Stop hook — bulleted format, three-domain confirmation, roundtable skip [github: GH-206] → `REQ-0140-conversational-enforcement-stop-hook/` -> [requirements](docs/requirements/REQ-0140-conversational-enforcement-stop-hook/) **Completed**
   - **Completed:** 2026-03-25
 - [ ] #133 Memory infrastructure scale-out — HNSW indexing, remote vector store, incremental indexing [github: GH-133] → `REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/` -> [requirements](docs/requirements/REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/)
