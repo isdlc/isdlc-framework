@@ -2579,7 +2579,11 @@ After task cleanup completes, refresh all search indexes so the next workflow or
 
 7. **Contract regeneration**: Run `node bin/generate-contracts.js` to regenerate shipped contracts reflecting any config changes made during this workflow (new skills added, workflows.json modified, etc.). Also regenerate project-local contracts: `node bin/generate-contracts.js --output .isdlc/config/contracts`. If either command fails, log a warning and continue.
 
-**Non-workflow index refresh**: The same 3 steps (code index, session cache, contracts) also run at the end of:
+8. **Memory embeddings rebuild**: Rebuild roundtable memory vector indexes so semantic search in the next session reflects conversations from this workflow. Run `node -e 'import("./lib/memory-embedder.js").then(m => m.rebuildIndex(process.env.HOME + "/.isdlc/user-memory/sessions", process.env.HOME + "/.isdlc/user-memory/index.emb", { provider: "local" }).then(r => console.log(JSON.stringify(r))))'`. Also rebuild project-level index at `.isdlc/roundtable-memory.json` if sessions exist. If either fails, log a warning and continue.
+
+9. **Code embeddings refresh**: If the embedding pipeline is configured (check `docs/.embeddings/` exists or `.isdlc/config.json` has `semantic.enabled: true`), run `node -e 'import("./lib/embedding/chunker/index.js").then(() => console.log("Embedding pipeline available"))'` as a probe. If available, trigger a re-index of changed files by running the embedding generation for modified source files. If the pipeline is not configured or the probe fails, skip silently — code embeddings are optional infrastructure.
+
+**Non-workflow index refresh**: The same steps (code index, session cache, contracts, memory embeddings, code embeddings) also run at the end of:
 - `/isdlc analyze` — after step 9 (GitHub label sync), before returning
 - `/discover` — after discovery finalization
 - `/isdlc test generate` — after STEP 4 finalize (already covered above via Phase-Loop Controller)
