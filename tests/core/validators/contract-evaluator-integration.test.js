@@ -1,10 +1,13 @@
 /**
- * Contract Evaluator Integration Tests
- * =======================================
+ * Contract Evaluator Integration Tests (Refactored)
+ * ===================================================
  * REQ-0141: Execution Contract System
- * Full load -> resolve -> evaluate -> report pipeline.
+ * REQ-GH-213: Inline Contract Enforcement
  *
- * Tests: EI-01 through EI-10
+ * Updated per REQ-GH-213 FR-005: evaluateContract() is deprecated.
+ * Integration tests now verify the contract loader + inline check function pipeline.
+ *
+ * Tests: EI-01 through EI-10 (updated)
  */
 
 import { describe, it, afterEach } from 'node:test';
@@ -12,8 +15,11 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createHash } from 'node:crypto';
-import { evaluateContract } from '../../../src/core/validators/contract-evaluator.js';
+import {
+  ContractViolationError,
+  checkDelegation,
+  checkArtifacts
+} from '../../../src/core/validators/contract-checks.js';
 import { loadContractEntry } from '../../../src/core/validators/contract-loader.js';
 
 let tempDirs = [];
@@ -57,9 +63,9 @@ function makeEntry(overrides = {}) {
     context: 'feature:standard',
     expectations: {
       agent: 'software-developer',
-      skills_required: { '$ref': 'skills-manifest', agent: 'software-developer' },
-      artifacts_produced: { '$ref': 'artifact-paths', phase: '06-implementation' },
-      state_assertions: [{ path: 'phases.06-implementation.status', equals: 'completed' }],
+      skills_required: null,
+      artifacts_produced: null,
+      state_assertions: [],
       cleanup: [],
       presentation: null
     },
@@ -82,41 +88,8 @@ afterEach(() => {
   tempDirs = [];
 });
 
-describe('Evaluator Pipeline Integration', () => {
-  it('EI-01: Full evaluation of compliant state produces zero violations', () => {
-    const projectRoot = createTestProject();
-    const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
-    const artifactDir = join(projectRoot, 'docs', 'requirements', 'REQ-TEST');
-    mkdirSync(artifactDir, { recursive: true });
-    writeFileSync(join(artifactDir, 'implementation-notes.md'), 'notes');
-
-    writeContractFile(contractsDir, 'workflow-feature.contract.json', {
-      version: '1.0.0',
-      entries: [makeEntry()],
-      _generation_metadata: { generated_at: '2026-03-26T00:00:00Z', generator_version: '1.0.0', input_files: [] }
-    });
-
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    assert.ok(loaded.entry);
-
-    const state = {
-      skill_usage_log: [
-        { agent: 'software-developer', skill_id: 'IMP-001' },
-        { agent: 'software-developer', skill_id: 'IMP-002' }
-      ],
-      phases: { '06-implementation': { status: 'completed' } }
-    };
-
-    const result = evaluateContract({
-      state,
-      contractEntry: loaded.entry,
-      projectRoot,
-      artifactFolder: 'REQ-TEST'
-    });
-    assert.equal(result.violations.length, 0, `Unexpected violations: ${JSON.stringify(result.violations)}`);
-  });
-
-  it('EI-02: Full evaluation of non-compliant state produces correct violations', () => {
+describe('Contract Loader + Inline Check Pipeline Integration', () => {
+  it('EI-01: Loaded entry + checkDelegation with correct agent passes', () => {
     const projectRoot = createTestProject();
     const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
     writeContractFile(contractsDir, 'workflow-feature.contract.json', {
@@ -126,20 +99,32 @@ describe('Evaluator Pipeline Integration', () => {
     });
 
     const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = { skill_usage_log: [], phases: { '06-implementation': { status: 'in_progress' } } };
-
-    const result = evaluateContract({
-      state,
-      contractEntry: loaded.entry,
-      projectRoot,
-      artifactFolder: 'MISSING-FOLDER'
-    });
-
-    assert.ok(result.violations.length > 0, 'Should have violations');
-    assert.ok(result.violations.some(v => v.expectation_type === 'agent_not_engaged'));
+    assert.ok(loaded.entry, 'Contract entry should be loaded');
+    // checkDelegation should pass with correct agent
+    checkDelegation(loaded.entry, '06-implementation', 'software-developer');
   });
 
-  it('EI-03: Stale contract detected via hash mismatch but evaluation proceeds', () => {
+  it('EI-02: Loaded entry + checkDelegation with wrong agent throws', () => {
+    const projectRoot = createTestProject();
+    const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
+    writeContractFile(contractsDir, 'workflow-feature.contract.json', {
+      version: '1.0.0',
+      entries: [makeEntry()],
+      _generation_metadata: { generated_at: '2026-03-26T00:00:00Z', generator_version: '1.0.0', input_files: [] }
+    });
+
+    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
+    assert.throws(
+      () => checkDelegation(loaded.entry, '06-implementation', 'wrong-agent'),
+      (err) => {
+        assert.ok(err instanceof ContractViolationError);
+        assert.equal(err.expected, 'software-developer');
+        return true;
+      }
+    );
+  });
+
+  it('EI-03: Stale contract detected via hash mismatch but loader still returns entry', () => {
     const projectRoot = createTestProject();
     const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
     const configFile = join(projectRoot, 'config.json');
@@ -147,7 +132,7 @@ describe('Evaluator Pipeline Integration', () => {
 
     writeContractFile(contractsDir, 'workflow-feature.contract.json', {
       version: '1.0.0',
-      entries: [makeEntry({ expectations: { ...makeEntry().expectations, agent: null, skills_required: null, artifacts_produced: null } })],
+      entries: [makeEntry({ expectations: { ...makeEntry().expectations, agent: null } })],
       _generation_metadata: {
         generated_at: '2026-03-26T00:00:00Z',
         generator_version: '1.0.0',
@@ -160,7 +145,7 @@ describe('Evaluator Pipeline Integration', () => {
     assert.ok(loaded.entry, 'Entry should still be loaded');
   });
 
-  it('EI-04: Override contract loaded and evaluated instead of shipped default', () => {
+  it('EI-04: Override contract loaded instead of shipped default', () => {
     const projectRoot = createTestProject();
     const shippedDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
     const overrideDir = join(projectRoot, '.isdlc', 'config', 'contracts');
@@ -181,63 +166,41 @@ describe('Evaluator Pipeline Integration', () => {
     assert.equal(loaded.entry.expectations.agent, 'override-agent');
   });
 
-  it('EI-05: $ref resolution uses cached config (no double read)', () => {
+  it('EI-05: checkArtifacts with existing artifacts passes', () => {
+    const projectRoot = createTestProject();
+    const artifactDir = join(projectRoot, 'docs', 'requirements', 'REQ-TEST');
+    mkdirSync(artifactDir, { recursive: true });
+    writeFileSync(join(artifactDir, 'implementation-notes.md'), 'notes');
+
+    const entry = makeEntry({
+      expectations: {
+        ...makeEntry().expectations,
+        artifacts_produced: ['docs/requirements/{artifact_folder}/implementation-notes.md']
+      }
+    });
+    checkArtifacts(entry, 'REQ-TEST', projectRoot);
+  });
+
+  it('EI-06: checkArtifacts with missing artifacts throws', () => {
     const projectRoot = createTestProject();
     const entry = makeEntry({
       expectations: {
         ...makeEntry().expectations,
-        agent: null,
-        skills_required: { '$ref': 'skills-manifest', agent: 'software-developer' },
-        artifacts_produced: null,
-        state_assertions: []
+        artifacts_produced: ['docs/requirements/{artifact_folder}/implementation-notes.md']
       }
     });
-
-    const state = {
-      skill_usage_log: [
-        { agent: 'software-developer', skill_id: 'IMP-001' },
-        { agent: 'software-developer', skill_id: 'IMP-002' }
-      ]
-    };
-
-    const result = evaluateContract({ state, contractEntry: entry, projectRoot });
-    assert.equal(result.violations.filter(v => v.expectation_type === 'skills_missing').length, 0);
-  });
-
-  it('EI-06: Violations written to state array', () => {
-    const projectRoot = createTestProject();
-    const state = { skill_usage_log: [], phases: {} };
-    const entry = makeEntry({
-      expectations: { ...makeEntry().expectations, skills_required: null, artifacts_produced: null, state_assertions: [] }
-    });
-    const result = evaluateContract({ state, contractEntry: entry, projectRoot });
-    assert.ok(result.violations.length > 0);
-    // Caller would call writeContractViolation -- we just verify the violations are returned
-    for (const v of result.violations) {
-      assert.ok(v.contract_id);
-      assert.ok(v.execution_unit);
-    }
-  });
-
-  it('EI-07: Multiple violation types from single evaluation', () => {
-    const projectRoot = createTestProject();
-    const state = { skill_usage_log: [], phases: { '06-implementation': { status: 'in_progress' } } };
-    const entry = makeEntry({
-      expectations: {
-        ...makeEntry().expectations,
-        skills_required: null,
-        artifacts_produced: null,
-        state_assertions: [{ path: 'phases.06-implementation.status', equals: 'completed' }]
+    assert.throws(
+      () => checkArtifacts(entry, 'MISSING-FOLDER', projectRoot),
+      (err) => {
+        assert.ok(err instanceof ContractViolationError);
+        return true;
       }
-    });
-    const result = evaluateContract({ state, contractEntry: entry, projectRoot });
-    const types = new Set(result.violations.map(v => v.expectation_type));
-    assert.ok(types.has('agent_not_engaged'));
-    assert.ok(types.has('state_incomplete'));
+    );
   });
 
-  it('EI-08: Non-workflow context (analyze) evaluates correctly', () => {
+  it('EI-07: Loaded entry for non-workflow context works with check functions', () => {
     const projectRoot = createTestProject();
+    const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
     const entry = {
       execution_unit: 'roundtable',
       context: 'analyze',
@@ -247,39 +210,51 @@ describe('Evaluator Pipeline Integration', () => {
         artifacts_produced: null,
         state_assertions: [],
         cleanup: [],
-        presentation: { confirmation_sequence: ['requirements', 'architecture', 'design'], persona_format: null, progress_format: null, completion_summary: null }
+        presentation: { confirmation_sequence: ['requirements', 'architecture', 'design'] }
       },
       violation_response: { agent_not_engaged: 'report', skills_missing: 'report', artifacts_missing: 'block', state_incomplete: 'report', cleanup_skipped: 'warn', presentation_violated: 'warn' }
     };
+    writeContractFile(contractsDir, 'analyze.contract.json', {
+      version: '1.0.0',
+      entries: [entry],
+      _generation_metadata: { generated_at: '2026-03-26T00:00:00Z', generator_version: '1.0.0', input_files: [] }
+    });
 
-    const state = { skill_usage_log: [], phases: {}, confirmation_domains: ['requirements', 'architecture', 'design'] };
-    const result = evaluateContract({ state, contractEntry: entry, projectRoot });
-    assert.ok(Array.isArray(result.violations));
-    assert.ok(Array.isArray(result.warnings));
+    const loaded = loadContractEntry('roundtable', 'analyze', { projectRoot });
+    if (loaded.entry) {
+      // checkDelegation with null agent should be no-op
+      checkDelegation(loaded.entry, 'roundtable', 'any-agent');
+    }
   });
 
-  it('EI-09: Non-workflow context (discover) evaluates correctly', () => {
+  it('EI-08: Full pipeline — load + check delegation + check artifacts', () => {
     const projectRoot = createTestProject();
-    const entry = {
-      execution_unit: 'discover',
-      context: 'discover',
-      expectations: { agent: null, skills_required: null, artifacts_produced: null, state_assertions: [], cleanup: [], presentation: null },
-      violation_response: { agent_not_engaged: 'report', skills_missing: 'report', artifacts_missing: 'report', state_incomplete: 'report', cleanup_skipped: 'warn', presentation_violated: 'warn' }
-    };
-    const result = evaluateContract({ state: {}, contractEntry: entry, projectRoot });
-    assert.equal(result.violations.length, 0);
-  });
+    const contractsDir = join(projectRoot, '.claude', 'hooks', 'config', 'contracts');
+    const artifactDir = join(projectRoot, 'docs', 'requirements', 'REQ-FULL');
+    mkdirSync(artifactDir, { recursive: true });
+    writeFileSync(join(artifactDir, 'implementation-notes.md'), 'notes');
 
-  it('EI-10: Non-workflow context (add) evaluates correctly', () => {
-    const projectRoot = createTestProject();
-    const entry = {
-      execution_unit: 'add-item',
-      context: 'add',
-      expectations: { agent: null, skills_required: null, artifacts_produced: null, state_assertions: [], cleanup: ['BACKLOG.md updated'], presentation: null },
-      violation_response: { agent_not_engaged: 'report', skills_missing: 'report', artifacts_missing: 'warn', state_incomplete: 'report', cleanup_skipped: 'warn', presentation_violated: 'warn' }
-    };
-    const result = evaluateContract({ state: {}, contractEntry: entry, projectRoot });
-    assert.equal(result.violations.length, 0);
-    assert.ok(result.warnings.some(w => w.includes('Cleanup item')));
+    const entry = makeEntry({
+      expectations: {
+        agent: 'software-developer',
+        skills_required: null,
+        artifacts_produced: ['docs/requirements/{artifact_folder}/implementation-notes.md'],
+        state_assertions: [],
+        cleanup: [],
+        presentation: null
+      }
+    });
+    writeContractFile(contractsDir, 'workflow-feature.contract.json', {
+      version: '1.0.0',
+      entries: [entry],
+      _generation_metadata: { generated_at: '2026-03-26T00:00:00Z', generator_version: '1.0.0', input_files: [] }
+    });
+
+    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
+    assert.ok(loaded.entry);
+
+    // Both checks should pass
+    checkDelegation(loaded.entry, '06-implementation', 'software-developer');
+    checkArtifacts(loaded.entry, 'REQ-FULL', projectRoot);
   });
 });

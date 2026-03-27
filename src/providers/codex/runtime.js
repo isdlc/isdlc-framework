@@ -24,7 +24,7 @@ import * as nodeReadline from 'node:readline';
 import { projectInstructions as coreProjectInstructions } from './projection.js';
 import { resolveVerb } from './verb-resolver.js';
 import { validatePhase } from '../../core/validators/validate-phase.js';
-import { evaluateContract } from '../../core/validators/contract-evaluator.js';
+import { checkDelegation, checkArtifacts, ContractViolationError } from '../../core/validators/contract-checks.js';
 import { loadContractEntry } from '../../core/validators/contract-loader.js';
 
 // ---------------------------------------------------------------------------
@@ -376,8 +376,9 @@ export async function validatePhaseGate(phaseKey, inputs, options = {}) {
     // Existing phase validation
     const phaseResult = await validatePhase(phaseKey, inputs, options);
 
-    // Contract evaluation (additive, REQ-0141)
-    let contractResult = { violations: [], warnings: [], stale_contract: false };
+    // Inline contract checks (REQ-GH-213, replaces batch evaluateContract)
+    const contractWarnings = [];
+    const contractViolations = [];
     try {
       const workflowType = options.workflowType || 'feature';
       const intensity = options.intensity || 'standard';
@@ -386,25 +387,40 @@ export async function validatePhaseGate(phaseKey, inputs, options = {}) {
         projectRoot: options.projectRoot || '.'
       });
       if (loaded.entry) {
-        contractResult = evaluateContract({
-          state: options.state || {},
-          contractEntry: loaded.entry,
-          projectRoot: options.projectRoot || '.',
-          artifactFolder: options.artifactFolder
-        });
-        contractResult.stale_contract = loaded.stale;
+        // checkDelegation: validate correct agent for phase (skip if agentName not provided)
+        if (options.agentName) {
+          try {
+            checkDelegation(loaded.entry, phaseKey, options.agentName);
+          } catch (e) {
+            if (e instanceof ContractViolationError) {
+              contractViolations.push({ checkpoint: 'delegation', message: e.message, severity: 'block' });
+            }
+          }
+        }
+        // checkArtifacts: validate required artifacts exist on disk (skip if artifactFolder not provided)
+        if (options.artifactFolder) {
+          try {
+            checkArtifacts(loaded.entry, options.artifactFolder, options.projectRoot || '.');
+          } catch (e) {
+            if (e instanceof ContractViolationError) {
+              contractViolations.push({ checkpoint: 'artifacts', message: e.message, severity: 'block' });
+            }
+          }
+        }
+        if (loaded.stale) {
+          contractWarnings.push('Contract is stale — run generate-contracts.js to update');
+        }
       }
     } catch {
-      // Fail-open: contract evaluation errors do not block
+      // Fail-open: contract check errors do not block
     }
 
     // Merge results
-    const blockViolations = contractResult.violations.filter(v => v.severity === 'block');
     return {
-      pass: phaseResult.pass && blockViolations.length === 0,
-      failures: [...phaseResult.failures, ...blockViolations],
-      details: { ...phaseResult.details, contract: contractResult },
-      warnings: [...(phaseResult.warnings || []), ...contractResult.warnings],
+      pass: phaseResult.pass && contractViolations.length === 0,
+      failures: [...phaseResult.failures, ...contractViolations],
+      details: { ...phaseResult.details, contract: { violations: contractViolations, warnings: contractWarnings } },
+      warnings: [...(phaseResult.warnings || []), ...contractWarnings],
       validator_errors: phaseResult.validator_errors || []
     };
   } catch (err) {

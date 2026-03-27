@@ -1,10 +1,15 @@
 /**
- * Cross-Provider Parity Tests
- * =============================
+ * Cross-Provider Parity Tests (Refactored)
+ * ==========================================
  * REQ-0141: Execution Contract System (ADR-001)
- * Verifies same contract + state produces identical results via both paths.
+ * REQ-GH-213: Inline Contract Enforcement (FR-007)
  *
- * Tests: CP-01 through CP-06
+ * Verifies same check functions produce identical results regardless of
+ * whether the data source is the Claude session cache or Codex loadContractEntry().
+ * Since functions are pure and stateless, parity is verified by calling each
+ * function with identically-structured data and confirming identical outcomes.
+ *
+ * Tests: PAR-CC-01 through PAR-CC-06
  */
 
 import { describe, it, afterEach } from 'node:test';
@@ -12,42 +17,17 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { evaluateContract } from '../../../src/core/validators/contract-evaluator.js';
-import { loadContractEntry } from '../../../src/core/validators/contract-loader.js';
+import {
+  ContractViolationError,
+  checkDomainTransition,
+  checkBatchWrite,
+  checkPersonaFormat,
+  checkPersonaContribution,
+  checkDelegation,
+  checkArtifacts
+} from '../../../src/core/validators/contract-checks.js';
 
 let tempDirs = [];
-
-function createTestProject() {
-  const dir = mkdtempSync(join(tmpdir(), 'cross-prov-'));
-  tempDirs.push(dir);
-  const configDir = join(dir, '.claude', 'hooks', 'config', 'contracts');
-  mkdirSync(configDir, { recursive: true });
-  writeFileSync(join(configDir, 'workflow-feature.contract.json'), JSON.stringify({
-    version: '1.0.0',
-    entries: [{
-      execution_unit: '06-implementation',
-      context: 'feature:standard',
-      expectations: {
-        agent: 'software-developer',
-        skills_required: null,
-        artifacts_produced: null,
-        state_assertions: [{ path: 'phases.06-implementation.status', equals: 'completed' }],
-        cleanup: [],
-        presentation: null
-      },
-      violation_response: {
-        agent_not_engaged: 'block',
-        skills_missing: 'report',
-        artifacts_missing: 'block',
-        state_incomplete: 'report',
-        cleanup_skipped: 'warn',
-        presentation_violated: 'warn'
-      }
-    }],
-    _generation_metadata: { generated_at: '2026-03-26T00:00:00Z', generator_version: '1.0.0', input_files: [] }
-  }));
-  return dir;
-}
 
 afterEach(() => {
   for (const dir of tempDirs) {
@@ -56,85 +36,149 @@ afterEach(() => {
   tempDirs = [];
 });
 
-describe('Cross-Provider Parity', () => {
-  it('CP-01: Same contract + state produces identical violations through both code paths', () => {
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = { skill_usage_log: [], phases: { '06-implementation': { status: 'in_progress' } } };
-
-    // Claude path: evaluateContract directly
-    const claudeResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-
-    // Codex path: also evaluateContract (same core evaluator per ADR-001)
-    const codexResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-
-    assert.deepStrictEqual(
-      claudeResult.violations.map(v => v.expectation_type),
-      codexResult.violations.map(v => v.expectation_type)
-    );
-  });
-
-  it('CP-02: Same contract + state produces identical warnings through both code paths', () => {
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = { skill_usage_log: [], phases: {} };
-
-    const claudeResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-    const codexResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-
-    assert.deepStrictEqual(claudeResult.warnings, codexResult.warnings);
-  });
-
-  it('CP-03: Same stale_contract flag through both code paths', () => {
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = makeCompliantState();
-
-    const claudeResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-    const codexResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-
-    assert.equal(claudeResult.stale_contract, codexResult.stale_contract);
-  });
-
-  it('CP-04: Codex validatePhaseGate merges contract result correctly', () => {
-    // Since validatePhaseGate is an async wrapper, test the merge logic
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = { skill_usage_log: [], phases: { '06-implementation': { status: 'in_progress' } } };
-
-    const contractResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-    const blockViolations = contractResult.violations.filter(v => v.severity === 'block');
-
-    // Simulate merge logic from validatePhaseGate
-    const phasePass = true; // assume phase validation passes
-    const mergedPass = phasePass && blockViolations.length === 0;
-    assert.equal(mergedPass, false, 'Block violations should cause overall failure');
-  });
-
-  it('CP-05: Block violations in contract cause validatePhaseGate to return pass: false', () => {
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = { skill_usage_log: [], phases: {} }; // No agent engagement
-
-    const contractResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-    const hasBlockViolations = contractResult.violations.some(v => v.severity === 'block');
-    assert.ok(hasBlockViolations, 'Should have block violations (agent_not_engaged)');
-  });
-
-  it('CP-06: Warn violations in contract do not affect pass status', () => {
-    const projectRoot = createTestProject();
-    const loaded = loadContractEntry('06-implementation', 'feature:standard', { projectRoot });
-    const state = makeCompliantState();
-
-    const contractResult = evaluateContract({ state, contractEntry: loaded.entry, projectRoot });
-    const blockViolations = contractResult.violations.filter(v => v.severity === 'block');
-    assert.equal(blockViolations.length, 0, 'Compliant state should have no block violations');
-  });
-});
-
-function makeCompliantState() {
+function makeContractEntry() {
   return {
-    skill_usage_log: [{ agent: 'software-developer', skill_id: 'IMP-001' }],
-    phases: { '06-implementation': { status: 'completed', timing: {} } }
+    execution_unit: '06-implementation',
+    context: 'feature:standard',
+    expectations: {
+      agent: 'software-developer',
+      presentation: {
+        confirmation_sequence: ['requirements', 'architecture', 'design']
+      },
+      artifacts_produced: ['docs/requirements/{artifact_folder}/requirements-spec.md']
+    }
   };
 }
+
+describe('Cross-Provider Parity (REQ-GH-213 FR-007)', () => {
+  it('PAR-CC-01: checkDomainTransition produces same result for identical data from both providers', () => {
+    const entry = makeContractEntry();
+
+    // Both "Claude path" and "Codex path" use the same data structure
+    const claudeData = structuredClone(entry);
+    const codexData = structuredClone(entry);
+
+    // Pass case
+    checkDomainTransition(claudeData, 'requirements', 0);
+    checkDomainTransition(codexData, 'requirements', 0);
+
+    // Fail case — both should throw with same properties
+    let claudeErr, codexErr;
+    try { checkDomainTransition(claudeData, 'design', 0); } catch (e) { claudeErr = e; }
+    try { checkDomainTransition(codexData, 'design', 0); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.decisionPoint, codexErr.decisionPoint);
+    assert.equal(claudeErr.expected, codexErr.expected);
+    assert.equal(claudeErr.actual, codexErr.actual);
+  });
+
+  it('PAR-CC-02: checkBatchWrite produces same result for identical data from both providers', () => {
+    const entry = makeContractEntry();
+
+    const claudeData = structuredClone(entry);
+    const codexData = structuredClone(entry);
+
+    // Pass case
+    checkBatchWrite(claudeData, ['docs/requirements/REQ-X/requirements-spec.md'], 'REQ-X');
+    checkBatchWrite(codexData, ['docs/requirements/REQ-X/requirements-spec.md'], 'REQ-X');
+
+    // Fail case
+    let claudeErr, codexErr;
+    try { checkBatchWrite(claudeData, [], 'REQ-X'); } catch (e) { claudeErr = e; }
+    try { checkBatchWrite(codexData, [], 'REQ-X'); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.decisionPoint, codexErr.decisionPoint);
+  });
+
+  it('PAR-CC-03: checkPersonaFormat produces same result for identical data from both providers', () => {
+    const templateData = {
+      domain: 'requirements',
+      format: {
+        format_type: 'bulleted',
+        required_sections: ['functional_requirements']
+      }
+    };
+
+    const claudeTemplate = structuredClone(templateData);
+    const codexTemplate = structuredClone(templateData);
+
+    const output = '## functional_requirements\n- Item one';
+
+    // Pass case
+    checkPersonaFormat(claudeTemplate, output);
+    checkPersonaFormat(codexTemplate, output);
+
+    // Fail case (numbered violates bulleted)
+    const badOutput = '## functional_requirements\n1. Item one';
+    let claudeErr, codexErr;
+    try { checkPersonaFormat(claudeTemplate, badOutput); } catch (e) { claudeErr = e; }
+    try { checkPersonaFormat(codexTemplate, badOutput); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.decisionPoint, codexErr.decisionPoint);
+  });
+
+  it('PAR-CC-04: checkPersonaContribution produces same result for identical data from both providers', () => {
+    const configured = ['Maya', 'Alex', 'Jordan'];
+    const contributed = ['Maya', 'Jordan'];
+
+    let claudeErr, codexErr;
+    try { checkPersonaContribution([...configured], [...contributed]); } catch (e) { claudeErr = e; }
+    try { checkPersonaContribution([...configured], [...contributed]); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.actual, codexErr.actual);
+  });
+
+  it('PAR-CC-05: checkDelegation produces same result for identical data from both providers', () => {
+    const entry = makeContractEntry();
+
+    const claudeData = structuredClone(entry);
+    const codexData = structuredClone(entry);
+
+    // Pass case
+    checkDelegation(claudeData, '06-implementation', 'software-developer');
+    checkDelegation(codexData, '06-implementation', 'software-developer');
+
+    // Fail case
+    let claudeErr, codexErr;
+    try { checkDelegation(claudeData, '06-implementation', 'wrong-agent'); } catch (e) { claudeErr = e; }
+    try { checkDelegation(codexData, '06-implementation', 'wrong-agent'); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.expected, codexErr.expected);
+    assert.equal(claudeErr.actual, codexErr.actual);
+  });
+
+  it('PAR-CC-06: checkArtifacts produces same result for identical data from both providers', () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'par-art-'));
+    tempDirs.push(tempDir);
+    const docsDir = join(tempDir, 'docs', 'requirements', 'REQ-X');
+    mkdirSync(docsDir, { recursive: true });
+    writeFileSync(join(docsDir, 'requirements-spec.md'), 'content');
+
+    const entry = makeContractEntry();
+    const claudeData = structuredClone(entry);
+    const codexData = structuredClone(entry);
+
+    // Pass case — both providers check same temp directory
+    checkArtifacts(claudeData, 'REQ-X', tempDir);
+    checkArtifacts(codexData, 'REQ-X', tempDir);
+
+    // Fail case — nonexistent folder
+    let claudeErr, codexErr;
+    try { checkArtifacts(claudeData, 'MISSING', tempDir); } catch (e) { claudeErr = e; }
+    try { checkArtifacts(codexData, 'MISSING', tempDir); } catch (e) { codexErr = e; }
+
+    assert.ok(claudeErr instanceof ContractViolationError);
+    assert.ok(codexErr instanceof ContractViolationError);
+    assert.equal(claudeErr.decisionPoint, codexErr.decisionPoint);
+  });
+});

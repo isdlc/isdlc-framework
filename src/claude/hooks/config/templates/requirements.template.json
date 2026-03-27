@@ -1,0 +1,20 @@
+{
+  "domain": "requirements",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "functional_requirements",
+      "assumptions",
+      "non_functional_requirements",
+      "out_of_scope",
+      "prioritization"
+    ],
+    "assumptions_placement": "inline",
+    "required_sections": [
+      "functional_requirements",
+      "assumptions",
+      "prioritization"
+    ]
+  }
+}
