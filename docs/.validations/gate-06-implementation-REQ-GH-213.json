@@ -1,0 +1,55 @@
+{
+  "gate": "06-implementation",
+  "requirement": "REQ-GH-213",
+  "title": "Inline Contract Enforcement",
+  "validated_at": "2026-03-27T19:45:00.000Z",
+  "status": "passed",
+  "checklist": {
+    "features_implemented": true,
+    "unit_test_coverage_80_pct": true,
+    "all_tests_passing": true,
+    "code_follows_linting": true,
+    "type_checking_passes": "N/A (JavaScript)",
+    "implementation_matches_design": true,
+    "database_migrations": "N/A",
+    "code_documentation_complete": true
+  },
+  "metrics": {
+    "new_files_created": 9,
+    "files_modified": 6,
+    "new_tests": 95,
+    "total_tests_passing": 1677,
+    "coverage": {
+      "contract_checks_line": 100.0,
+      "template_loader_line": 97.87,
+      "overall_line": 99.60
+    },
+    "regression_failures": 0,
+    "pre_existing_failures": 1
+  },
+  "artifacts": [
+    "src/core/validators/contract-checks.js",
+    "src/core/validators/template-loader.js",
+    "src/claude/hooks/config/templates/requirements.template.json",
+    "src/claude/hooks/config/templates/architecture.template.json",
+    "src/claude/hooks/config/templates/design.template.json",
+    "src/claude/hooks/config/templates/tasks.template.json",
+    "tests/core/validators/contract-checks.test.js",
+    "tests/core/validators/template-loader.test.js",
+    "docs/requirements/REQ-GH-213-contract-enforcement-must-be-inline/implementation-notes.md"
+  ],
+  "constitutional_compliance": {
+    "articles_checked": [
+      "Article I: Specification Primacy",
+      "Article II: Test-First Development",
+      "Article III: Security by Design",
+      "Article V: Simplicity First",
+      "Article VII: Artifact Traceability",
+      "Article VIII: Documentation Currency",
+      "Article IX: Quality Gate Integrity",
+      "Article X: Fail-Safe Defaults"
+    ],
+    "violations": 0,
+    "status": "compliant"
+  }
+}

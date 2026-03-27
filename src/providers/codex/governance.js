@@ -69,10 +69,10 @@ export function getGovernanceModel() {
       }),
       Object.freeze({
         checkpoint: 'execution-contract',
-        claude_hook: 'contract-evaluator (STEP 3e-contract)',
-        codex_equivalent: 'core-contract-evaluator',
+        claude_hook: 'contract-checks (inline)',
+        codex_equivalent: 'core-contract-checks',
         status: 'enforceable',
-        mitigation: 'Contract evaluated at phase gate via core evaluator'
+        mitigation: 'Contract checked inline at each decision point via contract-checks.js'
       })
     ]),
     gaps: Object.freeze([

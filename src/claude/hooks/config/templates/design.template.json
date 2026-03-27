@@ -1,0 +1,18 @@
+{
+  "domain": "design",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "module_overview",
+      "module_design",
+      "changes_to_existing",
+      "wiring_summary"
+    ],
+    "assumptions_placement": "inline",
+    "required_sections": [
+      "module_overview",
+      "module_design"
+    ]
+  }
+}

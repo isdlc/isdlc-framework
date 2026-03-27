@@ -1,0 +1,25 @@
+{
+  "domain": "tasks",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "table",
+    "required_phases": ["05", "06", "16", "08"],
+    "required_task_categories": {
+      "05": ["test_case_design"],
+      "06": ["setup", "core_implementation", "unit_tests", "wiring_claude", "wiring_codex", "cleanup"],
+      "16": ["test_execution", "parity_verification"],
+      "08": ["constitutional_review", "dual_file_check"]
+    },
+    "required_task_metadata": [
+      "traces",
+      "files",
+      "blocked_by",
+      "blocks"
+    ],
+    "required_sections": [
+      "progress_summary",
+      "dependency_graph",
+      "traceability_matrix"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "architecture_options",
+      "selected_architecture",
+      "technology_decisions",
+      "integration_architecture"
+    ],
+    "assumptions_placement": "inline",
+    "required_sections": [
+      "architecture_options",
+      "selected_architecture",
+      "technology_decisions"
+    ]
+  }
+}
