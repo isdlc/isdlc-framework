@@ -10,6 +10,35 @@
  */
 
 /**
+ * Composes a requirement directory name from source metadata.
+ *
+ * - External sources (github, jira): {TYPE}-{source_id}-{slug}
+ *   e.g. REQ-GH-208-generate-task-breakdown, BUG-AUTH-456-login-crash
+ * - Manual (no external source): {TYPE}-{NNNN}-{slug}
+ *   e.g. REQ-0001-add-payment-processing
+ *
+ * @param {string} itemType - "REQ" or "BUG"
+ * @param {string} source - "github", "jira", or "manual"
+ * @param {string|null} sourceId - e.g. "GH-208", "AUTH-456", or null
+ * @param {string} descriptionSlug - Sanitized slug from generateSlug()
+ * @param {string} [sequenceNumber] - Zero-padded 4-digit number (manual only)
+ * @returns {string} Composed directory name
+ */
+export function composeDirName(itemType, source, sourceId, descriptionSlug, sequenceNumber) {
+  const type = (itemType || 'REQ').toUpperCase();
+  const slug = descriptionSlug || 'untitled-item';
+
+  if (source === 'github' || source === 'jira') {
+    if (!sourceId) {
+      return `${type}-${sequenceNumber || '0001'}-${slug}`;
+    }
+    return `${type}-${sourceId}-${slug}`;
+  }
+
+  return `${type}-${sequenceNumber || '0001'}-${slug}`;
+}
+
+/**
  * Generates a URL-safe slug from a free-text description.
  * @param {string} description - Free-text item description
  * @returns {string} Sanitized slug (max 50 chars)

@@ -6,7 +6,65 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { generateSlug } from '../../../src/core/backlog/slug.js';
+import { generateSlug, composeDirName } from '../../../src/core/backlog/slug.js';
+
+describe('composeDirName', () => {
+  it('uses source_id for github sources', () => {
+    assert.strictEqual(
+      composeDirName('REQ', 'github', 'GH-208', 'generate-task-breakdown'),
+      'REQ-GH-208-generate-task-breakdown'
+    );
+  });
+
+  it('uses source_id for jira sources', () => {
+    assert.strictEqual(
+      composeDirName('BUG', 'jira', 'AUTH-456', 'login-crash'),
+      'BUG-AUTH-456-login-crash'
+    );
+  });
+
+  it('uses sequence number for manual sources', () => {
+    assert.strictEqual(
+      composeDirName('REQ', 'manual', null, 'add-payment', '0001'),
+      'REQ-0001-add-payment'
+    );
+  });
+
+  it('defaults to REQ when itemType is missing', () => {
+    assert.strictEqual(
+      composeDirName(null, 'github', 'GH-42', 'some-feature'),
+      'REQ-GH-42-some-feature'
+    );
+  });
+
+  it('falls back to sequence number when external source has no sourceId', () => {
+    assert.strictEqual(
+      composeDirName('REQ', 'github', null, 'orphan-slug', '0005'),
+      'REQ-0005-orphan-slug'
+    );
+  });
+
+  it('defaults sequence to 0001 for manual with no sequence', () => {
+    assert.strictEqual(
+      composeDirName('REQ', 'manual', null, 'quick-item'),
+      'REQ-0001-quick-item'
+    );
+  });
+
+  it('uppercases item type', () => {
+    assert.strictEqual(
+      composeDirName('bug', 'github', 'GH-10', 'crash'),
+      'BUG-GH-10-crash'
+    );
+  });
+
+  it('uses untitled-item when slug is empty', () => {
+    assert.strictEqual(
+      composeDirName('REQ', 'github', 'GH-1', ''),
+      'REQ-GH-1-untitled-item'
+    );
+  });
+});
 
 describe('generateSlug', () => {
   it('converts description to lowercase kebab-case', () => {

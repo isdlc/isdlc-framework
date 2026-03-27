@@ -5,7 +5,7 @@
 
 ## Open
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
-- [ ] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/)
+- [A] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Analyzed**
   - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
 - [x] #208 Generate structured task breakdown artifact from analysis before build [github: GH-208] -> [requirements](docs/requirements/REQ-GH-208-generate-structured-task-breakdown-artifact/) **Completed**
   - **Completed:** 2026-03-26

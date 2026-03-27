@@ -6,7 +6,7 @@
  * @module src/core/backlog
  */
 
-export { generateSlug } from './slug.js';
+export { generateSlug, composeDirName } from './slug.js';
 export { detectSource } from './source-detection.js';
 export {
   readMetaJson,

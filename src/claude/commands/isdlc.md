@@ -614,14 +614,15 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
 4. Generate description slug:
    - For external sources (github/jira): use `generateSlug()` on the fetched ticket title (NOT the reference number)
    - For manual input: use `generateSlug()` on the user's description text
-5. Determine next sequence number:
-   - Scan `docs/requirements/` for existing folders matching `{item_type}-NNNN-*`
-   - Extract the highest NNNN, use NNNN+1 (zero-padded to 4 digits)
-   - If none found, start at 0001
-6. Compose directory name: `{item_type}-{NNNN}-{description_slug}`
-   - Example (github): `#39` with title "State JSON pruning" → `REQ-0020-state-json-pruning`
+5. Determine directory identifier:
+   - **External sources** (github/jira): use the `source_id` from `detectSource()` (e.g. `GH-208`, `AUTH-456`). No sequence number needed.
+   - **Manual** (no external source): scan `docs/requirements/` for existing folders matching `{item_type}-NNNN-*`, extract the highest NNNN, use NNNN+1 (zero-padded to 4 digits). If none found, start at 0001.
+6. Compose directory name using `composeDirName(item_type, source, source_id, description_slug, sequenceNumber)`:
+   - **External sources**: `{item_type}-{source_id}-{description_slug}`
+   - **Manual**: `{item_type}-{NNNN}-{description_slug}`
+   - Example (github): `#208` with title "Generate structured task breakdown" → `REQ-GH-208-generate-structured-task-breakdown`
+   - Example (jira): `AUTH-456` with title "Login crash on empty password" → `BUG-AUTH-456-login-crash-on-empty-password`
    - Example (manual): "Add payment processing" → `REQ-0001-add-payment-processing`
-   - Example (bug): `#16` with title "Hook validation failure", bug label → `BUG-0012-hook-validation-failure`
 7. Check for slug collision in `docs/requirements/`:
    - If exists: warn "This item already has a folder. Update it or choose a different name?"
    - Options: [U] Update draft | [R] Rename | [C] Cancel
