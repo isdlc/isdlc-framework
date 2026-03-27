@@ -5,8 +5,9 @@
 
 ## Open
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
-- [A] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Analyzed**
+- [x] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Completed**
   - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
+  - **Completed:** 2026-03-26
 - [x] #208 Generate structured task breakdown artifact from analysis before build [github: GH-208] -> [requirements](docs/requirements/REQ-GH-208-generate-structured-task-breakdown-artifact/) **Completed**
   - **Completed:** 2026-03-26
 - [x] #206 Conversational enforcement via Stop hook — bulleted format, three-domain confirmation, roundtable skip [github: GH-206] → `REQ-0140-conversational-enforcement-stop-hook/` -> [requirements](docs/requirements/REQ-0140-conversational-enforcement-stop-hook/) **Completed**
@@ -493,6 +494,8 @@ Phase 10 (Provider-Neutral Orchestration)
 ## Completed
 
 ### 2026-03-26
+- [x] #212: Task list consumption model for build phase agents -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) *(merged 11b77b2)*
+  - **Completed:** 2026-03-26
 - [x] #208: Generate structured task breakdown artifact from analysis -> [requirements](docs/requirements/REQ-GH-208-generate-structured-task-breakdown-artifact/) *(merged c6bdd26)*
   - **Completed:** 2026-03-26
 - [x] #118: Phase-work guard hook (Execution Contract System) -> [requirements](docs/requirements/REQ-0141-phase-work-guard-hook/) *(merged 1662ce2)*
