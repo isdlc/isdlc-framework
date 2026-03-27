@@ -1,0 +1,9 @@
+{
+  "source": "github",
+  "source_id": "GH-213",
+  "slug": "REQ-GH-213-contract-enforcement-must-be-inline",
+  "created_at": "2026-03-27T23:02:00.000Z",
+  "analysis_status": "raw",
+  "phases_completed": [],
+  "codebase_hash": "f367b8c"
+}
