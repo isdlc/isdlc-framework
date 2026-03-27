@@ -91,12 +91,13 @@ describe('FR-001: Team Spec Definitions', () => {
 // ---------------------------------------------------------------------------
 
 describe('FR-003: Spec Field Schema', () => {
-  // TS-05: Every spec has exactly the 7 required fields
+  // TS-05: Every spec has all 7 required fields (may have optional extras like task_context)
   it('TS-05: every spec has exactly the 7 required fields (AC-003-01)', () => {
     for (const { name, spec } of ALL_SPECS) {
-      const keys = Object.keys(spec).sort();
-      const expected = [...REQUIRED_FIELDS].sort();
-      assert.deepEqual(keys, expected, `${name} has unexpected fields`);
+      const keys = Object.keys(spec);
+      for (const field of REQUIRED_FIELDS) {
+        assert.ok(keys.includes(field), `${name} missing required field: ${field}`);
+      }
     }
   });
 

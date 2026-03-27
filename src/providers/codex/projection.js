@@ -18,6 +18,7 @@ import { getTeamSpec, listTeamTypes } from '../../core/teams/registry.js';
 import { getTeamInstancesByPhase } from '../../core/teams/instance-registry.js';
 import { getAgentClassification } from '../../core/content/agent-classification.js';
 import { computeInjectionPlan } from '../../core/skills/injection-planner.js';
+import { readTaskPlan, formatTaskContext } from '../../core/tasks/task-reader.js';
 
 // ---------------------------------------------------------------------------
 // FR-001: Codex Provider Config (REQ-0114)
@@ -301,7 +302,28 @@ export function projectInstructions(phase, agent, options = {}) {
     }
   }
 
-  // 7. Inject contract summary (advisory-only, ADR-008, REQ-0141)
+  // 7. Inject TASK_CONTEXT (REQ-GH-212 FR-007, AC-007-06)
+  let taskContextInjected = false;
+  if (options.projectRoot) {
+    try {
+      const tasksPath = join(options.projectRoot, 'docs', 'isdlc', 'tasks.md');
+      const taskPlan = readTaskPlan(tasksPath);
+      if (taskPlan && !taskPlan.error) {
+        const includeTestMapping = ['06-implementation', '16-quality-loop'].includes(phase);
+        const artifactFolder = options.artifactFolder || '';
+        const testStrategyPath = artifactFolder
+          ? join(options.projectRoot, 'docs', 'requirements', artifactFolder, 'test-strategy.md')
+          : '';
+        const taskBlock = formatTaskContext(taskPlan, phase, { includeTestMapping, testStrategyPath });
+        content += `\n\n---\n\n${taskBlock}`;
+        taskContextInjected = true;
+      }
+    } catch {
+      // Fail-open: missing or malformed tasks.md is non-fatal (REQ-GH-212 AC-011-04)
+    }
+  }
+
+  // 8. Inject contract summary (advisory-only, ADR-008, REQ-0141)
   let contractSummaryInjected = false;
   if (options.projectRoot) {
     try {
@@ -323,6 +345,7 @@ export function projectInstructions(phase, agent, options = {}) {
       skills_injected: (injectionPlan.merged || []).map(s => s.skillId || s.name),
       team_type: teamSpec?.team_type ?? 'unknown',
       ...(cacheSectionsInjected.length > 0 && { cache_sections_injected: cacheSectionsInjected }),
+      ...(taskContextInjected && { task_context_injected: true }),
       ...(contractSummaryInjected && { contract_summary_injected: true }),
       ...(warnings.length > 0 && { warnings })
     }

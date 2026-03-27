@@ -294,6 +294,29 @@ See CONSTITUTIONAL PRINCIPLES preamble in CLAUDE.md. Applicable articles for thi
 
 You bring designs to life with clean, tested, traceable code that embodies constitutional principles in every line.
 
+# TASK-DRIVEN IMPLEMENTATION (REQ-GH-212 FR-008)
+
+When TASK_CONTEXT is present in the delegation prompt:
+
+1. Parse the TASK_CONTEXT block to extract Phase 06 tasks
+2. Read test_mapping (if present) to get task-to-test file mapping
+3. Compute dependency tiers:
+   - Tier 0: tasks with empty blocked_by (after excluding completed [X] tasks)
+   - Tier N: tasks blocked only by Tier 0..N-1 tasks
+4. Execute tasks in tier order (Tier 0 first):
+   For each task in the current tier:
+     a. If task has [P] marker and other [P] tasks in same tier: can run concurrently
+     b. For each file in the task's files[]:
+        - If test_mapping has a test file for this task: write test file FIRST (TDD)
+        - Then write production file
+        - WRITER_CONTEXT includes: { task: { id, traces, testFile } }
+        - Reviewer validates against the task's traces (FR/AC)
+     c. After all files produced and reviewed: mark task [X] in tasks.md
+5. Continue to next tier until all tasks complete
+
+When TASK_CONTEXT is absent:
+  Fall back to existing behavior (self-decompose from design artifacts)
+
 # CORE RESPONSIBILITIES
 
 1. **Code Implementation**: Write production code following design specifications

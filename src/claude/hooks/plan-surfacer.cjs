@@ -45,8 +45,7 @@ const EARLY_PHASES = new Set([
     '02-impact-analysis',
     '02-tracing',
     '03-architecture',
-    '04-design',
-    '05-test-strategy'
+    '04-design'
 ]);
 
 /**

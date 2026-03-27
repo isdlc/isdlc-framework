@@ -15,10 +15,12 @@ export const qualityLoopInstance = Object.freeze({
   team_type: 'dual_track',
   tracks: Object.freeze({
     track_a: Object.freeze({
-      checks: Object.freeze(['QL-002', 'QL-003', 'QL-004', 'QL-005', 'QL-006', 'QL-007'])
+      checks: Object.freeze(['QL-002', 'QL-003', 'QL-004', 'QL-005', 'QL-006', 'QL-007']),
+      task_context_instructions: 'Read TASK_CONTEXT, verify test coverage per task file'
     }),
     track_b: Object.freeze({
-      checks: Object.freeze(['QL-008', 'QL-009', 'QL-010'])
+      checks: Object.freeze(['QL-008', 'QL-009', 'QL-010']),
+      task_context_instructions: 'Read TASK_CONTEXT, verify traceability per task traces, detect completion gaps'
     })
   }),
   output_artifact: 'quality-report.md',

@@ -1714,6 +1714,12 @@ Note: When `START_PHASE` is provided, the `phases[]` array may be shorter (only 
 
 If initialization fails, stop here.
 
+**BUILD-INIT COPY (REQ-GH-212 FR-004)**: If the artifact folder has a pre-generated tasks.md, copy it to the isdlc working directory.
+1. Check if `docs/requirements/{artifact_folder}/tasks.md` exists.
+2. If yes: copy it to `docs/isdlc/tasks.md`. Log: "Copied pre-generated task plan from {artifact_folder}."
+3. If copy fails: retry up to 3 times. If all retries fail, log warning and continue (3e-plan will generate one later).
+4. If no pre-generated tasks.md exists: skip silently (3e-plan will generate after Phase 01).
+
 #### STEP 2: FOREGROUND TASKS — Create visible task list
 
 Using the `phases[]` array from the init result, create one `TaskCreate` per phase. Assign each task a **sequential number** starting at 1, incrementing by 1 for each phase in the workflow. Use the format `[N]` as a prefix in the subject.
@@ -1912,6 +1918,16 @@ Use Task tool → {agent_name} with:
          phase: {phase_key}
     6. Record degraded values for STEP 3e.
     7. Error handling: If any step fails, skip injection and continue.}
+   {TASK_CONTEXT INJECTION (REQ-GH-212 FR-007) -- Inject parsed task context for task-driven phase execution. Fail-open.
+    1. Import readTaskPlan, formatTaskContext from src/core/tasks/task-reader.js
+    2. Call readTaskPlan(path.join(projectRoot, 'docs/isdlc/tasks.md'))
+    3. If null or error: SKIP injection (log warning if error)
+    4. Determine options:
+       - includeTestMapping = phase_key in ['06-implementation', '16-quality-loop']
+       - testStrategyPath = docs/requirements/{artifact_folder}/test-strategy.md
+    5. Call formatTaskContext(plan, phaseKey, options)
+    6. Append result to delegation prompt
+    7. Error handling: If any step fails, skip injection and continue. Never block.}
    PHASE_TIMING_REPORT: Include { "debate_rounds_used": 0, "fan_out_chunks": 0 } in your result.
    Do NOT emit SUGGESTED NEXT STEPS or prompt the user to continue — the Phase-Loop Controller manages phase transitions. Simply return your result.
    Validate GATE-{NN} on completion."

@@ -135,6 +135,7 @@ The confirmation sequence uses the following states:
 | `PRESENTING_REQUIREMENTS` | Displaying the requirements summary for user Accept/Amend |
 | `PRESENTING_ARCHITECTURE` | Displaying the architecture summary for user Accept/Amend |
 | `PRESENTING_DESIGN` | Displaying the design summary for user Accept/Amend |
+| `PRESENTING_TASKS` | Displaying the task breakdown summary for user Accept/Amend |
 | `AMENDING` | User chose Amend; all active personas re-engage in full roundtable conversation to address the user's concerns |
 | `TRIVIAL_SHOW` | Trivial tier: brief mention of what was captured, no Accept/Amend needed |
 | `FINALIZING` | All applicable summaries accepted; persisting artifacts and updating meta.json |
@@ -142,14 +143,14 @@ The confirmation sequence uses the following states:
 
 #### 2.5.2 State Transitions
 
-**Standard/Epic Accept Flow** (all three domains):
+**Standard/Epic Accept Flow** (all four domains):
 ```
-IDLE -> PRESENTING_REQUIREMENTS -> (Accept) -> PRESENTING_ARCHITECTURE -> (Accept) -> PRESENTING_DESIGN -> (Accept) -> FINALIZING -> COMPLETE
+IDLE -> PRESENTING_REQUIREMENTS -> (Accept) -> PRESENTING_ARCHITECTURE -> (Accept) -> PRESENTING_DESIGN -> (Accept) -> PRESENTING_TASKS -> (Accept) -> FINALIZING -> COMPLETE
 ```
 
-**Light Tier Accept Flow** (requirements + design, architecture skipped):
+**Light Tier Accept Flow** (requirements + design + tasks, architecture skipped):
 ```
-IDLE -> PRESENTING_REQUIREMENTS -> (Accept) -> PRESENTING_DESIGN -> (Accept) -> FINALIZING -> COMPLETE
+IDLE -> PRESENTING_REQUIREMENTS -> (Accept) -> PRESENTING_DESIGN -> (Accept) -> PRESENTING_TASKS -> (Accept) -> FINALIZING -> COMPLETE
 ```
 
 **Trivial Tier Flow** (brief mention only, no Accept/Amend):
@@ -285,8 +286,8 @@ The acceptance field is informational only. It does not gate the build flow or b
 
 | Tier | Domains Presented | Accept/Amend? | Notes |
 |------|-------------------|---------------|-------|
-| **standard** or **epic** | requirements, architecture, design | Yes, each domain | All applicable summaries presented sequentially |
-| **light** | requirements, design | Yes, each domain | Architecture skipped (not produced for light analyses) |
+| **standard** or **epic** | requirements, architecture, design, tasks | Yes, each domain | All applicable summaries presented sequentially |
+| **light** | requirements, design, tasks | Yes, each domain | Architecture skipped; tasks derived from requirements + impact analysis (REQ-GH-212 FR-002) |
 | **trivial** | Brief mention only | No | Brief mention of what was captured, auto-transitions to FINALIZING |
 
 For the trivial tier: display a brief mention summarizing what was captured ("Here is a brief mention of the key points captured..."), then proceed directly to FINALIZING. No Accept/Amend interaction is needed.
@@ -567,6 +568,27 @@ The finalization sequence has 3 turns maximum:
 1. Write meta.json with finalization data (Section 8.3)
 2. Report artifact summary to user
 3. Emit `ROUNDTABLE_COMPLETE` as the very last line
+
+### 5.6 Light-Tier Task Generation (REQ-GH-212 FR-002)
+
+For light-tier analyses (no architecture/design phases), the PRESENTING_TASKS state generates a task breakdown from requirements and impact analysis only:
+
+**Inputs**:
+- requirements-spec.md (FR/AC identifiers and descriptions)
+- impact-analysis.md (blast radius file paths)
+
+**Generation**:
+1. Derive file-level tasks for all build phases (05, 06, 16, 08) using the ORCH-012 light-workflow derivation algorithm
+2. Produce the task summary for user presentation showing:
+   - Total task count
+   - Phase breakdown (tasks per phase)
+   - Files affected
+   - Traceability coverage (percentage of FRs with at least one traced task)
+3. Present for Accept/Amend like any other domain
+
+**Batch Write**:
+- tasks.md is included in the Turn 2 parallel write batch alongside other artifacts
+- File paths in tasks are best-effort (less precise without design artifacts)
 
 ---
 

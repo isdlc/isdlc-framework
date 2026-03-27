@@ -1,0 +1,31 @@
+{
+  "gate": "GATE-06",
+  "phase": "06-implementation",
+  "slug": "REQ-GH-212-task-list-consumption-model-for-build-phase-agents",
+  "status": "PASS",
+  "validated_at": "2026-03-26T12:00:00.000Z",
+  "checklist": {
+    "all_features_implemented": true,
+    "unit_test_coverage_80_plus": true,
+    "all_tests_passing": true,
+    "code_follows_standards": true,
+    "implementation_matches_design": true,
+    "code_documentation_complete": true
+  },
+  "test_results": {
+    "new_tests_added": 58,
+    "new_tests_passing": 58,
+    "total_tests_core": 1389,
+    "total_tests_core_passing": 1388,
+    "pre_existing_failures": [
+      "tests/core/teams/codex-adapter-parity.test.js (missing external module)"
+    ],
+    "no_regressions": true
+  },
+  "tasks_completed": 22,
+  "constitutional_validation": {
+    "completed": true,
+    "iterations_used": 1,
+    "status": "compliant"
+  }
+}

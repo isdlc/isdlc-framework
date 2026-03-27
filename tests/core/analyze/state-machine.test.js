@@ -191,3 +191,25 @@ describe('REQ-GH-208: PRESENTING_TASKS state', () => {
     assert.deepEqual(path, ['FINALIZING']);
   });
 });
+
+// ---------------------------------------------------------------------------
+// REQ-GH-212 T0015/T0025: Regression Guards for Light Tier PRESENTING_TASKS
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-212 T0025: Light Tier PRESENTING_TASKS Regression (FR-002, AC-002-01)', () => {
+  it('SM-T15-01: light tier path includes PRESENTING_TASKS (AC-002-01)', () => {
+    const path = getTierPath('light');
+    assert.ok(path.includes('PRESENTING_TASKS'), 'Light tier must include PRESENTING_TASKS');
+  });
+
+  it('SM-T15-02: light tier path has exactly 3 entries (AC-002-01)', () => {
+    const path = getTierPath('light');
+    assert.equal(path.length, 3);
+    assert.deepEqual(path, ['PRESENTING_REQUIREMENTS', 'PRESENTING_DESIGN', 'PRESENTING_TASKS']);
+  });
+
+  it('SM-T15-03: standard tier path still has 4 entries (unchanged, regression check) (AC-002-01)', () => {
+    const path = getTierPath('standard');
+    assert.equal(path.length, 4);
+  });
+});

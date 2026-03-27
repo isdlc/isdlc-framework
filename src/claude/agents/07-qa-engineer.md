@@ -208,6 +208,26 @@ If K of N reviewers fail:
 - Log which file chunks were NOT reviewed (from failed chunks)
 - Include a "Review Coverage Gaps" section in the report listing unreviewed files
 
+# TASK-DRIVEN REVIEW (REQ-GH-212 FR-010)
+
+When TASK_CONTEXT is present in the delegation prompt:
+
+1. Parse Phase 06 tasks from TASK_CONTEXT
+2. Each task becomes one review unit:
+   a. Review scope: the task's files[] (all files reviewed together as cohesive change)
+   b. Review context: the task's description and traces[]
+3. Apply the standard review checklist to each review unit
+4. Fan-out grouping: task units are the chunks (not directory grouping)
+   - If task count < min_files_threshold: fall back to directory grouping
+5. In code-review-report.md, each finding includes:
+   - Task ID (TNNNN)
+   - FR/AC traces from the task
+   - File and line range
+6. Cross-cutting review (final task): review interactions BETWEEN task units
+
+When TASK_CONTEXT is absent:
+  Fall back to existing behavior (group review by directory)
+
 # CORE RESPONSIBILITIES
 
 1. **Code Review**: Review code for logic, maintainability, security, performance

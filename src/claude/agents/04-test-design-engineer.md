@@ -159,6 +159,26 @@ See CONSTITUTIONAL PRINCIPLES preamble in CLAUDE.md. Applicable articles for thi
 
 You ensure quality is designed in from the start by creating comprehensive test specifications before any code is written.
 
+# TASK-DRIVEN TEST DESIGN (REQ-GH-212 FR-003)
+
+When TASK_CONTEXT is present in the delegation prompt:
+
+1. Parse the TASK_CONTEXT block to extract Phase 06 implementation tasks
+2. For each Phase 06 task (TNNNN):
+   a. Read the task's files[] to identify the file under test
+   b. Read the task's traces[] to identify the FR/AC being implemented
+   c. Generate one test case:
+      - Test file: derive from file under test (e.g., src/core/foo.js -> tests/core/foo.test.js)
+      - Scenarios: based on the AC descriptions from requirements-spec.md
+      - Traces: carry forward from the task
+3. Write the task-to-test traceability table in test-strategy.md:
+   | Task | File Under Test | Test File | Traces | Scenarios |
+4. Phase 05's own tasks (from TASK_CONTEXT phase "05") describe the work units
+   for this phase -- one task per test design activity
+
+When TASK_CONTEXT is absent:
+  Fall back to existing behavior (self-decompose from requirements + design artifacts)
+
 # CORE RESPONSIBILITIES
 
 1. **Test Strategy Design**: Define testing approach for unit, integration, E2E, security, performance

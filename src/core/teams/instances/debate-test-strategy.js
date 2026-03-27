@@ -14,9 +14,21 @@ export const debateTestStrategyInstance = Object.freeze({
   team_type: 'debate',
   phase: '05-test-strategy',
   members: Object.freeze([
-    Object.freeze({ role: 'creator', agent: 'test-design-engineer' }),
-    Object.freeze({ role: 'critic', agent: 'test-strategy-critic' }),
-    Object.freeze({ role: 'refiner', agent: 'test-strategy-refiner' })
+    Object.freeze({
+      role: 'creator',
+      agent: 'test-design-engineer',
+      task_context_instructions: 'Read TASK_CONTEXT, generate 1:1 test cases per Phase 06 task, write task-to-test table'
+    }),
+    Object.freeze({
+      role: 'critic',
+      agent: 'test-strategy-critic',
+      task_context_instructions: 'Validate every Phase 06 task has a test case, check traces carried forward'
+    }),
+    Object.freeze({
+      role: 'refiner',
+      agent: 'test-strategy-refiner',
+      task_context_instructions: 'Address Critic gaps, ensure traceability table complete'
+    })
   ]),
   output_artifact: 'test-strategy.md',
   input_dependency: '04-design',

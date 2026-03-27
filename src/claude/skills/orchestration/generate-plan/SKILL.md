@@ -250,7 +250,55 @@ Phases: {count}
 **Traceability**: 12/12 AC covered (100%)
 ```
 
-Note: Phase 06 tasks are HIGH-LEVEL at initial generation. No `files:`, `blocked_by:`, or `blocks:` sub-lines. These are added by the refinement step after GATE-04.
+Note: Phase 06 tasks are HIGH-LEVEL at initial generation when design artifacts are available (standard workflow). The refinement step after GATE-04 adds full file-level detail. For light workflows without design artifacts, file-level detail is derived at generation time using the light-workflow derivation logic below.
+
+### Light-Workflow Task Derivation (REQ-GH-212 FR-001, AC-001-02)
+
+When design artifacts are NOT available (light workflow), derive file-level tasks from requirements and impact analysis:
+
+```
+For each phase in [05-test-strategy, 06-implementation, 16-quality-loop, 08-code-review]:
+
+  Phase 05 task generation:
+    For each FR/AC group in requirements-spec.md:
+      Create one task per test file needed
+      files: test file path (CREATE or EXTEND)
+      traces: matching FR/AC refs
+      blocked_by: none (all Phase 05 tasks independent)
+      blocks: corresponding Phase 06 task that implements the feature
+
+  Phase 06 task generation (WITHOUT design artifacts):
+    For each FR in requirements-spec.md:
+      Derive likely file paths from impact-analysis.md blast radius
+      Create one task per file or tightly coupled file group
+      files: best-effort file paths (CREATE or MODIFY)
+      blocked_by: inferred from FR dependency mapping
+      blocks: computed from inverse dependencies
+      traces: FR/AC directly from requirements
+
+  Phase 16 task generation:
+    For each Phase 06 task:
+      Create one verification task
+      files: same file path (VERIFY)
+      blocked_by: none (all verification tasks independent within track)
+      blocks: final traceability task
+      traces: same traces as the Phase 06 task
+
+  Phase 08 task generation:
+    Group Phase 06 tasks by related modules (2-3 tasks per review unit)
+    For each review group:
+      Create one review task
+      files: all files from grouped tasks (REVIEW)
+      blocked_by: none (review units independent)
+      blocks: final sign-off task
+      traces: union of grouped task traces
+```
+
+**Inputs for light-workflow derivation**:
+- `requirements-spec.md` — FR/AC identifiers and descriptions
+- `impact-analysis.md` — blast radius file paths for best-effort file targeting
+
+**Validation**: At least 80% of FRs should have at least one task with matching traces annotation. File paths are best-effort and may be less precise without design artifacts.
 
 ### Task Line EBNF
 

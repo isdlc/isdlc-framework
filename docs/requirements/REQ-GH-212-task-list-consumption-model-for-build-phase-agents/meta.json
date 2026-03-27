@@ -24,5 +24,7 @@
     "domains": ["requirements", "architecture", "design", "tasks"],
     "amendment_cycles": 2
   },
-  "task_breakdown_generated": true
+  "task_breakdown_generated": true,
+  "build_started_at": "2026-03-27T00:36:48.874Z",
+  "workflow_type": "feature"
 }

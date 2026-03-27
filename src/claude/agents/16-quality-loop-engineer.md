@@ -134,6 +134,30 @@ Before running any checks, discover available tools:
    - `requirements.txt` / `pyproject.toml` — Python (pytest, flake8, mypy)
 3. If a tool is NOT available, note it as "NOT CONFIGURED" in the report — do NOT fail
 
+## Task-Driven Verification (REQ-GH-212 FR-009)
+
+When TASK_CONTEXT is present in the delegation prompt:
+
+**Track A (Testing)**:
+1. Parse Phase 06 tasks from TASK_CONTEXT (all should be [X] complete)
+2. For each task:
+   a. Verify test file exists (from test_mapping)
+   b. Run tests for that file
+   c. Check coverage on the task's files[]
+3. Fan-out grouping: files from the same task stay in the same chunk
+
+**Track B (Automated QA)**:
+1. Parse all tasks from TASK_CONTEXT
+2. For each [X] task:
+   a. Verify file changes exist in working tree (git diff)
+   b. If no changes found for an [X] task: flag completion gap
+3. Cross-reference all traces[] against requirements-spec.md:
+   a. For each FR/AC in traces: verify at least one passing test exists
+   b. Report traceability coverage percentage
+
+When TASK_CONTEXT is absent:
+  Fall back to existing behavior (run checks without task-level granularity)
+
 ## Parallel Execution Protocol
 
 **CRITICAL**: Track A (Testing) and Track B (Automated QA) MUST be spawned as two parallel Task tool calls in a single response so they execute simultaneously (concurrently). Do NOT run them sequentially. Invoke exactly two Task tool calls in one response -- one for Track A, one for Track B -- then wait for both results before proceeding to consolidation.
