@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "source_file": {
+    "claude": "CLAUDE.md",
+    "codex": "AGENTS.md"
+  },
+  "protocol_section_start": "## Agent Framework Context",
+  "protocol_section_end": "## Project Context",
+  "protocols": [
+    { "header": "### SKILL OBSERVABILITY Protocol", "phases": ["all"], "checkable": false },
+    { "header": "### SUGGESTED PROMPTS — Phase Agent Protocol", "phases": ["all"], "checkable": false },
+    { "header": "### CONSTITUTIONAL PRINCIPLES Preamble", "phases": ["all"], "checkable": false },
+    { "header": "### Root Resolution Protocol", "phases": ["all"], "checkable": false },
+    { "header": "### Monorepo Mode Protocol", "phases": ["all"], "checkable": false },
+    { "header": "### Mandatory Iteration Enforcement Protocol", "phases": ["05-test-strategy", "06-implementation", "07-testing", "16-quality-loop"], "checkable": false },
+    { "header": "### Hook Block Auto-Recovery Protocol", "phases": ["all"], "checkable": false },
+    { "header": "### Git Commit Prohibition", "phases": ["01-requirements", "02-impact-analysis", "02-tracing", "03-architecture", "04-design", "05-test-strategy", "06-implementation", "16-quality-loop"], "checkable": true, "check_signal": "git_commit_detected" },
+    { "header": "### Single-Line Bash Convention", "phases": ["all"], "checkable": false },
+    { "header": "### Tool Call Efficiency", "phases": ["all"], "checkable": false }
+  ],
+  "user_content_extraction": {
+    "exclude_markers": ["<!-- SECTION:", "<!-- /SECTION:"],
+    "exclude_range": { "start": "## Agent Framework Context", "end": "## Project Context" }
+  }
+}

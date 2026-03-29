@@ -1928,6 +1928,31 @@ Use Task tool → {agent_name} with:
     5. Call formatTaskContext(plan, phaseKey, options)
     6. Append result to delegation prompt
     7. Error handling: If any step fails, skip injection and continue. Never block.}
+   {PROTOCOL INJECTION (REQ-GH-116) -- Inject CLAUDE.md protocol sections and user instructions into delegation prompt. Fail-open.
+    1. Read `src/claude/hooks/config/protocol-mapping.json` using Read tool.
+       If file missing or parse fails: SKIP injection entirely (fail-open).
+    2. Determine source file from mapping config:
+       - Claude provider: read `CLAUDE.md` from project root
+       - Codex provider: read `AGENTS.md` from project root
+       If source file missing or unreadable: SKIP injection (fail-open).
+    3. Extract protocol section: find content between `protocol_section_start` and `protocol_section_end` headers.
+       If boundaries not found: SKIP injection (fail-open).
+    4. For each protocol in `mapping.protocols` where `phases` includes current `{phase_key}` or `"all"`:
+       - Find the header line in the extracted section
+       - Extract text from header to the next `###` header or end of protocol section
+       - Accumulate into `{protocols_block}`
+    5. If `{protocols_block}` is non-empty, format and append:
+       ```
+       PROTOCOLS (from CLAUDE.md — these are mandatory behavioral constraints):
+       {protocols_block}
+       ```
+    6. Extract user content: source file content that is NOT inside `<!-- SECTION: -->` / `<!-- /SECTION: -->` markers AND NOT inside the protocol range (`protocol_section_start` to `protocol_section_end`).
+       If non-empty, format and append:
+       ```
+       USER INSTRUCTIONS (from CLAUDE.md — project-specific guidance):
+       {user_content_block}
+       ```
+    7. Error handling: Any failure at any step → log warning to stderr, continue with unmodified prompt. Never block delegation.}
    PHASE_TIMING_REPORT: Include { "debate_rounds_used": 0, "fan_out_chunks": 0 } in your result.
    Do NOT emit SUGGESTED NEXT STEPS or prompt the user to continue — the Phase-Loop Controller manages phase transitions. Simply return your result.
    Validate GATE-{NN} on completion."
@@ -2325,6 +2350,22 @@ state update, check if adaptive workflow sizing should run.
 
 **Fallback**: If no design artifacts are found, skip refinement silently. Phase 06 tasks remain high-level. The software-developer agent will self-decompose work as it does today.
 
+**3e-compliance.** PROTOCOL COMPLIANCE CHECK (REQ-GH-116) -- After post-phase state update, check whether injected protocols were followed. Fail-open.
+
+1. Read `src/claude/hooks/config/protocol-mapping.json`. If missing or parse fails: skip silently.
+2. Filter protocols where `checkable: true` AND (`phases` includes current `phase_key` or `"all"`).
+3. If no checkable protocols match: skip silently.
+4. For each checkable protocol, run the check signal:
+
+| Signal | Logic |
+|--------|-------|
+| `git_commit_detected` | Run `git log --after="{timing.started_at}" --before="{timing.completed_at}" --oneline`. Non-empty output = violation. Evidence = the git log output. |
+
+5. Collect violations: `[{ protocol_header, check_signal, evidence }]`
+6. If violations is empty: skip to 3f (no violations).
+7. If violations is non-empty: dispatch to **3f-protocol-violation** handler (below).
+8. Error handling: If any check signal fails (git command error, etc.), skip that protocol and continue. Never block on check failure.
+
 **3f.** On return, check the result status:
 - `"passed"` or successful completion → Mark task as `completed` **with strikethrough**: update both `status` to `completed` AND `subject` to `~~[N] {base subject}~~` (wrap the original `[N] subject` in `~~`). Then **clean up sub-agent tasks**: call `TaskList`, and for every task whose `subject` does NOT start with `[` or `~~[` (i.e., it is NOT a main workflow phase task), call `TaskUpdate` with `status: "deleted"` to remove it from the display. Continue to next phase.
 - `"blocked_by_hook"` → Identify the block type from the message and dispatch:
@@ -2333,7 +2374,8 @@ state update, check if adaptive workflow sizing should run.
   3. Contains `"PHASE COMPLETION BLOCKED"` OR `"CONSTITUTIONAL VALIDATION INCOMPLETE"` → Follow **3f-constitutional** below
   4. Contains `"ITERATION CORRIDOR"` → Follow **3f-iteration-corridor** below
   5. Contains `"TEST ADEQUACY REQUIRED"` → Follow **3f-test-adequacy** below
-  6. Otherwise → Generic fallback: display blocker banner (same format as 3c), use `AskUserQuestion` for Retry/Skip/Cancel
+  6. Contains `"PROTOCOL VIOLATION"` → Follow **3f-protocol-violation** below
+  7. Otherwise → Generic fallback: display blocker banner (same format as 3c), use `AskUserQuestion` for Retry/Skip/Cancel
 - Any other error → Display error, use `AskUserQuestion` for Retry/Skip/Cancel
 
 **3f-blast-radius.** BLAST RADIUS BLOCK HANDLING (Traces to: BUG-0019, FR-01 through FR-05)
@@ -2404,6 +2446,7 @@ This protocol manages retry counters for hook block re-delegations. Each handler
 | 3f-constitutional | 3 | CV max_iterations is 5 in config, but orchestrator-level retries should be fewer |
 | 3f-iteration-corridor | 3 | Same rationale as constitutional |
 | 3f-test-adequacy | 2 | Precondition block — if test gen fails twice, escalate |
+| 3f-protocol-violation | 2 | Protocol violations are often one-shot (e.g., git commit already made) — escalate quickly |
 
 **3f-gate-blocker.** GATE BLOCKER RE-DELEGATION
 
@@ -2515,6 +2558,38 @@ You MUST establish adequate test coverage before proceeding:
 ```
 
 3. On return, loop back to STEP 3d per the retry protocol.
+
+**3f-protocol-violation.** PROTOCOL VIOLATION RE-DELEGATION (REQ-GH-116)
+
+Triggered by `3e-compliance` when `checkProtocolCompliance()` returns non-empty violations, OR when a `blocked_by_hook` message contains `"PROTOCOL VIOLATION"`.
+
+1. Check retry counter (`protocol-violation:{phase_key}`) per **3f-retry-protocol**. Max retries: 2.
+2. Re-delegate to the SAME phase agent with this prompt:
+
+```
+PROTOCOL VIOLATION DETECTED — Retry {N} of 2
+
+Violated protocols:
+{for each violation:
+  - {protocol_header}: {evidence}
+}
+
+Remediate these violations before the phase can advance.
+- If Git Commit Prohibition violated: the commits have already been made and cannot be undone by this agent. Acknowledge the violation and ensure no further commits are made.
+- For other violations: fix the non-compliant behavior and re-run the phase work.
+```
+
+3. After re-delegation, re-run `3e-compliance` check. If clean, proceed to 3f. If violations persist, retry or escalate.
+4. After 2 retries: escalate to user with `AskUserQuestion`:
+   ```
+   PROTOCOL VIOLATION: Retry limit (2) exceeded for phase {phase_key}.
+   Violations: {violation list}
+
+   Options:
+   [R] Retry — Re-delegate one more time
+   [S] Skip — Continue without resolving
+   [C] Cancel workflow
+   ```
 
 #### STEP 3-dashboard: COMPLETION DASHBOARD (REQ-0022)
 
