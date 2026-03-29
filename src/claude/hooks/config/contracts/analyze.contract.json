@@ -1,6 +1,6 @@
 {
   "_generation_metadata": {
-    "generated_at": "2026-03-27T19:57:48.592Z",
+    "generated_at": "2026-03-29T22:09:53.448Z",
     "generator_version": "1.0.0",
     "input_files": [
       {
@@ -18,6 +18,10 @@
       {
         "hash": "ddd1d03b4183fdf40854ecf682cc0777c3bac6c831690f599ea97dbff64c45ad",
         "path": ".isdlc/roundtable.yaml"
+      },
+      {
+        "hash": "4f31000cee45f09e3c1769fe33845b2a39f6292c5243d113c30112476ce74624",
+        "path": "docs/isdlc/external-skills-manifest.json"
       },
       {
         "hash": "74ed23ed6cc212dab5dc327df4e965eaf1b91070f72f74966559b7f1782f1547",

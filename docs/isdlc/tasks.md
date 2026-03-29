@@ -1,9 +1,9 @@
-# Task Plan: REQ-GH-214 REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp
+# Task Plan: REQ-GH-116 REQ-GH-116-extract-agent-protocols-from-claude-md
 
 **Version**: 2.0
 **Generated**: 2026-03-29
 **Workflow**: feature
-**Artifact Folder**: REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp
+**Artifact Folder**: REQ-GH-116-extract-agent-protocols-from-claude-md
 
 ---
 
@@ -11,104 +11,88 @@
 
 | Phase | Tasks | Completed | Status |
 |-------|-------|-----------|--------|
-| 05 — Test Strategy | 3 | 3 | COMPLETE |
-| 06 — Implementation | 17 | 17 | COMPLETE |
-| 16 — Quality Loop | 3 | 0 | PENDING |
+| 05 — Test Strategy | 4 | 0 | PENDING |
+| 06 — Implementation | 14 | 0 | PENDING |
+| 16 — Quality Loop | 4 | 0 | PENDING |
 | 08 — Code Review | 2 | 0 | PENDING |
-| **Total** | **25** | **20** | **80%** |
+| **Total** | **24** | **0** | **0%** |
 
 ---
 
-## Phase 05: Test Strategy -- COMPLETE
+## Phase 05: Test Strategy -- PENDING
 
 ### test_case_design
 
-- [X] T0001 Design test strategy for tool-router hook — unit tests for each function, integration tests for end-to-end hook flow | traces: FR-001, FR-008
-- [X] T0002 Define test cases for exemption mechanism — pattern regex matching, context condition evaluation, exemption precedence | traces: FR-006, AC-006-01, AC-006-02, AC-006-03
-- [X] T0003 Define test cases for three-source rule merge — priority ordering, conflict resolution, missing sources | traces: FR-003, AC-003-01, AC-003-02
+- [ ] T0001 Design test cases for protocol injection — phase filtering, header extraction, multi-section extraction, missing file, malformed markdown, fail-open | traces: FR-002, FR-005, AC-002-01, AC-002-02, AC-005-01
+- [ ] T0002 Design test cases for user content extraction — exclusion of SECTION markers, exclusion of protocol range, empty user content, all-framework CLAUDE.md | traces: FR-003, AC-003-01
+- [ ] T0003 Design test cases for compliance detection — git_commit_detected signal, timing window, empty violations, check failure fallback | traces: FR-006, AC-006-01, AC-006-02
+- [ ] T0004 Design test cases for violation response — remediation prompt content, retry counter, escalation at max retries | traces: FR-007, AC-007-01, AC-007-02
 
 ---
 
-## Phase 06: Implementation -- COMPLETE
+## Phase 06: Implementation -- PENDING
 
 ### setup
 
-- [X] T0004 Create tool-routing.json with framework default rules search-semantic find-files file-summary, inference probes, and empty user_overrides | traces: FR-002, AC-002-01
-  files: src/claude/hooks/config/tool-routing.json (CREATE)
-  blocks: [T0006, T0015]
-
-- [X] T0005 Add tool_preferences field to external-skills-manifest schema and document the field | traces: FR-005, AC-005-01
-  files: docs/isdlc/external-skills-manifest.json (MODIFY)
+- [ ] T0005 Create protocol-mapping.json with all 9 protocol mappings, phase arrays, checkable flags, source_file config, user content extraction config | traces: FR-001, AC-001-01, AC-001-02
+  files: src/claude/hooks/config/protocol-mapping.json (CREATE)
+  blocks: [T0006, T0008, T0010]
 
 ### core_implementation
 
-- [X] T0006 Implement tool-router.cjs — stdin parsing via readStdin, main loop, fail-open shell exit 0 on any error | traces: FR-001, FR-008, NFR-001, AC-001-03, AC-008-01
-  files: src/claude/hooks/tool-router.cjs (CREATE)
-  blocked_by: [T0004]
-  blocks: [T0007, T0008, T0009, T0010, T0011, T0012, T0014]
+- [ ] T0006 Implement PROTOCOL INJECTION step in isdlc.md STEP 3d — read mapping config, read CLAUDE.md or AGENTS.md, extract mapped sections by header, build PROTOCOLS block, append to delegation prompt | traces: FR-002, FR-004, FR-005, AC-002-01, AC-004-01, AC-004-02, AC-005-01
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0005]
+  blocks: [T0007]
 
-- [X] T0007 Implement loadRoutingRules — read framework config, read skill manifest tool_preferences, run inferEnvironmentRules, read user_overrides, merge by priority | traces: FR-003, AC-003-01, AC-003-02
-  files: src/claude/hooks/tool-router.cjs (MODIFY)
+- [ ] T0007 Implement user content extraction — exclude SECTION markers, exclude protocol range, build USER INSTRUCTIONS block, append to delegation prompt | traces: FR-003, AC-003-01
+  files: src/claude/commands/isdlc.md (MODIFY)
   blocked_by: [T0006]
 
-- [X] T0008 Implement inferEnvironmentRules — probe MCP tool availability via filesystem heuristics, check for embeddings directory, generate inferred rules at warn level | traces: FR-004, FR-009, AC-004-01, AC-004-02, AC-009-01, AC-009-02
-  files: src/claude/hooks/tool-router.cjs (MODIFY)
-  blocked_by: [T0006]
+- [ ] T0008 Implement checkProtocolCompliance between STEP 3e and 3f — filter checkable protocols for current phase, run check signals, return violations array | traces: FR-006, AC-006-01, AC-006-02
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0005]
+  blocks: [T0009, T0010]
 
-- [X] T0009 Implement evaluateRule and checkExemptions — pattern regex matching, context condition evaluation edit_prep targeted_file exact_filename, first-match-wins | traces: FR-006, AC-006-01, AC-006-02, AC-006-03
-  files: src/claude/hooks/tool-router.cjs (MODIFY)
-  blocked_by: [T0006]
+- [ ] T0009 Implement git_commit_detected check signal — git log with after/before timing window, parse output | traces: FR-006, AC-006-01
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0008]
 
-- [X] T0010 Implement formatBlockMessage and formatWarnMessage — block message with preferred tool name, warn message with config path for promotion | traces: FR-007, AC-007-01, AC-001-01, AC-001-02
-  files: src/claude/hooks/tool-router.cjs (MODIFY)
-  blocked_by: [T0006]
-
-- [X] T0011 Implement appendAuditEntry — JSONL append to .isdlc/tool-routing-audit.jsonl, create file if missing, non-blocking on failure | traces: FR-011, AC-011-01, AC-011-02, AC-011-03
-  files: src/claude/hooks/tool-router.cjs (MODIFY)
-  blocked_by: [T0006]
+- [ ] T0010 Implement 3f-protocol-violation handler — re-delegate with remediation prompt, retry counter via 3f-retry-protocol max 2, escalation menu | traces: FR-007, AC-007-01, AC-007-02
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0008]
 
 ### unit_tests
 
-- [X] T0012 Write unit tests for tool-router.cjs — test each function in isolation loadRoutingRules inferEnvironmentRules evaluateRule checkExemptions formatBlockMessage formatWarnMessage appendAuditEntry (65 tests, all passing) | traces: FR-001, FR-003, FR-006, FR-008
-  files: src/claude/hooks/tests/tool-router.test.cjs (CREATE)
+- [ ] T0011 Write unit tests for protocol section extraction — header matching, multi-section, missing sections, malformed CLAUDE.md, fail-open | traces: FR-002, FR-005, AC-002-02
+  files: tests/protocol-injection.test.cjs (CREATE)
   blocked_by: [T0006]
 
-- [X] T0013 Write unit tests for config loading — missing config, malformed JSON, valid config, user overrides, skill preferences merge | traces: FR-002, FR-003, AC-008-01, AC-008-03
-  files: src/claude/hooks/tests/tool-router.test.cjs (MODIFY)
-  blocked_by: [T0012]
+- [ ] T0012 Write unit tests for user content extraction — exclusion logic, empty content, all-framework file | traces: FR-003
+  files: tests/protocol-injection.test.cjs (MODIFY)
+  blocked_by: [T0007, T0011]
 
-- [X] T0014 Write unit tests for exemption evaluation — pattern exemptions with regex, context exemptions edit_prep targeted_file exact_filename, invalid regex handling | traces: FR-006, AC-006-01, AC-006-02, AC-006-03
-  files: src/claude/hooks/tests/tool-router.test.cjs (MODIFY)
-  blocked_by: [T0012]
+- [ ] T0013 Write unit tests for compliance detection — git commit signal, empty violations, timing edge cases, check failure fallback | traces: FR-006
+  files: tests/protocol-compliance.test.cjs (CREATE)
+  blocked_by: [T0008]
 
 ### wiring_claude
 
-- [X] T0015 Register hook in src/claude/settings.json — replaced mcp-tool-router.cjs with tool-router.cjs for Grep Glob Read matchers | traces: FR-001
-  files: src/claude/settings.json (MODIFY)
-  blocked_by: [T0006]
-  blocks: [T0020]
-
-- [X] T0016 Add Article XV Tool Preference Enforcement to docs/isdlc/constitution.md — principle statement, validation references, amendment log entry, version bump to 1.4.0 | traces: FR-010, AC-010-01
-  files: docs/isdlc/constitution.md (MODIFY)
+- [ ] T0014 Wire protocol injection into Phase-Loop Controller STEP 3d — position after SKILL INJECTION, before GATE REQUIREMENTS. Wire compliance check between 3e and 3f. | traces: FR-002, FR-006
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0006, T0008]
 
 ### wiring_codex
 
-- [X] T0017 Confirm Codex provider is not affected — tool routing is Claude-provider-specific as Codex does not use PreToolUse hooks. Documented in architecture-overview.md. | traces: FR-001
-  files: docs/requirements/REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp/architecture-overview.md (MODIFY)
+- [ ] T0015 Verify Codex adapter reads AGENTS.md for protocol extraction — confirm source_file.codex path resolves, document adjustments | traces: FR-004
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T0006]
 
 ### cleanup
 
-- [X] T0018 Copy tool-router.cjs to .claude/hooks/tool-router.cjs for dogfooding dual-file — .claude/hooks/ is a symlink to src/claude/hooks/, auto-resolved | traces: FR-001
-  files: .claude/hooks/tool-router.cjs (CREATE)
-  blocked_by: [T0006]
-
-- [X] T0019 Copy tool-routing.json to .claude/hooks/config/tool-routing.json for dogfooding dual-file — .claude/hooks/config/ is symlinked, auto-resolved | traces: FR-002
-  files: .claude/hooks/config/tool-routing.json (CREATE)
-  blocked_by: [T0004]
-
-- [X] T0020 Update .claude/settings.json with new PreToolUse matchers for Grep Glob Read — .claude/settings.json is a symlink to src/claude/settings.json, auto-resolved | traces: FR-001
-  files: .claude/settings.json (MODIFY)
-  blocked_by: [T0015]
+- [ ] T0016 Copy protocol-mapping.json to .claude/hooks/config/protocol-mapping.json for dogfooding dual-file | traces: FR-001
+  files: .claude/hooks/config/protocol-mapping.json (CREATE)
+  blocked_by: [T0005]
 
 ---
 
@@ -116,12 +100,13 @@
 
 ### test_execution
 
-- [ ] T0021 Run full test suite ESM lib plus CJS hooks — ensure no regressions from new hook registration | traces: NFR-001
-- [ ] T0022 Verify fail-open behavior end-to-end — config missing, MCP unavailable, malformed stdin, audit write failure | traces: FR-008, AC-008-01, AC-008-02, AC-008-03
+- [ ] T0017 Run full test suite — all existing tests plus new protocol-injection and protocol-compliance tests | traces: NFR-001
+- [ ] T0018 Verify fail-open behavior end-to-end — missing CLAUDE.md, missing mapping config, malformed JSON, git log failure | traces: FR-002, AC-002-02, NFR-001
 
 ### parity_verification
 
-- [ ] T0023 Verify src/claude/ and .claude/ copies are identical — diff tool-router.cjs, tool-routing.json, settings.json entries | traces: FR-001, FR-002
+- [ ] T0019 Verify src/ and .claude/ protocol-mapping.json copies are identical | traces: FR-001
+- [ ] T0020 Verify protocol injection produces identical output for a known CLAUDE.md input — snapshot test | traces: FR-002, FR-005
 
 ---
 
@@ -129,34 +114,32 @@
 
 ### constitutional_review
 
-- [ ] T0024 Constitutional review — verify Article XV is correct, hook enforces Article X fail-open, Article XIII CJS module system | traces: FR-010, FR-008
+- [ ] T0021 Constitutional review — verify Article X fail-open, Article IX no gate bypass, Article V simplicity | traces: NFR-001
 
 ### dual_file_check
 
-- [ ] T0025 Dual-file check — confirm src/ and .claude/ are in sync for all new and modified files | traces: FR-001, FR-002
+- [ ] T0022 Dual-file check — confirm src/ and .claude/ protocol-mapping.json in sync, verify isdlc.md changes work for both providers | traces: FR-001, FR-004
 
 ---
 
 ## Dependency Graph
 
 ```
-T0004 ──┬──→ T0006 ──┬──→ T0007 (parallel with T0008-T0011)
-        │            ├──→ T0008
-        │            ├──→ T0009
+T0005 ──┬──→ T0006 ──┬──→ T0007
+        │            ├──→ T0011 ──→ T0012
+        │            ├──→ T0014
+        │            └──→ T0015
+        ├──→ T0008 ──┬──→ T0009
         │            ├──→ T0010
-        │            ├──→ T0011
-        │            ├──→ T0012 ──→ T0013 ──→ T0014
-        │            ├──→ T0015 ──→ T0020
-        │            ├──→ T0018
-        │            └──→ (T0017 independent)
-        └──→ T0019
-T0005 (independent)
-T0016 (independent)
-T0021 ──→ T0022 ──→ T0023
-T0024 ──→ T0025
+        │            ├──→ T0013
+        │            └──→ T0014
+        └──→ T0016
+T0001-T0004 (independent — Phase 05)
+T0017 ──→ T0018 ──→ T0019 ──→ T0020
+T0021 ──→ T0022
 ```
 
-**Critical Path**: T0004 → T0006 → T0012 → T0013 → T0014 → T0021 → T0022 → T0023 → T0024 → T0025 (10 tasks)
+**Critical Path**: T0005 → T0006 → T0014 → T0017 → T0018 → T0019 → T0020 → T0021 → T0022 (9 tasks)
 
 ---
 
@@ -164,28 +147,25 @@ T0024 ──→ T0025
 
 | Task | FR | AC |
 |------|----|----|
-| T0001 | FR-001, FR-008 | — |
-| T0002 | FR-006 | AC-006-01, AC-006-02, AC-006-03 |
-| T0003 | FR-003 | AC-003-01, AC-003-02 |
-| T0004 | FR-002 | AC-002-01 |
-| T0005 | FR-005 | AC-005-01 |
-| T0006 | FR-001, FR-008 | AC-001-03, AC-008-01 |
-| T0007 | FR-003 | AC-003-01, AC-003-02 |
-| T0008 | FR-004, FR-009 | AC-004-01, AC-004-02, AC-009-01, AC-009-02 |
-| T0009 | FR-006 | AC-006-01, AC-006-02, AC-006-03 |
-| T0010 | FR-007 | AC-007-01, AC-001-01, AC-001-02 |
-| T0011 | FR-011 | AC-011-01, AC-011-02, AC-011-03 |
-| T0012 | FR-001, FR-003, FR-006, FR-008 | — |
-| T0013 | FR-002, FR-003 | AC-008-01, AC-008-03 |
-| T0014 | FR-006 | AC-006-01, AC-006-02, AC-006-03 |
-| T0015 | FR-001 | — |
-| T0016 | FR-010 | AC-010-01 |
-| T0017 | FR-001 | — |
-| T0018 | FR-001 | — |
-| T0019 | FR-002 | — |
-| T0020 | FR-001 | — |
+| T0001 | FR-002, FR-005 | AC-002-01, AC-002-02, AC-005-01 |
+| T0002 | FR-003 | AC-003-01 |
+| T0003 | FR-006 | AC-006-01, AC-006-02 |
+| T0004 | FR-007 | AC-007-01, AC-007-02 |
+| T0005 | FR-001 | AC-001-01, AC-001-02 |
+| T0006 | FR-002, FR-004, FR-005 | AC-002-01, AC-004-01, AC-004-02, AC-005-01 |
+| T0007 | FR-003 | AC-003-01 |
+| T0008 | FR-006 | AC-006-01, AC-006-02 |
+| T0009 | FR-006 | AC-006-01 |
+| T0010 | FR-007 | AC-007-01, AC-007-02 |
+| T0011 | FR-002, FR-005 | AC-002-02 |
+| T0012 | FR-003 | — |
+| T0013 | FR-006 | — |
+| T0014 | FR-002, FR-006 | — |
+| T0015 | FR-004 | — |
+| T0016 | FR-001 | — |
+| T0017 | NFR-001 | — |
+| T0018 | FR-002 | AC-002-02 |
+| T0019 | FR-001 | — |
+| T0020 | FR-002, FR-005 | — |
 | T0021 | NFR-001 | — |
-| T0022 | FR-008 | AC-008-01, AC-008-02, AC-008-03 |
-| T0023 | FR-001, FR-002 | — |
-| T0024 | FR-010, FR-008 | — |
-| T0025 | FR-001, FR-002 | — |
+| T0022 | FR-001, FR-004 | — |
