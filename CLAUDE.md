@@ -76,9 +76,9 @@ Do NOT implement changes directly without going through a workflow. The framewor
 
 **CRITICAL — These are mandatory steps after every roundtable analysis:**
 
-1. **Three-domain confirmation sequence**: ALWAYS present confirmations sequentially per domain — Requirements (Maya) → Architecture (Alex) → Design (Jordan) — each with explicit Accept/Amend. NEVER collapse into a single combined confirmation. Produce the corresponding artifacts (requirements-spec.md, architecture-overview.md, module-design.md) BEFORE their respective confirmation prompts.
+1. **Four-domain confirmation sequence**: ALWAYS present confirmations sequentially per domain — Requirements (Maya) → Architecture (Alex) → Design (Jordan) → Tasks — each with explicit Accept/Amend. NEVER collapse into a single combined confirmation. Produce the corresponding artifacts (requirements-spec.md, architecture-overview.md, module-design.md, tasks.md) BEFORE their respective confirmation prompts. Use the templates in `src/claude/hooks/config/templates/` for both confirmation presentation and artifact structure.
 
-2. **Finalize after acceptance**: After the user accepts all three domain confirmations, the analyze handler finalizes meta.json, updates BACKLOG.md marker, and syncs GitHub labels (steps 7.8-9 of the analyze handler in `src/claude/commands/isdlc.md`). Do NOT just update meta.json manually.
+2. **Finalize after acceptance**: After the user accepts all four domain confirmations, the analyze handler finalizes meta.json, updates BACKLOG.md marker, and syncs GitHub labels (steps 7.8-9 of the analyze handler in `src/claude/commands/isdlc.md`). Do NOT just update meta.json manually.
 
 ---
 

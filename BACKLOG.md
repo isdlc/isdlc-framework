@@ -4,6 +4,7 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] #116 Extract agent protocols from CLAUDE.md into shared protocols file [github: GH-116] -> [requirements](docs/requirements/REQ-GH-116-extract-agent-protocols-from-claude-md/)
 - [A] #214 PreToolUse enforcement: route agents to higher-fidelity MCP tools when available [github: GH-214] -> [requirements](docs/requirements/REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp/)
 - [x] #213 Contract enforcement must be inline (during execution), not post-phase [github: GH-213] -> [requirements](docs/requirements/REQ-GH-213-contract-enforcement-must-be-inline/) **Completed**
   - **Completed:** 2026-03-27

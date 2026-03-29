@@ -1,0 +1,5 @@
+Requirement,AC,Test Case,Test File,Line,Test Type,Priority,Action
+FR-001,AC-001-01,T46,lib/invisible-framework.test.js,693,positive,Must Have,Modify assertion: primary_prompt -> primary prompt
+FR-002,AC-002-01,TC-028,lib/node-version-update.test.js,346,positive,Must Have,Modify assertion: split Node.js bold+version check
+FR-003,AC-003-01,TC-09-03,lib/prompt-format.test.js,632,positive,Must Have,Modify assertion: Start a new workflow -> Show workflow status
+FR-004,AC-004-01,full-suite,npm run test:all,--,regression,Must Have,Verify total tests >= 1600 and 0 failures

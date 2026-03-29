@@ -172,8 +172,8 @@ For the trivial tier, TRIVIAL_SHOW transitions to FINALIZING automatically witho
 Track the following in memory during the confirmation sequence:
 
 ```
-confirmationState: IDLE | PRESENTING_REQUIREMENTS | PRESENTING_ARCHITECTURE | PRESENTING_DESIGN | AMENDING | TRIVIAL_SHOW | FINALIZING | COMPLETE
-acceptedDomains: []          // domains the user has accepted (e.g., ["requirements", "architecture", "design"])
+confirmationState: IDLE | PRESENTING_REQUIREMENTS | PRESENTING_ARCHITECTURE | PRESENTING_DESIGN | PRESENTING_TASKS | AMENDING | TRIVIAL_SHOW | FINALIZING | COMPLETE
+acceptedDomains: []          // domains the user has accepted (e.g., ["requirements", "architecture", "design", "tasks"])
 applicableDomains: []        // domains applicable for this tier and produced artifacts
 summaryCache: {}             // cached summary content keyed by domain name
 amendment_cycles: 0          // number of times the user has chosen Amend
@@ -181,8 +181,8 @@ amendment_cycles: 0          // number of times the user has chosen Amend
 
 **Applicable domains** are determined by:
 1. The analysis tier (from `effective_intensity` in `sizing_decision` or equivalent tierInfo):
-   - **standard** or **epic**: all three domains (requirements, architecture, design)
-   - **light**: requirements and design only (architecture skipped)
+   - **standard** or **epic**: all four domains (requirements, architecture, design, tasks)
+   - **light**: requirements, design, and tasks only (architecture skipped)
    - **trivial**: brief mention only (no formal domains)
 2. Whether the domain's artifacts were actually produced. A domain is skipped if its artifacts do not exist or were not applicable for this analysis. For example, if no architecture-overview.md was produced, the architecture domain is skipped even on standard tier.
 
@@ -270,7 +270,7 @@ On finalization, record the acceptance state in meta.json:
 {
   "acceptance": {
     "accepted_at": "2026-02-22T15:30:00Z",
-    "domains": ["requirements", "architecture", "design"],
+    "domains": ["requirements", "architecture", "design", "tasks"],
     "amendment_cycles": 0
   }
 }

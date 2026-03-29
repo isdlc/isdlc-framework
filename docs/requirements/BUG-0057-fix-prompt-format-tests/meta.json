@@ -1,0 +1,9 @@
+{
+  "description": "Fix 3 failing prompt-format tests — stale content expectations in lib/prompt-format.test.js (T46, TC-028, TC-09-03)",
+  "source": "manual",
+  "created_at": "2026-03-27T20:15:00.000Z",
+  "analysis_status": "raw",
+  "phases_completed": [],
+  "build_started_at": "2026-03-27T20:15:00.000Z",
+  "workflow_type": "fix"
+}
