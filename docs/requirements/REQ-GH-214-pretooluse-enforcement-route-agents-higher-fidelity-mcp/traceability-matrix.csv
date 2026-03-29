@@ -1,0 +1,63 @@
+Requirement,AC,Test Case,Test Type,Priority,Description
+FR-001,AC-001-01,UT-001,positive,P0,"main() reads stdin, matches rule, returns block decision"
+FR-001,AC-001-01,UT-005,positive,P1,formatBlockMessage includes preferred tool name and guidance
+FR-001,AC-001-01,UT-006,positive,P0,"formatBlockMessage includes 'continue: false' in JSON output"
+FR-001,AC-001-01,IT-001,positive,P0,End-to-end: Grep stdin produces block stdout with preferred tool
+FR-001,AC-001-02,UT-002,positive,P0,"main() reads stdin, matches warn rule, returns warn decision"
+FR-001,AC-001-02,IT-002,positive,P0,End-to-end: Glob stdin produces warn on stderr
+FR-001,AC-001-03,UT-003,positive,P0,"main() with no matching rules exits silently (exit 0, no output)"
+FR-001,AC-001-03,UT-004,positive,P1,main() with unrecognized tool_name exits silently
+FR-001,AC-001-03,IT-003,positive,P0,"Unmatched tool: no output, exit 0"
+FR-002,AC-002-01,UT-007,positive,P0,loadRoutingRules reads valid tool-routing.json and returns Rule[]
+FR-002,AC-002-01,UT-009,positive,P0,"Config with all three framework default rules (search-semantic, find-files, file-summary)"
+FR-002,AC-002-02,UT-008,positive,P1,loadRoutingRules with additional user rule includes it in evaluation
+FR-002,,UT-010,negative,P1,Config schema: rule missing required field (intercept_tool) is skipped with warning
+FR-002,,UT-011,negative,P2,Config schema: empty rules array results in no routing (all tools pass)
+FR-003,AC-003-01,UT-012,positive,P0,User override wins over framework default for same operation+intercept_tool
+FR-003,AC-003-01,UT-015,positive,P0,"Full merge: user > skill > inferred > framework priority ordering"
+FR-003,AC-003-02,UT-013,positive,P0,Skill-declared rule wins over inferred rule for same operation+intercept_tool
+FR-003,AC-003-02,UT-014,positive,P1,Inferred rule wins over framework default
+FR-003,,UT-016,positive,P1,Non-conflicting rules from different sources are all included
+FR-003,,UT-017,negative,P1,"Missing skill manifest: merge proceeds with framework + inferred + user only"
+FR-003,,UT-018,negative,P1,"Missing user_overrides section: merge proceeds with framework + inferred + skill only"
+FR-003,,UT-019,negative,P2,All sources empty: returns empty rule set (no routing)
+FR-004,AC-004-01,UT-020,positive,P0,inferEnvironmentRules detects code-index-mcp and generates search/find/summary rules at warn
+FR-004,AC-004-01,UT-022,positive,P1,inferEnvironmentRules generates rules only for available MCP servers
+FR-004,AC-004-01,UT-023,positive,P1,"Inferred rules always have enforcement: 'warn'"
+FR-004,AC-004-02,UT-021,positive,P0,inferEnvironmentRules with no MCP servers returns empty array
+FR-005,AC-005-01,UT-024,positive,P0,Skill with tool_preferences in manifest generates routing rules at block level
+FR-005,AC-005-01,UT-026,positive,P1,Multiple skills with tool_preferences are all included
+FR-005,,UT-025,negative,P1,Skill manifest without tool_preferences field is ignored (no skill rules)
+FR-006,AC-006-01,UT-027,positive,P0,"Pattern exemption: Grep with specific file path (path has extension, no wildcards) is exempted"
+FR-006,AC-006-01,UT-028,negative,P0,Pattern exemption: Grep with directory path (no extension) is NOT exempted
+FR-006,AC-006-02,UT-029,positive,P0,Context exemption: Read with limit<=200 matches edit_prep condition
+FR-006,AC-006-02,UT-030,positive,P0,Context exemption: Read with offset present matches targeted_read condition
+FR-006,AC-006-02,UT-036,negative,P0,Read with limit=201 does NOT match edit_prep (boundary value)
+FR-006,AC-006-03,UT-031,negative,P0,"No exemptions match: Read with no limit, no offset is routed"
+FR-006,,UT-032,positive,P1,Context exemption: Glob with exact filename (no wildcards in basename) is exempted
+FR-006,,UT-033,negative,P1,Context exemption: Glob with wildcard pattern is NOT exempted
+FR-006,,UT-034,positive,P1,"First-match-wins: first matching exemption is returned, subsequent not evaluated"
+FR-006,,UT-035,negative,P1,"Invalid regex in pattern exemption: logged to stderr, exemption skipped"
+FR-007,AC-007-01,UT-037,positive,P0,formatWarnMessage includes preferred tool name
+FR-007,AC-007-01,UT-038,positive,P0,formatWarnMessage includes rule source (inferred/default/skill/user)
+FR-007,AC-007-01,UT-039,positive,P1,formatWarnMessage includes path to tool-routing.json for promotion
+FR-008,AC-008-01,UT-040,positive,P0,"Config file missing: exit 0, no output"
+FR-008,AC-008-01,IT-004,positive,P0,"End-to-end: hook with missing config exits 0, empty stdout"
+FR-008,AC-008-02,UT-043,positive,P0,"Preferred MCP tool unavailable: rule skipped, original tool allowed"
+FR-008,AC-008-03,UT-041,negative,P0,"Malformed JSON in config: stderr warning, exit 0"
+FR-008,AC-008-03,IT-005,negative,P0,"End-to-end: hook with malformed config exits 0, warning on stderr"
+FR-008,,UT-042,negative,P0,"Malformed stdin (not JSON): exit 0, no output"
+FR-009,AC-009-01,UT-044,positive,P0,probeMcpAvailability returns true when MCP server config exists
+FR-009,AC-009-01,UT-045,negative,P0,probeMcpAvailability returns false when MCP server config missing
+FR-009,AC-009-01,UT-046,positive,P0,Rule with unavailable MCP tool is skipped silently
+FR-009,AC-009-02,UT-047,positive,P1,probeMcpAvailability respects timeout parameter (500ms)
+FR-010,AC-010-01,IT-006,positive,P1,Article XV text exists in constitution.md after implementation
+FR-011,AC-011-01,UT-048,positive,P0,appendAuditEntry appends valid JSONL line with all required fields
+FR-011,AC-011-01,IT-007,positive,P0,End-to-end: hook invocation appends audit entry to .isdlc/tool-routing-audit.jsonl
+FR-011,AC-011-01,IT-008,positive,P1,"Audit entry contains: ts, tool, preferred, enforcement, decision, exemption, rule_id, rule_source"
+FR-011,AC-011-01,UT-051,positive,P2,appendAuditEntry writes one line per call (no trailing newline duplication)
+FR-011,AC-011-02,UT-049,positive,P0,appendAuditEntry creates audit log file if it does not exist
+FR-011,AC-011-03,UT-050,negative,P0,"appendAuditEntry with unwritable path: logs warning, does not throw"
+NFR-001,,IT-009,positive,P1,"Hook is stateless: two sequential invocations with different configs produce independent results"
+NFR-002,,IT-010,positive,P1,Hook execution completes within 500ms (Node startup + evaluation)
+NFR-003,,IT-011,negative,P0,Any uncaught exception in hook results in exit 0

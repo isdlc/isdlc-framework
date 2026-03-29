@@ -104,3 +104,11 @@ Claude Code invokes tool (Grep/Glob/Read)
   → output: block (stdout) | warn (stderr) | silent exit
   → appendAuditEntry()
 ```
+
+---
+
+## Codex Provider: Not Affected
+
+Tool routing is a Claude Code-specific feature. The Codex provider does not use Claude Code's PreToolUse hook infrastructure -- it uses `codex exec` with projection bundles that operate through `src/core/` modules and `src/providers/codex/` adapters. Codex has its own tool selection strategy via the core orchestration layer, and PreToolUse hooks are not part of that execution path.
+
+No changes are required for the Codex provider. This has been confirmed during implementation (T0017, traces: FR-001).

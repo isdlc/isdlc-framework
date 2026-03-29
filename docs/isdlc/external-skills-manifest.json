@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Schema for external skills manifest with tool preference bindings. REQ-GH-214: FR-005, AC-005-01.",
+  "version": "1.1.0",
+  "skills": [],
+  "tool_preferences_schema": {
+    "description": "Skills can declare tool_preferences in their bindings to route agents to higher-fidelity tools. When installed, these preferences become routing rules at 'block' enforcement level.",
+    "example": {
+      "skill_id": "example-skill",
+      "tool_preferences": [
+        {
+          "intercept_tool": "Grep",
+          "preferred_tool": "mcp__example-mcp__search",
+          "operation": "semantic_search"
+        }
+      ]
+    }
+  }
+}
