@@ -4,7 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [A] #116 Extract agent protocols from CLAUDE.md into shared protocols file [github: GH-116] -> [requirements](docs/requirements/REQ-GH-116-extract-agent-protocols-from-claude-md/)
+- [x] #116 Extract agent protocols from CLAUDE.md into shared protocols file [github: GH-116] -> [requirements](docs/requirements/REQ-GH-116-extract-agent-protocols-from-claude-md/) **Completed**
+  - **Completed:** 2026-03-27
 - [x] #214 PreToolUse enforcement: route agents to higher-fidelity MCP tools when available [github: GH-214] -> [requirements](docs/requirements/REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp/) **Completed**
   - **Completed:** 2026-03-27
 - [x] #213 Contract enforcement must be inline (during execution), not post-phase [github: GH-213] -> [requirements](docs/requirements/REQ-GH-213-contract-enforcement-must-be-inline/) **Completed**
@@ -288,7 +289,7 @@
 
 **Infrastructure**
 - #115 [ ] Installer should inject monorepo protocol into user project CLAUDE.md — when `isMonorepo === true`, inject path routing table, project context delegation template, and workflow independence rules into generated CLAUDE.md
-- #116 [ ] Extract agent protocols from CLAUDE.md — move 8 shared protocols (Monorepo Mode, Constitutional Principles, Skill Observability, Suggested Prompts, Iteration Enforcement, Root Resolution, Git Commit Prohibition, Single-Line Bash) to `src/claude/protocols.md`. Update 31 agent files, 3 test files, CLAUDE.md.template. Wire into session cache.
+- #116 [x] Extract agent protocols from CLAUDE.md — move 8 shared protocols (Monorepo Mode, Constitutional Principles, Skill Observability, Suggested Prompts, Iteration Enforcement, Root Resolution, Git Commit Prohibition, Single-Line Bash) to `src/claude/protocols.md`. Update 31 agent files, 3 test files, CLAUDE.md.template. Wire into session cache.
 
 **Tier 2 — Extension Points**
 - #101 [x] User-space hooks — extensible pre/post phase hook points (.isdlc/hooks/)
@@ -499,6 +500,8 @@ Phase 10 (Provider-Neutral Orchestration)
 ## Completed
 
 ### 2026-03-27
+- [x] #116: Extract agent protocols from CLAUDE.md into shared protocols file -> [requirements](docs/requirements/REQ-GH-116-extract-agent-protocols-from-claude-md/) *(merged dbd6d5c)*
+  - **Completed:** 2026-03-27
 - [x] #214: PreToolUse enforcement — route agents to higher-fidelity MCP tools when available -> [requirements](docs/requirements/REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp/) *(merged 6f23ee8)*
   - **Completed:** 2026-03-27
 - [x] #213: Contract enforcement must be inline (during execution), not post-phase -> [requirements](docs/requirements/REQ-GH-213-contract-enforcement-must-be-inline/) *(merged 9e42608)*
