@@ -260,7 +260,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/mcp-tool-router.cjs",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/tool-router.cjs",
             "timeout": 10000
           }
         ]
@@ -270,7 +270,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/mcp-tool-router.cjs",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/tool-router.cjs",
             "timeout": 10000
           }
         ]
@@ -280,7 +280,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/mcp-tool-router.cjs",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/tool-router.cjs",
             "timeout": 10000
           }
         ]

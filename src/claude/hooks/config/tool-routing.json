@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "description": "Tool routing rules for PreToolUse enforcement. Routes agents from lower-fidelity built-in tools to higher-fidelity MCP alternatives when available. REQ-GH-214: FR-002, AC-002-01.",
+  "inference_probes": [
+    {
+      "mcp_prefix": "mcp__code-index-mcp__",
+      "probe_method": "tool_exists",
+      "timeout_ms": 500
+    },
+    {
+      "mcp_prefix": "mcp__bulk-fs-mcp__",
+      "probe_method": "tool_exists",
+      "timeout_ms": 500
+    }
+  ],
+  "rules": [
+    {
+      "id": "search-semantic",
+      "operation": "codebase_search",
+      "intercept_tool": "Grep",
+      "preferred_tool": "mcp__code-index-mcp__search_code_advanced",
+      "enforcement": "block",
+      "source": "framework",
+      "exemptions": [
+        {
+          "type": "context",
+          "condition": "targeted_file",
+          "signal": "path_has_extension_no_wildcards"
+        }
+      ]
+    },
+    {
+      "id": "find-files",
+      "operation": "file_discovery",
+      "intercept_tool": "Glob",
+      "preferred_tool": "mcp__code-index-mcp__find_files",
+      "enforcement": "block",
+      "source": "framework",
+      "exemptions": [
+        {
+          "type": "context",
+          "condition": "exact_filename",
+          "signal": "basename_no_wildcards"
+        }
+      ]
+    },
+    {
+      "id": "file-summary",
+      "operation": "file_summary",
+      "intercept_tool": "Read",
+      "preferred_tool": "mcp__code-index-mcp__get_file_summary",
+      "enforcement": "block",
+      "source": "framework",
+      "exemptions": [
+        {
+          "type": "context",
+          "condition": "edit_prep",
+          "signal": "limit_lte_200"
+        },
+        {
+          "type": "context",
+          "condition": "targeted_read",
+          "signal": "offset_present"
+        }
+      ]
+    }
+  ],
+  "user_overrides": []
+}

@@ -1,7 +1,7 @@
 # Project Constitution - iSDLC Framework
 
 **Created**: 2026-02-07
-**Version**: 1.3.0
+**Version**: 1.4.0
 **Project Type**: Developer tooling / CLI framework / Agent orchestration system
 
 ---
@@ -336,6 +336,26 @@ These 10 articles are mandatory for all projects. They represent industry best p
 
 ---
 
+### Article XV: Tool Preference Enforcement
+
+**Principle**: Agents MUST use the highest-fidelity tool available. User-installed and user-configured tools take precedence over built-in defaults.
+
+**Requirements**:
+1. When a higher-fidelity MCP tool is available for an operation, agents MUST prefer it over built-in tools (Grep, Glob, Read)
+2. Tool routing rules are config-driven via `tool-routing.json` -- users can add, modify, or override rules without code changes
+3. Rule priority follows: user-explicit > skill-declared > inferred > framework defaults
+4. Each rule supports exemptions for legitimate uses (edit prep, targeted reads, single-file grep)
+5. If the preferred tool is unavailable at runtime, the original tool MUST be allowed through (fail-open per Article X)
+6. All routing decisions MUST be logged to the audit trail (`.isdlc/tool-routing-audit.jsonl`)
+
+**Validation**:
+- GATE-05: `tool-router.cjs` hook registered for Grep, Glob, Read matchers in settings.json
+- GATE-05: `tool-routing.json` config file contains framework default rules
+- GATE-06: Tool routing tests verify block/warn/allow/exempt/fail-open paths
+- Agent 05 implements routing logic per FR-001 through FR-011
+
+---
+
 ## Constitutional Enforcement
 
 ### How Enforcement Works
@@ -368,6 +388,7 @@ These 10 articles are mandatory for all projects. They represent industry best p
 | 1.1.0 | 2026-02-07 | Article II: Added 555-test baseline, regression threshold, per-module coverage status, and 87 AC traceability metrics | Full deep discovery with behavior extraction established comprehensive test baseline |
 | 1.2.0 | 2026-02-10 | Article XII req 4: Updated Node version matrix from "Node 18, 20, 22" to "Node 20, 22, 24" | Node 18 reached EOL (April 2025); dropped in favor of Node 24 Active LTS (ADR-0008) |
 | 1.3.0 | 2026-03-27 | Preamble: Updated project context (70 agents, 276 skills, 30 hooks, dual-provider). Article II: Updated baseline from 555 to 1,600 tests, updated module coverage to reflect core/providers/embedding/search layers. Article XIII: Updated to reflect .cjs hook convention, added core layer and bridge layer rules. | Full re-discovery revealed significant codebase growth since 2026-02-07 |
+| 1.4.0 | 2026-03-29 | Article XV: Tool Preference Enforcement added. Agents must use highest-fidelity tool available; config-driven routing via tool-routing.json; fail-open when preferred tool unavailable. | REQ-GH-214: PreToolUse enforcement for higher-fidelity MCP tool routing |
 
 ---
 
