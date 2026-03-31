@@ -4,8 +4,9 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [A] #218 Support bug-specific roundtable analysis in analyze command [github: GH-218] -> [requirements](docs/requirements/REQ-GH-218-support-bug-specific-roundtable-analysis-in-analyze/)
-- [ ] #215 Defer task list creation until after interactive phases complete [github: GH-215] -> [requirements](docs/requirements/REQ-GH-215-defer-task-list-creation-after-interactive-phases/)
+- [x] #218 Support bug-specific roundtable analysis in analyze command [github: GH-218] -> [requirements](docs/requirements/REQ-GH-218-support-bug-specific-roundtable-analysis-in-analyze/) **Completed**
+  - **Completed:** 2026-03-31
+- [A] #215 Simplify workflow commands to add/analyze/build — remove fix/feature [github: GH-215] -> [requirements](docs/requirements/REQ-GH-215-defer-task-list-creation-after-interactive-phases/)
 - [x] #116 Extract agent protocols from CLAUDE.md into shared protocols file [github: GH-116] -> [requirements](docs/requirements/REQ-GH-116-extract-agent-protocols-from-claude-md/) **Completed**
   - **Completed:** 2026-03-27
 - [x] #214 PreToolUse enforcement: route agents to higher-fidelity MCP tools when available [github: GH-214] -> [requirements](docs/requirements/REQ-GH-214-pretooluse-enforcement-route-agents-higher-fidelity-mcp/) **Completed**
