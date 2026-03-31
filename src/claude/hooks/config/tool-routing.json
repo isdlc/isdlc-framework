@@ -49,7 +49,7 @@
       "operation": "file_summary",
       "intercept_tool": "Read",
       "preferred_tool": "mcp__code-index-mcp__get_file_summary",
-      "enforcement": "block",
+      "enforcement": "warn",
       "source": "framework",
       "exemptions": [
         {

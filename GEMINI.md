@@ -249,3 +249,5 @@ This is the iSDLC (Intelligent Software Development Lifecycle) Harness for Claud
 - Skills are logged for observability (primary agent documented, not enforced)
 - Hooks enforce iteration requirements deterministically
 - State tracked in `.isdlc/state.json` (gitignored)
+- Follow the **Mandatory Iteration Enforcement Protocol** in CLAUDE.md.
+- **Completion criteria**: {agent-specific criteria}. **Max iterations**: {N}.
