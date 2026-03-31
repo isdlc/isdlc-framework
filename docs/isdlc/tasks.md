@@ -1,171 +1,95 @@
-# Task Plan: REQ-GH-116 REQ-GH-116-extract-agent-protocols-from-claude-md
-
-**Version**: 2.0
-**Generated**: 2026-03-29
-**Workflow**: feature
-**Artifact Folder**: REQ-GH-116-extract-agent-protocols-from-claude-md
-
----
+# Task Plan: REQ-GH-218 support-bug-specific-roundtable-analysis-in-analyze
 
 ## Progress Summary
 
-| Phase | Tasks | Completed | Status |
-|-------|-------|-----------|--------|
-| 05 — Test Strategy | 4 | 4 | COMPLETE |
-| 06 — Implementation | 12 | 12 | COMPLETE |
-| 16 — Quality Loop | 4 | 0 | PENDING |
-| 08 — Code Review | 2 | 0 | PENDING |
-| **Total** | **22** | **16** | **73%** |
+| Phase | Total | Done | Status |
+|-------|-------|------|--------|
+| 05    | 3     | 0    | PENDING |
+| 06    | 8     | 0    | PENDING |
+| 16    | 2     | 0    | PENDING |
+| 08    | 2     | 0    | PENDING |
+| **Total** | **15** | **0** | **0%** |
 
----
+## Phase 05: Test Strategy -- PENDING
 
-## Phase 05: Test Strategy -- COMPLETE
+- [ ] T0001 Design test cases for bug-specific confirmation templates (JSON schema validation) | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
+  files: tests/hooks/config/templates/bug-templates.test.js (CREATE)
 
-### test_case_design
+- [ ] T0002 Design test cases for isdlc.md step 6.5 routing and build kickoff logic | traces: FR-005, FR-006, AC-005-02, AC-005-03, AC-006-01
+  files: tests/commands/isdlc-bug-roundtable.test.js (CREATE)
 
-- [X] T0001 Design test cases for protocol injection — phase filtering, header extraction, multi-section extraction, missing file, malformed markdown, fail-open | traces: FR-002, FR-005, AC-002-01, AC-002-02, AC-005-01
-- [X] T0002 Design test cases for user content extraction — exclusion of SECTION markers, exclusion of protocol range, empty user content, all-framework CLAUDE.md | traces: FR-003, AC-003-01
-- [X] T0003 Design test cases for compliance detection — git_commit_detected signal, timing window, empty violations, check failure fallback | traces: FR-006, AC-006-01, AC-006-02
-- [X] T0004 Design test cases for violation response — remediation prompt content, retry counter, escalation at max retries | traces: FR-007, AC-007-01, AC-007-02
+- [ ] T0003 Design test cases for tracing delegation adapter (ANALYSIS_MODE flag, discovery context passthrough) | traces: FR-002, AC-002-01, AC-002-02, AC-002-03
+  files: tests/commands/isdlc-bug-tracing-delegation.test.js (CREATE)
 
----
+## Phase 06: Implementation -- PENDING
 
-## Phase 06: Implementation -- COMPLETE
+- [ ] T0004 Create bug-summary.template.json | traces: FR-004, AC-004-01
+  files: src/claude/hooks/config/templates/bug-summary.template.json (CREATE)
 
-### setup
+- [ ] T0005 Create root-cause.template.json | traces: FR-004, AC-004-02
+  files: src/claude/hooks/config/templates/root-cause.template.json (CREATE)
 
-- [X] T0005 Create protocol-mapping.json with all 9 protocol mappings, phase arrays, checkable flags, source_file config, user content extraction config | traces: FR-001, AC-001-01, AC-001-02
-  files: src/claude/hooks/config/protocol-mapping.json (CREATE)
-  blocks: [T0006, T0008, T0010]
+- [ ] T0006 Create fix-strategy.template.json | traces: FR-003, FR-004, AC-003-01, AC-003-02, AC-003-03, AC-004-03
+  files: src/claude/hooks/config/templates/fix-strategy.template.json (CREATE)
 
-### core_implementation
+- [ ] T0007 Create bug-roundtable-analyst.md protocol (opening, conversation, bug-report production, tracing delegation, fix strategy, confirmation sequence, artifact batch write, build kickoff signal) | traces: FR-001, FR-002, FR-003, FR-004, AC-001-01, AC-001-02, AC-001-03, AC-002-01, AC-002-02, AC-002-03, AC-002-04, AC-003-01, AC-003-02, AC-003-03, AC-004-01, AC-004-02, AC-004-03, AC-004-04, AC-004-05, AC-004-06
+  files: src/claude/agents/bug-roundtable-analyst.md (CREATE)
+  blocked_by: [T0004, T0005, T0006]
+  blocks: [T0008, T0009]
 
-- [X] T0006 Implement PROTOCOL INJECTION step in isdlc.md STEP 3d — read mapping config, read CLAUDE.md or AGENTS.md, extract mapped sections by header, build PROTOCOLS block, append to delegation prompt | traces: FR-002, FR-004, FR-005, AC-002-01, AC-004-01, AC-004-02, AC-005-01
+- [ ] T0008 Modify isdlc.md step 6.5c-f: route to bug-roundtable-analyst.md, execute inline, update meta with 01-requirements and 02-tracing, replace fix handoff with auto build kickoff via START_PHASE 05-test-strategy | traces: FR-004, FR-005, FR-006, AC-004-06, AC-005-01, AC-005-02, AC-005-03, AC-006-01
   files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0005]
-  blocks: [T0007]
-
-- [X] T0007 Implement user content extraction — exclude SECTION markers, exclude protocol range, build USER INSTRUCTIONS block, append to delegation prompt | traces: FR-003, AC-003-01
-  files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0006]
-
-- [X] T0008 Implement checkProtocolCompliance between STEP 3e and 3f — filter checkable protocols for current phase, run check signals, return violations array | traces: FR-006, AC-006-01, AC-006-02
-  files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0005]
+  blocked_by: [T0007]
   blocks: [T0009, T0010]
 
-- [X] T0009 Implement git_commit_detected check signal — git log with after/before timing window, parse output | traces: FR-006, AC-006-01
-  files: src/claude/commands/isdlc.md (MODIFY)
+- [ ] T0009 Add deprecation header to bug-gather-analyst.md | traces: FR-006, AC-006-02
+  files: src/claude/agents/bug-gather-analyst.md (MODIFY)
   blocked_by: [T0008]
 
-- [X] T0010 Implement 3f-protocol-violation handler — re-delegate with remediation prompt, retry counter via 3f-retry-protocol max 2, escalation menu | traces: FR-007, AC-007-01, AC-007-02
-  files: src/claude/commands/isdlc.md (MODIFY)
+- [ ] T0010 Write unit tests for template validation, routing logic, and tracing delegation | traces: FR-001, FR-002, FR-004, FR-005, FR-006
+  files: tests/hooks/config/templates/bug-templates.test.js (MODIFY), tests/commands/isdlc-bug-roundtable.test.js (MODIFY), tests/commands/isdlc-bug-tracing-delegation.test.js (MODIFY)
   blocked_by: [T0008]
+  blocks: [T0011]
 
-### unit_tests
-
-- [X] T0011 Write unit tests for protocol section extraction — header matching, multi-section, missing sections, malformed CLAUDE.md, fail-open | traces: FR-002, FR-005, AC-002-02
-  files: tests/protocol-injection.test.cjs (CREATE)
-  blocked_by: [T0006]
-
-- [X] T0012 Write unit tests for user content extraction — exclusion logic, empty content, all-framework file | traces: FR-003
-  files: tests/protocol-injection.test.cjs (MODIFY)
-  blocked_by: [T0007, T0011]
-
-- [X] T0013 Write unit tests for compliance detection — git commit signal, empty violations, timing edge cases, check failure fallback | traces: FR-006
-  files: tests/protocol-compliance.test.cjs (CREATE)
-  blocked_by: [T0008]
-
-### wiring_claude
-
-- [X] T0014 Wire protocol injection into Phase-Loop Controller STEP 3d — position after SKILL INJECTION, before GATE REQUIREMENTS. Wire compliance check between 3e and 3f. | traces: FR-002, FR-006
-  files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0006, T0008]
-
-### wiring_codex
-
-- [X] T0015 Verify Codex adapter reads AGENTS.md for protocol extraction — confirm source_file.codex path resolves, document adjustments | traces: FR-004
-  files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0006]
-
-### cleanup
-
-- [X] T0016 Copy protocol-mapping.json to .claude/hooks/config/protocol-mapping.json for dogfooding dual-file | traces: FR-001
-  files: .claude/hooks/config/protocol-mapping.json (CREATE)
-  blocked_by: [T0005]
-
----
+- [ ] T0011 Copy bug-specific templates to root .claude/hooks/config/templates/ (dogfooding dual-file) | traces: FR-004
+  files: .claude/hooks/config/templates/bug-summary.template.json (CREATE), .claude/hooks/config/templates/root-cause.template.json (CREATE), .claude/hooks/config/templates/fix-strategy.template.json (CREATE)
+  blocked_by: [T0010]
 
 ## Phase 16: Quality Loop -- PENDING
 
-### test_execution
+- [ ] T0012 Run full test suite, verify all T0001-T0003 test cases pass, verify no regressions in existing bug-gather and roundtable tests | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006
+  blocked_by: [T0011]
+  blocks: [T0013]
 
-- [ ] T0017 Run full test suite — all existing tests plus new protocol-injection and protocol-compliance tests | traces: NFR-001
-- [ ] T0018 Verify fail-open behavior end-to-end — missing CLAUDE.md, missing mapping config, malformed JSON, git log failure | traces: FR-002, AC-002-02, NFR-001
-
-### parity_verification
-
-- [ ] T0019 Verify src/ and .claude/ protocol-mapping.json copies are identical | traces: FR-001
-- [ ] T0020 Verify protocol injection produces identical output for a known CLAUDE.md input — snapshot test | traces: FR-002, FR-005
-
----
+- [ ] T0013 Verify dual-file consistency between src/ and root .claude/ for all new templates | traces: FR-004, FR-006
+  blocked_by: [T0012]
 
 ## Phase 08: Code Review -- PENDING
 
-### constitutional_review
+- [ ] T0014 Constitutional review: Article I (spec primacy), Article V (simplicity), Article VIII (documentation — deprecation notice), Article IX (gate integrity), Article X (fail-safe — tracing delegation failure handling) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006
+  blocked_by: [T0013]
 
-- [ ] T0021 Constitutional review — verify Article X fail-open, Article IX no gate bypass, Article V simplicity | traces: NFR-001
-
-### dual_file_check
-
-- [ ] T0022 Dual-file check — confirm src/ and .claude/ protocol-mapping.json in sync, verify isdlc.md changes work for both providers | traces: FR-001, FR-004
-
----
+- [ ] T0015 Verify all ACs are covered: trace each AC back through task traces to test cases (T0001-T0003) and implementation tasks (T0004-T0011) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006
+  blocked_by: [T0013]
 
 ## Dependency Graph
 
-```
-T0005 ──┬──→ T0006 ──┬──→ T0007
-        │            ├──→ T0011 ──→ T0012
-        │            ├──→ T0014
-        │            └──→ T0015
-        ├──→ T0008 ──┬──→ T0009
-        │            ├──→ T0010
-        │            ├──→ T0013
-        │            └──→ T0014
-        └──→ T0016
-T0001-T0004 (independent — Phase 05)
-T0017 ──→ T0018 ──→ T0019 ──→ T0020
-T0021 ──→ T0022
-```
+T0004 ─┐
+T0005 ─┼─> T0007 ──> T0008 ──> T0009
+T0006 ─┘              │
+                      ├──> T0010 ──> T0011 ──> T0012 ──> T0013 ──> T0014
+                      │                                         └──> T0015
+                      └──> T0010
 
-**Critical Path**: T0005 → T0006 → T0014 → T0017 → T0018 → T0019 → T0020 → T0021 → T0022 (9 tasks)
-
----
+Critical path: T0004 → T0007 → T0008 → T0010 → T0011 → T0012 → T0013 → T0014 (8 tasks)
 
 ## Traceability Matrix
 
-| Task | FR | AC |
-|------|----|----|
-| T0001 | FR-002, FR-005 | AC-002-01, AC-002-02, AC-005-01 |
-| T0002 | FR-003 | AC-003-01 |
-| T0003 | FR-006 | AC-006-01, AC-006-02 |
-| T0004 | FR-007 | AC-007-01, AC-007-02 |
-| T0005 | FR-001 | AC-001-01, AC-001-02 |
-| T0006 | FR-002, FR-004, FR-005 | AC-002-01, AC-004-01, AC-004-02, AC-005-01 |
-| T0007 | FR-003 | AC-003-01 |
-| T0008 | FR-006 | AC-006-01, AC-006-02 |
-| T0009 | FR-006 | AC-006-01 |
-| T0010 | FR-007 | AC-007-01, AC-007-02 |
-| T0011 | FR-002, FR-005 | AC-002-02 |
-| T0012 | FR-003 | — |
-| T0013 | FR-006 | — |
-| T0014 | FR-002, FR-006 | — |
-| T0015 | FR-004 | — |
-| T0016 | FR-001 | — |
-| T0017 | NFR-001 | — |
-| T0018 | FR-002 | AC-002-02 |
-| T0019 | FR-001 | — |
-| T0020 | FR-002, FR-005 | — |
-| T0021 | NFR-001 | — |
-| T0022 | FR-001, FR-004 | — |
+| FR | ACs | Test Tasks (05) | Impl Tasks (06) | QA Tasks (08) |
+|----|-----|-----------------|------------------|---------------|
+| FR-001 | AC-001-01, AC-001-02, AC-001-03 | T0002 | T0007, T0010 | T0015 |
+| FR-002 | AC-002-01, AC-002-02, AC-002-03, AC-002-04 | T0003 | T0007, T0010 | T0015 |
+| FR-003 | AC-003-01, AC-003-02, AC-003-03 | T0001 | T0006, T0007 | T0015 |
+| FR-004 | AC-004-01 thru AC-004-06 | T0001, T0002 | T0004, T0005, T0006, T0007, T0008, T0011 | T0015 |
+| FR-005 | AC-005-01, AC-005-02, AC-005-03 | T0002 | T0008 | T0015 |
+| FR-006 | AC-006-01, AC-006-02 | T0002 | T0008, T0009, T0011 | T0014, T0015 |

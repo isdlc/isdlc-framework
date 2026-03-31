@@ -1,0 +1,17 @@
+{
+  "domain": "root-cause",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "hypotheses",
+      "affected_code_paths",
+      "blast_radius",
+      "evidence"
+    ],
+    "required_sections": [
+      "hypotheses",
+      "affected_code_paths"
+    ]
+  }
+}

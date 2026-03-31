@@ -22,6 +22,8 @@
     ],
     "build_start_phase": "05-test-strategy"
   },
+  "build_started_at": "2026-03-31T23:30:00.000Z",
+  "workflow_type": "feature",
   "acceptance": {
     "accepted_at": "2026-03-31T23:15:00.000Z",
     "domains": [

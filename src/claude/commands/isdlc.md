@@ -746,34 +746,71 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
    - **If user confirms** (yes, go ahead, correct): proceed to step 6.5c (bug-gather dispatch).
    - **If user overrides** (no, it's a feature, treat as feature): proceed to step 7 (Roundtable). (AC-001-04)
 
-   6.5c. **Read bug-gather protocol reference** (REQ-0065, FR-002): Read `src/claude/agents/bug-gather-analyst.md` using the Read tool. This is a protocol reference -- do NOT spawn it as a separate agent via Task tool. The file defines the bug-gather conversation protocol and artifact specifications that you will execute inline.
+   6.5c. **Read bug roundtable protocol reference** (REQ-GH-218, FR-001): Read `src/claude/agents/bug-roundtable-analyst.md` using the Read tool. This is a protocol reference -- do NOT spawn it as a separate agent via Task tool. The file defines the bug roundtable conversation protocol, tracing delegation, confirmation state machine, and artifact batch write specifications that you will execute inline.
 
-   6.5d. **Execute bug-gather conversation protocol inline** (REQ-0065, FR-002):
+   6.5d. **Execute bug roundtable conversation protocol inline** (REQ-GH-218, FR-001, FR-002, FR-003, FR-004):
 
    CONTEXT (already in memory):
      - slug, meta, draftContent, discoveryContent: from earlier steps
+     - memoryContextBlock: from step 3a Group 1 memory read
+     - Personas, topics, constitution: in session cache (ROUNDTABLE_CONTEXT)
 
-   PROTOCOL (from bug-gather-analyst.md):
-     1. Follow the bug-gather opening: acknowledge bug, present structured understanding
-     2. Ask if user has additional context -- STOP and wait for reply
-     3. On reply: finalize bug report artifacts
-     4. Proceed directly to step 6.5e (inline completion -- no signal parsing needed)
+   PROTOCOL (from bug-roundtable-analyst.md):
+     1. Follow Section 2.1 Opening:
+        - Open as Maya from draft content with structured bug summary
+        - Ask a single clarifying question
+        - STOP and wait for user reply (natural conversation turn)
+     2. On user's first reply, follow Section 2.1 "On resume":
+        - Run codebase scan (Alex's deferred task)
+        - Compose response with Maya continuing + Alex contributing scan evidence
+     3. For each subsequent exchange, follow Sections 2.2-2.3:
+        - Conversation flow rules, persona contribution batching, natural steering
+        - All 3 personas contribute within first 3 exchanges
+     4. When sufficient understanding is reached, follow Section 2.4:
+        - Write bug-report.md to artifact folder (ONLY pre-confirmation artifact)
+     5. Follow Section 2.5 Tracing Delegation:
+        - Spawn tracing-orchestrator via Task tool with BUG_REPORT_PATH, DISCOVERY_CONTEXT, ANALYSIS_MODE: true
+        - On return: Alex presents root cause findings
+        - On failure: fail-open, Alex presents conversation-based hypotheses
+     6. Follow Section 2.6 Fix Strategy:
+        - Jordan proposes fix approaches (at least 2) with tradeoffs
+     7. When ready, enter confirmation sequence (Section 2.7):
+        - Sequential: PRESENTING_BUG_SUMMARY -> PRESENTING_ROOT_CAUSE -> PRESENTING_FIX_STRATEGY -> PRESENTING_TASKS
+        - Each domain: present summary, wait for Accept/Amend
+     8. On final Accept, execute artifact batch write (Section 4):
+        - Write root-cause-analysis.md, fix-strategy.md, tasks.md to artifact folder
+        - Update meta.json with phases_completed, acceptance record
+     9. Set confirmationState = COMPLETE (inline completion -- no signal parsing needed)
 
-   6.5e. **Post bug-gather: Update meta.json**: After the bug-gather agent returns:
-   - Re-read meta.json using `readMetaJson(slugDir)` to get the agent's updates
-   - Verify meta.phases_completed includes "01-requirements" (the bug-gather agent should have added it)
+   **Conversation boundary**: During the bug roundtable conversation you ARE the roundtable. You do not:
+   - Summarize the persona output ("Maya's asking whether...")
+   - Add your own tables or formatting outside the protocol
+   - Present AskUserQuestion menus
+   - Add commentary between the persona output and the user's response
+   - Interpret what the persona said
+   The bug roundtable protocol owns the entire user-facing experience. Follow the conversation protocol from bug-roundtable-analyst.md directly.
+
+   6.5e. **Post bug-roundtable: Update meta.json**: After the bug roundtable completes:
+   - Re-read meta.json using `readMetaJson(slugDir)` to get the roundtable's updates
+   - Verify meta.phases_completed includes both "01-requirements" and "02-tracing"
    - Update meta.analysis_status using `deriveAnalysisStatus(meta.phases_completed, meta.sizing_decision)`
    - Set `meta.bug_classification = { classification: "bug", reasoning: "<the reasoning from 6.5b>", confirmed_by_user: true }`
    - Update meta.codebase_hash to current git HEAD short SHA
    - Write meta.json using `writeMetaJson(slugDir, meta)`
    - Update BACKLOG.md marker using `updateBacklogMarker()` with `deriveBacklogMarker()`
 
-   6.5f. **Fix Handoff Gate** (REQ-0061, FR-004): After artifacts are produced and meta.json is updated:
-   - Ask the user: "Should I fix it?" (AC-004-01)
-   - Wait for user response.
-   - **If user confirms** (yes, go ahead, fix it): Invoke the fix workflow for this item. Follow the fix handler's initialization steps (validate constitution, check no active workflow, initialize active_workflow with type "fix" and fix phases `["01-requirements", "02-tracing", "05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`). Since Phase 01 artifacts (bug-report.md, requirements-spec.md) already exist in the artifact folder and meta.phases_completed includes "01-requirements", explicitly pass `START_PHASE: "02-tracing"` and `ARTIFACT_FOLDER: "{slug}"` to the orchestrator so the fix workflow begins at Phase 02 (tracing), skipping Phase 01 which is already complete. (AC-004-02, AC-004-04)
-   - **If user declines** (no, not now, I just wanted to understand it): Preserve all artifacts (bug-report.md, requirements-spec.md remain on disk). Display: "Bug analysis complete. Artifacts saved to docs/requirements/{slug}/. You can fix it later with `/isdlc fix \"{slug}\"`." STOP -- do not proceed to step 7. (AC-004-03)
-   - **In either case**: STOP after this step. Do NOT proceed to step 7 (Roundtable). The bug flow is complete. Skip steps 7, 7.5, 7.6, 7.7, 7.8, 8, and 9 entirely.
+   6.5f. **Automatic Build Kickoff** (REQ-GH-218, FR-005): After artifacts are produced and meta.json is updated:
+   - Display a completion message listing all produced artifacts:
+     ```
+     Bug analysis complete. Artifacts created:
+       - {ARTIFACT_FOLDER}/bug-report.md
+       - {ARTIFACT_FOLDER}/root-cause-analysis.md
+       - {ARTIFACT_FOLDER}/fix-strategy.md
+       - {ARTIFACT_FOLDER}/tasks.md
+     ```
+   - Copy tasks.md to `docs/isdlc/tasks.md` for build consumption
+   - Invoke the build workflow for this item. Follow the build handler's initialization steps (validate constitution, check no active workflow, initialize active_workflow with type "feature" and build phases `["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`). Since Phase 01 (requirements via bug-report) and Phase 02 (tracing via tracing-orchestrator) are already complete during analysis, pass `START_PHASE: "05-test-strategy"` and `ARTIFACT_FOLDER: "{slug}"` to the orchestrator so the build workflow begins at Phase 05. (AC-005-02, AC-005-03)
+   - **In all cases**: STOP after this step. Do NOT proceed to step 7 (Feature Roundtable). The bug flow is complete. Skip steps 7, 7.5, 7.6, 7.7, 7.8, 8, and 9 entirely.
 
 7. **Roundtable conversation loop** (REQ-0032, FR-014, REQ-0037):
    (NOTE: This step is ONLY reached for items classified as features. Bugs are handled entirely by step 6.5 above.)

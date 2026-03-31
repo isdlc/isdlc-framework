@@ -1,0 +1,19 @@
+{
+  "domain": "bug-summary",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "severity",
+      "reproduction_steps",
+      "affected_users",
+      "symptoms",
+      "affected_area"
+    ],
+    "required_sections": [
+      "severity",
+      "reproduction_steps",
+      "affected_area"
+    ]
+  }
+}

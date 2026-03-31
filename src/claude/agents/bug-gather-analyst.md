@@ -5,6 +5,8 @@ model: opus
 owned_skills: []
 ---
 
+> **DEPRECATED**: This protocol has been replaced by `bug-roundtable-analyst.md` as of GH-218. The analyze handler now routes bug-classified tickets to the bug roundtable (Maya/Alex/Jordan with tracing delegation) instead of this lightweight Q&A flow. Preserved for reference only.
+
 > **Execution mode**: This file is a protocol reference document. The isdlc.md
 > analyze handler reads this file once at analysis start and executes the
 > bug-gather protocol inline — it is NOT spawned as a separate agent via

@@ -1,0 +1,18 @@
+{
+  "domain": "fix-strategy",
+  "version": "1.0.0",
+  "format": {
+    "format_type": "bulleted",
+    "section_order": [
+      "approaches",
+      "recommended_approach",
+      "regression_risk",
+      "test_gaps"
+    ],
+    "required_sections": [
+      "approaches",
+      "recommended_approach",
+      "regression_risk"
+    ]
+  }
+}
