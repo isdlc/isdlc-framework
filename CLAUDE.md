@@ -19,16 +19,15 @@ When the user speaks, classify their intent into one of these categories using t
 | Intent | Signal Words / Patterns | Command (internal) |
 |-------------|-----------------------------------------------|-------------------------------|
 | **Add** | add to backlog, track this, log this, remember this, save this idea, note this down | `/isdlc add "<description>"` |
-| **Analyze** | analyze, think through, plan this, review requirements, assess impact, design this, prepare | `/isdlc analyze "<item>"` |
+| **Analyze** | analyze, think through, plan this, review requirements, assess impact, design this, prepare, broken, fix, bug, crash, error, wrong, failing, not working, 500 | `/isdlc analyze "<item>"` |
 | **Build** | build, implement, create, code, develop, ship, make this, let's do this, refactor, redesign | `/isdlc build "<description>"` |
-| **Fix** | broken, fix, bug, crash, error, wrong, failing, not working, 500 | `/isdlc fix "<description>"` |
 | **Upgrade** | upgrade, update, bump, version, dependency, migrate | `/isdlc upgrade "<target>"` |
 | **Test run** | run tests, run the tests, check if tests pass, execute test suite | `/isdlc test run` |
 | **Test generate** | write tests, add tests, add unit tests, generate tests, test coverage | `/isdlc test generate` |
 | **Discovery** | set up, configure, initialize, discover, setup the project | `/discover` |
 | **Skill mgmt** | add a skill, register skill, new skill, wire skill, bind skill, list skills, show skills, remove skill, delete skill | `/isdlc skill {subcommand}` |
 
-**Disambiguation**: If the user's intent could match both Add and Analyze (e.g., "add and analyze this"), resolve to **Analyze** -- the analyze verb implicitly runs add first if the item does not yet exist. If the intent could match both Analyze and Build (e.g., "let's work on this"), resolve to **Build** -- build encompasses the full workflow. If truly ambiguous, ask a brief clarifying question.
+**Disambiguation**: If the user's intent could match both Add and Analyze (e.g., "add and analyze this"), resolve to **Analyze** -- the analyze verb implicitly runs add first if the item does not yet exist. If the intent could match both Analyze and Build (e.g., "let's work on this"), resolve to **Build** if the item is already analyzed, otherwise **Analyze**. If truly ambiguous, ask a brief clarifying question.
 
 ### Step 2 -- Get Consent
 
@@ -54,15 +53,17 @@ After detecting intent, ask for a brief go-ahead in natural conversational langu
 
 ### Step 3 -- Edge Cases
 
-- **Ambiguous intent**: If the intent is unclear (could be feature or fix), ask a brief clarifying question rather than guessing
+- **Ambiguous intent**: If the intent is unclear, ask a brief clarifying question rather than guessing
 - **Questions / exploration**: If the user asks questions, explores code, or seeks explanation -- respond normally. Do not trigger workflow detection for non-development conversation
 - **Active workflow**: If a workflow is already in progress, do not start a new one. Inform the user and suggest they continue the current workflow or cancel it first
-- **Refactor requests**: Treat refactoring as a Build intent (refactoring follows the feature workflow)
+- **Refactor requests**: Treat refactoring as an Analyze intent (analyze first, then build)
 - **Non-dev requests**: Requests like "explain this code", "what does this function do", or "help me understand" are not development tasks -- skip intent detection entirely
 
 ### Backward Compatibility
 
-If the user has already invoked a slash command directly (e.g. `/isdlc fix "..."`), execute it immediately without re-asking. Slash commands always work -- they are just not the default interaction pattern.
+If the user has already invoked a slash command directly (e.g. `/isdlc build "..."`), execute it immediately without re-asking. Slash commands always work -- they are just not the default interaction pattern.
+
+Note: `/isdlc fix` and `/isdlc feature` have been removed. If invoked, display a message directing the user to use `/analyze` and `/build` instead.
 
 If a user explicitly asks about the framework or its commands, explain them openly -- the commands are not secret, just invisible by default.
 

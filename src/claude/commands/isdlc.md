@@ -148,14 +148,15 @@ Workflow Status: No active workflow
 
 What would you like to do?
 
-[1] New Feature       — Implement a new feature end-to-end
-[2] Fix               — Fix a bug or defect
-[3] Run Tests         — Execute existing automation tests
-[4] Generate Tests    — Create new tests for existing code
-[5] View Status       — Check current project status
-[6] Upgrade           — Upgrade a dependency, runtime, or tool
+[1] Add               — Add an item to the backlog
+[2] Analyze           — Analyze a backlog item (roundtable)
+[3] Build             — Implement an analyzed item
+[4] Run Tests         — Execute existing automation tests
+[5] Generate Tests    — Create new tests for existing code
+[6] View Status       — Check current project status
+[7] Upgrade           — Upgrade a dependency, runtime, or tool
 
-Enter selection (1-6):
+Enter selection (1-7):
 ```
 
 ---
@@ -215,12 +216,13 @@ Enter selection (1-5):
 | 1 (New, no constitution) | [2] | Display path to constitution.md and exit |
 | 2 (Existing, no constitution) | [1] | Execute `/discover` (runs EXISTING PROJECT FLOW) |
 | 2 (Existing, no constitution) | [2] | Display path to constitution.md and exit |
-| 3 (Ready, no workflow) | [1] | Execute `/isdlc feature` (no description — presents backlog picker) |
-| 3 (Ready, no workflow) | [2] | Execute `/isdlc fix` (no description — presents backlog picker) |
-| 3 (Ready, no workflow) | [3] | Execute `/isdlc test run` |
-| 3 (Ready, no workflow) | [4] | Execute `/isdlc test generate` |
-| 3 (Ready, no workflow) | [5] | Execute `/isdlc status` |
-| 3 (Ready, no workflow) | [6] | Ask what to upgrade, then execute `/isdlc upgrade "<name>"` |
+| 3 (Ready, no workflow) | [1] | Execute `/isdlc add` (prompts for description) |
+| 3 (Ready, no workflow) | [2] | Execute `/isdlc analyze` (presents backlog picker) |
+| 3 (Ready, no workflow) | [3] | Execute `/isdlc build` (presents analyzed items picker) |
+| 3 (Ready, no workflow) | [4] | Execute `/isdlc test run` |
+| 3 (Ready, no workflow) | [5] | Execute `/isdlc test generate` |
+| 3 (Ready, no workflow) | [6] | Execute `/isdlc status` |
+| 3 (Ready, no workflow) | [7] | Ask what to upgrade, then execute `/isdlc upgrade "<name>"` |
 | 4 (Workflow active) | [1] | Resume current workflow at active phase |
 | 4 (Workflow active) | [2] | Execute `/isdlc gate-check` |
 | 4 (Workflow active) | [3] | Execute `/isdlc status` |
@@ -251,106 +253,6 @@ in `src/claude/hooks/lib/three-verb-utils.cjs` for testability.
 
 ### Actions
 
-**feature** - Implement a new feature end-to-end
-```
-/isdlc feature "Feature description"
-/isdlc feature "Feature description" --project api-service
-/isdlc feature -light "Feature description"
-/isdlc feature -light "Feature description" --project api-service
-/isdlc feature "Feature description" --supervised
-/isdlc feature -light "Feature description" --supervised
-/isdlc feature "Feature description" --debate
-/isdlc feature "Feature description" --no-debate
-/isdlc feature                        (no description — presents backlog picker)
-```
-1. Validate constitution exists and is not a template
-2. Check no active workflow (block if one exists, suggest `/isdlc cancel` first)
-3. Parse flags from command arguments:
-   - If args contain "-light": set flags.light = true, remove "-light" from description
-   - If args contain "--supervised": set flags.supervised = true, remove "--supervised" from description
-   - If args contain "--debate": set flags.debate = true, remove "--debate" from description
-   - If args contain "--no-debate": set flags.no_debate = true, remove "--no-debate" from description
-   - If args contain "--no-fan-out": set flags.no_fan_out = true, remove "--no-fan-out" from description
-4. Initialize `active_workflow` in state.json with type `"feature"`, phases `["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design", "05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`, and flags: `{ light: flags.light || false }`
-   - If flags.supervised: pass `--supervised` flag to orchestrator init (sets supervised_mode.enabled=true in state)
-   - If flags.debate or flags.no_debate: pass to orchestrator for debate mode resolution
-4. Delegate to Requirements Analyst (Phase 01) with `scope: "feature"`
-5. During initialization: creates `feature/REQ-NNNN-description` branch from main (before Phase 01)
-6. After GATE-08: merges branch to main, deletes branch
-
-### Debate Mode Flags
-
-| Flag | Effect | Default |
-|------|--------|---------|
-| `--debate` | Force debate mode ON (multi-agent debate team: requirements + architecture) | Implied for standard/epic sizing |
-| `--no-debate` | Force debate mode OFF (single-agent mode for all phases) | Implied for -light |
-| `--no-fan-out` | Disable fan-out parallelism in Phase 16 and Phase 08 (use single-agent execution) | Off (fan-out enabled by default) |
-
-**Flag precedence** (highest to lowest):
-1. `--no-debate` -- always wins (conservative override)
-2. `--debate` -- explicit enable
-3. `-light` -- implies `--no-debate`
-4. Sizing-based default: standard/epic = debate ON, fallback = debate ON
-
-**Conflict resolution:** If both `--debate` and `--no-debate` are present,
-`--no-debate` wins (Article X: Fail-Safe Defaults).
-
-**Debate-enabled phases:** The debate loop currently supports Phase 01 (Requirements),
-Phase 03 (Architecture), Phase 04 (Design), and Phase 05 (Test Strategy). Other phases use single-agent delegation
-regardless of debate flags. See the orchestrator's DEBATE_ROUTING table for the
-authoritative list.
-
-**Passed to orchestrator:** The resolved debate flags are included in the
-orchestrator delegation context as:
-```
-FLAGS:
-  debate: true|false
-  no_debate: true|false
-  light: true|false
-```
-
-The orchestrator reads `FLAGS.debate` and `FLAGS.no_debate` to resolve `debate_mode`
-and writes the result to `active_workflow.debate_mode` in state.json.
-
-**No-description behavior:** When `/isdlc feature` is invoked without a description (no quoted text, no feature ID), the orchestrator presents a **backlog picker** instead of immediately asking for a description. The backlog picker scans:
-- `BACKLOG.md` `## Open` section for unchecked items (`- N.N [ ] ...`), with `[Jira: TICKET-ID]` suffix for Jira-backed items
-- `.isdlc/state.json` → `workflow_history` for cancelled feature workflows
-- Falls back to `CLAUDE.md` scanning if `BACKLOG.md` does not exist
-- User can also choose `[O] Other` to describe a new feature manually
-See the BACKLOG PICKER section in the orchestrator agent for full details.
-
-**fix** - Fix a bug or defect with TDD
-```
-/isdlc fix "Bug description"
-/isdlc fix "Bug description" --link https://mycompany.atlassian.net/browse/JIRA-1234
-/isdlc fix "Bug description" --project api-service
-/isdlc fix "Bug description" --supervised
-/isdlc fix                    (no description — presents backlog picker)
-```
-1. Validate constitution exists and is not a template
-2. Check no active workflow
-3. Parse flags from command arguments:
-   - If args contain "--supervised": set flags.supervised = true, remove "--supervised" from description
-   - If args contain "--no-fan-out": set flags.no_fan_out = true, remove "--no-fan-out" from description
-4. Initialize `active_workflow` with type `"fix"` and phases `["01-requirements", "02-tracing", "05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`
-   - If flags.supervised: pass `--supervised` flag to orchestrator init (sets supervised_mode.enabled=true in state)
-4. If `--link` provided:
-   - **Jira URL parsing** (BUG-0032): If the `--link` URL matches pattern `https://*.atlassian.net/browse/{PROJECT-N}`, extract the Jira ticket ID ({PROJECT-N}). Call `getAccessibleAtlassianResources` to resolve cloudId (use first accessible resource), then call `getJiraIssue(cloudId, ticketId)` to fetch Jira ticket content (summary, description, issuetype, priority). Pass the fetched content to Agent 01 as pre-fetched issue context alongside the external bug URL.
-   - **GitHub/other URLs**: Pass the `--link` URL to Agent 01 as the external bug URL (existing behavior, unchanged).
-5. Delegate to Requirements Analyst (Phase 01) with `scope: "bug-report"`
-6. Agent 01 extracts external ID from URL and creates `BUG-NNNN-{external-id}/` folder
-7. If no `--link` provided, Agent 01 asks for the bug link during the bug report flow
-8. Phase 05 requires a failing test before the fix (TDD enforcement)
-9. During initialization: creates `bugfix/BUG-NNNN-external-id` branch from main (before Phase 01)
-10. After GATE-08: merges branch to main, deletes branch
-
-**No-description behavior:** When `/isdlc fix` is invoked without a description, the orchestrator presents a **backlog picker** that scans:
-- `.isdlc/state.json` → `workflow_history` for cancelled fix workflows
-- `BACKLOG.md` `## Open` section for unchecked items containing bug-related keywords (fix, bug, broken, error, crash, regression, issue), with `[Jira: TICKET-ID]` suffix for Jira-backed items
-- Falls back to `CLAUDE.md` scanning if `BACKLOG.md` does not exist
-- User can also choose `[O] Other` to describe a new bug manually
-See the BACKLOG PICKER section in the orchestrator agent for full details.
-
 **test run** - Execute existing automation tests
 ```
 /isdlc test run
@@ -366,8 +268,8 @@ See the BACKLOG PICKER section in the orchestrator agent for full details.
 ```
 1. Present test type selection: Unit, System, E2E (single-select)
 2. Initialize `active_workflow` with type `"test-generate"` and phases `["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`
-3. Phase 05: Analyze code and design test cases
-4. Phase 06: Write the test code
+3. Phase 05: Check for existing `test.skip()` scaffolds in `tests/characterization/` (from `/discover`). If found, use them as the test design basis. If not found, analyze code and design test cases from scratch.
+4. Phase 06: Write the test code (implement `test.skip()` scaffolds if present, otherwise write new tests)
 5. Phase 16: Run quality loop including build verification, test execution, and automated QA
 6. Phase 08: Review test quality
 
@@ -1175,19 +1077,15 @@ If user declines: abort build. If user confirms: proceed to step 5.
 **--- End REQ-0026: Build Auto-Detection ---**
 
 5. Parse flags from command arguments:
-   - --supervised, --debate, --no-debate, --no-fan-out, -light, --trivial (same as current feature + GH-59 trivial flag)
-6. Determine workflow type:
-   - If item description contains bug keywords (fix, bug, broken, error, crash, regression):
-     suggest fix workflow. Ask user: "This looks like a bug. Use fix workflow? [Y/n]"
-   - Otherwise: use feature workflow
+   - --supervised, --debate, --no-debate, --no-fan-out, --trivial
+6. Determine branch prefix from artifact folder:
+   - If artifact folder name starts with `BUG-`: branch prefix = `bugfix/`
+   - Otherwise: branch prefix = `feature/` (fail-safe default, Article X)
 7. Delegate to orchestrator via Task tool:
-   MODE: init-only, ACTION: feature (or fix), DESCRIPTION: "{item description}", FLAGS: {parsed flags}
-   **REQ-0026 additions** -- include when applicable:
-   - If `startPhase` is not null: include `START_PHASE: "{startPhase}"` in the Task prompt
-   - If item was resolved from an existing directory (analysisStatus is 'analyzed' or 'partial', or raw with existing folder): include `ARTIFACT_FOLDER: "{item.slug}"` in the Task prompt
-   These parameters tell the orchestrator to start from a later phase and reuse the existing artifact folder.
-8. Orchestrator initializes active_workflow, creates branch (does NOT run any phase -- init-only mode)
-9. Phase-Loop Controller drives all phases starting from index 0 (or START_PHASE if provided)
+   MODE: init-only, ACTION: build, DESCRIPTION: "{item description}", FLAGS: {parsed flags}, BRANCH_PREFIX: "{branch_prefix}"
+   Include: `ARTIFACT_FOLDER: "{item.slug}"` in the Task prompt (always present — analysis is required)
+8. Orchestrator initializes active_workflow with type "build", creates branch using the branch prefix, does NOT run any phase (init-only mode)
+9. Phase-Loop Controller drives all 4 build phases (05 → 06 → 16 → 08)
 
 **--- TRIVIAL TIER EXECUTION ---** (GH-59, FR-006, FR-007, NFR-003, NFR-004, NFR-005, AD-03, AD-04, AD-06)
 
@@ -1355,18 +1253,6 @@ EXIT build handler
 
 ---
 
-**feature** (alias for build) - Start a new feature workflow
-```
-/isdlc feature "Feature description"
-/isdlc feature "Feature description" --supervised
-/isdlc feature                        (no description -- presents interactive menu)
-```
-The `feature` action is preserved as an alias for `build`. When invoked with a description,
-it behaves identically to `build`. When invoked without a description, it delegates to the
-orchestrator which presents the SCENARIO 3 menu (with Add/Analyze/Build/Fix options).
-
----
-
 **discover** - Analyze project and create tailored constitution
 ```
 /isdlc discover
@@ -1387,28 +1273,6 @@ The `/discover` command provides:
 See `/discover --help` for full documentation.
 
 **Quick Start:** `/discover` (auto-detects new vs existing), `/discover --new` (force new project setup), `/discover --existing` (force existing project analysis).
-
----
-
-**reverse-engineer** - **(Deprecated — now integrated into `/discover`)**
-
-> **NOTE:** `/isdlc reverse-engineer` is now an alias for `/discover --existing` with the same options. Behavior extraction, characterization tests, and traceability are now built into the discover workflow.
-
-```
-/isdlc reverse-engineer                                    →  /discover --existing
-/isdlc reverse-engineer --scope domain --target "payments" →  /discover --scope domain --target "payments"
-/isdlc reverse-engineer --priority critical                →  /discover --priority critical
-/isdlc reverse-engineer --atdd-ready                       →  /discover --atdd-ready
-```
-
-When invoked, display this message and redirect:
-```
-NOTE: /isdlc reverse-engineer is now integrated into /discover.
-Running: /discover --existing {forwarded options}
-
-```
-
-All options (`--scope`, `--target`, `--priority`, `--atdd-ready`) are forwarded to `/discover`.
 
 ---
 
@@ -1528,15 +1392,12 @@ Each subcommand maps to a predefined workflow with a fixed, non-skippable phase 
 
 | Command | Workflow | Phases | Gate Mode | Branch |
 |---------|----------|--------|-----------|--------|
-| `/isdlc feature` | feature | 00 → 01 → 02(IA) → 03 → 04 → 05 → 06 → 16(QL) → 08 | strict | `feature/REQ-NNNN-...` |
-| `/isdlc fix` | fix | 01 → 02(trace) → 05 → 06 → 16(QL) → 08 | strict | `bugfix/BUG-NNNN-...` |
+| `/isdlc add` | *(inline)* | *(no workflow)* | none | none |
+| `/isdlc analyze` | *(inline)* | *(phases 00-04, no workflow)* | none | none |
+| `/isdlc build` | build | 05 → 06 → 16(QL) → 08 | strict | `feature/REQ-NNNN-...` or `bugfix/BUG-NNNN-...` |
 | `/isdlc test run` | test-run | 11 → 07 | strict | none |
 | `/isdlc test generate` | test-generate | 05 → 06 → 16(QL) → 08 | strict | none |
 | `/isdlc upgrade` | upgrade | 15-plan → 15-execute → 08 | strict | `upgrade/{name}-v{ver}` |
-| `/isdlc add` | *(inline)* | *(no workflow)* | none | none |
-| `/isdlc analyze` | *(inline)* | *(phases 00-04, no workflow)* | none | none |
-| `/isdlc build` | feature | 00 → 01 → 02 → 03 → 04 → 05 → 06 → 16(QL) → 08 | strict | `feature/REQ-NNNN-...` |
-| `/isdlc reverse-engineer` | *(alias → `/discover --existing`)* | — | — | — |
 
 **Enforcement rules:**
 - Workflows start at phase 1 — no `--start-at` flag
@@ -1547,38 +1408,21 @@ Each subcommand maps to a predefined workflow with a fixed, non-skippable phase 
 ### Examples
 
 ```
-/isdlc feature "Build a REST API for user authentication"
-/isdlc feature "Add payment processing" --project api-service
-/isdlc fix "Login endpoint returns 500 on empty password"
-/isdlc fix "Login endpoint returns 500 on empty password" --link https://mycompany.atlassian.net/browse/AUTH-456
-/isdlc test run
-/isdlc test generate
-/isdlc status
-/isdlc status --project web-frontend
-/isdlc gate-check
-/isdlc cancel
-/isdlc configure-cloud
-/isdlc escalate "Unclear requirement about session timeout"
-/isdlc project list
-/isdlc project add shared-lib packages/shared-lib
-/isdlc project scan
-/isdlc project select api-service
-/isdlc upgrade "react"
-/isdlc upgrade "typescript" --project api-service
-/isdlc upgrade "node"
-/isdlc upgrade "express"
 /isdlc add "Add payment processing"
 /isdlc add "#42"
 /isdlc add "JIRA-1250"
 /isdlc analyze "payment-processing"
-/isdlc analyze "3.2"
 /isdlc analyze "#42"
+/isdlc analyze "JIRA-1250"
 /isdlc build "payment-processing"
-/isdlc build "3.2"
-/isdlc build "Feature description" --supervised
-/isdlc reverse-engineer
-/isdlc reverse-engineer --scope domain --target "payments"
-/isdlc reverse-engineer --priority critical --atdd-ready
+/isdlc build "#42"
+/isdlc build "payment-processing" --supervised
+/isdlc test run
+/isdlc test generate
+/isdlc upgrade "react"
+/isdlc upgrade "node"
+/isdlc status
+/isdlc cancel
 ```
 
 ### Prerequisites
@@ -1604,10 +1448,8 @@ When this command is invoked:
 4. Otherwise, present the appropriate scenario menu (1-4) based on detection logic
 5. Wait for user selection before taking further action
 
-**If action is `feature` or `fix` WITHOUT a description (`/isdlc feature` or `/isdlc fix` alone):**
-1. Use the Task tool to launch the `sdlc-orchestrator` agent
-2. Pass explicit instruction: "Action is {feature|fix} but no description provided. Run the BACKLOG PICKER in {feature|fix} mode to let the user select from pending items or describe a new one."
-3. The orchestrator scans CLAUDE.md and state.json, presents the backlog picker, waits for selection, then proceeds with the chosen description
+**If action is `feature` or `fix`** (removed commands):
+Display: "The `/isdlc fix` and `/isdlc feature` commands have been removed. Use `/analyze` to analyze items and `/build` to implement them."
 
 **If action is a NON-WORKFLOW command** (cancel, status, gate-check, constitution, configure-cloud, or any unrecognized action):
 1. Use the Task tool to launch the `sdlc-orchestrator` agent (single invocation)
@@ -1657,9 +1499,9 @@ Parse the subcommand: `add`, `wire`, `list`, or `remove`.
 
 **If action is `analyze`**: Execute analyze handler inline -- no orchestrator, no Phase-Loop Controller.
 
-**If action is `build` or `feature`**: Execute the build handler (steps 1-9 above, including auto-detection steps 4a-4e from REQ-0026) then use the Phase-Loop Controller for orchestrator delegation.
+**If action is `build`**: Execute the build handler (steps 1-9 above) then use the Phase-Loop Controller for orchestrator delegation.
 
-**If action is a WORKFLOW command** (fix, test-run, test-generate, upgrade) **with description:**
+**If action is a WORKFLOW command** (test-run, test-generate, upgrade) **with description:**
 
 Use the **Phase-Loop Controller** protocol. This runs phases one at a time in the foreground, giving the user visible task progress and immediate hook-blocker escalation.
 
@@ -1727,7 +1569,7 @@ Read `agent_modifiers` for this phase from `.isdlc/state.json` → `active_workf
 ```
 Use Task tool → sdlc-orchestrator with:
   MODE: init-only
-  ACTION: {feature|fix|test-run|test-generate|start|upgrade}
+  ACTION: {build|test-run|test-generate|upgrade}
   DESCRIPTION: "{user description}"
   (include MONOREPO CONTEXT if applicable)
 
@@ -2723,14 +2565,10 @@ For non-workflow contexts, call the same 3 steps inline. Failures are non-blocki
 #### Flow Summary
 
 ```
-/isdlc (no args)    → Task → orchestrator → Interactive Menu → User Selection → Action
-/isdlc feature      → Task → orchestrator → SCENARIO 3 Menu (Add/Analyze/Build/Fix)
-/isdlc fix          → Task → orchestrator → SCENARIO 3 Menu (Add/Analyze/Build/Fix)
+/isdlc (no args)    → Task → orchestrator → Interactive Menu (Add/Analyze/Build/Tests/Upgrade)
 /isdlc add ...      → Inline handler (no workflow, no state.json, no orchestrator)
-/isdlc analyze ...  → Inline handler (phase agents 00-04, no workflow, no state.json)
+/isdlc analyze ...  → Inline handler (phases 00-04, no workflow, no state.json)
 /isdlc build ...    → Phase-Loop Controller (init → tasks → direct-agent-loop → finalize)
-/isdlc feature ...  → Alias for build (identical behavior)
-/isdlc fix ...      → Phase-Loop Controller (init → tasks → direct-agent-loop → finalize)
 /isdlc test run     → Phase-Loop Controller (init → tasks → direct-agent-loop → finalize)
 /isdlc test generate → Phase-Loop Controller (init → tasks → direct-agent-loop → finalize)
 /isdlc upgrade ...  → Phase-Loop Controller (init → tasks → direct-agent-loop → finalize)

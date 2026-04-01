@@ -1,25 +1,18 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Workflow definitions for iSDLC - each workflow defines a fixed, non-skippable phase sequence",
   "workflows": {
-    "feature": {
-      "label": "New Feature",
-      "command": "/isdlc feature",
-      "description": "Implement a new feature end-to-end",
-      "intent": "Build a new capability, implement a feature, add functionality, create something new, develop a component, ship a feature end-to-end with full analysis and quality gates",
+    "build": {
+      "label": "Build",
+      "command": "/isdlc build",
+      "description": "Execute implementation phases for an analyzed backlog item",
+      "intent": "Build, implement, create, code, develop, ship, fix — execute the implementation workflow for a previously analyzed item",
       "examples": [
-        "Build a REST API for user authentication",
-        "Add payment processing",
-        "Implement dark mode",
-        "Create a dashboard widget",
-        "Add export to CSV functionality"
+        "Build the auth feature",
+        "Implement the search module",
+        "Ship the dashboard widget"
       ],
       "phases": [
-        "00-quick-scan",
-        "01-requirements",
-        "02-impact-analysis",
-        "03-architecture",
-        "04-design",
         "05-test-strategy",
         "06-implementation",
         "16-quality-loop",
@@ -27,168 +20,25 @@
       ],
       "gate_mode": "strict",
       "options": {
-        "atdd_mode": {
-          "description": "Enable ATDD with test.skip() scaffolds and Given-When-Then AC mapping",
-          "default": false,
-          "flag": "--atdd"
-        },
-        "skip_exploration": {
-          "description": "Skip Phase 00 Quick Scan for simple features",
-          "default": false,
-          "flag": "--no-scan"
-        },
-        "light": {
-          "description": "Force lightweight workflow (skip architecture and design phases)",
-          "default": false,
-          "flag": "-light"
-        },
         "supervised": {
           "description": "Enable supervised mode with review gates between phases",
           "default": false,
           "flag": "--supervised"
-        }
-      },
-      "sizing": {
-        "enabled": true,
-        "thresholds": {
-          "light_max_files": 5,
-          "epic_min_files": 20
         },
-        "light_skip_phases": ["03-architecture", "04-design"],
-        "risk_override": {
-          "high_risk_forces_standard_minimum": true
-        }
-      },
-      "tier_thresholds": {
-        "trivial_max_files": 2,
-        "light_max_files": 8,
-        "standard_max_files": 20
-      },
-      "performance_budgets": {
-        "light": {
-          "max_total_minutes": 30,
-          "max_phase_minutes": 10,
-          "max_debate_rounds": 0,
-          "max_fan_out_chunks": 1
-        },
-        "standard": {
-          "max_total_minutes": 90,
-          "max_phase_minutes": 25,
-          "max_debate_rounds": 2,
-          "max_fan_out_chunks": 4
-        },
-        "epic": {
-          "max_total_minutes": 180,
-          "max_phase_minutes": 40,
-          "max_debate_rounds": 3,
-          "max_fan_out_chunks": 8
-        }
-      },
-      "agent_modifiers": {
-        "00-quick-scan": {
-          "scope": "lightweight-scan",
-          "generate_scope_estimate": true,
-          "output": [
-            "estimated_scope",
-            "keyword_matches",
-            "file_count_estimate"
-          ]
-        },
-        "01-requirements": {
-          "scope": "feature",
-          "artifact_prefix": "REQ",
-          "read_quick_scan": true
-        },
-        "02-impact-analysis": {
-          "scope": "full-impact-analysis",
-          "run_parallel_subagents": true,
-          "generate_impact_analysis": true,
-          "read_requirements": true
-        },
-        "03-architecture": {
-          "scope": "impact-assessment"
-        },
-        "05-test-strategy": {
-          "_when_atdd_mode": {
-            "generate_skipped_tests": true,
-            "require_given_when_then_ac": true,
-            "create_atdd_checklist": true
-          }
-        },
-        "06-implementation": {
-          "_when_atdd_mode": {
-            "track_red_green_transitions": true,
-            "require_priority_order": true,
-            "all_priorities_must_pass": true
-          }
-        },
-        "16-quality-loop": {
-          "scope": "parallel-quality-check"
-        },
-        "08-code-review": {
-          "scope": "human-review-only"
-        }
-      },
-      "requires_branch": true
-    },
-    "feature-light": {
-      "label": "Lightweight Feature",
-      "command": "/isdlc feature -light",
-      "description": "Implement a small feature without architecture and design phases",
-      "intent": "Build a small or simple feature quickly, implement a minor change, add a small piece of functionality without full architecture and design phases",
-      "examples": [
-        "Add a config flag",
-        "Small refactor of a utility function",
-        "Add a new CLI option",
-        "Update a validation rule"
-      ],
-      "phases": [
-        "00-quick-scan",
-        "01-requirements",
-        "02-impact-analysis",
-        "05-test-strategy",
-        "06-implementation",
-        "16-quality-loop",
-        "08-code-review"
-      ],
-      "gate_mode": "strict",
-      "requires_branch": true
-    },
-    "fix": {
-      "label": "Bug Fix",
-      "command": "/isdlc fix",
-      "description": "Fix a bug or defect with TDD",
-      "intent": "Fix a bug, resolve a defect, repair broken functionality, address an error, correct wrong behavior, debug and fix a crash or failure",
-      "examples": [
-        "Login endpoint returns 500 on empty password",
-        "Dashboard crashes when no data",
-        "Search returns stale results after update",
-        "File upload fails for large files"
-      ],
-      "phases": [
-        "01-requirements",
-        "02-tracing",
-        "05-test-strategy",
-        "06-implementation",
-        "16-quality-loop",
-        "08-code-review"
-      ],
-      "gate_mode": "strict",
-      "options": {
-        "atdd_mode": {
-          "description": "Enable ATDD with test.skip() scaffolds and Given-When-Then AC mapping",
+        "debate": {
+          "description": "Force debate mode ON for test strategy phase",
           "default": false,
-          "flag": "--atdd"
+          "flag": "--debate"
         },
-        "skip_exploration": {
-          "description": "Skip Phase 02 Tracing for simple bugs",
+        "no_debate": {
+          "description": "Force debate mode OFF",
           "default": false,
-          "flag": "--no-tracing"
+          "flag": "--no-debate"
         },
-        "supervised": {
-          "description": "Enable supervised mode with review gates between phases",
+        "no_fan_out": {
+          "description": "Disable fan-out parallelism in Phase 16 and Phase 08",
           "default": false,
-          "flag": "--supervised"
+          "flag": "--no-fan-out"
         }
       },
       "performance_budgets": {
@@ -200,17 +50,6 @@
         }
       },
       "agent_modifiers": {
-        "01-requirements": {
-          "scope": "bug-report",
-          "artifact_prefix": "BUG",
-          "require_external_id": true
-        },
-        "02-tracing": {
-          "scope": "bug-exploration",
-          "run_parallel_subagents": true,
-          "generate_trace_analysis": true,
-          "read_bug_report": true
-        },
         "05-test-strategy": {
           "_when_atdd_mode": {
             "generate_skipped_tests": true,
@@ -219,7 +58,6 @@
           }
         },
         "06-implementation": {
-          "require_failing_test_first": true,
           "_when_atdd_mode": {
             "track_red_green_transitions": true,
             "require_priority_order": true,
@@ -346,94 +184,6 @@
         }
       },
       "requires_branch": true
-    },
-    "reverse-engineer": {
-      "label": "Reverse Engineer",
-      "command": "/isdlc reverse-engineer",
-      "description": "Extract acceptance criteria and generate characterization tests from existing code",
-      "intent": "Reverse engineer existing code, extract behavior, generate characterization tests, understand undocumented code behavior",
-      "examples": [
-        "Reverse engineer the payments module",
-        "Extract acceptance criteria from existing code",
-        "Generate characterization tests"
-      ],
-      "phases": [
-        "R1-behavior-extraction",
-        "R2-characterization-tests",
-        "R3-artifact-integration",
-        "R4-atdd-bridge"
-      ],
-      "gate_mode": "permissive",
-      "options": {
-        "scope": {
-          "prompt": "What scope do you want to analyze?",
-          "choices": [
-            "all",
-            "module",
-            "endpoint",
-            "domain"
-          ],
-          "default": "all"
-        },
-        "target": {
-          "prompt": "Specify target name (module, endpoint path, or domain name)",
-          "type": "string",
-          "required_when": [
-            "scope:module",
-            "scope:endpoint",
-            "scope:domain"
-          ]
-        },
-        "priority": {
-          "prompt": "Filter by risk priority",
-          "choices": [
-            "all",
-            "critical",
-            "high",
-            "medium"
-          ],
-          "default": "all"
-        },
-        "generate_tests": {
-          "description": "Generate characterization tests",
-          "flag": "--generate-tests",
-          "default": true
-        },
-        "atdd_ready": {
-          "description": "Prepare artifacts for ATDD workflow integration",
-          "flag": "--atdd-ready",
-          "default": false
-        }
-      },
-      "prerequisites": {
-        "discover_completed": true,
-        "artifacts_required": [
-          "docs/project-discovery-report.md",
-          ".isdlc/test-evaluation-report.md"
-        ]
-      },
-      "agent_modifiers": {
-        "R1-behavior-extraction": {
-          "read_discovery_artifacts": true,
-          "prioritize_by_risk": true
-        },
-        "R2-characterization-tests": {
-          "use_test_skip_scaffolds": true,
-          "capture_side_effects": true
-        },
-        "R3-artifact-integration": {
-          "link_to_feature_map": true,
-          "generate_traceability": true
-        },
-        "R4-atdd-bridge": {
-          "_when_atdd_ready": {
-            "create_atdd_checklist": true,
-            "mark_as_captured_behavior": true,
-            "set_pending_human_review": true
-          }
-        }
-      },
-      "requires_branch": false
     }
   },
   "rules": {

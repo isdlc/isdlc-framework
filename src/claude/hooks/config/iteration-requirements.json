@@ -734,35 +734,6 @@
   },
   "workflow_overrides": {
     "_comment": "Per-workflow overrides that merge with base phase_requirements when a workflow is active",
-    "fix": {
-      "01-requirements": {
-        "interactive_elicitation": {
-          "min_menu_interactions": 1,
-          "scope": "bug-report"
-        },
-        "artifact_validation": {
-          "enabled": false
-        }
-      },
-      "05-implementation": {
-        "test_iteration": {
-          "require_failing_test_first": true
-        }
-      },
-      "08-code-review": {
-        "test_iteration": {
-          "enabled": false
-        },
-        "constitutional_validation": {
-          "enabled": true,
-          "max_iterations": 5,
-          "articles": [
-            "VI",
-            "IX"
-          ]
-        }
-      }
-    },
     "test-run": {
       "06-testing": {
         "constitutional_validation": {
@@ -786,7 +757,7 @@
         }
       }
     },
-    "feature": {
+    "build": {
       "08-code-review": {
         "test_iteration": {
           "enabled": false

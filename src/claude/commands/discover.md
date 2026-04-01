@@ -221,9 +221,12 @@ When this command is invoked:
    Phases 1b, 1c, 1d run **sequentially** after Phase 1.
    For new projects, D7 handles vision + PRD, D8 handles architecture blueprint.
 
-4. **After the discover-orchestrator returns successfully** (REQ-0001 FR-007):
-   Rebuild the session cache by running: `node bin/rebuild-cache.js`
-   If the rebuild fails, log a warning but do not fail the discovery.
+4. **After the discover-orchestrator returns successfully** — run INDEX REFRESH (all steps fail-open):
+   a. **Code index refresh**: Call `mcp__code-index-mcp__refresh_index` then `mcp__code-index-mcp__build_deep_index`. If either fails, log warning and continue.
+   b. **Session cache rebuild**: Run `node bin/rebuild-cache.js` (REQ-0001 FR-007). If it fails, log warning and continue.
+   c. **Contract regeneration**: Run `node bin/generate-contracts.js` and `node bin/generate-contracts.js --output .isdlc/config/contracts`. If either fails, log warning and continue.
+   d. **Memory embeddings rebuild**: Rebuild roundtable memory vector indexes if sessions exist. If it fails, log warning and continue.
+   e. **Code embeddings refresh**: If embedding pipeline is configured (`docs/.embeddings/` exists), trigger re-index of source files. If not configured or fails, skip silently.
 
 ### Related Commands
 - `/isdlc feature` - Build a new feature after discover completes

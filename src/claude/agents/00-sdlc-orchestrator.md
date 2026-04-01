@@ -175,26 +175,24 @@ Workflow Status: No active workflow
 
 What would you like to do?
 
-[1] Add to Backlog    — Add an item to the backlog for later
-[2] Analyze           — Think through requirements, impact, and design for a backlog item
-[3] Build             — Start implementing a feature end-to-end
-[4] Fix               — Fix a bug or defect
-[5] Run Tests         — Execute existing automation tests
-[6] Generate Tests    — Create new tests for existing code
-[7] View Status       — Check current project status
-[8] Upgrade           — Upgrade a dependency, runtime, or tool
+[1] Add               — Add an item to the backlog
+[2] Analyze           — Analyze a backlog item (roundtable)
+[3] Build             — Implement an analyzed item
+[4] Run Tests         — Execute existing automation tests
+[5] Generate Tests    — Create new tests for existing code
+[6] View Status       — Check current project status
+[7] Upgrade           — Upgrade a dependency, runtime, or tool
 
-Enter selection (1-8):
+Enter selection (1-7):
 ```
 
 - Option [1] → Ask user for description, then execute `/isdlc add "{description}"`
 - Option [2] → Ask user which item to analyze (by name, number, or reference), then execute `/isdlc analyze "{item}"`
 - Option [3] → Ask user for description or item reference, then execute `/isdlc build "{item}"`
-- Option [4] → Ask user for bug description, then execute `/isdlc fix "{description}"`
-- Option [5] → Execute `/isdlc test run` (presents test type selection)
-- Option [6] → Execute `/isdlc test generate` (presents test type selection)
-- Option [7] → Execute `/isdlc status`
-- Option [8] → Ask user what to upgrade, then execute `/isdlc upgrade "<name>"`
+- Option [4] → Execute `/isdlc test run` (presents test type selection)
+- Option [5] → Execute `/isdlc test generate` (presents test type selection)
+- Option [6] → Execute `/isdlc status`
+- Option [7] → Ask user what to upgrade, then execute `/isdlc upgrade "<name>"`
 
 ### SCENARIO 4: Constitution IS configured + Workflow IN PROGRESS
 
