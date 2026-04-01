@@ -1,6 +1,6 @@
 {
   "_generation_metadata": {
-    "generated_at": "2026-03-31T22:18:35.091Z",
+    "generated_at": "2026-04-01T02:36:26.120Z",
     "generator_version": "1.0.0",
     "input_files": [
       {
@@ -8,12 +8,16 @@
         "path": ".claude/hooks/config/artifact-paths.json"
       },
       {
-        "hash": "05c7e94343ff4314df013c62cdfab5e3c28388bf7c6933925b247cd6494bfdaa",
+        "hash": "a30724164d751c3addc2065c4c8c33852ffbe9c8b83b045f6a75f712688e4ddd",
         "path": ".claude/hooks/config/iteration-requirements.json"
       },
       {
         "hash": "c1bc8b8dc6d836021e5a4748acae404a91be53b9a134ab197882e2dc04f7414a",
         "path": ".claude/hooks/config/skills-manifest.json"
+      },
+      {
+        "hash": "034f8b8b7ecdb22e84487020417611cf3747f5b8b29af30957555862a877afa6",
+        "path": ".isdlc/config/workflows.json"
       },
       {
         "hash": "ddd1d03b4183fdf40854ecf682cc0777c3bac6c831690f599ea97dbff64c45ad",
@@ -22,10 +26,6 @@
       {
         "hash": "4f31000cee45f09e3c1769fe33845b2a39f6292c5243d113c30112476ce74624",
         "path": "docs/isdlc/external-skills-manifest.json"
-      },
-      {
-        "hash": "74ed23ed6cc212dab5dc327df4e965eaf1b91070f72f74966559b7f1782f1547",
-        "path": "src/isdlc/config/workflows.json"
       }
     ]
   },
