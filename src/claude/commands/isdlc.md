@@ -268,8 +268,8 @@ in `src/claude/hooks/lib/three-verb-utils.cjs` for testability.
 ```
 1. Present test type selection: Unit, System, E2E (single-select)
 2. Initialize `active_workflow` with type `"test-generate"` and phases `["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`
-3. Phase 05: Check for existing `test.skip()` scaffolds in `tests/characterization/` (from `/discover`). If found, use them as the test design basis. If not found, analyze code and design test cases from scratch.
-4. Phase 06: Write the test code (implement `test.skip()` scaffolds if present, otherwise write new tests)
+3. Phase 05: Check for existing `test.skip()` scaffolds in `tests/characterization/` (from `/discover`). If found, use them as the test design basis and generate a `docs/isdlc/tasks.md` where each scaffold file becomes a Phase 06 task (one task per scaffold file, with `files:` pointing to the scaffold and `traces:` from the scaffold's AC references). If not found, analyze code and design test cases from scratch.
+4. Phase 06: Write the test code. If tasks.md was generated from scaffolds in step 3, the Phase-Loop Controller uses task-level dispatch (REQ-GH-220) to implement each scaffold as a separate task. Otherwise, single-call delegation.
 5. Phase 16: Run quality loop including build verification, test execution, and automated QA
 6. Phase 08: Review test quality
 
@@ -1708,7 +1708,84 @@ Using the `state.json` already read in step 3b, update the following fields:
 9. **Error handling**: If timing initialization fails, log a warning to stderr and continue.
    The phase MUST proceed regardless of timing errors (NFR-001).
 
-**3d.** DIRECT PHASE DELEGATION — Bypass the orchestrator and delegate directly to the phase agent.
+**3d.** PHASE DELEGATION — Determine dispatch mode and delegate.
+
+**3d-check.** TASK-LEVEL DISPATCH CHECK (REQ-GH-220):
+Read `task_dispatch` config from `workflows.json`. Determine if this phase should use task-level dispatch:
+
+Call `shouldUseTaskDispatch(workflowConfig, phase_key, tasksPath)` from `src/core/tasks/task-dispatcher.js` which checks:
+1. `task_dispatch.enabled` and `phase_key` in `task_dispatch.phases` (from workflows.json)
+2. `docs/isdlc/tasks.md` exists and has pending tasks for this phase
+3. There are >= `task_dispatch.min_tasks_for_dispatch` (default 3) pending tasks
+
+IF all checks pass → Execute **STEP 3d-tasks** (Task-Level Dispatch Protocol) below.
+ELSE → Execute **STEP 3d-single** (existing single-call delegation) below.
+
+**3d-tasks.** TASK-LEVEL DISPATCH PROTOCOL (REQ-GH-220, FR-001 through FR-008):
+
+This protocol dispatches tasks one-per-agent in dependency order, with parallel execution within tiers.
+
+1. **Read and plan**: Read `docs/isdlc/tasks.md` using `task-reader.js`. Filter tasks for the current `phase_key`. Compute tiers using `assignTiers()` — tier 0 has tasks with no blockers, tier 1 has tasks blocked by tier 0, etc.
+
+2. **Initialize accumulator**: Create a `priorCompletedFiles` list (starts empty, accumulates files from completed tasks in this phase).
+
+3. **For each tier** (sequential, tier 0 first):
+
+   a. **Get unblocked tasks**: Filter the tier's tasks to only those not yet complete (`[ ]` not `[X]`).
+
+   b. **Build per-task prompts**: For each task in the tier, construct a focused prompt:
+      ```
+      Execute task {task.id}: {task.description}
+      Phase: {phase_key}
+      Agent type: {agent_name from PHASE→AGENT table}
+      Artifact folder: {artifact_folder}
+
+      FILES:
+      {for each file in task.files: "- {file.path} ({file.operation})"}
+
+      TRACES:
+      {task.traces joined with ", "}
+
+      PRIOR COMPLETED FILES (this phase):
+      {priorCompletedFiles list, or "(none)" if empty}
+
+      CONTEXT:
+      {Read the traced FR/AC sections from requirements-spec.md and include only the relevant excerpts}
+
+      CONSTRAINTS:
+      - Do NOT run git commit
+      - Do NOT write to .isdlc/state.json
+      - Implement ONLY the files listed above
+      - Run tests for your changes before returning
+      - Return a brief summary of what you implemented
+      ```
+      Include the same GATE REQUIREMENTS, PROTOCOL INJECTION, and SKILL INJECTION blocks as the single-call delegation (from step 3d-single below), but scoped to this single task.
+
+   c. **Dispatch in parallel**: Issue one Task tool call per task in the tier, ALL in a single response (parallel execution). Use the agent type from the PHASE→AGENT table (same for all tasks in the phase).
+
+   d. **Create task visibility**: Before dispatching, create a `TaskCreate` entry for each task in the tier: subject = `{task.id}: {task.description}`, activeForm = `Implementing {task.id}`.
+
+   e. **Handle returns**: For each task that returns:
+      - **Success**: Read `docs/isdlc/tasks.md`, replace `- [ ] {task.id}` with `- [X] {task.id}`, recalculate Progress Summary table, write tasks.md. Update the TaskCreate entry to completed. Add the task's file paths to `priorCompletedFiles`.
+      - **Failure**: Increment retry counter for this task. If retries < `task_dispatch.max_retries_per_task` (default 3): re-dispatch with the error message appended to the prompt. If retries >= max: present escalation menu:
+        ```
+        TASK FAILURE: {task.id} failed after {retries} retries.
+        Error: {error message}
+
+        Options:
+        [R] Retry — Re-dispatch one more time
+        [S] Skip — Skip this task and its dependents
+        [C] Cancel phase
+        ```
+        If Skip: mark this task and all tasks that have it in `blocked_by` as `[SKIP]` in tasks.md with reason.
+
+   f. **Clean up sub-tasks**: After all tasks in the tier are handled, delete the per-task TaskCreate entries (same cleanup pattern as step 3f).
+
+   g. **Next tier**: Proceed to the next tier. Repeat from step 3a.
+
+4. **All tiers complete**: Proceed to step 3e (post-phase state update). The phase task in the main task list is marked completed by step 3f.
+
+**3d-single.** DIRECT PHASE DELEGATION (existing behavior) — Bypass the orchestrator and delegate directly to the phase agent. This is used for self-orchestrating phases (16, 08) and as fallback when task-level dispatch criteria are not met.
 
 Look up the agent for this phase from the PHASE→AGENT table:
 
