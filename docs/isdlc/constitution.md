@@ -360,12 +360,16 @@ These 10 articles are mandatory for all projects. They represent industry best p
 
 ### How Enforcement Works
 
-1. **Orchestrator Reads Constitution**: At project start, Agent 00 reads this file
-2. **Agents Apply Principles**: Each agent applies relevant articles to their work
-3. **Gate Validation**: Orchestrator checks constitutional compliance at each gate
-4. **Violation Handling**:
-   - First violation: Agent remediates
-   - Second violation: Escalate to human
+The constitution is enforced through a 4-layer pipeline (see `docs/ARCHITECTURE.md → Constitution Enforcement Pipeline` for full technical details):
+
+1. **Session Cache Injection**: The full constitution text is embedded into every conversation's system prompt via the session cache. All agents see it at startup.
+2. **Gate Requirements Injection**: When a phase agent is delegated, the Phase-Loop Controller injects the specific articles that apply to that phase (from `iteration-requirements.json`) into the agent's CRITICAL CONSTRAINTS block.
+3. **Constitutional Validation Hook**: `constitution-validator.cjs` blocks phase completion unless the agent has recorded a valid compliance attestation in `state.json`.
+4. **Gate Blocker**: `gate-blocker.cjs` independently verifies constitutional validation as one of 4 gate checks before allowing phase advancement.
+
+**Violation Handling**:
+   - First failure: Agent is re-delegated with remediation instructions
+   - After 3 retries: Escalate to human
    - Persistent violations: Constitution may need amendment
 
 ### Amending the Constitution

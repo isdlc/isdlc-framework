@@ -607,6 +607,99 @@ Each phase can enable or disable these requirement types in `iteration-requireme
 
 ---
 
+## Constitution Enforcement Pipeline
+
+The project constitution (`docs/isdlc/constitution.md`) is enforced through 4 layers that work together to ensure every phase agent reads, validates, and attests to constitutional compliance.
+
+### Layer 1: Session Cache Injection
+
+At session start, `bin/rebuild-cache.js` reads the constitution and embeds its full text into the session cache as a `<!-- SECTION: CONSTITUTION -->` block. This block is loaded into the system prompt for every conversation, so every agent — the orchestrator, phase agents, and sub-agents — sees the complete constitution text. No agent needs to read the file from disk; it's always in context.
+
+**File**: `bin/rebuild-cache.js`
+**Output**: Session cache with `CONSTITUTION` section
+**Visibility**: All agents, all conversations
+
+### Layer 2: Gate Requirements Injection (per-phase)
+
+When the Phase-Loop Controller delegates to a phase agent (STEP 3d), the gate-requirements-injector reads `iteration-requirements.json` to determine which constitution articles apply to that phase. It extracts the article titles from the constitution text and includes them in the delegation prompt as a CRITICAL CONSTRAINTS block.
+
+For example, Phase 06 (Implementation) receives:
+```
+CRITICAL CONSTRAINTS:
+- Constitutional articles to validate: Article I (Specification Primacy),
+  Article II (Test-First Development), Article III (Security by Design), ...
+```
+
+The agent is told which articles to check and is instructed to confirm compliance before completing.
+
+**File**: Phase-Loop Controller in `src/claude/commands/isdlc.md` (STEP 3d, GATE REQUIREMENTS INJECTION)
+**Config**: `src/claude/hooks/config/iteration-requirements.json` → `phase_requirements[phase_key].constitutional_validation.articles[]`
+**Scope**: Per-phase, per-delegation
+
+### Layer 3: Constitutional Validation Hook
+
+`constitution-validator.cjs` is a PostToolUse hook that fires when a phase agent signals completion (via the Task tool). It reads `state.json → phases[phase_key].constitutional_validation` and blocks phase advancement if the agent hasn't recorded a valid validation:
+
+| Field | Required Value |
+|-------|---------------|
+| `completed` | `true` |
+| `iterations_used` | >= 1 |
+| `status` | `"compliant"` or `"escalated"` |
+| `articles_checked` | Non-empty array |
+
+If any check fails, the hook returns a block message. The Phase-Loop Controller's 3f-constitutional handler re-delegates the agent with explicit instructions to read the constitution, validate artifacts, and update the validation state.
+
+**File**: `src/claude/hooks/constitution-validator.cjs`
+**Trigger**: PostToolUse on Task tool (phase completion)
+**State path**: `state.json → phases[phase_key].constitutional_validation`
+
+### Layer 4: Gate Blocker
+
+`gate-blocker.cjs` (and its Antigravity equivalent `validate-gate.cjs`) runs `checkConstitutionalRequirement()` as one of 4 gate checks before allowing phase advancement. This is the hard enforcement — even if the constitution-validator hook is bypassed, the gate blocker independently verifies the constitutional validation state.
+
+**File**: `src/claude/hooks/gate-blocker.cjs`, `src/antigravity/validate-gate.cjs`
+**Function**: `checkConstitutionalRequirement(phaseState, phaseReq)`
+**Effect**: GATE BLOCKED if validation incomplete
+
+### What This Does and Does Not Enforce
+
+**Does enforce**:
+- Every phase agent is shown the relevant articles before starting work
+- Every phase agent must attest to having checked compliance
+- Phase advancement is blocked without attestation
+- Re-delegation with remediation instructions on failure
+- Escalation to human after repeated failures (max 3 retries)
+
+**Does not enforce**:
+- Programmatic verification that code actually complies with article requirements (e.g., it cannot verify that Article III's "all inputs validated at system boundaries" is true in the code)
+- The constitution is prompt-level governance — agents self-report compliance, and the framework ensures they do so at every gate
+
+### Enforcement Flow
+
+```
+Phase Agent starts work
+        │
+        ├── Sees constitution in session cache (Layer 1)
+        ├── Sees required articles in CRITICAL CONSTRAINTS (Layer 2)
+        │
+        ▼
+Agent completes work, writes validation to state.json:
+  { status: "compliant", completed: true, articles_checked: [...], iterations_used: 1 }
+        │
+        ▼
+constitution-validator.cjs checks validation state (Layer 3)
+        │
+        ├── PASS → gate-blocker.cjs checks all 4 requirements (Layer 4)
+        │              │
+        │              ├── PASS → Phase advances
+        │              └── FAIL → Remediation or escalation
+        │
+        └── FAIL → Phase-Loop Controller re-delegates agent
+                   with remediation instructions (max 3 retries)
+```
+
+---
+
 ## State Management
 
 ### `state.json` Schema

@@ -400,7 +400,7 @@ function computeDependencySummary(tasks) {
  * @param {Map<string, number>} assigned
  * @returns {number} Maximum tier number
  */
-function assignTiers(tasks, assigned) {
+export function assignTiers(tasks, assigned) {
   const taskMap = new Map(tasks.map(t => [t.id, t]));
   let maxTier = 0;
 

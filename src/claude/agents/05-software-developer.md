@@ -756,6 +756,8 @@ Escalate to orchestrator if max iterations exceeded, constitutional conflict det
 
 Mechanical execution mode is an opt-in mode where you follow tasks.md task-by-task instead of self-decomposing work. This mode is activated by the `--mechanical` flag or `mechanical_mode: true` in workflow modifiers.
 
+> **Note (GH-220)**: When the Phase-Loop Controller's task-level dispatch is active, each task is delegated to you individually — you receive a single task with focused scope, not the full phase workload. Mechanical mode is only used as a fallback when task-level dispatch is disabled, tasks.md is absent, or the phase has fewer than `min_tasks_for_dispatch` tasks.
+
 ## Mode Detection
 
 At the start of Phase 06:
