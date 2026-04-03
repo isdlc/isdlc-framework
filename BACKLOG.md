@@ -4,7 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [A] #220 Task-level delegation in Phase-Loop Controller [github: GH-220] -> [requirements](docs/requirements/REQ-GH-220-task-level-delegation-in-phase-loop-controller/)
+- [x] #220 Task-level delegation in Phase-Loop Controller [github: GH-220] -> [requirements](docs/requirements/REQ-GH-220-task-level-delegation-in-phase-loop-controller/) **Completed**
+  - **Completed:** 2026-04-03
 - [x] #218 Support bug-specific roundtable analysis in analyze command [github: GH-218] -> [requirements](docs/requirements/REQ-GH-218-support-bug-specific-roundtable-analysis-in-analyze/) **Completed**
   - **Completed:** 2026-03-31
 - [x] #215 Simplify workflow commands to add/analyze/build — remove fix/feature [github: GH-215] -> [requirements](docs/requirements/REQ-GH-215-defer-task-list-creation-after-interactive-phases/) **Completed**

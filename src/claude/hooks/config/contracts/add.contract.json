@@ -1,6 +1,6 @@
 {
   "_generation_metadata": {
-    "generated_at": "2026-04-03T18:29:44.791Z",
+    "generated_at": "2026-04-03T19:02:59.497Z",
     "generator_version": "1.0.0",
     "input_files": [
       {
@@ -16,7 +16,7 @@
         "path": ".claude/hooks/config/skills-manifest.json"
       },
       {
-        "hash": "034f8b8b7ecdb22e84487020417611cf3747f5b8b29af30957555862a877afa6",
+        "hash": "f0e69a1575faadefba40e3941eab8fc814ea6d04527a497d0b37279abab053a4",
         "path": ".isdlc/config/workflows.json"
       },
       {
