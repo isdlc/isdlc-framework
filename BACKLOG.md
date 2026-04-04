@@ -19,6 +19,25 @@
   - **Completed:** 2026-03-27
 - [x] #213 Contract enforcement must be inline (during execution), not post-phase [github: GH-213] -> [requirements](docs/requirements/REQ-GH-213-contract-enforcement-must-be-inline/) **Completed**
   - **Completed:** 2026-03-27
+- [ ] #224 Embedding MCP server runner and settings registration — create stdio runner, register in settings.json so agents can call semantic_search [github: GH-224]
+  - Critical path blocker for all embedding work. Server code exists but has no runner and isn't registered.
+- [ ] #225 Embedding CLI: finish .emb package generation — wire package builder into CLI, respect provider preference [github: GH-225]
+  - CLI generates vectors but doesn't persist them. Builder/reader modules exist and are tested.
+- [ ] #226 Wire discover integration to generate embeddings during /discover [github: GH-226]
+  - `generateDiscoverEmbeddings()` exists with before/during/after modes but discover orchestrator doesn't call it.
+  - Depends on #224.
+- [ ] #227 Embedding provider selection and API key configuration [github: GH-227]
+  - Users choose CodeBERT (local/free), Voyage (API), or OpenAI (API). No config mechanism exists today.
+- [ ] #228 Incremental embedding indexing via VCS diff — re-embed only changed files [github: GH-228]
+  - VCS adapters support diff detection. Critical for 500K-1M line codebases.
+  - Depends on #225.
+- [ ] #229 Approximate nearest neighbor search (HNSW) for large embedding stores [github: GH-229]
+  - Current brute-force cosine won't scale to 50K+ chunks. Related to #133 (memory scale-out).
+- [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
+  - Sequential single-threaded parsing is a bottleneck for 10K+ file repos. Needs worker pool or caching.
+  - Depends on #228.
+- [A] #231 Configuration consolidation: unify config locations, eliminate duplicates, single config service [github: GH-231] -> [requirements](docs/requirements/REQ-GH-231-configuration-consolidation-unify-config/)
+  - ~45 config files across 6 directories, 3 formats, 3+ duplicate sets, 5 config readers. Unified config service, single user config.json, canonical src/isdlc/config/ directory.
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
 - [x] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Completed**
   - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
