@@ -36,8 +36,7 @@
 - [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
   - Sequential single-threaded parsing is a bottleneck for 10K+ file repos. Needs worker pool or caching.
   - Depends on #228.
-- [A] #231 Configuration consolidation: unify config locations, eliminate duplicates, single config service [github: GH-231] -> [requirements](docs/requirements/REQ-GH-231-configuration-consolidation-unify-config/)
-  - ~45 config files across 6 directories, 3 formats, 3+ duplicate sets, 5 config readers. Unified config service, single user config.json, canonical src/isdlc/config/ directory.
+- [x] #231 Configuration consolidation: unify config locations, eliminate duplicates, single config service [github: GH-231] -> [requirements](docs/requirements/REQ-GH-231-configuration-consolidation-unify-config/) **Completed**
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
 - [x] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Completed**
   - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
