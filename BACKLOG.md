@@ -26,6 +26,10 @@
   - Group B — scale. Basic VCS-diff incremental mode is in #224 scope.
 - [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
   - Group B — scale. Sequential chunking acceptable for MVP.
+- [ ] #233 task-dispatch-enforcer hook: verify task-level dispatch was used when configured [github: GH-233]
+  - Gap revealed by REQ-GH-224 build. Enforces the Phase-Loop Controller's task-dispatch protocol.
+- [ ] #232 task-completion-gate hook: block phase advancement if tasks.md has unfinished tasks [github: GH-232]
+  - Gap revealed by REQ-GH-224 build. Enforces Article I.5 binding task plans at runtime.
 - [x] #231 Configuration consolidation: unify config locations, eliminate duplicates, single config service [github: GH-231] -> [requirements](docs/requirements/REQ-GH-231-configuration-consolidation-unify-config/) **Completed**
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
 - [x] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Completed**
