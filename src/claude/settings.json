@@ -396,6 +396,11 @@
       "command": "code-index-mcp",
       "args": [],
       "env": {}
+    },
+    "isdlc-embedding": {
+      "command": "node",
+      "args": ["$CLAUDE_PROJECT_DIR/bin/isdlc-embedding-mcp.js"],
+      "env": {}
     }
   }
 }

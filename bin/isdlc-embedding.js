@@ -30,6 +30,8 @@ if (command === 'generate') {
   await runStatus();
 } else if (command === 'server') {
   await runServer(args.slice(1));
+} else if (command === 'configure') {
+  await runConfigure();
 } else {
   console.error(`Unknown command: ${command}`);
   printHelp();
@@ -102,20 +104,132 @@ async function runServer(serverArgs) {
 }
 
 /**
+ * Interactive configuration subcommand.
+ * Walks user through provider selection + API key setup.
+ * Writes to .isdlc/config.json → embeddings section.
+ * REQ-GH-224 FR-011
+ */
+async function runConfigure() {
+  const { readFileSync, writeFileSync, existsSync, mkdirSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const readline = await import('node:readline/promises');
+  const { stdin, stdout } = await import('node:process');
+
+  const projectRoot = process.cwd();
+  const configPath = join(projectRoot, '.isdlc', 'config.json');
+  const rl = readline.createInterface({ input: stdin, output: stdout });
+
+  console.log('\n=== iSDLC Embedding Configuration ===\n');
+
+  // Load existing config
+  let config = {};
+  if (existsSync(configPath)) {
+    try {
+      config = JSON.parse(readFileSync(configPath, 'utf8'));
+    } catch {
+      console.warn('Existing config.json is malformed; starting fresh.\n');
+    }
+  }
+  if (!config.embeddings) config.embeddings = {};
+
+  // Provider selection
+  const currentProvider = config.embeddings.provider || 'codebert';
+  console.log(`Current provider: ${currentProvider}`);
+  console.log('\nSelect embedding provider:');
+  console.log('  1. CodeBERT (local, free, requires ONNX model download)');
+  console.log('  2. Voyage (API, voyage-code-3, high quality)');
+  console.log('  3. OpenAI (API, text-embedding-3-small)');
+  const choice = (await rl.question(`\nEnter choice [1-3] (default: 1): `)).trim() || '1';
+
+  const providerMap = { '1': 'codebert', '2': 'voyage', '3': 'openai' };
+  const modelMap = {
+    codebert: 'microsoft/codebert-base',
+    voyage: 'voyage-code-3',
+    openai: 'text-embedding-3-small',
+  };
+  const provider = providerMap[choice];
+  if (!provider) {
+    console.error('Invalid choice. Aborting.');
+    rl.close();
+    process.exit(1);
+  }
+
+  config.embeddings.provider = provider;
+  config.embeddings.model = modelMap[provider];
+
+  // API key for cloud providers
+  if (provider === 'voyage' || provider === 'openai') {
+    const defaultEnvVar = provider === 'voyage' ? 'VOYAGE_API_KEY' : 'OPENAI_API_KEY';
+    const envVar = (await rl.question(`Environment variable name for API key [${defaultEnvVar}]: `)).trim() || defaultEnvVar;
+    config.embeddings.api_key_env = envVar;
+
+    if (!process.env[envVar]) {
+      console.warn(`\nWARNING: ${envVar} is not set in your environment.`);
+      console.warn(`  Set it before starting the server: export ${envVar}=...\n`);
+    }
+  } else {
+    config.embeddings.api_key_env = null;
+  }
+
+  // Port
+  const currentPort = config.embeddings.server?.port || 7777;
+  const portInput = (await rl.question(`Server port [${currentPort}]: `)).trim();
+  const port = portInput ? parseInt(portInput, 10) : currentPort;
+  if (!config.embeddings.server) config.embeddings.server = {};
+  config.embeddings.server.port = port;
+
+  // Ensure .isdlc/ exists
+  const isdlcDir = join(projectRoot, '.isdlc');
+  if (!existsSync(isdlcDir)) mkdirSync(isdlcDir, { recursive: true });
+
+  // Write config
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+
+  console.log('\n=== Configuration saved ===');
+  console.log(`  Provider: ${provider}`);
+  console.log(`  Model: ${modelMap[provider]}`);
+  console.log(`  Port: ${port}`);
+  if (config.embeddings.api_key_env) {
+    console.log(`  API key env var: ${config.embeddings.api_key_env}`);
+  }
+  console.log(`\nConfig file: ${configPath}`);
+  console.log('Restart the server to apply changes: isdlc embedding server restart\n');
+
+  rl.close();
+}
+
+/**
  * Run embedding generation.
  * AC-014-01: Produces a valid .emb package from the current working copy
  * AC-014-03: Incremental mode re-embeds only changed files via VCS adapter
  */
 async function runGenerate(genArgs) {
   const workingCopy = resolve(genArgs[0] || '.');
+  const autoStart = !genArgs.includes('--no-auto-start');
+  const tier = (genArgs.find(a => a.startsWith('--tier=')) || '--tier=full').split('=')[1];
 
   console.log(`Generating embeddings for: ${workingCopy}`);
+  console.log(`Tier: ${tier}`);
 
   try {
+    // Load provider from config
+    const { readFileSync, existsSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const configPath = join(workingCopy, '.isdlc', 'config.json');
+    let provider = 'codebert';
+    if (existsSync(configPath)) {
+      try {
+        const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
+        provider = cfg?.embeddings?.provider || 'codebert';
+      } catch {}
+    }
+    console.log(`Provider: ${provider}`);
+
     // Import modules dynamically to fail gracefully if dependencies missing
     const { createAdapter } = await import('../lib/embedding/vcs/index.js');
     const { chunkFile, detectLanguage } = await import('../lib/embedding/chunker/index.js');
     const { embed } = await import('../lib/embedding/engine/index.js');
+    const { buildPackage } = await import('../lib/embedding/package/builder.js');
 
     // 1. Detect VCS and get file list
     const vcs = await createAdapter(workingCopy);
@@ -145,22 +259,60 @@ async function runGenerate(genArgs) {
 
     console.log(`Generated ${totalChunks} chunks from ${supportedFiles.length} files`);
 
+    if (totalChunks === 0) {
+      console.log('No chunks to embed. Exiting.');
+      return;
+    }
+
     // 4. Generate embeddings
     const texts = allChunks.map(c => c.content);
-    const result = await embed(texts, { provider: 'codebert' }, {
+    const result = await embed(texts, { provider }, {
       onProgress: (processed, total) => {
         process.stdout.write(`\rEmbedding: ${processed}/${total} chunks`);
       },
     });
 
     console.log(`\nGenerated ${result.vectors.length} embeddings (${result.dimensions}-dim, ${result.model})`);
-    console.log('Embedding generation complete.');
 
-    // Note: Package building (.emb creation) is Group 2+ scope (M5)
-    console.log('Note: .emb package creation requires Group 2+ components (FAISS, SQLite).');
+    // 5. Build .emb package
+    const outputDir = join(workingCopy, 'docs', '.embeddings');
+    const projectName = (workingCopy.split('/').pop() || 'project').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+    const packagePath = await buildPackage({
+      vectors: result.vectors,
+      chunks: allChunks,
+      meta: {
+        moduleId: `${projectName}-code`,
+        version: '0.1.0',
+        model: result.model,
+        dimensions: result.dimensions,
+      },
+      outputDir,
+      tier,
+    });
+    console.log(`Package created: ${packagePath}`);
 
+    // 6. Auto-start server (FR-006 AC-006-02)
+    if (autoStart) {
+      console.log('\nAuto-starting embedding server...');
+      const { startServer, serverStatus } = await import('../lib/embedding/server/lifecycle.js');
+      const status = await serverStatus(workingCopy);
+      if (status.running) {
+        console.log('Server already running. Restart to pick up new package.');
+      } else {
+        const start = await startServer(workingCopy);
+        if (start.success) {
+          console.log(`Server started (pid=${start.pid}, port=${start.port})`);
+        } else {
+          console.warn(`Failed to auto-start server: ${start.error}`);
+          console.warn('Start manually: isdlc embedding server start');
+        }
+      }
+    }
+
+    console.log('\nEmbedding generation complete.');
   } catch (err) {
     console.error(`Error: ${err.message}`);
+    console.error(err.stack);
     process.exit(1);
   }
 }
