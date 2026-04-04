@@ -1,0 +1,24 @@
+{
+  "domain": "traceability",
+  "version": "1.0.0",
+  "format": {
+    "columns": [
+      { "key": "requirement", "header": "Requirement", "includes_description": true },
+      { "key": "acceptance_criteria", "header": "ACs", "includes_description": true },
+      { "key": "tasks", "header": "Tasks", "includes_description": true },
+      { "key": "files", "header": "Files", "includes_description": false },
+      { "key": "coverage", "header": "Coverage", "includes_description": false }
+    ],
+    "scoping_rules": {
+      "requirements": "Show FR → AC → Task mapping with descriptions",
+      "architecture": "Show Decision → FR mapping with descriptions",
+      "design": "Show Module → FR → File mapping with descriptions",
+      "tasks": "Show Task → FR → AC → File mapping with descriptions"
+    },
+    "rendering": {
+      "id_format": "{id} ({description})",
+      "coverage_format": "{covered}/{total} ({percentage}%)",
+      "empty_cell": "—"
+    }
+  }
+}

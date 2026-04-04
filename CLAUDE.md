@@ -188,6 +188,25 @@ If a hook error is caused by a bug in the framework itself (not the user's code)
 Agent files reference this protocol with:
 > See **Hook Block Auto-Recovery Protocol** in CLAUDE.md.
 
+### Sub-Task Creation Protocol
+
+When a phase agent refines a parent task into concrete work items (REQ-GH-223 FR-003, Article I.5):
+
+1. Read parent task from TASK_CONTEXT
+2. For each concrete work item:
+   a. Call `addSubTask(tasksPath, parentId, description, { files, traces, blockedBy, blocks })` from `src/core/tasks/task-dispatcher.js`
+   b. Read `show_subtasks_in_ui` from `.isdlc/config/config.json` (default: true if file missing)
+   c. If true: create a Claude TaskCreate entry with subject `"{taskId}: {description}"`
+   d. If true AND `subtask_hint_shown` is false in state.json: display "Sub-tasks are shown by default. To configure, edit `.isdlc/config/config.json`" and set `subtask_hint_shown: true`
+3. Execute the sub-task work
+4. Mark sub-task `[X]` via `markTaskComplete()` — parent auto-completes when all children are done
+5. If `show_subtasks_in_ui`: update Claude TaskCreate entry to completed
+
+Phase agents MUST NOT alter, remove, or expand the scope of parent tasks (Article I requirement 5).
+
+Agent files reference this protocol with:
+> See **Sub-Task Creation Protocol** in CLAUDE.md.
+
 ### Git Commit Prohibition
 
 **Do NOT run `git add`, `git commit`, or `git push` during phase work.** The orchestrator handles all git operations at workflow finalize.

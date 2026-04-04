@@ -73,6 +73,7 @@ const { check: gateBlockerCheck } = require('../gate-blocker.cjs');
 const { check: constitutionValidatorCheck } = require('../constitution-validator.cjs');
 const { check: testAdequacyBlockerCheck } = require('../test-adequacy-blocker.cjs');
 const { check: blastRadiusValidatorCheck } = require('../blast-radius-validator.cjs');
+const { check: traceabilityEnforcerCheck } = require('../traceability-enforcer.cjs');
 
 /** @param {object} ctx @returns {boolean} */
 const hasActiveWorkflow = (ctx) => !!ctx.state?.active_workflow;
@@ -102,6 +103,13 @@ const HOOKS = [
         // AC-001-06: Phase 06 implementation only
         const phase = ctx.state.active_workflow.current_phase || '';
         return phase === PHASE_PREFIXES.IMPLEMENTATION;
+    }},
+    { name: 'traceability-enforcer', check: traceabilityEnforcerCheck, shouldActivate: (ctx) => {
+        // REQ-GH-223 FR-006: Feature workflows, implementation+ phases
+        if (!ctx.state?.active_workflow) return false;
+        if (ctx.state.active_workflow.type !== 'feature') return false;
+        const phase = ctx.state.active_workflow.current_phase || '';
+        return phase === PHASE_PREFIXES.IMPLEMENTATION || phase === '16-quality-loop';
     }}
 ];
 

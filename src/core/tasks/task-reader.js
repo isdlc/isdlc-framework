@@ -1,18 +1,27 @@
 /**
  * Provider-Neutral Task Reader Module
  *
- * Parses v2.0 tasks.md files into structured data for consumption
+ * Parses v2.0 and v3.0 tasks.md files into structured data for consumption
  * by both Claude and Codex providers. Implements the consumption
  * pattern contract (FR-007).
  *
+ * EBNF (v3.0):
+ *   task_id     ::= "T" DIGIT{3} [ALPHA]
+ *   parent_id   ::= "T" DIGIT{3}
+ *   sub_task_id ::= "T" DIGIT{3} ALPHA
+ *
+ * Legacy (v2.0):
+ *   task_id     ::= "T" DIGIT{4}
+ *
  * Requirements: REQ-GH-212 FR-011 (AC-011-01..06), FR-007 (AC-007-04..06)
+ *               REQ-GH-223 FR-003 (AC-003-03)
  * @module src/core/tasks/task-reader
  */
 
 import { readFileSync, existsSync } from 'node:fs';
 
 // ---------------------------------------------------------------------------
-// FR-011: readTaskPlan() — Parse v2.0 tasks.md (AC-011-01..04)
+// FR-011: readTaskPlan() — Parse v2.0/v3.0 tasks.md (AC-011-01..04, AC-003-03)
 // ---------------------------------------------------------------------------
 
 /**
@@ -68,6 +77,35 @@ export function readTaskPlan(tasksPath) {
         }
         allTaskIds.add(task.id);
         allTasks.push(task);
+      }
+    }
+
+    // FR-003: Post-parse pass — derive parentId and children[]
+    for (const task of allTasks) {
+      // parentId derivation: T005B → parentId:"T005", T005 → null
+      // A sub-task has exactly 3 digits + 1 uppercase letter (v3.0 TNNNA format)
+      const subMatch = task.id.match(/^(T\d{3})([A-Z])$/);
+      if (subMatch) {
+        task.parentId = subMatch[1];
+      } else {
+        task.parentId = null;
+      }
+      // Initialize children array for all tasks
+      if (!task.children) {
+        task.children = [];
+      }
+    }
+
+    // Build children arrays: push child ID to parent's children[]
+    for (const task of allTasks) {
+      if (task.parentId) {
+        const parent = allTasks.find(t => t.id === task.parentId);
+        if (parent) {
+          parent.children.push(task.id);
+        } else {
+          // Orphan sub-task: parentId references non-existent parent
+          warnings.push(`Orphan sub-task: ${task.id} references parent ${task.parentId} which does not exist`);
+        }
       }
     }
 
@@ -167,6 +205,11 @@ export function formatTaskContext(plan, phaseKey, options = {}) {
 
     // Traces
     lines.push(`      traces: [${task.traces.join(', ')}]`);
+
+    // Parent/children (FR-003)
+    lines.push(`      parent: ${task.parentId || 'null'}`);
+    const childStr = task.children && task.children.length > 0 ? task.children.join(', ') : '';
+    lines.push(`      children: [${childStr}]`);
 
     // Status
     lines.push(`      status: ${task.complete ? 'complete' : 'pending'}`);
@@ -283,8 +326,9 @@ function parsePhaseSection(section) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Match task lines: - [ ] TNNNN or - [X] TNNNN (T=task, F=finalize step)
-    const taskMatch = line.match(/^- \[([ X])\]\s+([A-Z]\d{4})\s+(.+)/);
+    // Match task lines: - [ ] TNNN[A] or - [X] TNNN[A] (v3.0) and T0001 (v2.0 legacy)
+    // task_id ::= "T" DIGIT{3} [ALPHA]  |  ALPHA DIGIT{4}  (backward compat)
+    const taskMatch = line.match(/^- \[([ X])\]\s+([A-Z]\d{3,4}[A-Z]?)\s+(.+)/);
     if (!taskMatch) continue;
 
     const complete = taskMatch[1] === 'X';
@@ -419,6 +463,7 @@ function computeDependencySummary(tasks) {
 
 /**
  * Assign tier numbers to tasks using topological ordering.
+ * Sub-tasks inherit minimum tier of parentTier + 1 (FR-003).
  * @param {import('./types').Task[]} tasks
  * @param {Map<string, number>} assigned
  * @returns {number} Maximum tier number
@@ -433,15 +478,23 @@ export function assignTiers(tasks, assigned) {
     if (!task) return 0;
 
     const localBlockers = task.blockedBy.filter(b => taskMap.has(b));
-    if (localBlockers.length === 0) {
-      assigned.set(taskId, 0);
-      return 0;
-    }
 
     let tier = 0;
     for (const blocker of localBlockers) {
       tier = Math.max(tier, getTier(blocker) + 1);
     }
+
+    // FR-003: Sub-tasks inherit minimum tier of parentTier + 1
+    if (task.parentId && taskMap.has(task.parentId)) {
+      const parentTier = getTier(task.parentId);
+      tier = Math.max(tier, parentTier + 1);
+    }
+
+    if (localBlockers.length === 0 && !task.parentId) {
+      assigned.set(taskId, 0);
+      return 0;
+    }
+
     assigned.set(taskId, tier);
     if (tier > maxTier) maxTier = tier;
     return tier;
@@ -480,7 +533,7 @@ function parseTestMapping(testStrategyPath) {
         const taskId = cells[0];
         const testFile = cells[2];
         const scenarios = parseInt(cells[4], 10);
-        if (/^T\d{4}$/.test(taskId)) {
+        if (/^T\d{3,4}[A-Z]?$/.test(taskId)) {
           mapping[taskId] = { test_file: testFile, scenarios: isNaN(scenarios) ? 0 : scenarios };
         }
       }

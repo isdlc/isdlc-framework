@@ -198,6 +198,18 @@ Each summary presentation ends with Accept and Amend options. The user's respons
 
 **Ambiguous or unclear input**: If the user's response does not clearly match Accept or Amend indicators, treat it as an amendment request. This is the safer default because it preserves the user's ability to clarify their intent through the amendment conversation rather than silently accepting something the user may not have intended to approve.
 
+#### 2.5.4a Task Coverage Validation (Before PRESENTING_TASKS)
+
+Before transitioning to PRESENTING_TASKS, run the task coverage quality gate:
+
+1. Call validateTaskCoverage(taskPlan, requirementsContent, impactAnalysisContent) from src/core/tasks/task-validator.js
+2. If result.valid === false:
+   a. Log the uncovered items from result.uncovered
+   b. Re-run task generation with the gap list: "The following items are not covered by any task: {uncovered list}"
+   c. Re-validate after regeneration
+   d. If still invalid after 2 retries: proceed with warning listing uncovered items
+3. If result.valid === true: proceed to PRESENTING_TASKS
+
 #### 2.5.5 Summary Presentation Protocol
 
 For each applicable domain, the lead presents a substantive summary using the RETURN-FOR-INPUT pattern (same as regular conversation). Each summary is presented, then the agent STOPs and RETURNs to collect the user's Accept/Amend choice.
@@ -225,6 +237,14 @@ The design summary must include substantive content:
 - Sequence of operations for key workflows
 - References to detailed artifacts: module-design.md, interface-spec.md, and data-flow.md
 - Interface contracts summary
+
+**Tasks Summary** (presented by the lead):
+- Total task count and phase breakdown
+- Traceability matrix rendered per traceability.template.json: columns show Requirement (ID + description), ACs (ID + description), Tasks (ID + description), Files, Coverage
+- Coverage summary: "N/M FRs covered, X/Y ACs covered"
+- Orphan tasks list (if any)
+
+> **Accept** this task breakdown or **Amend** to discuss changes?
 
 **Assumptions and Inferences section** (REQ-0046, FR-004): Each domain summary MUST include an "Assumptions and Inferences" section after the main content. This section surfaces all inferences from the inference log (Section 3.6) that relate to the domain.
 

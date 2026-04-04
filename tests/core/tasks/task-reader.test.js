@@ -15,7 +15,8 @@ import { fileURLToPath } from 'node:url';
 import {
   readTaskPlan,
   getTasksForPhase,
-  formatTaskContext
+  formatTaskContext,
+  assignTiers
 } from '../../../src/core/tasks/task-reader.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -413,5 +414,191 @@ describe('T0008: formatTaskContext()', () => {
     const result = formatTaskContext(plan, '06');
     assert.ok(result.includes('TASK_CONTEXT:'), 'Should produce TASK_CONTEXT block');
     assert.ok(result.includes('T0003'), 'Should include Phase 06 tasks');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REQ-GH-223 FR-003: Sub-Task Model — TNNN/TNNNABC Parsing (AC-003-03)
+// ---------------------------------------------------------------------------
+
+describe('REQ-GH-223: TNNN/TNNNABC Sub-Task Model (FR-003, AC-003-03)', () => {
+
+  it('TR-01: tasks.md with T001 (3-digit parent) parsed with id:"T001", parentId:null', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const task = plan.phases['05'].tasks.find(t => t.id === 'T001');
+    assert.ok(task, 'T001 should be parsed');
+    assert.equal(task.id, 'T001');
+    assert.equal(task.parentId, null);
+  });
+
+  it('TR-02: tasks.md with T005A (sub-task) parsed with id:"T005A", parentId:"T005"', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const task = plan.phases['06'].tasks.find(t => t.id === 'T005A');
+    assert.ok(task, 'T005A should be parsed');
+    assert.equal(task.id, 'T005A');
+    assert.equal(task.parentId, 'T005');
+  });
+
+  it('TR-03: Parent T005 has children:["T005A","T005B","T005C"] after post-parse pass', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const parent = plan.phases['06'].tasks.find(t => t.id === 'T005');
+    assert.ok(parent, 'T005 should be parsed');
+    assert.ok(Array.isArray(parent.children), 'children should be an array');
+    assert.deepEqual(parent.children, ['T005A', 'T005B', 'T005C']);
+  });
+
+  it('TR-04: tasks.md with old T0001 format (v2.0) falls back gracefully', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v2.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const task = plan.phases['06'].tasks.find(t => t.id === 'T0003');
+    assert.ok(task, 'T0003 (4-digit legacy) should be parsed');
+    assert.equal(task.parentId, null);
+    assert.deepEqual(task.children, []);
+  });
+
+  it('TR-05: tasks.md with Format: v3.0 header has format field "v3.0"', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    assert.equal(plan.format, 'v3.0');
+  });
+
+  it('TR-06: Sub-task T005A blocked_by [T005] parses blockedBy correctly', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const task = plan.phases['06'].tasks.find(t => t.id === 'T005A');
+    assert.ok(task, 'T005A should be parsed');
+    assert.ok(task.blockedBy.includes('T005'), 'blockedBy should include T005');
+  });
+
+  it('TR-07: Self-referencing sub-task T005A blocked_by [T005A] produces warning', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'self-reference-v3.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    assert.ok(Array.isArray(plan.warnings), 'Should have warnings array');
+    const hasSelfRef = plan.warnings.some(w => /self/i.test(w) && /T005A/.test(w));
+    assert.ok(hasSelfRef, 'Should have a self-reference warning for T005A');
+  });
+
+  it('TR-08: Orphan sub-task T999A with no parent T999 produces warning', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'orphan-subtask.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    assert.ok(Array.isArray(plan.warnings), 'Should have warnings array');
+    const hasOrphanWarning = plan.warnings.some(w => /orphan/i.test(w) && /T999A/.test(w));
+    assert.ok(hasOrphanWarning, 'Should have an orphan sub-task warning for T999A');
+  });
+
+  it('TR-09: formatTaskContext with sub-tasks includes parent and children fields', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const result = formatTaskContext(plan, '06');
+    assert.ok(result.includes('parent:'), 'Should include parent field');
+    assert.ok(result.includes('children:'), 'Should include children field');
+  });
+
+  it('TR-10: assignTiers with sub-tasks assigns tier >= parentTier + 1', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const tasks = plan.phases['06'].tasks;
+    const assigned = new Map();
+    assignTiers(tasks, assigned);
+    const parentTier = assigned.get('T005');
+    const childTier = assigned.get('T005A');
+    assert.ok(typeof parentTier === 'number', 'T005 should have a tier');
+    assert.ok(typeof childTier === 'number', 'T005A should have a tier');
+    assert.ok(childTier >= parentTier + 1, `Sub-task tier (${childTier}) should be >= parent tier + 1 (${parentTier + 1})`);
+  });
+
+  it('TR-11: Empty tasks.md returns error object (no throw)', () => {
+    const result = readTaskPlan(join(fixturesDir, 'empty.md'));
+    assert.notEqual(result, null);
+    assert.ok(result.error, 'Should be an error object');
+    assert.ok(result.reason, 'Should have a reason');
+  });
+
+  it('TR-12: tasks.md with 26 sub-tasks T001A-T001Z all parsed correctly', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'subtask-26.md'));
+    assert.ok(!plan.error, `Parse failed: ${plan.reason || ''}`);
+    const tasks = plan.phases['06'].tasks;
+    const parent = tasks.find(t => t.id === 'T001');
+    assert.ok(parent, 'T001 parent should exist');
+    assert.equal(parent.children.length, 26, 'T001 should have 26 children');
+    // Verify all letters A-Z
+    for (let i = 0; i < 26; i++) {
+      const letter = String.fromCharCode(65 + i); // A-Z
+      const childId = `T001${letter}`;
+      const child = tasks.find(t => t.id === childId);
+      assert.ok(child, `Child ${childId} should exist`);
+      assert.equal(child.parentId, 'T001');
+    }
+  });
+
+  it('TR-13: Regex matches TNNN but not TNNNN in v3.0 context; T0001 handled as legacy', () => {
+    // The v3.0 regex T\d{3,4}[A-Z]? matches both T001 and T0001
+    const v3Plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!v3Plan.error);
+    const t001 = v3Plan.phases['05'].tasks.find(t => t.id === 'T001');
+    assert.ok(t001, 'T001 (3-digit) should match');
+
+    // Legacy v2.0 still works
+    const v2Plan = readTaskPlan(join(fixturesDir, 'valid-v2.0.md'));
+    assert.ok(!v2Plan.error);
+    const t0001 = v2Plan.phases['05'].tasks.find(t => t.id === 'T0001');
+    assert.ok(t0001, 'T0001 (4-digit legacy) should still match');
+  });
+
+  it('TR-14: Regex matches TNNNA but not TNNNAB (single trailing alpha only)', () => {
+    // T005A is valid, but T005AB would not be a valid task ID
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error);
+    const t005a = plan.phases['06'].tasks.find(t => t.id === 'T005A');
+    assert.ok(t005a, 'T005A should match');
+    // Verify no task with two-letter suffix exists (none in fixture, regex prevents it)
+    const twoLetter = plan.phases['06'].tasks.find(t => /^T\d{3}[A-Z]{2}$/.test(t.id));
+    assert.equal(twoLetter, undefined, 'No two-letter suffix IDs should be parsed');
+  });
+
+  it('TR-15: getTasksForPhase returns both parents and children in same phase', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error);
+    const tasks = getTasksForPhase(plan, '06');
+    const ids = tasks.map(t => t.id);
+    assert.ok(ids.includes('T005'), 'Should include parent T005');
+    assert.ok(ids.includes('T005A'), 'Should include child T005A');
+    assert.ok(ids.includes('T005B'), 'Should include child T005B');
+    assert.ok(ids.includes('T005C'), 'Should include child T005C');
+    assert.ok(ids.includes('T006'), 'Should include T006');
+  });
+
+  it('TR-16: computeDependencySummary: sub-tasks with dependencies not in tier 0', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error);
+    const result = formatTaskContext(plan, '06');
+    // tier_0_tasks should include T005 (no blockers within phase) but NOT T005A (blocked by T005)
+    assert.ok(result.includes('tier_0_tasks:'), 'Should include tier_0_tasks');
+    // T005 should be tier 0 (no in-phase blockers)
+    assert.ok(result.includes('T005'), 'T005 should appear in output');
+  });
+
+  it('TR-17: parsePhaseSection with mixed TNNN and TNNNA parses both with correct parentId', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v3.0.md'));
+    assert.ok(!plan.error);
+    const tasks = plan.phases['06'].tasks;
+    const parent = tasks.find(t => t.id === 'T005');
+    const child = tasks.find(t => t.id === 'T005A');
+    assert.equal(parent.parentId, null, 'Parent T005 should have parentId null');
+    assert.equal(child.parentId, 'T005', 'Child T005A should have parentId T005');
+  });
+
+  it('TR-18: Backward compat: v2.0 file with no sub-tasks has parentId:null, children:[] for all tasks', () => {
+    const plan = readTaskPlan(join(fixturesDir, 'valid-v2.0.md'));
+    assert.ok(!plan.error);
+    for (const phaseKey of Object.keys(plan.phases)) {
+      for (const task of plan.phases[phaseKey].tasks) {
+        assert.equal(task.parentId, null, `Task ${task.id} should have parentId null`);
+        assert.deepEqual(task.children, [], `Task ${task.id} should have empty children array`);
+      }
+    }
   });
 });

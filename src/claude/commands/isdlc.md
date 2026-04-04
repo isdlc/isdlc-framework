@@ -1596,8 +1596,8 @@ If initialization fails, stop here.
 **BUILD-INIT COPY (REQ-GH-212 FR-004)**: If the artifact folder has a pre-generated tasks.md, copy it to the isdlc working directory.
 1. Check if `docs/requirements/{artifact_folder}/tasks.md` exists.
 2. If yes: copy it to `docs/isdlc/tasks.md`. Log: "Copied pre-generated task plan from {artifact_folder}."
-3. If copy fails: retry up to 3 times. If all retries fail, log warning and continue (3e-plan will generate one later).
-4. If no pre-generated tasks.md exists: skip silently (3e-plan will generate after Phase 01).
+3. If copy fails: retry up to 3 times. If all retries fail, display error and STOP (see step 4).
+4. If no pre-generated tasks.md exists: display error `ERR-BUILD-002: No tasks.md found in artifact folder. Analysis must produce a task plan before build can proceed.` and STOP the build handler.
 
 #### STEP 2: FOREGROUND TASKS — Create visible task list
 
@@ -1631,6 +1631,13 @@ For `description`, use: `"Phase {NN} of {workflow_type} workflow"`
 All tasks start as `pending`. No task is pre-marked as completed -- the Phase-Loop Controller will mark each task as `in_progress` and then `completed` as it executes each phase.
 
 The user now sees the full task list in their terminal with sequential numbering.
+
+**PARENT TASK HYDRATION (REQ-GH-223 FR-004)**: After creating phase-level tasks, hydrate parent task context from tasks.md.
+1. Call readTaskPlan(path.join(projectRoot, 'docs/isdlc/tasks.md'))
+2. If plan exists and is valid: store plan in memory for STEP 3 TASK_CONTEXT injection and sub-task creation
+3. For each parent task in the plan (ID matches TNNN without letter suffix): log parent task count per phase
+4. If readTaskPlan fails: log warning, continue — phase-level tasks are sufficient for progress tracking
+5. This hydration enables the Sub-Task Creation Protocol (CLAUDE.md) to create TaskCreate entries for sub-tasks during phase execution
 
 #### STEP 3: PHASE LOOP — Execute all phases one at a time
 
@@ -2027,10 +2034,7 @@ The phase agent owns the entire user-facing experience. Your only job is: emit a
 13-production → release-engineer
 ```
 
-**3e-plan.** PLAN GENERATION (after Phase 01 only) -- GH-60, FR-002:
-If the phase just completed is `01-requirements` AND `docs/isdlc/tasks.md` does NOT exist (or exists but is a stale template):
-  - Delegate to orchestrator: `MODE: single-phase PHASE: plan-generation` OR invoke ORCH-012 (generate-plan) skill inline.
-  - The plan is informational and non-blocking. If plan generation fails, log a warning and continue to the next phase.
+**3e-plan.** REMOVED (REQ-GH-223 FR-002): Task plan is now generated during analysis. BUILD-INIT COPY is the sole mechanism.
 
 **3e-review.** SUPERVISED REVIEW GATE (conditional) -- After the post-phase
 state update, check if a supervised review gate should fire.
@@ -2324,6 +2328,7 @@ state update, check if adaptive workflow sizing should run.
 
 **3f.** On return, check the result status:
 - `"passed"` or successful completion → Mark task as `completed` **with strikethrough**: update both `status` to `completed` AND `subject` to `~~[N] {base subject}~~` (wrap the original `[N] subject` in `~~`). Then **clean up sub-agent tasks**: call `TaskList`, and for every task whose `subject` does NOT start with `[` or `~~[` (i.e., it is NOT a main workflow phase task), call `TaskUpdate` with `status: "deleted"` to remove it from the display. Continue to next phase.
+   After marking phase task completed, also check `docs/isdlc/tasks.md`: if the completed phase has parent tasks, markTaskComplete() handles auto-completion of parents when all sub-tasks are done (REQ-GH-223 FR-004, AC-004-02).
 - `"blocked_by_hook"` → Identify the block type from the message and dispatch:
   1. Contains `"BLAST RADIUS COVERAGE INCOMPLETE"` → Follow **3f-blast-radius** below (unchanged)
   2. Contains `"GATE BLOCKED"` → Follow **3f-gate-blocker** below

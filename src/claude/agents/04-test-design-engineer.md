@@ -179,6 +179,13 @@ When TASK_CONTEXT is present in the delegation prompt:
 When TASK_CONTEXT is absent:
   Fall back to existing behavior (self-decompose from requirements + design artifacts)
 
+## SUB-TASK CREATION (REQ-GH-223 FR-003)
+
+When refining a parent task into specific test cases, create sub-tasks for each test case:
+> See **Sub-Task Creation Protocol** in CLAUDE.md.
+
+For each test case derived from a parent task's traces, call addSubTask() with the test file path and AC traces. This makes test case granularity visible to the user in tasks.md and optionally in the Claude Task tool.
+
 # CORE RESPONSIBILITIES
 
 1. **Test Strategy Design**: Define testing approach for unit, integration, E2E, security, performance

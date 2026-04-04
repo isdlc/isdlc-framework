@@ -1,8 +1,9 @@
 {
   "domain": "tasks",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "format": {
     "format_type": "table",
+    "format_version": "v3.0",
     "required_phases": ["05", "06", "16", "08"],
     "required_task_categories": {
       "05": ["test_case_design"],
@@ -21,24 +22,39 @@
       "dependency_graph",
       "traceability_matrix"
     ],
+    "id_format": {
+      "parent": "TNNN",
+      "parent_regex": "T\\d{3}",
+      "sub_task": "TNNNABC",
+      "sub_task_regex": "T\\d{3}[A-Z]",
+      "combined_regex": "T\\d{3,4}[A-Z]?",
+      "max_sub_tasks_per_parent": 26,
+      "parent_derivation": "Strip trailing letter from sub-task ID"
+    },
     "line_syntax": {
       "_comment": "These patterns must match src/core/tasks/task-reader.js parser regexes exactly",
       "header": "# Task Plan: SLUG full-slug-name",
       "phase_section": "## Phase NN: Name -- STATUS",
       "phase_status_values": ["PENDING", "IN PROGRESS", "COMPLETE"],
-      "task_line": "- [ ] TNNNN description text | traces: FR-001, AC-001-01",
-      "task_complete": "- [X] TNNNN description text | traces: FR-001, AC-001-01",
+      "task_line": "- [ ] TNNN description text | traces: FR-001, AC-001-01",
+      "task_complete": "- [X] TNNN description text | traces: FR-001, AC-001-01",
+      "sub_task_line": "- [ ] TNNNA description text | traces: FR-001, AC-001-01",
+      "sub_task_complete": "- [X] TNNNA description text | traces: FR-001, AC-001-01",
       "sub_line_indent": "  ",
       "sub_line_files": "  files: path/to/file (CREATE), path/to/other (MODIFY)",
-      "sub_line_blocked_by": "  blocked_by: [T0001, T0002]",
-      "sub_line_blocks": "  blocks: [T0003, T0004]",
+      "sub_line_blocked_by": "  blocked_by: [T001, T002]",
+      "sub_line_blocks": "  blocks: [T003, T004]",
       "rules": [
         "Sub-lines use 2-space indent with NO dash prefix",
         "File paths have NO backticks — plain text only",
         "File operations wrapped in parentheses: (CREATE) (MODIFY) (DELETE)",
         "blocked_by and blocks values wrapped in square brackets",
-        "Task IDs are T followed by 4 digits: T0001",
-        "Header SLUG must be a single word matching \\w+ (no hyphens in first word)"
+        "Parent task IDs are T followed by 3 digits: T001",
+        "Sub-task IDs append a single letter: T001A, T001B",
+        "Parent derivation: T005B -> parent T005",
+        "Header SLUG must be a single word matching \\w+ (no hyphens in first word)",
+        "Sub-tasks are created at runtime by phase agents via addSubTask()",
+        "Parent tasks auto-complete when all sub-tasks are marked [X]"
       ]
     }
   }

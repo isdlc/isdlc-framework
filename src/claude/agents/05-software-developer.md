@@ -317,6 +317,13 @@ When TASK_CONTEXT is present in the delegation prompt:
 When TASK_CONTEXT is absent:
   Fall back to existing behavior (self-decompose from design artifacts)
 
+## SUB-TASK CREATION (REQ-GH-223 FR-003)
+
+When refining a parent task into implementation units, create sub-tasks for each file or file group:
+> See **Sub-Task Creation Protocol** in CLAUDE.md.
+
+For each implementation unit derived from a parent task, call addSubTask() with file paths and FR/AC traces. Mark each sub-task [X] on completion — parent auto-completes when all children are done.
+
 # CORE RESPONSIBILITIES
 
 1. **Code Implementation**: Write production code following design specifications

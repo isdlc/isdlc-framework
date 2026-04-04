@@ -158,6 +158,13 @@ When TASK_CONTEXT is present in the delegation prompt:
 When TASK_CONTEXT is absent:
   Fall back to existing behavior (run checks without task-level granularity)
 
+## Sub-Task Creation (REQ-GH-223 FR-003)
+
+When creating verification sub-tasks for quality checks:
+> See **Sub-Task Creation Protocol** in CLAUDE.md.
+
+For each verification item derived from a parent Phase 16 task, call addSubTask() with the verification file paths and traces. Mark each sub-task [X] on completion.
+
 ## Parallel Execution Protocol
 
 **CRITICAL**: Track A (Testing) and Track B (Automated QA) MUST be spawned as two parallel Task tool calls in a single response so they execute simultaneously (concurrently). Do NOT run them sequentially. Invoke exactly two Task tool calls in one response -- one for Track A, one for Track B -- then wait for both results before proceeding to consolidation.

@@ -121,23 +121,156 @@ export function getNextBatch(tasksPath, phaseKey) {
 }
 
 // ---------------------------------------------------------------------------
+// REQ-GH-223 FR-003: addSubTask — Create sub-task under parent (AC-003-01)
+// ---------------------------------------------------------------------------
+
+/**
+ * Add a sub-task under a parent task in tasks.md.
+ *
+ * @param {string} tasksPath - Path to tasks.md
+ * @param {string} parentId - Parent task ID (e.g. "T005")
+ * @param {string} description - Sub-task description
+ * @param {{ files?: Array<{path: string, operation: string}>, traces?: string[], blockedBy?: string[], blocks?: string[] }} metadata
+ * @returns {{ taskId: string|null, written: boolean, error?: string }}
+ */
+export function addSubTask(tasksPath, parentId, description, metadata = {}) {
+  if (!existsSync(tasksPath)) {
+    return { taskId: null, written: false, error: 'TASK-SUB-001' };
+  }
+
+  let content = readFileSync(tasksPath, 'utf8');
+
+  // Check parent exists
+  const parentPattern = new RegExp(`^- \\[[ X]\\] ${parentId} `, 'm');
+  if (!parentPattern.test(content)) {
+    return { taskId: null, written: false, error: 'TASK-SUB-001' };
+  }
+
+  // Find existing sub-tasks for this parent (e.g., T005A, T005B)
+  const parentNum = parentId.replace(/^T/, '');
+  const siblingPattern = new RegExp(`^- \\[[ X]\\] T${parentNum}([A-Z]) `, 'gm');
+  let maxLetter = null;
+  let sibMatch;
+  while ((sibMatch = siblingPattern.exec(content)) !== null) {
+    const letter = sibMatch[1];
+    if (!maxLetter || letter > maxLetter) maxLetter = letter;
+  }
+
+  // Determine next letter
+  let nextLetter;
+  if (!maxLetter) {
+    nextLetter = 'A';
+  } else if (maxLetter === 'Z') {
+    return { taskId: null, written: false, error: 'TASK-SUB-002' };
+  } else {
+    nextLetter = String.fromCharCode(maxLetter.charCodeAt(0) + 1);
+  }
+
+  const taskId = `T${parentNum}${nextLetter}`;
+
+  // Build task line
+  const traces = metadata.traces || [];
+  const tracesStr = traces.length > 0 ? ` | traces: ${traces.join(', ')}` : '';
+  let taskBlock = `- [ ] ${taskId} ${description}${tracesStr}\n`;
+
+  if (metadata.files && metadata.files.length > 0) {
+    const filesStr = metadata.files.map(f => `${f.path} (${f.operation})`).join(', ');
+    taskBlock += `  files: ${filesStr}\n`;
+  }
+
+  const blockedBy = metadata.blockedBy || [parentId];
+  taskBlock += `  blocked_by: [${blockedBy.join(', ')}]\n`;
+
+  const blocks = metadata.blocks || [];
+  taskBlock += `  blocks: [${blocks.join(', ')}]\n`;
+
+  // Insert after parent's sub-lines or last sibling
+  // Find the parent line and its sub-lines, then insert after
+  const lines = content.split('\n');
+  let insertIdx = -1;
+  let foundParent = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (new RegExp(`^- \\[[ X]\\] ${parentId} `).test(lines[i])) {
+      foundParent = true;
+      insertIdx = i + 1;
+      continue;
+    }
+    if (foundParent) {
+      // Check if this is a sub-line (indented) or sibling sub-task
+      if (lines[i].startsWith('  ') && !lines[i].startsWith('- ')) {
+        insertIdx = i + 1;
+      } else if (new RegExp(`^- \\[[ X]\\] T${parentNum}[A-Z] `).test(lines[i])) {
+        insertIdx = i + 1;
+        // Skip sub-lines of this sibling
+        while (insertIdx < lines.length && lines[insertIdx].startsWith('  ') && !lines[insertIdx].startsWith('- ')) {
+          insertIdx++;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+
+  if (insertIdx === -1) {
+    return { taskId: null, written: false, error: 'TASK-SUB-001' };
+  }
+
+  // Insert the new task block
+  const newLines = taskBlock.trimEnd().split('\n');
+  lines.splice(insertIdx, 0, ...newLines);
+  content = lines.join('\n');
+
+  // Recalculate progress summary
+  content = recalculateProgressSummary(content);
+  writeFileSync(tasksPath, content);
+
+  return { taskId, written: true };
+}
+
+// ---------------------------------------------------------------------------
 // FR-008: markTaskComplete — Update tasks.md (AC-008-02, AC-008-03)
+// REQ-GH-223 FR-003: Parent auto-completion (AC-003-02)
 // ---------------------------------------------------------------------------
 
 /**
  * Mark a task as complete in tasks.md and recalculate progress summary.
+ * If the task is a sub-task and all siblings are complete, auto-complete the parent.
  *
  * @param {string} tasksPath - Path to tasks.md
- * @param {string} taskId - e.g. "T0004"
+ * @param {string} taskId - e.g. "T004" or "T005A"
  * @param {{ retries?: number, summary?: string }} [metadata]
  */
 export function markTaskComplete(tasksPath, taskId, metadata = {}) {
   let content = readFileSync(tasksPath, 'utf8');
 
-  // Replace [ ] with [X] for this task
+  // Replace [ ] with [X] for this task (support both 3-digit and 4-digit IDs)
   const pattern = new RegExp(`^(- \\[ \\] ${taskId} )`, 'm');
   const replacement = `- [X] ${taskId} `;
   content = content.replace(pattern, replacement);
+
+  // REQ-GH-223 AC-003-02: Auto-complete parent if all siblings are done
+  const subTaskMatch = taskId.match(/^T(\d{3})([A-Z])$/);
+  if (subTaskMatch) {
+    const parentNum = subTaskMatch[1];
+    const parentId = `T${parentNum}`;
+    // Find all siblings
+    const siblingPattern = new RegExp(`^- \\[([X ])\\] T${parentNum}[A-Z] `, 'gm');
+    let allDone = true;
+    let hasSiblings = false;
+    let sib;
+    while ((sib = siblingPattern.exec(content)) !== null) {
+      hasSiblings = true;
+      if (sib[1] !== 'X') {
+        allDone = false;
+        break;
+      }
+    }
+    if (hasSiblings && allDone) {
+      const parentPattern = new RegExp(`^(- \\[ \\] ${parentId} )`, 'm');
+      content = content.replace(parentPattern, `- [X] ${parentId} `);
+    }
+  }
 
   // Recalculate progress summary
   content = recalculateProgressSummary(content);

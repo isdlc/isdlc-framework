@@ -1,95 +1,140 @@
-# Task Plan: REQ-GH-219 post-finalize-validation-hook
+# Task Plan: build REQ-GH-223-tasks-as-user-contract
 
-## Progress Summary
+Generated: 2026-04-04T21:30:00Z
+Workflow: build
+Format: v3.0
+Phases: 4
 
-| Phase | Tasks | Complete | % |
-|-------|-------|----------|---|
-| 05 | 1 | 1 | 100% |
-| 06 | 10 | 10 | 100% |
-| 16 | 2 | 0 | 0% |
-| 08 | 2 | 0 | 0% |
-| **Total** | **15** | **11** | **73%** |
+---
 
 ## Phase 05: Test Strategy -- COMPLETE
 
-- [X] T0001 Design test strategy for finalize-runner, task-reader metadata extension, and finalize-utils | traces: FR-001, FR-002, FR-005, NFR-004
+- [X]T001 Design test strategy for task-validator, task-reader changes, task-dispatcher extension, and config loading | traces: FR-001, FR-003, FR-004, FR-005
+- [X]T002 Define test cases for traceability enforcement hook and traceability template rendering | traces: FR-006, FR-008
 
 ## Phase 06: Implementation -- COMPLETE
 
-- [X] T0002 Extend task-reader.js metadata parsing for critical, fail_open, max_retries, type annotations | traces: FR-001, AC-001-02, NFR-004
-  files: src/core/tasks/task-reader.js (MODIFY)
+- [X]T003 Implement task-validator.js with validateTaskCoverage function | traces: FR-001
+  files: src/core/tasks/task-validator.js (CREATE)
+  blocked_by: []
+  blocks: [T008, T010, T012]
 
-- [X] T0003 Create default finalize-steps.default.md template with all current finalization steps | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
-  files: src/core/finalize/finalize-steps.default.md (CREATE)
-  blocked_by: [T0002]
-
-- [X] T0004 Extract common finalize functions from workflow-finalize.cjs into finalize-utils.js | traces: FR-005, AC-005-01, AC-005-02
-  files: src/core/finalize/finalize-utils.js (CREATE), src/antigravity/workflow-finalize.cjs (MODIFY)
-
-- [X] T0005 Implement finalize-runner.js reusing task-reader and task-dispatcher retry pattern | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04, AC-002-05, AC-002-06, NFR-004
-  files: src/core/finalize/finalize-runner.js (CREATE)
-  blocked_by: [T0002, T0003, T0004]
-
-- [X] T0006 Write unit tests for finalize-runner, finalize-utils, and task-reader extension | traces: FR-002, FR-005, NFR-004
-  files: tests/core/tasks/task-reader-metadata.test.js (CREATE)
-  blocked_by: [T0002, T0004, T0005]
-
-- [X] T0007 Rewrite Phase-Loop Controller STEP 4 to call finalize runner instead of orchestrator delegation | traces: FR-003, AC-003-01, AC-003-02, AC-003-03
+- [X]T004 Remove 3e-plan from isdlc.md Phase-Loop Controller and update BUILD-INIT COPY to require tasks.md | traces: FR-002
   files: src/claude/commands/isdlc.md (MODIFY)
-  blocked_by: [T0005]
+  blocked_by: []
+  blocks: [T008]
 
-- [X] T0008 Update init-project.sh to copy default finalize-steps.md during setup | traces: FR-004, AC-004-01
-  files: install.sh (MODIFY)
-  blocked_by: [T0003]
+- [X]T005 Extend task-reader.js with TNNN regex, parentId derivation, children array, formatTaskContext update, format v3.0 | traces: FR-003
+  files: src/core/tasks/task-reader.js (MODIFY)
+  blocked_by: []
+  blocks: [T006, T007, T008, T014]
 
-- [X] T0009 Add finalize-steps.md to updater preserve-list | traces: FR-004, AC-004-02
-  files: lib/updater.js (MODIFY)
+- [X]T006 Implement addSubTask in task-dispatcher.js with parent section lookup and suffix letter assignment | traces: FR-003
+  files: src/core/tasks/task-dispatcher.js (MODIFY)
+  blocked_by: [T005]
+  blocks: [T007, T009, T013]
 
-- [X] T0010 Copy default finalize-steps.md to .isdlc/config/ for dogfooding | traces: FR-001
-  files: .isdlc/config/finalize-steps.md (CREATE)
-  blocked_by: [T0003]
+- [X]T007 Update markTaskComplete in task-dispatcher.js with sibling check and parent auto-completion | traces: FR-003
+  files: src/core/tasks/task-dispatcher.js (MODIFY)
+  blocked_by: [T005]
+  blocks: [T009]
 
-- [X] T0011 Update README Configuration section and CLAUDE.md Key Files | traces: FR-006, AC-006-01, AC-006-02, AC-006-03
-  files: README.md (MODIFY), CLAUDE.md (MODIFY)
+- [X]T008 Update Phase-Loop Controller STEP 2 to hydrate Claude TaskCreate from tasks.md via readTaskPlan | traces: FR-004
+  files: src/claude/commands/isdlc.md (MODIFY)
+  blocked_by: [T003, T004, T005]
+  blocks: [T009]
 
-## Phase 16: Quality Loop -- PENDING
+- [X]T009 Implement show_subtasks_in_ui config reading, conditional TaskCreate for sub-tasks, one-time hint message | traces: FR-004, FR-005
+  files: src/claude/commands/isdlc.md (MODIFY), .isdlc/config/config.json (CREATE)
+  blocked_by: [T006, T007, T008]
+  blocks: []
 
-- [ ] T0012 Run test suite and verify all tests pass | traces: FR-002, NFR-001
-  blocked_by: [T0006]
+- [X]T010 Update roundtable-analyst.md to call validateTaskCoverage before PRESENTING_TASKS and use traceability template | traces: FR-001, FR-008
+  files: src/claude/agents/roundtable-analyst.md (MODIFY)
+  blocked_by: [T003]
+  blocks: [T013]
 
-- [ ] T0013 Verify dual-file parity between src/ and .isdlc/config/ | traces: FR-001
-  blocked_by: [T0010]
+- [X]T011 Create traceability.template.json with column definitions and domain scoping rules | traces: FR-008
+  files: src/claude/hooks/config/templates/traceability.template.json (CREATE)
+  blocked_by: []
+  blocks: [T010, T013]
 
-## Phase 08: Code Review -- PENDING
+- [X]T012 Implement traceability-enforcer.cjs hook and register in pre-task-dispatcher chain | traces: FR-006
+  files: src/claude/hooks/traceability-enforcer.cjs (CREATE), src/claude/hooks/dispatchers/pre-task-dispatcher.cjs (MODIFY)
+  blocked_by: [T003]
+  blocks: []
 
-- [ ] T0014 Constitutional review against Articles II, V, IX, X, XIII, XIV | traces: FR-002, NFR-002
-  blocked_by: [T0012]
+- [X]T013 Update agent specs 04, 05, 16 with Sub-Task Creation Protocol and add protocol to CLAUDE.md | traces: FR-003, FR-007
+  files: src/claude/agents/04-test-design-engineer.md (MODIFY), src/claude/agents/05-software-developer.md (MODIFY), src/claude/agents/16-quality-loop-engineer.md (MODIFY), CLAUDE.md (MODIFY)
+  blocked_by: [T006, T010, T011]
+  blocks: [T014]
 
-- [ ] T0015 Dual-file and provider-neutrality check | traces: FR-005, NFR-003
-  blocked_by: [T0012]
+- [X]T014 Update tasks.template.json with TNNN ID format and TNNNABC sub-task syntax for format v3.0 | traces: FR-003, FR-008
+  files: src/claude/hooks/config/templates/tasks.template.json (MODIFY)
+  blocked_by: [T005, T013]
+  blocks: []
+
+## Phase 16: Quality Loop -- COMPLETE
+
+- [X]T015 Run full test suite, lint, type checks; verify task-reader TNNN format tests; verify task-validator coverage checks | traces: FR-001, FR-003
+
+## Phase 08: Code Review -- COMPLETE
+
+- [X]T016 Constitutional review for Article I.5 compliance, dual-file sync, traceability coverage | traces: FR-007
+
+---
 
 ## Dependency Graph
 
-- T0003 (default template) blocked by T0002 (task-reader extension)
-- T0005 (finalize-runner) blocked by T0002 (task-reader extension), T0003 (default template), T0004 (extract finalize-utils)
-- T0006 (unit tests) blocked by T0002 (task-reader extension), T0004 (extract finalize-utils), T0005 (finalize-runner)
-- T0007 (STEP 4 rewrite) blocked by T0005 (finalize-runner)
-- T0008 (init-project.sh) blocked by T0003 (default template)
-- T0010 (dogfooding copy) blocked by T0003 (default template)
-- T0012 (test suite) blocked by T0006 (unit tests)
-- T0013 (dual-file parity) blocked by T0010 (dogfooding copy)
-- T0014 (constitutional review) blocked by T0012 (test suite)
-- T0015 (provider-neutrality check) blocked by T0012 (test suite)
-- T0001 (test strategy), T0004 (extract finalize-utils), T0009 (updater preserve-list), T0011 (README/CLAUDE.md) -- no blockers
+### Critical Path
+T005 (task-reader) -> T006 (addSubTask) -> T009 (config integration)
+T005 (task-reader) -> T006 (addSubTask) -> T013 (agent specs) -> T014 (template update)
 
-Critical path: T0002 (task-reader extension) -> T0003 (default template) -> T0005 (finalize-runner) -> T0006 (unit tests) -> T0012 (test suite) -> T0014 (constitutional review)
+### Parallel Opportunities
+- Tier 0: T003, T004, T005, T011 (no blockers, can run concurrently)
+- Tier 1: T006, T007, T008, T010, T012 (blocked by Tier 0)
+- Tier 2: T009, T013 (blocked by Tier 1)
+- Tier 3: T014 (blocked by Tier 2)
+
+### Dependencies
+- T006 (addSubTask) blocked by T005 (task-reader extension)
+- T007 (markTaskComplete) blocked by T005 (task-reader extension)
+- T008 (STEP 2 hydration) blocked by T003 (task-validator), T004 (3e-plan removal), T005 (task-reader)
+- T009 (config) blocked by T006 (addSubTask), T007 (markTaskComplete), T008 (STEP 2)
+- T010 (roundtable update) blocked by T003 (task-validator)
+- T012 (enforcement hook) blocked by T003 (task-validator)
+- T013 (agent specs) blocked by T006 (addSubTask), T010 (roundtable), T011 (template)
+- T014 (tasks template) blocked by T005 (task-reader), T013 (agent specs)
 
 ## Traceability Matrix
 
-- FR-001 (Config file): T0002 (task-reader extension), T0003 (default template), T0010 (dogfooding copy)
-- FR-002 (Checklist runner): T0005 (finalize-runner), T0006 (unit tests), T0012 (test suite)
-- FR-003 (STEP 4 rewrite): T0007 (STEP 4 rewrite)
-- FR-004 (Installer/updater): T0008 (init-project.sh), T0009 (updater preserve-list)
-- FR-005 (Migrate to core): T0004 (extract finalize-utils)
-- FR-006 (Documentation): T0011 (README/CLAUDE.md)
-- NFR-004 (Reuse #220 patterns): T0002 (task-reader extension), T0005 (finalize-runner), T0006 (unit tests)
+### Requirement Coverage
+| Requirement | Description | ACs | Tasks | Coverage |
+|-------------|-------------|-----|-------|----------|
+| FR-001 | Task Quality Gate | AC-001-01, AC-001-02 | T001, T003, T010 | 2/2 (100%) |
+| FR-002 | Single-Generation Model | AC-002-01, AC-002-02 | T004 | 2/2 (100%) |
+| FR-003 | Sub-Task Model | AC-003-01, AC-003-02, AC-003-03 | T005, T006, T007, T013, T014 | 3/3 (100%) |
+| FR-004 | Claude Task Tool Bridge | AC-004-01, AC-004-02 | T008, T009 | 2/2 (100%) |
+| FR-005 | Sub-Task Display Config | AC-005-01, AC-005-02, AC-005-03 | T009 | 3/3 (100%) |
+| FR-006 | Traceability Enforcement Hook | AC-006-01 | T002, T012 | 1/1 (100%) |
+| FR-007 | Constitution Article I.5 | AC-007-01 | T013, T016 | 1/1 (100%) |
+| FR-008 | Human-Readable Traceability | AC-008-01, AC-008-02 | T002, T010, T011, T014 | 2/2 (100%) |
+
+### Orphan Tasks (No Traceability)
+(none)
+
+### Uncovered Requirements
+(none)
+
+## Progress Summary
+
+| Phase | Status | Tasks | Complete | Blocked |
+|-------|--------|-------|----------|---------|
+| 05 Test Strategy | PENDING | 2 | 0 | 0 |
+| 06 Implementation | PENDING | 12 | 0 | 0 |
+| 16 Quality Loop | PENDING | 1 | 0 | 0 |
+| 08 Code Review | PENDING | 1 | 0 | 0 |
+| **TOTAL** | | **16** | **0** | **0** |
+
+**Progress**: 0 / 16 tasks (0%) | 0 blocked
+**Traceability**: 8/8 FR covered (100%), 17/17 AC covered (100%)
