@@ -1,6 +1,6 @@
 /**
  * Unit tests for traceability.template.json — REQ-GH-223 FR-008
- * Test cases TT-01 through TT-03 from test strategy
+ * Test cases TT-01 through TT-03 from test strategy (updated for v2.0 4-column format)
  *
  * Test ID prefix: TT- (Traceability Template)
  */
@@ -13,17 +13,16 @@ import { join } from 'node:path';
 const templatePath = join(process.cwd(), 'src/claude/hooks/config/templates/traceability.template.json');
 const template = JSON.parse(readFileSync(templatePath, 'utf8'));
 
-// TT-01: All 5 columns present
+// TT-01: All 4 columns present
 describe('TT-01: Column presence', () => {
-  it('template has all 5 required columns', () => {
+  it('template has all 4 required columns', () => {
     const columns = template.format.columns;
-    assert.equal(columns.length, 5);
+    assert.equal(columns.length, 4);
     const keys = columns.map(c => c.key);
+    assert.ok(keys.includes('fr_id'));
     assert.ok(keys.includes('requirement'));
-    assert.ok(keys.includes('acceptance_criteria'));
-    assert.ok(keys.includes('tasks'));
-    assert.ok(keys.includes('files'));
-    assert.ok(keys.includes('coverage'));
+    assert.ok(keys.includes('design_blast_radius'));
+    assert.ok(keys.includes('related_tasks'));
   });
 });
 
@@ -38,15 +37,15 @@ describe('TT-02: Domain scoping rules', () => {
   });
 });
 
-// TT-03: includes_description flag
-describe('TT-03: Description inclusion flags', () => {
-  it('requirement, acceptance_criteria, and tasks have includes_description: true', () => {
-    const columns = template.format.columns;
-    const withDesc = columns.filter(c => c.includes_description);
-    const keys = withDesc.map(c => c.key);
-    assert.ok(keys.includes('requirement'));
-    assert.ok(keys.includes('acceptance_criteria'));
-    assert.ok(keys.includes('tasks'));
-    assert.equal(keys.length, 3);
+// TT-03: Content guidance present for narrative columns
+describe('TT-03: Content guidance', () => {
+  it('content_guidance exists for requirement, design, and tasks columns', () => {
+    const guidance = template.format.content_guidance;
+    assert.ok('requirement_column' in guidance);
+    assert.ok('design_column' in guidance);
+    assert.ok('tasks_column' in guidance);
+    // Guidance should discourage raw IDs/file paths
+    assert.ok(guidance.requirement_column.includes('Do NOT list AC IDs'));
+    assert.ok(guidance.design_column.includes('Do NOT list file paths'));
   });
 });

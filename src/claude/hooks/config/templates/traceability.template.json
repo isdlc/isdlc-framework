@@ -1,24 +1,29 @@
 {
   "domain": "traceability",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "format": {
     "columns": [
-      { "key": "requirement", "header": "Requirement", "includes_description": true },
-      { "key": "acceptance_criteria", "header": "ACs", "includes_description": true },
-      { "key": "tasks", "header": "Tasks", "includes_description": true },
-      { "key": "files", "header": "Files", "includes_description": false },
-      { "key": "coverage", "header": "Coverage", "includes_description": false }
+      { "key": "fr_id", "header": "FR", "width": "narrow" },
+      { "key": "requirement", "header": "Requirement", "width": "wide", "content": "Human-readable description of what the FR requires. Synthesizes FR title and key ACs into a coherent paragraph — not just IDs." },
+      { "key": "design_blast_radius", "header": "Design / Blast Radius", "width": "wide", "content": "What the implementation touches and how it impacts the system. Drawn from architecture-overview.md and module-design.md. Describes affected modules, contracts, patterns, and behavioral changes — not just file paths." },
+      { "key": "related_tasks", "header": "Related Tasks", "width": "medium", "content": "TNNN task IDs with brief descriptions. One line per task. Format: TNNN description-fragment" }
     ],
-    "scoping_rules": {
-      "requirements": "Show FR → AC → Task mapping with descriptions",
-      "architecture": "Show Decision → FR mapping with descriptions",
-      "design": "Show Module → FR → File mapping with descriptions",
-      "tasks": "Show Task → FR → AC → File mapping with descriptions"
-    },
     "rendering": {
-      "id_format": "{id} ({description})",
-      "coverage_format": "{covered}/{total} ({percentage}%)",
-      "empty_cell": "—"
+      "table_style": "ascii_box",
+      "cell_wrap": true,
+      "empty_cell": "(none)",
+      "row_separator": true
+    },
+    "scoping_rules": {
+      "tasks": "Primary view: FR → Requirement description → Design impact → Task list. Used at PRESENTING_TASKS confirmation.",
+      "requirements": "FR → Requirement description → (design column omitted or shows 'pending') → (tasks column omitted or shows 'pending')",
+      "architecture": "FR → Requirement description → Design impact → (tasks column shows 'pending')",
+      "design": "FR → Requirement description → Design impact → (tasks column shows 'pending')"
+    },
+    "content_guidance": {
+      "requirement_column": "Write 2-4 sentences describing what the FR requires in plain language. Include the core behavior change and why it matters. Do NOT list AC IDs — weave the acceptance criteria into the description naturally.",
+      "design_column": "Write 2-4 sentences describing what changes in the codebase. Name the affected modules, patterns, and contracts. Explain the blast radius — what else is impacted by this change. Do NOT list file paths — describe the architectural impact.",
+      "tasks_column": "List each related task as 'TNNN brief-description' on its own line. Keep descriptions to 3-5 words. Group by logical area if many tasks."
     }
   }
 }
