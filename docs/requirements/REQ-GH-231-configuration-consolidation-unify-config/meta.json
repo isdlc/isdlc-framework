@@ -15,5 +15,7 @@
     "accepted_at": "2026-04-04T14:15:00.000Z",
     "domains": ["requirements", "architecture", "design", "tasks"],
     "amendment_cycles": 1
-  }
+  },
+  "build_started_at": "2026-04-04T22:30:00.000Z",
+  "workflow_type": "build"
 }

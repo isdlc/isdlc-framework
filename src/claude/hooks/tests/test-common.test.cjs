@@ -324,7 +324,7 @@ describe('common.js', () => {
     // loadManifest()
     // -------------------------------------------------------------------------
     describe('loadManifest()', () => {
-        it('loads manifest from .claude/hooks/config/', () => {
+        it('loads manifest from canonical config location', () => {
             const manifest = common.loadManifest();
             assert.ok(manifest, 'Manifest should be loaded');
             assert.ok(manifest.ownership, 'Manifest should have ownership section');
@@ -334,17 +334,26 @@ describe('common.js', () => {
 
         it('returns null when no manifest file is found', () => {
             const testDir = getTestDir();
-            const manifestFile = path.join(testDir, '.claude', 'hooks', 'config', 'skills-manifest.json');
-            const backup = fs.readFileSync(manifestFile, 'utf8');
-            fs.unlinkSync(manifestFile);
+            // Remove manifest from all possible locations so loadManifest returns null
+            const paths = [
+                path.join(testDir, '.claude', 'hooks', 'config', 'skills-manifest.json'),
+                path.join(testDir, 'src', 'isdlc', 'config', 'skills-manifest.json'),
+                path.join(testDir, '.isdlc', 'config', 'skills-manifest.json'),
+            ];
+            const backups = {};
+            for (const p of paths) {
+                if (fs.existsSync(p)) { backups[p] = fs.readFileSync(p, 'utf8'); fs.unlinkSync(p); }
+            }
 
-            // Clear require cache so loadManifest re-reads filesystem
             const fresh = freshCommon();
             const result = fresh.loadManifest();
             assert.equal(result, null);
 
             // Restore
-            fs.writeFileSync(manifestFile, backup);
+            for (const [p, content] of Object.entries(backups)) {
+                fs.mkdirSync(path.dirname(p), { recursive: true });
+                fs.writeFileSync(p, content);
+            }
         });
     });
 
@@ -497,27 +506,37 @@ describe('common.js', () => {
     // getManifestPath()
     // -------------------------------------------------------------------------
     describe('getManifestPath()', () => {
-        it('returns path within .claude/hooks/config/', () => {
+        it('returns path containing skills-manifest.json', () => {
             const manifestPath = common.getManifestPath();
             assert.ok(manifestPath, 'Should find manifest');
             assert.ok(
-                manifestPath.includes(path.join('.claude', 'hooks', 'config', 'skills-manifest.json')),
-                `Path should point to hooks config dir, got: ${manifestPath}`
+                manifestPath.includes('skills-manifest.json'),
+                `Path should contain skills-manifest.json, got: ${manifestPath}`
             );
         });
 
         it('returns null when no manifest exists', () => {
             const testDir = getTestDir();
-            const manifestFile = path.join(testDir, '.claude', 'hooks', 'config', 'skills-manifest.json');
-            const backup = fs.readFileSync(manifestFile, 'utf8');
-            fs.unlinkSync(manifestFile);
+            // Remove from all possible locations
+            const paths = [
+                path.join(testDir, '.claude', 'hooks', 'config', 'skills-manifest.json'),
+                path.join(testDir, 'src', 'isdlc', 'config', 'skills-manifest.json'),
+                path.join(testDir, '.isdlc', 'config', 'skills-manifest.json'),
+            ];
+            const backups = {};
+            for (const p of paths) {
+                if (fs.existsSync(p)) { backups[p] = fs.readFileSync(p, 'utf8'); fs.unlinkSync(p); }
+            }
 
             const fresh = freshCommon();
             const result = fresh.getManifestPath();
             assert.equal(result, null);
 
             // Restore
-            fs.writeFileSync(manifestFile, backup);
+            for (const [p, content] of Object.entries(backups)) {
+                fs.mkdirSync(path.dirname(p), { recursive: true });
+                fs.writeFileSync(p, content);
+            }
         });
     });
 

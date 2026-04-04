@@ -97,12 +97,16 @@ function setupTestEnv(stateOverrides) {
     fs.mkdirSync(path.join(testDir, '.isdlc'), { recursive: true });
     fs.mkdirSync(path.join(testDir, '.claude', 'hooks', 'config'), { recursive: true });
 
-    // Copy config files from the real hooks/config directory
+    // REQ-GH-231: Copy config files from canonical src/isdlc/config/ location
+    const canonicalConfigDir = path.resolve(__dirname, '..', '..', '..', 'isdlc', 'config');
+    // Legacy fallback: hooks/config (pre-consolidation)
     const hooksConfigDir = path.resolve(__dirname, '..', 'config');
 
     const configFiles = ['skills-manifest.json', 'iteration-requirements.json'];
     for (const filename of configFiles) {
-        const src = path.join(hooksConfigDir, filename);
+        const canonicalSrc = path.join(canonicalConfigDir, filename);
+        const legacySrc = path.join(hooksConfigDir, filename);
+        const src = fs.existsSync(canonicalSrc) ? canonicalSrc : legacySrc;
         if (fs.existsSync(src)) {
             fs.copyFileSync(src, path.join(testDir, '.claude', 'hooks', 'config', filename));
         }
@@ -408,15 +412,18 @@ function prepareDispatcher(dispatcherFilename) {
         }
     }
 
-    // Copy config files (dispatchers may need them via loadManifest, etc.)
+    // REQ-GH-231: Copy config files from canonical src/isdlc/config/
     const configDir = path.join(testDir, '.claude', 'hooks', 'config');
     if (!fs.existsSync(configDir)) {
         fs.mkdirSync(configDir, { recursive: true });
     }
-    const hooksConfigDir = path.resolve(__dirname, '..', 'config');
+    const canonConfigDir = path.resolve(__dirname, '..', '..', '..', 'isdlc', 'config');
+    const hooksConfigDir2 = path.resolve(__dirname, '..', 'config');
     const configFiles = ['skills-manifest.json', 'iteration-requirements.json', 'workflows.json'];
     for (const filename of configFiles) {
-        const src = path.join(hooksConfigDir, filename);
+        const canonSrc = path.join(canonConfigDir, filename);
+        const legacySrc = path.join(hooksConfigDir2, filename);
+        const src = fs.existsSync(canonSrc) ? canonSrc : legacySrc;
         const dest = path.join(configDir, filename);
         if (fs.existsSync(src) && !fs.existsSync(dest)) {
             fs.copyFileSync(src, dest);

@@ -34,6 +34,25 @@ function _getCoreBridge() {
 }
 
 // =========================================================================
+// Core Bridge — Config (REQ-GH-231): Lazy-load unified config service bridge.
+// =========================================================================
+let _configBridge;
+function _getConfigBridge() {
+    if (_configBridge !== undefined) return _configBridge;
+    try {
+        const bridgePath = path.resolve(__dirname, '..', '..', '..', 'core', 'bridge', 'config.cjs');
+        if (fs.existsSync(bridgePath)) {
+            _configBridge = require(bridgePath);
+        } else {
+            _configBridge = null;
+        }
+    } catch (e) {
+        _configBridge = null;
+    }
+    return _configBridge;
+}
+
+// =========================================================================
 // Core Bridge — Validators (REQ-0085): Lazy-load validators bridge.
 // =========================================================================
 let _validatorsBridge;
@@ -1485,13 +1504,19 @@ function getTimestamp() {
 function getManifestPath() {
     const projectRoot = getProjectRoot();
 
-    // Primary location: .claude/hooks/config/ (hooks config lives with hooks)
+    // REQ-GH-231: Primary location — canonical src/isdlc/config/
+    const canonicalPath = path.join(projectRoot, 'src', 'isdlc', 'config', 'skills-manifest.json');
+    if (fs.existsSync(canonicalPath)) {
+        return canonicalPath;
+    }
+
+    // Fallback: .claude/hooks/config/ (legacy, pre-consolidation)
     const hooksConfigPath = path.join(getHooksConfigDir(projectRoot), 'skills-manifest.json');
     if (fs.existsSync(hooksConfigPath)) {
         return hooksConfigPath;
     }
 
-    // Fallback to .isdlc location (framework config)
+    // Fallback: .isdlc/config/ (runtime copy)
     const isdlcPath = path.join(projectRoot, '.isdlc', 'config', 'skills-manifest.json');
     if (fs.existsSync(isdlcPath)) {
         return isdlcPath;
@@ -1505,6 +1530,13 @@ function getManifestPath() {
  * @returns {object|null} Manifest object or null
  */
 function loadManifest() {
+    // REQ-GH-231: Try unified config service first
+    const cb = _getConfigBridge();
+    if (cb) {
+        const result = cb.loadFrameworkConfig('skills-manifest');
+        if (result) return result;
+    }
+    // Fallback to legacy path resolution
     const manifestPath = getManifestPath();
     if (!manifestPath) {
         return null;
@@ -3253,6 +3285,13 @@ function addSkillLogEntry(state, entry) {
  * @returns {object|null} Parsed iteration requirements or null
  */
 function loadIterationRequirements() {
+    // REQ-GH-231: Try unified config service first
+    const cb = _getConfigBridge();
+    if (cb) {
+        const result = cb.loadFrameworkConfig('iteration-requirements');
+        if (result) return result;
+    }
+    // Fallback to legacy path resolution
     const projectRoot = getProjectRoot();
     const configPaths = [
         path.join(getHooksConfigDir(projectRoot), 'iteration-requirements.json'),
@@ -3260,7 +3299,6 @@ function loadIterationRequirements() {
     ];
 
     for (const configPath of configPaths) {
-        // FR-001: Use statSync inside _loadConfigWithCache to check existence + cache
         const result = _loadConfigWithCache(configPath, 'iteration-requirements');
         if (result !== null) {
             return result;
@@ -3278,6 +3316,13 @@ function loadIterationRequirements() {
  * @returns {object|null} Parsed workflow definitions or null
  */
 function loadWorkflowDefinitions() {
+    // REQ-GH-231: Try unified config service first
+    const cb = _getConfigBridge();
+    if (cb) {
+        const result = cb.loadFrameworkConfig('workflows');
+        if (result) return result;
+    }
+    // Fallback to legacy path resolution
     const projectRoot = getProjectRoot();
     const configPaths = [
         path.join(projectRoot, '.isdlc', 'config', 'workflows.json'),
@@ -3285,7 +3330,6 @@ function loadWorkflowDefinitions() {
     ];
 
     for (const configPath of configPaths) {
-        // FR-001: Use _loadConfigWithCache for mtime-based caching
         const result = _loadConfigWithCache(configPath, 'workflows');
         if (result !== null) {
             return result;
@@ -4514,11 +4558,25 @@ function rebuildSessionCache(options = {}) {
 
         // Roundtable config sub-section (FR-005)
         let rtConfigMod;
-        try { rtConfigMod = require('./roundtable-config.cjs'); } catch (_) { rtConfigMod = null; }
-
-        if (rtConfigMod) {
-            const config = rtConfigMod.readRoundtableConfig(root);
-            rtParts.push(`### Roundtable Config\n${rtConfigMod.formatConfigSection(config)}`);
+        // REQ-GH-231: Read roundtable config from unified config service
+        const cfgBridge = _getConfigBridge();
+        if (cfgBridge) {
+            const projConfig = cfgBridge.readProjectConfig(root);
+            if (projConfig && projConfig.roundtable) {
+                const rt = projConfig.roundtable;
+                const lines = [];
+                if (rt.verbosity) lines.push(`verbosity: ${rt.verbosity}`);
+                if (rt.default_personas && rt.default_personas.length > 0) lines.push(`default_personas: [${rt.default_personas.join(', ')}]`);
+                if (rt.disabled_personas && rt.disabled_personas.length > 0) lines.push(`disabled_personas: [${rt.disabled_personas.join(', ')}]`);
+                if (lines.length > 0) rtParts.push(`### Roundtable Config\n${lines.join('\n')}`);
+            }
+        } else {
+            // Legacy fallback
+            try { rtConfigMod = require('./roundtable-config.cjs'); } catch (_) { rtConfigMod = null; }
+            if (rtConfigMod) {
+                const config = rtConfigMod.readRoundtableConfig(root);
+                rtParts.push(`### Roundtable Config\n${rtConfigMod.formatConfigSection(config)}`);
+            }
         }
 
         // Topic files
@@ -4715,6 +4773,9 @@ function readConfig(projectRoot) {
             return _configJsonCache.get(root);
         }
 
+        // Legacy path (bridge integration deferred — validation logic in readConfig
+        // applies specific rules for budget_tokens and section_priorities that
+        // the generic config-service deep-merge does not enforce)
         const configPath = path.join(root, '.isdlc', 'config.json');
 
         // AC-001-03: Missing file -> return defaults silently (no warning)
