@@ -28,10 +28,77 @@ if (command === 'generate') {
   await runGenerate(args.slice(1));
 } else if (command === 'status') {
   await runStatus();
+} else if (command === 'server') {
+  await runServer(args.slice(1));
 } else {
   console.error(`Unknown command: ${command}`);
   printHelp();
   process.exit(1);
+}
+
+/**
+ * Server lifecycle subcommand: start/stop/status/restart/reload
+ * REQ-GH-224 FR-002
+ */
+async function runServer(serverArgs) {
+  const subcommand = serverArgs[0];
+  const projectRoot = process.cwd();
+  const { startServer, stopServer, serverStatus, restartServer } = await import('../lib/embedding/server/lifecycle.js');
+
+  if (subcommand === 'start') {
+    console.log('Starting embedding server...');
+    const result = await startServer(projectRoot);
+    if (result.success) {
+      if (result.alreadyRunning) {
+        console.log(`Server already running (pid=${result.pid}, port=${result.port})`);
+      } else if (result.viaLock) {
+        console.log(`Connected to server started by another process (pid=${result.pid}, port=${result.port})`);
+      } else {
+        console.log(`Server started (pid=${result.pid}, port=${result.port})`);
+      }
+      process.exit(0);
+    } else {
+      console.error(`Failed to start server: ${result.error}`);
+      process.exit(1);
+    }
+  } else if (subcommand === 'stop') {
+    console.log('Stopping embedding server...');
+    const result = await stopServer(projectRoot);
+    if (result.success) {
+      if (result.alreadyStopped) {
+        console.log('Server was not running');
+      } else if (result.forced) {
+        console.log('Server stopped (forced)');
+      } else {
+        console.log('Server stopped');
+      }
+      process.exit(0);
+    } else {
+      console.error(`Failed to stop server: ${result.error}`);
+      process.exit(1);
+    }
+  } else if (subcommand === 'status') {
+    const status = await serverStatus(projectRoot);
+    console.log(JSON.stringify(status, null, 2));
+    process.exit(status.running ? 0 : 1);
+  } else if (subcommand === 'restart') {
+    console.log('Restarting embedding server...');
+    const result = await restartServer(projectRoot);
+    if (result.success) {
+      console.log(`Server restarted (pid=${result.pid}, port=${result.port})`);
+      process.exit(0);
+    } else {
+      console.error(`Failed to restart server: ${result.error}`);
+      process.exit(1);
+    }
+  } else if (subcommand === 'reload') {
+    console.log('Reload not yet implemented (use restart)');
+    process.exit(1);
+  } else {
+    console.error(`Unknown server subcommand: ${subcommand}`);
+    console.error(`Usage: isdlc embedding server {start|stop|status|restart|reload}`);
+    process.exit(1);
+  }
 }
 
 /**

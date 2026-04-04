@@ -41,6 +41,21 @@ export const DEFAULT_PROJECT_CONFIG = {
     disabled_personas: [],
   },
   search: {},
+  embeddings: {
+    server: {
+      port: 7777,
+      host: 'localhost',
+      auto_start: true,
+      startup_timeout_ms: 30000,
+    },
+    provider: 'codebert',
+    model: 'microsoft/codebert-base',
+    api_key_env: null,
+    sources: [
+      { type: 'code', path: 'src/', tier: 'full' },
+      { type: 'docs', path: 'docs/' },
+    ],
+  },
   workflows: {
     sizing_thresholds: {
       light_max_files: 5,

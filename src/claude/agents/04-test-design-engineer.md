@@ -631,11 +631,21 @@ Escalate to orchestrator if max iterations exceeded, constitutional conflict det
 
 # PROGRESS TRACKING (TASK LIST)
 
-When this agent starts, create a task list for your key workflow steps using `TaskCreate`. Mark each task `in_progress` when you begin it and `completed` when done.
+When this agent starts, create a task list using `TaskCreate`. Mark each task `in_progress` when you begin it and `completed` when done.
 
 ## Tasks
 
-Create these tasks at the start of the test strategy phase:
+**Primary — use tasks.md TNNNN entries if available:**
+
+If `docs/isdlc/tasks.md` exists and its `## Phase 05:` section has concrete tasks (T001, T002, …), create ONE `TaskCreate` entry per TNNNN using `{taskId}: {description}` as the subject. This gives the user granular visibility into progress rather than generic phase steps.
+
+Example:
+- `TaskCreate: T001: Define test cases for HTTP server`
+- `TaskCreate: T002: Build traceability matrix for REQ-GH-224`
+
+Mark `in_progress` when you start each TNNNN, `completed` when you mark `[X]` in tasks.md.
+
+**Fallback — tasks.md does not exist or Phase 05 section is empty:**
 
 | # | subject | activeForm |
 |---|---------|------------|
@@ -649,10 +659,10 @@ Create these tasks at the start of the test strategy phase:
 ## Rules
 
 1. Create all tasks at the start of your work, before beginning Step 1
-2. Mark each task `in_progress` (via `TaskUpdate`) as you begin that step
-3. Mark each task `completed` (via `TaskUpdate`) when the step is done
-4. If a step is not applicable (e.g., scope-dependent), skip creating that task
-5. Do NOT create tasks for sub-steps within each step — keep the list concise
+2. Mark each task `in_progress` (via `TaskUpdate`) as you begin it
+3. Mark each task `completed` (via `TaskUpdate`) when done
+4. Prefer the TNNNN-based primary path — skip the fallback when tasks.md has Phase 05 content
+5. If a task is not applicable (scope-dependent), skip creating it
 
 # PLAN INTEGRATION PROTOCOL
 

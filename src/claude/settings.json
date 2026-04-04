@@ -381,6 +381,11 @@
             "type": "command",
             "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/inject-session-cache.cjs",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/src/core/hooks/embedding-session-check.cjs",
+            "timeout": 3000
           }
         ]
       }

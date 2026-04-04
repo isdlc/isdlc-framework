@@ -560,7 +560,13 @@ Generate these files in `docs/quality/`:
 
 ## Task List
 
-Create these 5 tasks in order:
+**Primary — use tasks.md TNNNN entries if available:**
+
+If `docs/isdlc/tasks.md` exists and its `## Phase 16:` section has concrete tasks, create ONE `TaskCreate` entry per TNNNN using `{taskId}: {description}` as the subject. This gives the user granular visibility into progress rather than generic phase steps.
+
+Mark `in_progress` when you start each TNNNN, `completed` when you mark `[X]` in tasks.md.
+
+**Fallback — tasks.md does not exist or Phase 16 section is empty, use these 5 tasks in order:**
 
 ```
 TaskCreate: [1] Discover testing infrastructure and QA tools
