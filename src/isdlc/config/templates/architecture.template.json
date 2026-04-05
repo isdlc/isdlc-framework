@@ -7,13 +7,15 @@
       "architecture_options",
       "selected_architecture",
       "technology_decisions",
-      "integration_architecture"
+      "integration_architecture",
+      "assumptions_and_inferences"
     ],
     "assumptions_placement": "inline",
     "required_sections": [
       "architecture_options",
       "selected_architecture",
-      "technology_decisions"
+      "technology_decisions",
+      "assumptions_and_inferences"
     ]
   }
 }

@@ -20,7 +20,8 @@
     "required_sections": [
       "progress_summary",
       "dependency_graph",
-      "traceability_matrix"
+      "traceability_matrix",
+      "assumptions_and_inferences"
     ],
     "id_format": {
       "parent": "TNNN",

@@ -10,8 +10,9 @@
  *     1. state-write-validator          - reads file from disk, stderr only
  *     2. output-format-validator        - reads file from disk, stderr only
  *     3. workflow-completion-enforcer   - reads FRESH state, manages own I/O
- *   For Edit: 2 hooks (output-format-validator is skipped)
+ *   For Edit: 3 hooks
  *     1. state-write-validator
+ *     2. output-format-validator
  *     3. workflow-completion-enforcer
  *
  * No state write from dispatcher (all hooks manage their own I/O).
@@ -32,6 +33,28 @@ const {
     readState,
     writeConfig
 } = require('./hook-test-utils.cjs');
+
+function writeTemplateFixtures(testDir) {
+    const templatesDir = path.join(testDir, '.isdlc', 'config', 'templates');
+    fs.mkdirSync(templatesDir, { recursive: true });
+    fs.writeFileSync(path.join(templatesDir, 'requirements.template.json'), JSON.stringify({
+        domain: 'requirements',
+        format: {
+            section_order: [
+                'functional_requirements',
+                'assumptions_and_inferences',
+                'non_functional_requirements',
+                'out_of_scope',
+                'prioritization'
+            ],
+            required_sections: [
+                'functional_requirements',
+                'assumptions_and_inferences',
+                'prioritization'
+            ]
+        }
+    }, null, 2));
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -198,19 +221,34 @@ describe('post-write-edit-dispatcher', () => {
     });
 
     // -------------------------------------------------------------------------
-    // TC-06: output-format-validator skipped for Edit
+    // TC-06: output-format-validator runs for Edit
     // -------------------------------------------------------------------------
     describe('output-format-validator conditional execution', () => {
         before(() => {
             setupTestEnv(activeWorkflowState());
+            writeTemplateFixtures(process.env.CLAUDE_PROJECT_DIR);
             dispatcherPath = prepareDispatcher('post-write-edit-dispatcher.cjs');
         });
         after(() => { cleanupTestEnv(); });
 
-        it('TC-06: Edit input does not trigger output-format-validator', async () => {
-            const result = await runDispatcher(dispatcherPath, editFileInput());
+        it('TC-06: Edit input triggers output-format-validator for template-backed artifacts', async () => {
+            const artifactPath = path.join(process.env.CLAUDE_PROJECT_DIR, 'docs', 'requirements', 'REQ-GH-234', 'requirements-spec.md');
+            fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
+            fs.writeFileSync(artifactPath, [
+                '# Requirements Spec',
+                '## Functional Requirements',
+                'content',
+                '## Assumptions and Inferences',
+                'content',
+                '## Surprise Section',
+                'content',
+                '## Prioritization',
+                'content'
+            ].join('\n'));
+
+            const result = await runDispatcher(dispatcherPath, editFileInput(artifactPath));
             assert.equal(result.code, 0);
-            // output-format-validator is Write-only, so Edit should skip it
+            assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
         });
 
         it('TC-07: Write input runs all 3 hooks including output-format-validator', async () => {

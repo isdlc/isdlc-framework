@@ -224,6 +224,8 @@ function _executeCheck(rule, response, roundtableState) {
             return _checkStructural(check, response, roundtableState);
         case 'state-match':
             return _checkStateMatch(check, response);
+        case 'template-section-order':
+            return _checkTemplateSectionOrder(check, response, roundtableState);
         default:
             return false;
     }
@@ -360,6 +362,162 @@ function _checkStateMatch(check, response) {
 
     // Violation: has completion declaration but no question
     return !hasQuestion;
+}
+
+// ---------------------------------------------------------------------------
+// Template section order check (GH-234)
+// ---------------------------------------------------------------------------
+
+/**
+ * Map confirmation_state to template domain.
+ */
+const CONFIRMATION_TO_DOMAIN = {
+    'PRESENTING_REQUIREMENTS': 'requirements',
+    'PRESENTING_ARCHITECTURE': 'architecture',
+    'PRESENTING_DESIGN': 'design',
+    'PRESENTING_TASKS': 'traceability'
+};
+
+/**
+ * Map domain to human-readable section header keywords expected in markdown.
+ * Keys in section_order are snake_case; H2 headings are title-case words.
+ */
+function sectionKeyToPatterns(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function normalizeSectionName(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Template section-order check: reads the template for the active domain
+ * and verifies the response contains H2 sections in the expected order.
+ *
+ * check.templates_dir: path to templates directory (default: .isdlc/config/templates/)
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @param {Object|null} roundtableState
+ * @returns {boolean} true if violation (sections out of order or missing)
+ */
+function _checkTemplateSectionOrder(check, response, roundtableState) {
+    if (!roundtableState || !roundtableState.confirmation_state) return false;
+
+    const domain = CONFIRMATION_TO_DOMAIN[roundtableState.confirmation_state];
+    if (!domain) return false;
+
+    // Load template
+    const templatesDir = check.templates_dir || _resolveTemplatesDir();
+    if (!templatesDir) return false;
+
+    const templatePath = path.join(templatesDir, `${domain}.template.json`);
+    let template;
+    try {
+        if (!fs.existsSync(templatePath)) return false;
+        template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    } catch (e) {
+        return false; // fail-open
+    }
+
+    // For traceability, check is different — look for the 4-column table header
+    if (domain === 'traceability') {
+        const columns = template.format && template.format.columns;
+        if (!columns || !Array.isArray(columns)) return false;
+        const headers = columns.map(c => c.header.toLowerCase());
+        const responseLower = response.toLowerCase();
+        const hasTable = headers.every(h => responseLower.includes(h));
+        if (!hasTable) return true;
+
+        const requiredPostTableSections = template.format && template.format.post_table_sections;
+        if (!Array.isArray(requiredPostTableSections) || requiredPostTableSections.length === 0) {
+            return false;
+        }
+
+        const h2Pattern = /^##\s+(?:\d+\.\s*)?(.+?)$/gm;
+        const foundSections = [];
+        let match;
+        while ((match = h2Pattern.exec(response)) !== null) {
+            foundSections.push(normalizeSectionName(match[1]));
+        }
+
+        for (const section of requiredPostTableSections) {
+            if (!foundSections.includes(normalizeSectionName(section))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // For other domains, check section_order
+    const sectionOrder = template.format && template.format.section_order;
+    if (!sectionOrder || !Array.isArray(sectionOrder) || sectionOrder.length === 0) return false;
+
+    const requiredSections = template.format.required_sections || sectionOrder;
+
+    // Extract H2 headings from response (## heading or **HEADING**)
+    const h2Pattern = /^#{1,3}\s+(?:\d+\.\s*)?(.+?)$/gm;
+    const foundSections = [];
+    let match;
+    while ((match = h2Pattern.exec(response)) !== null) {
+        foundSections.push(normalizeSectionName(match[1]));
+    }
+
+    if (foundSections.length === 0) return false; // no sections to validate
+
+    // Check required sections present
+    const missingSections = [];
+    for (const required of requiredSections) {
+        const pattern = normalizeSectionName(required);
+        const found = foundSections.some(s => s === pattern);
+        if (!found) missingSections.push(required);
+    }
+
+    if (missingSections.length > 0) return true; // violation: missing required sections
+
+    const unexpectedSections = foundSections.filter(section =>
+        !sectionOrder.some(expected => normalizeSectionName(expected) === section)
+    );
+    if (unexpectedSections.length > 0) return true;
+
+    // Check order: map found sections to their template index
+    const orderIndices = [];
+    for (const found of foundSections) {
+        for (let i = 0; i < sectionOrder.length; i++) {
+            const pattern = normalizeSectionName(sectionOrder[i]);
+            if (found === pattern) {
+                orderIndices.push(i);
+                break;
+            }
+        }
+    }
+
+    // Check if indices are monotonically increasing (allowing gaps for optional sections)
+    for (let i = 1; i < orderIndices.length; i++) {
+        if (orderIndices[i] < orderIndices[i - 1]) return true; // out of order
+    }
+
+    return false; // no violation
+}
+
+/**
+ * Resolve the templates directory from project root.
+ * @returns {string|null}
+ */
+function _resolveTemplatesDir() {
+    try {
+        const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+        const p = path.join(root, '.isdlc', 'config', 'templates');
+        return fs.existsSync(p) ? p : null;
+    } catch (e) {
+        return null;
+    }
 }
 
 // ---------------------------------------------------------------------------

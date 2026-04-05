@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * iSDLC Output Format Validator - PostToolUse[Write] Hook
+ * iSDLC Output Format Validator - PostToolUse[Write/Edit] Hook
  * =========================================================
  * Validates that known artifact files conform to expected schemas
- * when written. Checks structure, not content.
+ * when written or edited. Checks structure, not content.
  *
  * Performance budget: < 200ms
  * Fail-open: always (PostToolUse is observational only)
@@ -35,18 +35,28 @@ function _getCoreBridge() {
 
 /**
  * Artifact validators keyed by file pattern.
- * Each validator returns { valid: boolean, missing: string[] }
+ * Each validator returns { valid: boolean, missing: string[], guidance?: string }
  */
 const ARTIFACT_VALIDATORS = {
     'user-stories.json': validateUserStories,
     'traceability-matrix.csv': validateTraceabilityMatrix,
-    'test-strategy.md': validateTestStrategy
+    'test-strategy.md': validateTestStrategy,
+    'requirements-spec.md': validateAgainstTemplate('requirements'),
+    'architecture-overview.md': validateAgainstTemplate('architecture'),
+    'module-design.md': validateAgainstTemplate('design'),
+    'tasks.md': validateTasksMd
 };
 
 /**
  * ADR file pattern (adr-NNN-*.md or adr-*.md)
  */
 const ADR_PATTERN = /adr-\d*.*\.md$/i;
+
+// Template-validated artifacts: only fire when the file is inside
+// docs/requirements/*/ to avoid false positives on docs/isdlc/tasks.md.
+const TEMPLATE_ARTIFACT_PATTERNS = new Set([
+    'requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'
+]);
 
 /**
  * Match a file path against known artifact patterns.
@@ -57,6 +67,13 @@ function matchArtifactPattern(filePath) {
     if (!filePath) return null;
 
     for (const pattern of Object.keys(ARTIFACT_VALIDATORS)) {
+        // GH-234: template-backed artifacts only match inside docs/requirements/*/
+        if (TEMPLATE_ARTIFACT_PATTERNS.has(pattern)) {
+            if (filePath.includes('/docs/requirements/') && filePath.endsWith(pattern)) {
+                return pattern;
+            }
+            continue;
+        }
         if (filePath.endsWith(pattern) || filePath.endsWith('/' + pattern)) {
             return pattern;
         }
@@ -189,9 +206,242 @@ function validateAdr(content) {
     return { valid: missing.length === 0, missing };
 }
 
+// ---------------------------------------------------------------------------
+// Template-based validators (GH-234: strict template enforcement)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve the templates directory from project root.
+ * @returns {string|null}
+ */
+function resolveTemplatesDir() {
+    try {
+        const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+        const p = path.join(root, '.isdlc', 'config', 'templates');
+        return fs.existsSync(p) ? p : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Normalize a template key or heading text for comparisons.
+ * @param {string} value
+ * @returns {string}
+ */
+function normalizeSectionName(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/[_-]+/g, ' ')
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Extract markdown headings for a specific level.
+ * @param {string} content
+ * @param {number} level
+ * @returns {string[]}
+ */
+function extractSectionHeadings(content, level) {
+    const headings = [];
+    const hashes = '#'.repeat(level);
+    const pattern = new RegExp(`^${hashes}\\s+(?:\\d+\\.\\s*)?(.+?)$`, 'gm');
+    let match;
+    while ((match = pattern.exec(content)) !== null) {
+        headings.push(normalizeSectionName(match[1]));
+    }
+    return headings;
+}
+
+/**
+ * Extract the markdown body for each required phase.
+ * @param {string} content
+ * @returns {Map<string, string>}
+ */
+function extractPhaseBodies(content) {
+    const phases = new Map();
+    const matches = [...content.matchAll(/^##\s+Phase\s+(\w+):.*$/gm)];
+    for (let i = 0; i < matches.length; i++) {
+        const phase = matches[i][1];
+        const start = matches[i].index + matches[i][0].length;
+        const end = i + 1 < matches.length ? matches[i + 1].index : content.length;
+        phases.set(phase, content.slice(start, end));
+    }
+    return phases;
+}
+
+function matchesTemplateSection(heading, templateKey) {
+    return normalizeSectionName(heading) === normalizeSectionName(templateKey);
+}
+
+/**
+ * Create a validator function for a given template domain.
+ * Reads template JSON, extracts section_order, compares against H2 headings.
+ * @param {string} domain - Template domain name (requirements, architecture, design)
+ * @returns {function(string): { valid: boolean, missing: string[], guidance?: string }}
+ */
+function validateAgainstTemplate(domain) {
+    return function(content) {
+        const missing = [];
+
+        const templatesDir = resolveTemplatesDir();
+        if (!templatesDir) return { valid: true, missing: [] }; // fail-open
+
+        const templatePath = path.join(templatesDir, `${domain}.template.json`);
+        let template;
+        try {
+            if (!fs.existsSync(templatePath)) return { valid: true, missing: [] };
+            template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+        } catch (e) {
+            return { valid: true, missing: [] }; // fail-open
+        }
+
+        const sectionOrder = template.format && template.format.section_order;
+        const requiredSections = template.format && template.format.required_sections;
+        if (!sectionOrder || !Array.isArray(sectionOrder)) return { valid: true, missing: [] };
+
+        const foundHeadings = extractSectionHeadings(content, 2);
+        if (foundHeadings.length === 0) {
+            missing.push('any section headings');
+            return { valid: false, missing, guidance: `Expected sections in order: ${sectionOrder.join(' → ')}` };
+        }
+
+        const unexpected = foundHeadings.filter(heading =>
+            !sectionOrder.some(section => matchesTemplateSection(heading, section))
+        );
+        if (unexpected.length > 0) {
+            return {
+                valid: false,
+                missing: ['no extra sections'],
+                guidance: `TEMPLATE DRIFT: Unexpected sections found: ${unexpected.join(', ')}. Expected section order: ${sectionOrder.join(' → ')}. Rewrite with sections in EXACTLY the specified order. Do not add extra sections, do not reorder, do not rename.`
+            };
+        }
+
+        // Check required sections are present
+        const required = requiredSections || sectionOrder;
+        for (const section of required) {
+            const found = foundHeadings.some(h => matchesTemplateSection(h, section));
+            if (!found) missing.push(section.replace(/_/g, ' '));
+        }
+
+        if (missing.length > 0) {
+            return {
+                valid: false,
+                missing,
+                guidance: `TEMPLATE DRIFT: Missing required sections: ${missing.join(', ')}. Expected section order: ${sectionOrder.join(' → ')}. Read .isdlc/config/templates/${domain}.template.json and rewrite with sections in EXACTLY the specified order.`
+            };
+        }
+
+        // Check order: map found headings to template indices
+        const orderIndices = [];
+        for (const heading of foundHeadings) {
+            for (let i = 0; i < sectionOrder.length; i++) {
+                if (matchesTemplateSection(heading, sectionOrder[i])) {
+                    orderIndices.push(i);
+                    break;
+                }
+            }
+        }
+
+        for (let i = 1; i < orderIndices.length; i++) {
+            if (orderIndices[i] < orderIndices[i - 1]) {
+                const expectedOrder = sectionOrder.join(' → ');
+                missing.push('correct section order');
+                return {
+                    valid: false,
+                    missing,
+                    guidance: `TEMPLATE DRIFT: Sections are out of order. Expected: ${expectedOrder}. Rewrite with sections in EXACTLY the specified order. Do not add extra sections, do not reorder, do not rename.`
+                };
+            }
+        }
+
+        return { valid: true, missing: [] };
+    };
+}
+
+/**
+ * Validate tasks.md against tasks template.
+ * Checks required sections, required phases, and required task category grouping.
+ * @param {string} content
+ * @returns {{ valid: boolean, missing: string[], guidance?: string }}
+ */
+function validateTasksMd(content) {
+    const missing = [];
+
+    const templatesDir = resolveTemplatesDir();
+    if (!templatesDir) return { valid: true, missing: [] };
+
+    const templatePath = path.join(templatesDir, 'tasks.template.json');
+    let template;
+    try {
+        if (!fs.existsSync(templatePath)) return { valid: true, missing: [] };
+        template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    } catch (e) {
+        return { valid: true, missing: [] };
+    }
+
+    const requiredSections = template.format && template.format.required_sections;
+    const h2Sections = extractSectionHeadings(content, 2);
+    if (requiredSections) {
+        for (const section of requiredSections) {
+            if (!h2Sections.some(h => matchesTemplateSection(h, section))) {
+                missing.push(section.replace(/_/g, ' '));
+            }
+        }
+    }
+
+    const allowedH2Sections = new Set((requiredSections || []).map(normalizeSectionName));
+    const phaseBodies = extractPhaseBodies(content);
+    const unexpectedSections = h2Sections.filter(section =>
+        !allowedH2Sections.has(section) && !/^phase\s+\w+\b/.test(section)
+    );
+    if (unexpectedSections.length > 0) {
+        return {
+            valid: false,
+            missing: ['no extra sections'],
+            guidance: `TEMPLATE DRIFT: tasks.md has unexpected top-level sections: ${unexpectedSections.join(', ')}. Read .isdlc/config/templates/tasks.template.json and keep only the required sections plus the configured phase sections.`
+        };
+    }
+
+    const requiredPhases = template.format && template.format.required_phases;
+    if (requiredPhases) {
+        for (const phase of requiredPhases) {
+            if (!phaseBodies.has(phase)) {
+                missing.push(`Phase ${phase} section`);
+            }
+        }
+    }
+
+    const requiredCategories = template.format && template.format.required_task_categories;
+    if (requiredCategories) {
+        for (const [phase, categories] of Object.entries(requiredCategories)) {
+            const body = phaseBodies.get(phase);
+            if (!body) continue;
+            const foundCategories = extractSectionHeadings(body, 3);
+            for (const category of categories) {
+                if (!foundCategories.some(h => matchesTemplateSection(h, category))) {
+                    missing.push(`Phase ${phase} category: ${category.replace(/_/g, ' ')}`);
+                }
+            }
+        }
+    }
+
+    if (missing.length > 0) {
+        return {
+            valid: false,
+            missing,
+            guidance: `TEMPLATE DRIFT: tasks.md is missing required structure: ${missing.join(', ')}. Read .isdlc/config/templates/tasks.template.json for the expected structure. Required sections: ${(requiredSections || []).join(', ')}. Required phases: ${(requiredPhases || []).join(', ')}. Required task categories must appear as H3 headings inside each phase.`
+        };
+    }
+
+    return { valid: true, missing: [] };
+}
+
 /**
  * Dispatcher-compatible check function.
- * NOTE: Reads the just-written file from disk via fs.readFileSync.
+ * NOTE: Reads the just-written or edited file from disk via fs.readFileSync.
  * @param {object} ctx - { input, state, manifest, requirements, workflows }
  * @returns {{ decision: 'allow', stderr?: string }}
  */
@@ -241,9 +491,23 @@ function check(ctx) {
             return { decision: 'allow' };
         }
 
-        logHookEvent('output-format-validator', 'warn', {
+        // GH-234: template-backed artifacts get loud corrective guidance; others get standard warning
+        const isTemplateArtifact = ['requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'].includes(pattern);
+
+        logHookEvent('output-format-validator', isTemplateArtifact ? 'template-drift' : 'warn', {
             reason: `${pattern} missing: ${result.missing.join(', ')}`
         });
+
+        if (isTemplateArtifact && result.guidance) {
+            const stderr =
+                `TEMPLATE DRIFT DETECTED: ${filePath}\n\n` +
+                `${result.guidance}\n\n` +
+                `ACTION REQUIRED: Rewrite the file with the correct section order and required sections. ` +
+                `Read .isdlc/config/templates/ for the expected structure. ` +
+                `Use Write or Edit to produce template-compliant content.`;
+
+            return { decision: 'allow', stderr };
+        }
 
         const stderr =
             `ARTIFACT FORMAT WARNING: ${filePath}\n` +

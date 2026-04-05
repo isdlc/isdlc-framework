@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "bulleted-format",
+      "name": "Bulleted Output Format",
+      "trigger_condition": {
+        "config": "verbosity",
+        "value": "bulleted",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "pattern",
+        "pattern": "^(?!\\s*[-*]|\\s*\\d+\\.|#{1,6}\\s|\\|.*\\||```|---|\\s*$|\\*\\*)",
+        "scope": "line",
+        "threshold": 0.3,
+        "description": "More than 30% of non-empty lines are prose (not bullets, headings, tables, or code blocks)"
+      },
+      "corrective_guidance": "Your response must use bullet-point formatting. Rewrite all prose paragraphs as bulleted lists. Each point should be a single bullet starting with - or *. Headings, tables, and code blocks are allowed.",
+      "severity": "block",
+      "provider_scope": "both"
+    },
+    {
+      "id": "sequential-domain-confirmation",
+      "name": "Sequential Domain Confirmation",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "structural",
+        "detect": "collapsed_domains",
+        "domains": ["Requirements", "Architecture", "Design"],
+        "description": "Detects when multiple domain confirmations (Accept/Amend prompts) appear in a single message"
+      },
+      "corrective_guidance": "You must present domain confirmations sequentially -- one domain per message. Present only the current domain's confirmation (Accept/Amend). Do not include confirmations for other domains in this message.",
+      "severity": "block",
+      "provider_scope": "both"
+    },
+    {
+      "id": "elicitation-first",
+      "name": "Elicitation Before Analysis",
+      "trigger_condition": {
+        "state": "roundtable_start",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "state-match",
+        "detect": "analysis_without_question",
+        "question_indicators": ["?", "what do you think", "would you like", "can you tell", "how should", "what are your"],
+        "completion_indicators": ["analysis complete", "here is the complete", "final analysis", "Accept or Amend", "accept or amend"],
+        "description": "Detects analysis completion declarations without any elicitation questions"
+      },
+      "corrective_guidance": "You must ask at least one elicitation question before declaring analysis complete. Open with a question to the user about their requirements, context, or preferences. Do not present a finished analysis without first engaging the user in conversation.",
+      "severity": "block",
+      "provider_scope": "both"
+    },
+    {
+      "id": "template-section-order",
+      "name": "Template Section Order Enforcement",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "template-section-order",
+        "templates_dir": null,
+        "description": "Validates that domain confirmation responses follow the section order defined in the corresponding .isdlc/config/templates/*.template.json file. For requirements: functional_requirements → assumptions_and_inferences → non_functional_requirements → out_of_scope → prioritization. For architecture: architecture_options → selected_architecture → technology_decisions → integration_architecture → assumptions_and_inferences. For design: module_overview → module_design → changes_to_existing → wiring_summary → assumptions_and_inferences. For tasks: the 4-column traceability table (FR | Requirement | Design / Blast Radius | Related Tasks) followed by an Assumptions and Inferences section."
+      },
+      "corrective_guidance": "Your confirmation response does not follow the template section order. Read the template at .isdlc/config/templates/{domain}.template.json and re-emit your response with sections in EXACTLY the order specified by section_order. Do not add extra sections, do not reorder, do not rename. For the Tasks confirmation, you MUST use the 4-column traceability table format from traceability.template.json (FR | Requirement | Design / Blast Radius | Related Tasks) with narrative + ACs in the Requirement column and narrative + file paths in the Design column, then add the required Assumptions and Inferences section.",
+      "severity": "block",
+      "provider_scope": "both"
+    }
+  ]
+}

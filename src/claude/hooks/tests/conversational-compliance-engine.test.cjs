@@ -42,6 +42,12 @@ function writeRulesFile(rules) {
     );
 }
 
+function writeTemplateFile(name, payload) {
+    const dir = path.join(testDir, '.isdlc', 'config', 'templates');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, name), JSON.stringify(payload, null, 2));
+}
+
 // ---------------------------------------------------------------------------
 // Sample rules for testing
 // ---------------------------------------------------------------------------
@@ -86,6 +92,19 @@ const VALID_ELICITATION_RULE = {
         completion_indicators: ['analysis complete', 'Accept or Amend']
     },
     corrective_guidance: 'Ask elicitation questions first.',
+    severity: 'block',
+    provider_scope: 'both'
+};
+
+const VALID_TEMPLATE_RULE = {
+    id: 'template-section-order',
+    name: 'Template Section Order Enforcement',
+    trigger_condition: { state: 'confirmation_active', workflow: 'analyze' },
+    check: {
+        type: 'template-section-order',
+        templates_dir: null
+    },
+    corrective_guidance: 'Use the exact template sections.',
     severity: 'block',
     provider_scope: 'both'
 };
@@ -315,6 +334,85 @@ describe('compliance-engine: evaluateRules() - bulleted format check', () => {
         ].join('\n');
         const verdict = engine.evaluateRules(response, [VALID_BULLETED_RULE], config, null, 'claude');
         assert.equal(verdict.violation, false);
+    });
+});
+
+describe('compliance-engine: evaluateRules() - template section enforcement', () => {
+    before(() => {
+        createTestDir();
+        const engineSrc = path.resolve(__dirname, '..', '..', '..', 'core', 'compliance', 'engine.cjs');
+        const engineDest = path.join(testDir, 'engine.cjs');
+        fs.copyFileSync(engineSrc, engineDest);
+        delete require.cache[engineDest];
+        engine = require(engineDest);
+        writeTemplateFile('requirements.template.json', {
+            domain: 'requirements',
+            format: {
+                section_order: [
+                    'functional_requirements',
+                    'assumptions_and_inferences',
+                    'non_functional_requirements',
+                    'out_of_scope',
+                    'prioritization'
+                ],
+                required_sections: [
+                    'functional_requirements',
+                    'assumptions_and_inferences',
+                    'prioritization'
+                ]
+            }
+        });
+        writeTemplateFile('traceability.template.json', {
+            domain: 'traceability',
+            format: {
+                columns: [
+                    { header: 'FR' },
+                    { header: 'Requirement' },
+                    { header: 'Design / Blast Radius' },
+                    { header: 'Related Tasks' }
+                ],
+                post_table_sections: ['assumptions_and_inferences']
+            }
+        });
+    });
+
+    after(() => {
+        cleanTestDir();
+    });
+
+    it('flags unexpected extra sections during requirements confirmation', () => {
+        const config = {};
+        const state = { confirmation_state: 'PRESENTING_REQUIREMENTS' };
+        const response = [
+            '## Functional Requirements',
+            'content',
+            '## Assumptions and Inferences',
+            'content',
+            '## Non-Functional Requirements',
+            'content',
+            '## ADRs',
+            'content',
+            '## Out of Scope',
+            'content',
+            '## Prioritization',
+            'content'
+        ].join('\n');
+        const verdict = engine.evaluateRules(response, [VALID_TEMPLATE_RULE], config, state, 'claude');
+        assert.equal(verdict.violation, true);
+        assert.equal(verdict.rule_id, 'template-section-order');
+    });
+
+    it('flags tasks confirmation when post-table assumptions section is missing', () => {
+        const config = {};
+        const state = { confirmation_state: 'PRESENTING_TASKS' };
+        const response = [
+            '| FR | Requirement | Design / Blast Radius | Related Tasks |',
+            '|----|-------------|----------------------|---------------|',
+            '| FR-001 | text | text | T001 |'
+        ].join('\n');
+        const verdict = engine.evaluateRules(response, [VALID_TEMPLATE_RULE], config, state, 'claude');
+        assert.equal(verdict.violation, true);
+        assert.equal(verdict.rule_id, 'template-section-order');
     });
 });
 

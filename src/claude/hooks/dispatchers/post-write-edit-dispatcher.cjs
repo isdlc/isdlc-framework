@@ -17,7 +17,7 @@ const _now = (typeof performance !== 'undefined' && typeof performance.now === '
  *
  * Execution order:
  *   1. state-write-validator          - reads file from disk, stderr only
- *   2. output-format-validator        - reads file from disk, stderr only (Write only, skipped for Edit)
+ *   2. output-format-validator        - reads file from disk, stderr only
  *   3. workflow-completion-enforcer   - reads FRESH state from disk, remediates, prunes (MUST be last)
  *
  * SPECIAL CASE: workflow-completion-enforcer needs the freshly-written state.json
@@ -111,8 +111,8 @@ async function main() {
             debugLog('post-write-edit-dispatcher: state-write-validator threw:', e.message);
         }
 
-        // Hook 2: output-format-validator (Write only, skipped for Edit; requires active workflow)
-        if (toolName === 'Write' && hasActiveWorkflow) {
+        // Hook 2: output-format-validator (Write/Edit; requires active workflow)
+        if ((toolName === 'Write' || toolName === 'Edit') && hasActiveWorkflow) {
             _hooksRan++;
             try {
                 const result = outputFormatValidatorCheck(ctx);

@@ -46,7 +46,7 @@ These hooks run on **PostToolUse** and **never block** — they log activity, tr
 | 18 | `phase-transition-enforcer` | PostToolUse [Task] | **Permission-asking anti-pattern** — warns if an agent asks "Would you like to proceed?" instead of transitioning automatically. Phase transitions should be seamless. |
 | 19 | `menu-halt-enforcer` | PostToolUse [Task] | **Runaway output after menu** — warns if an agent continues generating 200+ characters after presenting an interactive menu (A/R/C, numbered, backlog-picker). Should halt and wait for user input. |
 | 20 | `state-write-validator` | PostToolUse [Write, Edit] | **Fabricated state data** — validates `state.json` writes for impossible combinations (e.g., `constitutional_validation.completed = true` but `iterations_used = 0`). Detects 6 rule violations. |
-| 21 | `output-format-validator` | PostToolUse [Write] | **Malformed artifacts** — validates known artifact files (user-stories.json, test-strategy.md, ADR files) against expected schemas. Checks structure, not content. |
+| 21 | `output-format-validator` | PostToolUse [Write, Edit] | **Malformed artifacts and template drift** — validates known artifact files (user-stories.json, test-strategy.md, ADR files, template-backed analysis artifacts) against expected schemas and template structure. Checks structure, not content. |
 | 22 | `review-reminder` | PostToolUse [Bash] | **Unreviewed team commits** — warns on `git commit` if code review is disabled but team size > 1. Reminds to enable manual code review. |
 | 23 | `atdd-completeness-validator` | PostToolUse [Bash] | **Test priority violations** — when ATDD mode is active, warns about P0/P1/P2/P3 priority violations and orphaned skipped tests in test output. |
 
@@ -74,7 +74,7 @@ The 21 dispatched hooks are grouped into 5 dispatchers for performance (single p
 | `pre-skill-dispatcher` | PreToolUse [Skill] | iteration-corridor, gate-blocker, constitutional-iteration-validator | **Short-circuit** on first block |
 | `post-task-dispatcher` | PostToolUse [Task] | log-skill-usage, menu-tracker, walkthrough-tracker, discover-menu-guard, phase-transition-enforcer, menu-halt-enforcer | Run **all** hooks |
 | `post-bash-dispatcher` | PostToolUse [Bash] | review-reminder, atdd-completeness-validator, test-watcher | Run **all** hooks |
-| `post-write-edit-dispatcher` | PostToolUse [Write, Edit] | state-write-validator, output-format-validator, workflow-completion-enforcer | Run **all** hooks (skips output-format-validator for Edit events) |
+| `post-write-edit-dispatcher` | PostToolUse [Write, Edit] | state-write-validator, output-format-validator, workflow-completion-enforcer | Run **all** hooks |
 
 The 5 standalone hooks (`branch-guard`, `state-file-guard`, `explore-readonly-enforcer`, `skill-delegation-enforcer`, `delegation-gate`) run as their own processes because they match different tool events or require independent lifecycle management.
 

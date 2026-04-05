@@ -7,12 +7,14 @@
       "module_overview",
       "module_design",
       "changes_to_existing",
-      "wiring_summary"
+      "wiring_summary",
+      "assumptions_and_inferences"
     ],
     "assumptions_placement": "inline",
     "required_sections": [
       "module_overview",
-      "module_design"
+      "module_design",
+      "assumptions_and_inferences"
     ]
   }
 }

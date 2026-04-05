@@ -46,9 +46,49 @@ function writeArtifact(filePath, content) {
     fs.writeFileSync(filePath, content, 'utf8');
 }
 
-function makeWriteInput(filePath) {
+function writeTemplates(baseDir) {
+    const templatesDir = path.join(baseDir, '.isdlc', 'config', 'templates');
+    fs.mkdirSync(templatesDir, { recursive: true });
+    fs.writeFileSync(path.join(templatesDir, 'requirements.template.json'), JSON.stringify({
+        domain: 'requirements',
+        format: {
+            section_order: [
+                'functional_requirements',
+                'assumptions_and_inferences',
+                'non_functional_requirements',
+                'out_of_scope',
+                'prioritization'
+            ],
+            required_sections: [
+                'functional_requirements',
+                'assumptions_and_inferences',
+                'prioritization'
+            ]
+        }
+    }, null, 2));
+    fs.writeFileSync(path.join(templatesDir, 'tasks.template.json'), JSON.stringify({
+        domain: 'tasks',
+        format: {
+            required_phases: ['05', '06', '16', '08'],
+            required_task_categories: {
+                '05': ['test_case_design'],
+                '06': ['setup', 'core_implementation', 'unit_tests', 'wiring_claude', 'wiring_codex', 'cleanup'],
+                '16': ['test_execution', 'parity_verification'],
+                '08': ['constitutional_review', 'dual_file_check']
+            },
+            required_sections: [
+                'progress_summary',
+                'dependency_graph',
+                'traceability_matrix',
+                'assumptions_and_inferences'
+            ]
+        }
+    }, null, 2));
+}
+
+function makeToolInput(filePath, toolName = 'Write') {
     return {
-        tool_name: 'Write',
+        tool_name: toolName,
         tool_input: { file_path: filePath }
     };
 }
@@ -58,6 +98,7 @@ describe('output-format-validator hook', () => {
 
     beforeEach(() => {
         tmpDir = setupTestEnv();
+        writeTemplates(tmpDir);
     });
 
     afterEach(() => {
@@ -69,14 +110,14 @@ describe('output-format-validator hook', () => {
         writeArtifact(filePath, JSON.stringify({
             stories: [{ id: 'US-01', title: 'Test', acceptance_criteria: ['AC-01'] }]
         }));
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
     it('AC-06a: warns on invalid user-stories.json (missing stories)', () => {
         const filePath = path.join(tmpDir, 'docs', 'requirements', 'user-stories.json');
         writeArtifact(filePath, JSON.stringify({ version: '1.0' }));
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.ok(result.stderr.includes('ARTIFACT FORMAT WARNING'));
         assert.ok(result.stderr.includes('stories'));
     });
@@ -84,48 +125,48 @@ describe('output-format-validator hook', () => {
     it('AC-06b: validates traceability-matrix.csv headers', () => {
         const filePath = path.join(tmpDir, 'docs', 'traceability-matrix.csv');
         writeArtifact(filePath, 'FR,US,AC,Hook File,Test File,Hook Type\nFR-01,US-01,AC-01a,test.cjs,test.test.cjs,PreToolUse');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
     it('AC-06b: warns on traceability-matrix.csv missing headers', () => {
         const filePath = path.join(tmpDir, 'docs', 'traceability-matrix.csv');
         writeArtifact(filePath, 'Column1,Column2\nval1,val2');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.ok(result.stderr.includes('ARTIFACT FORMAT WARNING'));
     });
 
     it('AC-06c: validates ADR with required sections', () => {
         const filePath = path.join(tmpDir, 'docs', 'adr-001-tech-stack.md');
         writeArtifact(filePath, '# ADR-001\n## Status\nAccepted\n## Context\nWe need X\n## Decision\nUse Y\n## Consequences\nFaster dev');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
     it('AC-06c: warns on ADR missing sections', () => {
         const filePath = path.join(tmpDir, 'docs', 'adr-001-tech-stack.md');
         writeArtifact(filePath, '# ADR-001\n## Status\nAccepted\nSome text');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.ok(result.stderr.includes('ARTIFACT FORMAT WARNING'));
     });
 
     it('AC-06d: validates test-strategy.md sections', () => {
         const filePath = path.join(tmpDir, 'docs', 'test-strategy.md');
         writeArtifact(filePath, '# Test Strategy\n## Scope\nAll hooks\n## Approach\nTDD\n## Entry Criteria\nCode complete\n## Exit Criteria\nAll pass');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
     it('AC-06e: silent for unrecognized file types', () => {
         const filePath = path.join(tmpDir, 'src', 'app.js');
         writeArtifact(filePath, 'console.log("hello")');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
     it('AC-06f: fails open on read errors', () => {
         const filePath = '/nonexistent/path/user-stories.json';
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.exitCode, 0);
         assert.equal(result.stderr, '');
     });
@@ -133,7 +174,7 @@ describe('output-format-validator hook', () => {
     it('AC-06g: reports specific missing fields', () => {
         const filePath = path.join(tmpDir, 'docs', 'user-stories.json');
         writeArtifact(filePath, JSON.stringify({ stories: [{ id: 'US-01' }] }));
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.ok(result.stderr.includes('title'));
         assert.ok(result.stderr.includes('acceptance_criteria'));
     });
@@ -146,8 +187,74 @@ describe('output-format-validator hook', () => {
     it('handles invalid JSON in user-stories.json', () => {
         const filePath = path.join(tmpDir, 'docs', 'user-stories.json');
         writeArtifact(filePath, 'not json {{{');
-        const result = runHook(tmpDir, makeWriteInput(filePath));
+        const result = runHook(tmpDir, makeToolInput(filePath));
         assert.ok(result.stderr.includes('ARTIFACT FORMAT WARNING'));
         assert.ok(result.stderr.includes('valid JSON'));
+    });
+
+    it('GH-234: warns on unexpected template section in requirements artifact', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'requirements-spec.md');
+        writeArtifact(filePath, [
+            '# Requirements Spec',
+            '## Functional Requirements',
+            'content',
+            '## Assumptions and Inferences',
+            'content',
+            '## Non-Functional Requirements',
+            'content',
+            '## ADRs',
+            'content',
+            '## Out of Scope',
+            'content',
+            '## Prioritization',
+            'content'
+        ].join('\n'));
+        const result = runHook(tmpDir, makeToolInput(filePath));
+        assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
+        assert.ok(result.stderr.includes('Unexpected sections'));
+    });
+
+    it('GH-234: validates template-backed artifacts on Edit too', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'requirements-spec.md');
+        writeArtifact(filePath, [
+            '# Requirements Spec',
+            '## Functional Requirements',
+            'content',
+            '## Assumptions and Inferences',
+            'content',
+            '## Surprise Section',
+            'content',
+            '## Prioritization',
+            'content'
+        ].join('\n'));
+        const result = runHook(tmpDir, makeToolInput(filePath, 'Edit'));
+        assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
+        assert.ok(result.stderr.includes('Unexpected sections'));
+    });
+
+    it('GH-234: warns when tasks artifact lacks required category headings', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'tasks.md');
+        writeArtifact(filePath, [
+            '# Task Plan: REQ-GH-234 strict-template-enforcement',
+            '## Progress Summary',
+            'summary',
+            '## Phase 05: Test Strategy -- PENDING',
+            '- [ ] T001 Design tests | traces: FR-001',
+            '## Phase 06: Implementation -- PENDING',
+            '- [ ] T002 Implement validator | traces: FR-001',
+            '## Phase 16: Quality Loop -- PENDING',
+            '- [ ] T003 Run tests | traces: FR-001',
+            '## Phase 08: Code Review -- PENDING',
+            '- [ ] T004 Review changes | traces: FR-001',
+            '## Dependency Graph',
+            'graph',
+            '## Traceability Matrix',
+            'matrix',
+            '## Assumptions and Inferences',
+            'assumptions'
+        ].join('\n'));
+        const result = runHook(tmpDir, makeToolInput(filePath));
+        assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
+        assert.ok(result.stderr.includes('category'));
     });
 });

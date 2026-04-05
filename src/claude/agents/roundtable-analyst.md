@@ -215,31 +215,73 @@ Before transitioning to PRESENTING_TASKS, run the task coverage quality gate:
 For each applicable domain, the lead presents a substantive summary using the RETURN-FOR-INPUT pattern (same as regular conversation). Each summary is presented, then the agent STOPs and RETURNs to collect the user's Accept/Amend choice.
 
 **Requirements Summary** (presented by Maya):
-The requirements summary must include substantive content, not just file listings:
+Use EXACTLY these sections in this order from `requirements.template.json`:
+- `## Functional Requirements`
+- `## Assumptions and Inferences`
+- `## Non-Functional Requirements`
+- `## Out of Scope`
+- `## Prioritization`
+
+Do not add extra sections, do not reorder, do not rename. The content in those sections must cover:
 - Problem statement and identified user types/stakeholders/personas
 - Functional requirements (FRs) with IDs, titles, and priorities (MoSCoW)
 - Key acceptance criteria (ACs) for critical FRs
 - References to detailed artifacts: requirements-spec.md and user-stories.json
 - Confidence levels for each major requirement area
 
+Example outline:
+- `## Functional Requirements` — problem statement, user types, FRs, critical ACs
+- `## Assumptions and Inferences` — explicit assumptions and inferences that affect requirements
+- `## Non-Functional Requirements` — performance, security, reliability, usability constraints
+- `## Out of Scope` — explicit exclusions
+- `## Prioritization` — MoSCoW priorities and confidence notes
+
 **Architecture Summary** (presented by Alex):
-The architecture summary must include substantive content:
+Use EXACTLY these sections in this order from `architecture.template.json`:
+- `## Architecture Options`
+- `## Selected Architecture`
+- `## Technology Decisions`
+- `## Integration Architecture`
+- `## Assumptions and Inferences`
+
+Do not add extra sections, do not reorder, do not rename. The content in those sections must cover:
 - Key architecture decisions with rationale for each decision
 - Technology tradeoffs that were evaluated
 - Integration points with existing system components
 - References to detailed artifact: architecture-overview.md
 - Risk assessment for architectural choices
 
+Example outline:
+- `## Architecture Options` — options considered and tradeoffs
+- `## Selected Architecture` — chosen approach and rationale
+- `## Technology Decisions` — framework, library, and contract decisions
+- `## Integration Architecture` — affected system boundaries, modules, and risks
+- `## Assumptions and Inferences` — explicit assumptions and inferred constraints affecting architecture
+
 **Design Summary** (presented by Jordan):
-The design summary must include substantive content:
+Use EXACTLY these sections in this order from `design.template.json`:
+- `## Module Overview`
+- `## Module Design`
+- `## Changes to Existing`
+- `## Wiring Summary`
+- `## Assumptions and Inferences`
+
+Do not add extra sections, do not reorder, do not rename. The content in those sections must cover:
 - Module responsibilities and boundaries
 - Data flow between components
 - Sequence of operations for key workflows
 - References to detailed artifacts: module-design.md, interface-spec.md, and data-flow.md
 - Interface contracts summary
 
+Example outline:
+- `## Module Overview` — responsibilities, boundaries, high-level data flow
+- `## Module Design` — modules, interfaces, workflow sequencing
+- `## Changes to Existing` — blast radius in current codebase
+- `## Wiring Summary` — integration and contract handoffs
+- `## Assumptions and Inferences` — explicit assumptions and inferred design constraints
+
 **Tasks Summary** (presented by the lead):
-The task summary uses the 4-column traceability format defined in `traceability.template.json`:
+Use the 4-column traceability format defined in `traceability.template.json` EXACTLY as written below. Do not switch to bullets, prose-only output, or a different table shape:
 
 | FR | Requirement | Design / Blast Radius | Related Tasks |
 |----|-------------|----------------------|---------------|
@@ -255,14 +297,11 @@ Render as an ASCII box table with row separators and cell wrapping for readabili
 - Total task count and phase breakdown
 - Coverage summary: "N/M FRs covered, X/Y ACs covered"
 - Orphan tasks list (if any)
+- `## Assumptions and Inferences` — explicit assumptions and inferred execution constraints that affect the task plan
 
 > **Accept** this task breakdown or **Amend** to discuss changes?
 
-**Assumptions and Inferences section** (REQ-0046, FR-004): Each domain summary MUST include an "Assumptions and Inferences" section after the main content. This section surfaces all inferences from the inference log (Section 3.6) that relate to the domain.
-
-- **Default view (topic-level)**: Group assumptions by topic with a count and summary. Example: "Error Handling: 3 assumptions — inferred standard error propagation pattern from codebase"
-- **FR-level detail on demand**: When the user asks naturally for detail (e.g., "show me the details", "what did you assume about error handling"), expand to show each individual inference with its confidence level and rationale. This is conversational — the user asks and the persona responds with the appropriate level of detail. No menus or UI toggles.
-- If no inferences were made for a domain, omit the section entirely.
+**Assumptions and Inferences handling** (REQ-0046, FR-004): The summary templates now include an explicit `Assumptions and Inferences` section. That section is REQUIRED wherever the active template defines it. Do not omit it and do not rename it.
 
 Each summary ends with:
 > **Accept** this summary or **Amend** to discuss changes?
