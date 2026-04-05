@@ -278,6 +278,13 @@ This is the iSDLC (Intelligent Software Development Lifecycle) Harness for Claud
 
 - **Persona Authoring**: `docs/isdlc/persona-authoring-guide.md` - How to create, override, and configure roundtable personas
 
+### Persona Extensibility
+
+- **Contributing personas** (default): `src/claude/agents/persona-{name}.md` with `role_type: contributing` -- observations fold into existing confirmations
+- **Promoted personas**: require `role_type: primary` + `owns_state` + `template` + `inserts_at` in frontmatter -- own their confirmation stage
+- Runtime composer: `src/core/roundtable/runtime-composer.js` composes effective state machine at analyze dispatch
+- Full guide: `docs/isdlc/persona-authoring-guide.md`
+
 ### Important Conventions
 
 - Each agent owns exactly ONE phase (1-to-1 mapping)

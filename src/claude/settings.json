@@ -222,6 +222,11 @@
             "type": "command",
             "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/dispatchers/pre-task-dispatcher.cjs",
             "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/persona-extension-composer-validator.cjs",
+            "timeout": 10000
           }
         ]
       },
@@ -371,6 +376,16 @@
             "timeout": 10000
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/tasks-as-table-validator.cjs",
+            "timeout": 10000
+          }
+        ]
       }
     ],
     "Stop": [
@@ -380,6 +395,11 @@
             "type": "command",
             "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/delegation-gate.cjs",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node $CLAUDE_PROJECT_DIR/.claude/hooks/participation-gate-enforcer.cjs",
+            "timeout": 10000
           }
         ]
       }

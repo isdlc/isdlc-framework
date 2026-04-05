@@ -657,6 +657,14 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      - memoryContextBlock: from step 3a Group 1 memory read
      - Personas, topics, constitution: in session cache (ROUNDTABLE_CONTEXT)
 
+   RUNTIME COMPOSITION (REQ-GH-235 FR-005, AC-005-04):
+     Before executing the protocol, compose the effective state machine from defaults + persona declarations:
+     1. Read persona files from ROUNDTABLE_CONTEXT (already loaded in session cache)
+     2. Call `composeEffectiveStateMachine(defaultStateMachine, personaFiles)` via bridge (`src/core/bridge/roundtable-composer.cjs`)
+     3. Use `result.effectiveStateMachine` as the state machine for this roundtable session (replaces the hardcoded default sequence)
+     4. If `result.warnings` is non-empty, log each warning to stderr (non-blocking -- roundtable proceeds regardless)
+     5. If `result.conflicts` is non-empty, the first-declared persona wins per AC-005-05; losers are already recorded in warnings
+
    PROTOCOL (from bug-roundtable-analyst.md):
      1. Follow Section 2.1 Opening:
         - Open as Maya from draft content with structured bug summary
@@ -729,6 +737,14 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      - memoryContextBlock: from step 3a Group 1 memory read
      - lightFlag, sizing_decision: from step 2.5 / step 6
      - Personas, topics, constitution: in session cache (ROUNDTABLE_CONTEXT)
+
+   RUNTIME COMPOSITION (REQ-GH-235 FR-005, AC-005-04):
+     Before executing the protocol, compose the effective state machine from defaults + persona declarations:
+     1. Read persona files from ROUNDTABLE_CONTEXT (already loaded in session cache)
+     2. Call `composeEffectiveStateMachine(defaultStateMachine, personaFiles)` via bridge (`src/core/bridge/roundtable-composer.cjs`)
+     3. Use `result.effectiveStateMachine` as the state machine for this roundtable session (replaces the hardcoded default sequence)
+     4. If `result.warnings` is non-empty, log each warning to stderr (non-blocking -- roundtable proceeds regardless)
+     5. If `result.conflicts` is non-empty, the first-declared persona wins per AC-005-05; losers are already recorded in warnings
 
    PROTOCOL (from roundtable-analyst.md):
      1. Follow Section 2.1 Opening:

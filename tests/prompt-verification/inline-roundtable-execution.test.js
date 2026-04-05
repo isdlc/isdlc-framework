@@ -19,7 +19,10 @@ import { join } from 'node:path';
 const PROJECT_ROOT = join(import.meta.dirname, '..', '..');
 const ISDLC_MD_PATH = join(PROJECT_ROOT, 'src', 'claude', 'commands', 'isdlc.md');
 const ROUNDTABLE_MD_PATH = join(PROJECT_ROOT, 'src', 'claude', 'agents', 'roundtable-analyst.md');
-const BUG_GATHER_MD_PATH = join(PROJECT_ROOT, 'src', 'claude', 'agents', 'bug-gather-analyst.md');
+// REQ-GH-218 renamed bug-gather-analyst.md to bug-roundtable-analyst.md. Tests updated to
+// reference the current file; the semantic contract (inline protocol reference, not spawned
+// as a separate agent) is preserved.
+const BUG_GATHER_MD_PATH = join(PROJECT_ROOT, 'src', 'claude', 'agents', 'bug-roundtable-analyst.md');
 const PACKAGE_JSON_PATH = join(PROJECT_ROOT, 'package.json');
 
 // Helper: read file content with caching
@@ -183,31 +186,33 @@ describe('TG-01: Inline Roundtable Execution (FR-001)', () => {
 
 describe('TG-02: Inline Bug-Gather Execution (FR-002)', () => {
 
-  // TC-02.1 [P0]: Step 6.5c reads bug-gather-analyst.md as protocol reference
+  // TC-02.1 [P0]: Step 6.5c reads bug-roundtable-analyst.md as protocol reference
   // Traces: FR-002, AC-002-01
-  it('TC-02.1 [P0]: Step 6.5c reads bug-gather-analyst.md as protocol reference', () => {
+  // REQ-GH-218 renamed bug-gather-analyst.md to bug-roundtable-analyst.md. Semantic
+  // contract preserved: step 6.5c reads the file as a protocol reference (not spawned).
+  it('TC-02.1 [P0]: Step 6.5c reads bug-roundtable-analyst.md as protocol reference', () => {
     const content = readFile(ISDLC_MD_PATH);
     const step65cContent = extractStepSection(content, '6\\.5c\\.');
 
     assert.ok(
       step65cContent.includes('protocol reference'),
-      'Step 6.5c must describe bug-gather-analyst.md as a protocol reference'
+      'Step 6.5c must describe bug-roundtable-analyst.md as a protocol reference'
     );
 
     assert.ok(
-      step65cContent.includes('bug-gather-analyst.md'),
-      'Step 6.5c must reference bug-gather-analyst.md'
+      step65cContent.includes('bug-roundtable-analyst.md'),
+      'Step 6.5c must reference bug-roundtable-analyst.md'
     );
 
     assert.ok(
       step65cContent.includes('Read'),
-      'Step 6.5c must instruct using Read tool for bug-gather-analyst.md'
+      'Step 6.5c must instruct using Read tool for bug-roundtable-analyst.md'
     );
   });
 
-  // TC-02.2 [P0]: Step 6.5d executes bug-gather protocol inline
+  // TC-02.2 [P0]: Step 6.5d executes bug-roundtable protocol inline
   // Traces: FR-002, AC-002-01
-  it('TC-02.2 [P0]: Step 6.5d executes bug-gather protocol inline', () => {
+  it('TC-02.2 [P0]: Step 6.5d executes bug-roundtable protocol inline', () => {
     const content = readFile(ISDLC_MD_PATH);
     const step65dContent = extractStepSection(content, '6\\.5d\\.');
 
@@ -218,9 +223,9 @@ describe('TG-02: Inline Bug-Gather Execution (FR-002)', () => {
     );
 
     assert.ok(
-      step65dContent.toLowerCase().includes('bug-gather') ||
-      step65dContent.toLowerCase().includes('bug gather'),
-      'Step 6.5d must reference bug-gather protocol'
+      step65dContent.toLowerCase().includes('bug-roundtable') ||
+      step65dContent.toLowerCase().includes('bug roundtable'),
+      'Step 6.5d must reference bug-roundtable protocol'
     );
   });
 
@@ -492,15 +497,17 @@ describe('TG-06: Cross-File Consistency (Integration)', () => {
     );
   });
 
-  // TC-06.2 [P0]: isdlc.md references reading bug-gather-analyst.md
+  // TC-06.2 [P0]: isdlc.md references reading bug-roundtable-analyst.md
   // Traces: FR-002, FR-006
-  it('TC-06.2 [P0]: isdlc.md references reading bug-gather-analyst.md', () => {
+  // REQ-GH-218 renamed bug-gather-analyst.md to bug-roundtable-analyst.md. Semantic
+  // contract preserved: isdlc.md reads the bug protocol file with Read tool.
+  it('TC-06.2 [P0]: isdlc.md references reading bug-roundtable-analyst.md', () => {
     const content = readFile(ISDLC_MD_PATH);
 
-    // Must contain bug-gather-analyst.md in Read context
+    // Must contain bug-roundtable-analyst.md in Read context
     assert.ok(
-      content.includes('bug-gather-analyst.md') && content.includes('Read'),
-      'isdlc.md must reference reading bug-gather-analyst.md'
+      content.includes('bug-roundtable-analyst.md') && content.includes('Read'),
+      'isdlc.md must reference reading bug-roundtable-analyst.md'
     );
   });
 

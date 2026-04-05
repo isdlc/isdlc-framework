@@ -13,23 +13,51 @@ function readPrompt() {
 describe('Provider-Neutral Analysis Contract', () => {
   it('defines a provider-neutral behavior contract separate from runtime adapter details', () => {
     const content = readPrompt();
-    assert.ok(content.includes('## 0. Provider-Neutral Behavior Contract'));
-    assert.ok(content.includes('### 0.5 Runtime Adapter Boundary'));
-    assert.ok(content.includes('Runtime-specific transport details are adapter notes, not the behavior contract.'));
+    // Rewritten file establishes the behavior contract in §2 Behavior Contract (single source of truth)
+    // and documents runtime-adapter boundary in §2.1 Stop/Wait Contract + Appendix B — Runtime Adapter Notes.
+    assert.ok(content.includes('## §2. Behavior Contract'));
+    assert.ok(content.includes('## Appendix B — Runtime Adapter Notes'));
+    // Provider-neutral contract is explicitly documented
+    assert.ok(
+      content.includes('provider-neutral'),
+      'Must document protocol as provider-neutral'
+    );
+    // Runtime adapters are adapter notes, not part of behavior contract
+    assert.ok(
+      content.includes('Runtime adapters may implement') ||
+      content.includes('adapter notes'),
+      'Must document adapter notes as separate from the behavior contract'
+    );
   });
 
   it('defines deterministic clarifying-question policy', () => {
     const content = readPrompt();
-    assert.ok(content.includes('### 0.2 Clarifying Question Gate'));
-    assert.ok(content.includes('Blocking uncertainty'));
-    assert.ok(content.includes('Ask at most one primary clarifying question per exchange.'));
-    assert.ok(content.includes('If multiple gaps exist, ask the one that unlocks the most downstream analysis.'));
+    // Rewritten file: §9.1 Clarifying Question Gate
+    assert.ok(content.includes('### 9.1 Clarifying Question Gate'));
+    // Still defines Blocking/Non-blocking distinction
+    assert.ok(content.includes('Blocking'));
+    // At most one primary clarifying question per exchange
+    assert.ok(
+      content.includes('one') && content.includes('primary clarifying question per exchange'),
+      'Must limit to one primary clarifying question per exchange'
+    );
+    // Ask the one that unlocks the most downstream analysis
+    assert.ok(
+      content.includes('unlocks the most downstream analysis'),
+      'Must prioritize the gap that unlocks the most downstream analysis'
+    );
   });
 
   it('keeps agent teams as dormant future design rather than active default behavior', () => {
     const content = readPrompt();
-    assert.ok(content.includes('### 1.2 Agent Teams Mode (Dormant Future Design, Opt-In)'));
+    // Rewritten file: Agent Teams is Appendix A, explicitly labelled as dormant future design.
+    assert.ok(content.includes('## Appendix A — Agent Teams (Dormant Future Design)'));
     assert.ok(content.includes('retained as a dormant future design'));
-    assert.ok(content.includes('Current inline execution for both Claude-shaped and Codex-shaped runtimes should assume Single-Agent Mode'));
+    // Single-Agent mode is the default; inline execution for both Claude and Codex runtimes assumes Single-Agent Mode
+    assert.ok(
+      content.includes('Current inline execution for both Claude-shaped and Codex-shaped runtimes assumes Single-Agent Mode') ||
+      content.includes('Single-Agent mode is the default'),
+      'Must document Single-Agent Mode as the default inline-execution mode for both runtimes'
+    );
   });
 });

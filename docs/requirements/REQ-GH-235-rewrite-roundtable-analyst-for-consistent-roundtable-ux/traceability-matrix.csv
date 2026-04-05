@@ -1,41 +1,41 @@
-FR_ID,AC_ID,User_Story_ID,Confidence,Source
-FR-001,AC-001-01,US-001,High,preservation-inventory §1
-FR-001,AC-001-02,US-001,High,draft Success Criteria
-FR-001,AC-001-03,US-001,High,preservation-inventory §2-7
-FR-002,AC-002-01,US-002,High,roundtable architecture ADR-002
-FR-002,AC-002-02,US-002,High,preservation-inventory §4
-FR-002,AC-002-03,US-002,High,preservation-inventory §4
-FR-003,AC-003-01,US-003,High,preservation-inventory §14
-FR-003,AC-003-02,US-003,High,roundtable decision (silent mode internal-only)
-FR-003,AC-003-03,US-003,High,preservation-inventory §14
-FR-003,AC-003-04,US-003,High,preservation-inventory §14
-FR-004,AC-004-01,US-004,High,preservation-inventory §6
-FR-004,AC-004-02,US-004,High,preservation-inventory §6 shared invariants
-FR-004,AC-004-03,US-004,High,roundtable decision (silent internal-only)
-FR-005,AC-005-01,US-005,High,preservation-inventory §7
-FR-005,AC-005-02,US-005,High,preservation-inventory §7
-FR-005,AC-005-03,US-005,High,roundtable architecture ADR-003
-FR-005,AC-005-04,US-005,High,roundtable architecture ADR-003
-FR-005,AC-005-05,US-005,Medium,design decision (first-wins + warn)
-FR-005,AC-005-06,US-005,High,existing persona files audit
-FR-006,AC-006-01,US-006,High,preservation-inventory §13
-FR-006,AC-006-02,US-006,High,preservation-inventory §13
-FR-006,AC-006-03,US-006,High,preservation-inventory §10
-FR-007,AC-007-01,US-007,High,roundtable decision (all 7 tests in scope)
-FR-007,AC-007-02,US-007,High,roundtable decision
-FR-007,AC-007-03,US-007,High,roundtable decision
-FR-007,AC-007-04,US-007,High,roundtable decision
-FR-007,AC-007-05,US-007,High,roundtable decision
-FR-007,AC-007-06,US-007,High,roundtable decision
-FR-007,AC-007-07,US-007,High,roundtable decision
-FR-008,AC-008-01,US-008,High,roundtable decision (scope C)
-FR-008,AC-008-02,US-008,High,hook audit finding
-FR-008,AC-008-03,US-008,High,roundtable decision (3 new hooks)
-FR-008,AC-008-04,US-008,High,existing hook test suite
-FR-009,AC-009-01,US-009,High,roundtable decision (include bug)
-FR-009,AC-009-02,US-009,High,roundtable architecture ADR-005
-FR-009,AC-009-03,US-009,High,bug templates existing
-FR-009,AC-009-04,US-009,High,roundtable decision
-FR-010,AC-010-01,US-010,Medium,Article VIII documentation currency
-FR-010,AC-010-02,US-010,Medium,Article VIII req 8
-FR-010,AC-010-03,US-010,Medium,inferred from persona extensibility
+FR_ID,AC_ID,User_Story_ID,Test_ID,Test_File,Test_Type,Priority,Confidence,Source
+FR-001,AC-001-01,US-001,pre-existing-snapshot,src/claude/agents/roundtable-analyst.snapshot-2026-04-05.md,file-exists,P0,High,preservation-inventory §1
+FR-001,AC-001-02,US-001,TC-PV-STRUCT,tests/prompt-verification/ (prompt structure checks in existing + new tests),prompt-verification,P1,High,draft Success Criteria
+FR-001,AC-001-03,US-001,TC-PV-PRESERVE,tests/prompt-verification/ (preservation markers),prompt-verification,P0,High,preservation-inventory §2-7
+FR-002,AC-002-01,US-002,TC-PV-002,tests/prompt-verification/state-local-template-binding.test.js,prompt-verification,P0,High,roundtable architecture ADR-002
+FR-002,AC-002-02,US-002,TC-PV-002,tests/prompt-verification/state-local-template-binding.test.js,prompt-verification,P0,High,preservation-inventory §4
+FR-002,AC-002-03,US-002,TC-PV-002,tests/prompt-verification/state-local-template-binding.test.js,prompt-verification,P0,High,preservation-inventory §4
+FR-003,AC-003-01,US-003,TC-PV-001,tests/prompt-verification/anti-shortcut-enforcement.test.js,prompt-verification,P0,High,preservation-inventory §14
+FR-003,AC-003-02,US-003,TC-PV-006;TC-HK-002,tests/prompt-verification/participation-gate.test.js;src/claude/hooks/tests/participation-gate-enforcer.test.cjs,prompt-verification+hook,P0,High,roundtable decision
+FR-003,AC-003-03,US-003,TC-PV-007;TC-HK-001,tests/prompt-verification/tasks-render-as-table.test.js;src/claude/hooks/tests/tasks-as-table-validator.test.cjs,prompt-verification+hook,P0,High,preservation-inventory §14
+FR-003,AC-003-04,US-003,TC-PV-001,tests/prompt-verification/anti-shortcut-enforcement.test.js,prompt-verification,P0,High,preservation-inventory §14
+FR-004,AC-004-01,US-004,TC-PV-004,tests/prompt-verification/rendering-mode-invariants.test.js,prompt-verification,P1,High,preservation-inventory §6
+FR-004,AC-004-02,US-004,TC-PV-004,tests/prompt-verification/rendering-mode-invariants.test.js,prompt-verification,P0,High,preservation-inventory §6 shared invariants
+FR-004,AC-004-03,US-004,TC-PV-004;TC-PV-006,tests/prompt-verification/rendering-mode-invariants.test.js;tests/prompt-verification/participation-gate.test.js,prompt-verification,P1,High,roundtable decision
+FR-005,AC-005-01,US-005,TC-PV-005;TC-CM-017,tests/prompt-verification/persona-extension-composition.test.js;tests/core/roundtable/runtime-composer.test.js,prompt-verification+unit,P0,High,preservation-inventory §7
+FR-005,AC-005-02,US-005,TC-PV-005;TC-CM-011,tests/prompt-verification/persona-extension-composition.test.js;tests/core/roundtable/runtime-composer.test.js,prompt-verification+unit,P0,High,preservation-inventory §7
+FR-005,AC-005-03,US-005,TC-CM-001..TC-CM-010,tests/core/roundtable/runtime-composer.test.js,unit,P0,High,roundtable architecture ADR-003
+FR-005,AC-005-04,US-005,TC-CM-012..TC-CM-014,tests/core/roundtable/runtime-composer.test.js,unit,P0,High,roundtable architecture ADR-003
+FR-005,AC-005-05,US-005,TC-CM-015;TC-CM-016,tests/core/roundtable/runtime-composer.test.js,unit,P0,Medium,design decision (first-wins + warn)
+FR-005,AC-005-06,US-005,TC-PV-005;TC-CM-020,tests/prompt-verification/persona-extension-composition.test.js;tests/core/roundtable/runtime-composer.test.js,prompt-verification+unit,P0,High,existing persona files audit
+FR-006,AC-006-01,US-006,TC-PV-APPENDIX-A,tests/prompt-verification/ (appendix-structure check, future),prompt-verification,P2,High,preservation-inventory §13
+FR-006,AC-006-02,US-006,TC-PV-APPENDIX-BC,tests/prompt-verification/ (appendix-structure check, future),prompt-verification,P2,High,preservation-inventory §13
+FR-006,AC-006-03,US-006,TC-PV-RESUME-REF,tests/prompt-verification/ (single resume ref check),prompt-verification,P2,High,preservation-inventory §10
+FR-007,AC-007-01,US-007,TC-PV-001,tests/prompt-verification/anti-shortcut-enforcement.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-02,US-007,TC-PV-002,tests/prompt-verification/state-local-template-binding.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-03,US-007,TC-PV-003,tests/prompt-verification/confirmation-sequencing-v2.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-04,US-007,TC-PV-004,tests/prompt-verification/rendering-mode-invariants.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-05,US-007,TC-PV-005,tests/prompt-verification/persona-extension-composition.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-06,US-007,TC-PV-006,tests/prompt-verification/participation-gate.test.js,prompt-verification,P0,High,roundtable decision
+FR-007,AC-007-07,US-007,TC-PV-007,tests/prompt-verification/tasks-render-as-table.test.js,prompt-verification,P0,High,roundtable decision
+FR-008,AC-008-01,US-008,hook-audit-report,docs/requirements/REQ-GH-235-.../hook-audit-report.md (artifact in T032),artifact-exists,P1,High,roundtable decision (scope C)
+FR-008,AC-008-02,US-008,existing-hook-tests,src/claude/hooks/tests/ (updated existing tests T037),hook-regression,P1,High,hook audit finding
+FR-008,AC-008-03,US-008,TC-HK-001;TC-HK-002;TC-HK-003,src/claude/hooks/tests/tasks-as-table-validator.test.cjs;participation-gate-enforcer.test.cjs;persona-extension-composer-validator.test.cjs,hook,P0,High,roundtable decision (3 new hooks)
+FR-008,AC-008-04,US-008,npm-test-green,npm test (aggregate pass),aggregate,P0,High,existing hook test suite
+FR-009,AC-009-01,US-009,TC-PV-008,tests/prompt-verification/bug-roundtable-rewritten-contract.test.js,prompt-verification,P1,High,roundtable decision (include bug)
+FR-009,AC-009-02,US-009,TC-PV-008,tests/prompt-verification/bug-roundtable-rewritten-contract.test.js,prompt-verification,P1,High,roundtable architecture ADR-005
+FR-009,AC-009-03,US-009,TC-PV-008,tests/prompt-verification/bug-roundtable-rewritten-contract.test.js,prompt-verification,P0,High,bug templates existing
+FR-009,AC-009-04,US-009,TC-PV-008,tests/prompt-verification/bug-roundtable-rewritten-contract.test.js,prompt-verification,P0,High,roundtable decision
+FR-010,AC-010-01,US-010,manual-review,CLAUDE.md (Phase 08 manual review),docs-review,P2,Medium,Article VIII documentation currency
+FR-010,AC-010-02,US-010,manual-review,docs/AGENTS.md (Phase 08 manual review),docs-review,P2,Medium,Article VIII req 8
+FR-010,AC-010-03,US-010,manual-review,docs/isdlc/persona-authoring-guide.md (Phase 08 manual review),docs-review,P2,Medium,inferred from persona extensibility

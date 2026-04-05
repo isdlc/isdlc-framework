@@ -29,7 +29,13 @@
   },
   "acceptance": {
     "accepted_at": "2026-04-05T00:00:00.000Z",
-    "domains": ["requirements", "architecture", "design", "tasks"],
+    "domains": [
+      "requirements",
+      "architecture",
+      "design",
+      "tasks"
+    ],
     "amendment_cycles": 1
-  }
+  },
+  "build_started_at": "2026-04-05T13:18:01.460Z"
 }

@@ -57,14 +57,34 @@ Exploration agents help understand the scope and impact of changes through speci
 
 ### Roundtable Analysis Protocol
 
-Feature analysis behavior is defined by `src/claude/agents/roundtable-analyst.md`.
+Feature analysis behavior is defined by `src/claude/agents/roundtable-analyst.md`. Bug analysis behavior is defined by `src/claude/agents/bug-roundtable-analyst.md`.
 
-Current operating model:
-- inline conversational roundtable in a single assistant thread
+Both protocols share a behavior-first 12-section + 3-appendix architecture:
+
+| Section | Content |
+|---------|---------|
+| **Section 1-2** | Purpose, non-negotiable anti-shortcut hard rules, behavior contract (stop/wait, no-write-before-confirmation) |
+| **Section 3-4** | Single-agent operating model, plugin-based persona extensibility (core vs contributing personas with promotion path) |
+| **Section 5-6** | Three rendering modes (bulleted / conversational / silent), conversation rendering rules |
+| **Section 7-8** | State machine with state-local template bindings, domain confirmation contracts |
+| **Section 9-10** | Ask-vs-infer policy, scope/tier rules |
+| **Section 11-12** | Early exit exception, finalization batch-write rules |
+| **Appendices A-C** | Agent Teams (dormant), runtime adapter notes, meta/search internal data |
+
+**Feature roundtable** (`roundtable-analyst.md`):
+- Inline conversational roundtable in a single assistant thread
 - Maya, Alex, and Jordan are simulated analytical perspectives inside one conversation
-- one high-value clarification question is asked when blocking uncertainty exists
-- non-blocking gaps are inferred and surfaced in Assumptions and Inferences
-- confirmations are presented sequentially per domain
+- Confirmation states: REQUIREMENTS -> ARCHITECTURE -> DESIGN -> TASKS
+- One high-value clarification question per turn; non-blocking gaps are inferred and surfaced in Assumptions and Inferences
+- Confirmations are presented sequentially per domain with state-local template bindings
+- Plugin-based persona extensibility: contributing personas fold into core states; promoted personas own new states and templates via named extension points
+
+**Bug roundtable** (`bug-roundtable-analyst.md`):
+- Same 12-section architecture adapted for bug-specific analysis
+- Bug-specific confirmation states: BUG_SUMMARY -> ROOT_CAUSE -> FIX_STRATEGY -> TASKS
+- Delegates to tracing orchestrator (T1/T2/T3) during ROOT_CAUSE analysis
+- bug-report.md is written mid-conversation (required as tracing input); all other artifacts batch-write at finalization
+- Same rendering modes, persona model, and anti-shortcut enforcement as the feature roundtable
 
 ### Quick Scan Agent (Phase 00 - Feature Workflow)
 
@@ -292,6 +312,8 @@ Agent definitions are located in `.claude/agents/`:
 ├── 13-site-reliability-engineer.md
 ├── 14-upgrade-engineer.md
 ├── 16-quality-loop-engineer.md
+├── roundtable-analyst.md
+├── bug-roundtable-analyst.md
 ├── discover-orchestrator.md
 ├── quick-scan/
 │   └── quick-scan-agent.md

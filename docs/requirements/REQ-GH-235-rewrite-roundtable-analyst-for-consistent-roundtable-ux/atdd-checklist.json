@@ -1,0 +1,416 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-04-05T00:00:00Z",
+  "requirement_id": "REQ-GH-235",
+  "requirement_name": "Rewrite roundtable-analyst.md for consistent roundtable UX",
+  "phase": "05-test-strategy",
+  "atdd_mode": true,
+  "acceptance_criteria": [
+    {
+      "ac_id": "AC-001-02",
+      "fr": "FR-001",
+      "description": "Rewritten file is materially smaller, layered, harder to shortcut",
+      "priority": "P1",
+      "test_files": ["tests/prompt-verification/ (structural checks)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-001-03",
+      "fr": "FR-001",
+      "description": "All §2-7 preserved behaviors retained verbatim",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/ (preservation markers)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-002-01",
+      "fr": "FR-002",
+      "description": "Each PRESENTING_* state explicitly names its governing template inline",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/state-local-template-binding.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-002-02",
+      "fr": "FR-002",
+      "description": "On-screen Tasks uses traceability.template.json",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/state-local-template-binding.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-002-03",
+      "fr": "FR-002",
+      "description": "Written tasks.md uses tasks.template.json",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/state-local-template-binding.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-003-01",
+      "fr": "FR-003",
+      "description": "No collapse from clarification to artifact generation",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/anti-shortcut-enforcement.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-003-02",
+      "fr": "FR-003",
+      "description": "3 primary persona contributions before first confirmation",
+      "priority": "P0",
+      "test_files": [
+        "tests/prompt-verification/participation-gate.test.js",
+        "src/claude/hooks/tests/participation-gate-enforcer.test.cjs"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-003-03",
+      "fr": "FR-003",
+      "description": "Tasks confirmation renders traceability table, never bullets/prose",
+      "priority": "P0",
+      "test_files": [
+        "tests/prompt-verification/tasks-render-as-table.test.js",
+        "src/claude/hooks/tests/tasks-as-table-validator.test.cjs"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-003-04",
+      "fr": "FR-003",
+      "description": "No artifact writes before staged confirmations except early exit",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/anti-shortcut-enforcement.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-004-01",
+      "fr": "FR-004",
+      "description": "All three rendering modes defined early",
+      "priority": "P1",
+      "test_files": ["tests/prompt-verification/rendering-mode-invariants.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-004-02",
+      "fr": "FR-004",
+      "description": "Mode changes cannot alter protocol semantics",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/rendering-mode-invariants.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-004-03",
+      "fr": "FR-004",
+      "description": "Silent mode: participation gates internal-only (no persona-name cues)",
+      "priority": "P1",
+      "test_files": [
+        "tests/prompt-verification/rendering-mode-invariants.test.js",
+        "tests/prompt-verification/participation-gate.test.js"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-01",
+      "fr": "FR-005",
+      "description": "Added personas default to contributing",
+      "priority": "P0",
+      "test_files": [
+        "tests/prompt-verification/persona-extension-composition.test.js",
+        "tests/core/roundtable/runtime-composer.test.js"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-02",
+      "fr": "FR-005",
+      "description": "Contributing personas don't create new templates/domains/states",
+      "priority": "P0",
+      "test_files": [
+        "tests/prompt-verification/persona-extension-composition.test.js",
+        "tests/core/roundtable/runtime-composer.test.js"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-03",
+      "fr": "FR-005",
+      "description": "Promotion frontmatter required fields enforced",
+      "priority": "P0",
+      "test_files": ["tests/core/roundtable/runtime-composer.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-04",
+      "fr": "FR-005",
+      "description": "Runtime composes effective protocol at analyze dispatch",
+      "priority": "P0",
+      "test_files": ["tests/core/roundtable/runtime-composer.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-05",
+      "fr": "FR-005",
+      "description": "Conflict resolution: first-declared wins + warn",
+      "priority": "P0",
+      "test_files": ["tests/core/roundtable/runtime-composer.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-005-06",
+      "fr": "FR-005",
+      "description": "Existing 4 contributing persona files work unchanged",
+      "priority": "P0",
+      "test_files": [
+        "tests/prompt-verification/persona-extension-composition.test.js",
+        "tests/core/roundtable/runtime-composer.test.js"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-006-01",
+      "fr": "FR-006",
+      "description": "Agent Teams → Appendix A",
+      "priority": "P2",
+      "test_files": ["tests/prompt-verification/ (appendix check)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-006-02",
+      "fr": "FR-006",
+      "description": "Search wiring, schemas → Appendix B/C",
+      "priority": "P2",
+      "test_files": ["tests/prompt-verification/ (appendix check)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-006-03",
+      "fr": "FR-006",
+      "description": "Runtime resume collapsed to single reference",
+      "priority": "P2",
+      "test_files": ["tests/prompt-verification/ (single resume ref)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-01",
+      "fr": "FR-007",
+      "description": "anti-shortcut-enforcement test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/anti-shortcut-enforcement.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-02",
+      "fr": "FR-007",
+      "description": "state-local-template-binding test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/state-local-template-binding.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-03",
+      "fr": "FR-007",
+      "description": "confirmation-sequencing-v2 test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/confirmation-sequencing-v2.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-04",
+      "fr": "FR-007",
+      "description": "rendering-mode-invariants test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/rendering-mode-invariants.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-05",
+      "fr": "FR-007",
+      "description": "persona-extension-composition test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/persona-extension-composition.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-06",
+      "fr": "FR-007",
+      "description": "participation-gate test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/participation-gate.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-007-07",
+      "fr": "FR-007",
+      "description": "tasks-render-as-table test exists",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/tasks-render-as-table.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-008-01",
+      "fr": "FR-008",
+      "description": "Hook audit report produced",
+      "priority": "P1",
+      "test_files": ["docs/requirements/REQ-GH-235-.../hook-audit-report.md (artifact)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-008-02",
+      "fr": "FR-008",
+      "description": "Drifting hooks updated",
+      "priority": "P1",
+      "test_files": ["src/claude/hooks/tests/ (updated existing)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-008-03",
+      "fr": "FR-008",
+      "description": "3 new hooks shipped",
+      "priority": "P0",
+      "test_files": [
+        "src/claude/hooks/tests/tasks-as-table-validator.test.cjs",
+        "src/claude/hooks/tests/participation-gate-enforcer.test.cjs",
+        "src/claude/hooks/tests/persona-extension-composer-validator.test.cjs"
+      ],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-008-04",
+      "fr": "FR-008",
+      "description": "All hook tests pass; 8 existing prompt-verification tests updated",
+      "priority": "P0",
+      "test_files": ["npm test (aggregate)"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-009-01",
+      "fr": "FR-009",
+      "description": "Bug roundtable prompt uses same behavior-first structure",
+      "priority": "P1",
+      "test_files": ["tests/prompt-verification/bug-roundtable-rewritten-contract.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-009-02",
+      "fr": "FR-009",
+      "description": "Same rendering modes, persona extensibility, state-local template authority",
+      "priority": "P1",
+      "test_files": ["tests/prompt-verification/bug-roundtable-rewritten-contract.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-009-03",
+      "fr": "FR-009",
+      "description": "Bug-specific confirmations bind to bug templates inline",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/bug-roundtable-rewritten-contract.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-009-04",
+      "fr": "FR-009",
+      "description": "Dedicated prompt-verification test shipped",
+      "priority": "P0",
+      "test_files": ["tests/prompt-verification/bug-roundtable-rewritten-contract.test.js"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-010-01",
+      "fr": "FR-010",
+      "description": "CLAUDE.md updated for persona extensibility",
+      "priority": "P2",
+      "test_files": ["Phase 08 manual review"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-010-02",
+      "fr": "FR-010",
+      "description": "docs/AGENTS.md regenerated",
+      "priority": "P2",
+      "test_files": ["Phase 08 manual review"],
+      "status": "skip",
+      "implemented": false
+    },
+    {
+      "ac_id": "AC-010-03",
+      "fr": "FR-010",
+      "description": "persona-authoring-guide updated",
+      "priority": "P2",
+      "test_files": ["Phase 08 manual review"],
+      "status": "skip",
+      "implemented": false
+    }
+  ],
+  "coverage_summary": {
+    "total_ac": 39,
+    "total_fr": 10,
+    "tests_generated": 96,
+    "tests_skipped": 96,
+    "tests_red": 0,
+    "tests_passing": 0,
+    "by_priority": {
+      "P0": { "total": 24, "passing": 0 },
+      "P1": { "total": 7, "passing": 0 },
+      "P2": { "total": 6, "passing": 0 },
+      "P3": { "total": 0, "passing": 0 }
+    },
+    "by_layer": {
+      "prompt_verification": 53,
+      "unit_composer": 23,
+      "hook": 20
+    }
+  },
+  "test_file_manifest": [
+    "tests/prompt-verification/anti-shortcut-enforcement.test.js",
+    "tests/prompt-verification/state-local-template-binding.test.js",
+    "tests/prompt-verification/confirmation-sequencing-v2.test.js",
+    "tests/prompt-verification/rendering-mode-invariants.test.js",
+    "tests/prompt-verification/persona-extension-composition.test.js",
+    "tests/prompt-verification/participation-gate.test.js",
+    "tests/prompt-verification/tasks-render-as-table.test.js",
+    "tests/prompt-verification/bug-roundtable-rewritten-contract.test.js",
+    "tests/core/roundtable/runtime-composer.test.js",
+    "src/claude/hooks/tests/tasks-as-table-validator.test.cjs",
+    "src/claude/hooks/tests/participation-gate-enforcer.test.cjs",
+    "src/claude/hooks/tests/persona-extension-composer-validator.test.cjs"
+  ]
+}

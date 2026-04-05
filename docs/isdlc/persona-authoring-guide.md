@@ -89,10 +89,151 @@ Every persona file requires YAML frontmatter with these fields:
 |-------|----------|------|-------------|
 | `name` | **Yes** | string | Unique identifier matching the filename (e.g., `persona-security-reviewer`) |
 | `description` | No | string | Brief description shown in roster proposals |
-| `role_type` | No | string | `primary` or `contributing` (default: `contributing`) |
+| `role_type` | No | string | `primary` or `contributing` (default: `contributing`) — see Persona Extensibility Model |
 | `triggers` | No | string[] | Keywords for automatic recommendation matching |
 | `owned_skills` | No | string[] | Skill IDs this persona is associated with |
 | `version` | No | string | Semver version for override drift detection |
+
+Promoted personas (`role_type: primary`) declare additional fields (`owns_state`, `template`, `inserts_at`, `rendering_contribution`). See **Persona Extensibility Model → Promotion Schema** below for the full schema.
+
+## Persona Extensibility Model
+
+The roundtable state machine is extensible. Personas can participate in one of two ways:
+
+### Contributing Personas (default)
+
+Contributing personas fold their observations into state-owned confirmations presented by the core primary personas (Business Analyst, Solutions Architect, System Designer). They do not own their own confirmation state — their insights are woven into existing requirements, architecture, design, and tasks confirmations.
+
+**Characteristics**:
+- `role_type: contributing` (default when omitted)
+- No separate confirmation state
+- Recommendations from security, devops, UX, QA, performance reviewers surface within primary persona confirmations
+- Zero-touch: works with no additional frontmatter fields
+
+**When to use**: For domain specialists whose input enriches existing confirmations but who do not need their own Accept/Amend cycle. This is the right choice for most custom personas.
+
+### Promoted Personas
+
+Promoted personas own their own confirmation state in the roundtable state machine. They present a dedicated domain artifact using their own template and participate in the Accept/Amend cycle independently.
+
+**Characteristics**:
+- `role_type: primary`
+- Owns a declared state (e.g., `data_architecture`)
+- Binds a state-local template (e.g., `data-architecture.template.json`)
+- Inserts into the state machine at a declared extension point (e.g., `after:architecture`)
+
+**When to use**: For domain areas that require their own first-class confirmation artifact distinct from the default requirements/architecture/design/tasks flow. Examples: data architecture for data-heavy systems, compliance review for regulated domains, API contract confirmation for contract-first projects.
+
+### Promotion Schema
+
+A promoted persona's frontmatter MUST declare the following fields. The runtime composer (`src/core/roundtable/runtime-composer.js`) validates these at session build time.
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `role_type` | **Yes** | `"primary"` | Marks this persona as promoted |
+| `owns_state` | **Yes** | string | State name the persona owns (e.g., `data_architecture`). Must match `[a-z_]+` |
+| `template` | **Yes** | string | Template filename ending in `.template.json` (e.g., `data-architecture.template.json`) |
+| `inserts_at` | **Yes** | string | Extension point — see taxonomy below. Format: `(before\|after):(requirements\|architecture\|design\|tasks)` |
+| `rendering_contribution` | No | string | `"ownership"` (default) or `"rendering-only"` |
+
+**Validation rules** (per `validatePromotionFrontmatter` in `src/core/roundtable/runtime-composer.js`):
+
+- `role_type === "primary"` requires `owns_state`, `template`, and `inserts_at` — all three must be present
+- `owns_state` must be a non-empty string matching the regex `[a-z_]+` (lowercase letters and underscores only)
+- `template` must end with `.template.json`
+- `inserts_at` must match `(before|after):(requirements|architecture|design|tasks)`
+- `rendering_contribution` (when present) must be exactly `"ownership"` or `"rendering-only"`
+
+**Fail-open behavior**: Invalid promotion frontmatter does not block analysis. The composer emits a warning and treats the persona as contributing for that session.
+
+### Extension-Point Taxonomy
+
+The stable, named extension points where promoted personas may insert their owned state:
+
+| Extension Point | Insertion Position |
+|-----------------|-------------------|
+| `before:requirements` | Before the requirements confirmation (useful for discovery/context-gathering personas) |
+| `after:requirements` | Between requirements and architecture (useful for compliance or policy review) |
+| `after:architecture` | Between architecture and design (useful for data architecture, API contracts) |
+| `after:design` | Between design and tasks (useful for quality gate reviewers) |
+| `after:tasks` | After tasks, before finalization (useful for handoff or release reviewers) |
+
+Extension points are parsed into `{before|after}:{state_name}`. Unknown extension points are rejected with a warning.
+
+### Examples
+
+**Contributing persona** (existing convention, unchanged):
+
+```yaml
+---
+name: persona-security-reviewer
+role_type: contributing
+domain: security
+triggers: [auth, encryption, OWASP]
+owned_skills: [SEC-001]
+---
+```
+
+**Promoted persona** (new schema):
+
+```yaml
+---
+name: persona-data-architect
+role_type: primary
+domain: data_architecture
+owns_state: data_architecture
+template: data-architecture.template.json
+inserts_at: after:architecture
+rendering_contribution: ownership
+owned_skills: []
+---
+```
+
+**Invalid promoted persona** (missing required fields):
+
+```yaml
+---
+name: persona-broken
+role_type: primary
+domain: mystery
+# MISSING: owns_state, template, inserts_at
+---
+```
+
+Composer result: warning emitted, persona treated as contributing for this analyze session.
+
+### Conflict Resolution
+
+When two or more promoted personas declare the same `inserts_at` value, the runtime composer applies **first-declared wins** resolution:
+
+- The first persona encountered (by file load order) retains its insertion position
+- Subsequent personas targeting the same point are rejected for that session
+- A warning is emitted: `WARN: Insertion conflict at '{point}': first-wins -> {chosen}`
+- Analysis continues — the composer never blocks
+
+The runtime composer emits warnings through the `persona-extension-composer-validator.cjs` hook. Warnings surface in the analysis output but do not halt the roundtable.
+
+**Recommendation**: If two promoted personas genuinely need to participate at the same point, use distinct `inserts_at` values (e.g., one at `after:architecture`, the other at `after:design`) or collapse them into a single composite persona.
+
+### Migration
+
+**Existing contributing personas** (e.g., `persona-security-reviewer`, `persona-devops-engineer`, `persona-ux-reviewer`, `persona-qa-tester`, `persona-performance-engineer`): Zero-touch. They continue to work as-is with no frontmatter changes required. The default `role_type: contributing` is applied when `role_type` is omitted.
+
+**Adding a new contributing persona**: Create `persona-{name}.md` in `.isdlc/personas/` with `role_type: contributing` (or omit the field). No promotion fields are needed.
+
+**Promoting an existing persona** to primary status:
+
+1. Open the persona's `.md` file
+2. Change or add `role_type: primary` in the frontmatter
+3. Add the three required promotion fields:
+   - `owns_state: <snake_case_state_name>`
+   - `template: <name>.template.json`
+   - `inserts_at: <before|after>:<requirements|architecture|design|tasks>`
+4. Optionally declare `rendering_contribution` (defaults to `ownership`)
+5. Create the declared template file under the framework template directory
+6. Run the analysis — the composer validates the promotion and inserts the new state
+
+**Rollback**: To revert a promoted persona to contributing, change `role_type` back to `contributing` and remove the promotion fields. The composer will ignore the promotion schema.
 
 ## Overriding a Built-in Persona
 

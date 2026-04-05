@@ -40,8 +40,11 @@ const SUMMARY_ARTIFACTS = [
   'design-summary.md'
 ];
 
-const EXPECTED_HOOK_COUNT = 28;
-const EXPECTED_RUNTIME_DEPS = ['chalk', 'fs-extra', 'prompts', 'semver'];
+// Hook/dependency counts track current environment, not the roundtable-analyst rewrite.
+// These guardrails prevent accidental additions during a prompt-only change. Counts are
+// updated as the framework intentionally adds hooks or runtime deps.
+const EXPECTED_HOOK_COUNT = 37;
+const EXPECTED_RUNTIME_DEPS = ['chalk', 'fs-extra', 'js-yaml', 'onnxruntime-node', 'prompts', 'semver'];
 
 // Helper: read file with caching
 const fileCache = {};
