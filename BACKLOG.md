@@ -24,8 +24,9 @@
   - **Completed:** 2026-04-05 (bundled with #229)
 - [x] #229 Incremental embedding indexing via filesystem-hash diff — re-embed only changed files [github: GH-229] -> [requirements](docs/requirements/REQ-GH-227-embedding-scale-out/) **Completed**
   - **Completed:** 2026-04-05 (bundled with #227)
-- [A] #216 Make ATDD the default mode for all workflows — remove --atdd flag [github: GH-216] -> [requirements](docs/requirements/REQ-GH-216-make-atdd-the-default-mode-for-all-workflows-remov/)
+- [x] #216 Make ATDD the default mode for all workflows — remove --atdd flag [github: GH-216] -> [requirements](docs/requirements/REQ-GH-216-make-atdd-the-default-mode-for-all-workflows-remov/) **Completed**
   - Remove opt-in flag, make AC-to-test traceability unconditional. Config-driven via .isdlc/config.json with 4 knobs (enabled, require_gwt, track_red_green, enforce_priority_order). Scope expanded to include --atdd-ready on discover.
+  - **Completed:** 2026-04-05
 - [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
   - Group B — scale. Sequential chunking acceptable for MVP.
 - [x] #234 Enforce artifact templates strictly in roundtable confirmations and artifact writes [github: GH-234] -> [requirements](docs/requirements/REQ-GH-234-strict-template-enforcement/) **Completed**
