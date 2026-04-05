@@ -13,10 +13,10 @@ dependencies: [RE-201, RE-202]
 # ATDD Checklist Generation
 
 ## Purpose
-Generate ATDD checklists from reverse-engineered acceptance criteria, formatted to be compatible with the `/isdlc feature --atdd` workflow. This enables migration from captured behavior to test-driven development.
+Generate ATDD checklists from reverse-engineered acceptance criteria, formatted to be compatible with the `/isdlc build` workflow (ATDD is the default behavior per GH-216, configurable via `atdd.*` in `.isdlc/config.json`). This enables migration from captured behavior to test-driven development.
 
 ## When to Use
-- When `--atdd-ready` flag is used
+- When `atdd.enabled: true` in `.isdlc/config.json` (default)
 - After artifact integration (R3) completes
 - When preparing for ATDD migration
 
@@ -78,7 +78,7 @@ For each domain in traceability matrix:
   "migration_status": {
     "ready_for_atdd": true,
     "human_review_required": true,
-    "next_step": "/isdlc feature 'Migrate {domain}' --atdd"
+    "next_step": "/isdlc build 'Migrate {domain}'"
   }
 }
 ```

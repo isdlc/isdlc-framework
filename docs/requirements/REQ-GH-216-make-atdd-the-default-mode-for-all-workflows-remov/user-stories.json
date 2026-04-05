@@ -1,0 +1,105 @@
+[
+  {
+    "id": "US-001",
+    "title": "ATDD always active by default for build workflows",
+    "story": "As a developer using /isdlc build, I want ATDD protocol to run without needing a --atdd flag so that every acceptance criterion has a corresponding test without me having to remember an opt-in switch.",
+    "acceptance_criteria": [
+      "Build workflow runs Phase 05 ATDD scaffold generation without any flag",
+      "Legacy --atdd flag has no effect (and triggers no special handling)"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-002",
+    "title": "ATDD bridge default-active for existing-project discovery",
+    "story": "As a developer onboarding an existing codebase via /discover, I want the ATDD bridge sub-phase to run by default so that my reverse-engineered ACs are ready for downstream ATDD consumption without a separate flag.",
+    "acceptance_criteria": [
+      "/discover runs sub-phase 1d (atdd-bridge) without --atdd-ready",
+      "Sub-phase 1d is skippable via atdd.enabled: false in config"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-002"]
+  },
+  {
+    "id": "US-003",
+    "title": "Config surface for ATDD behavior",
+    "story": "As a framework user, I want to configure ATDD behavior via .isdlc/config.json so that I can relax specific knobs (e.g., GWT strictness) for edge cases without disabling ATDD entirely.",
+    "acceptance_criteria": [
+      "atdd section in .isdlc/config.json with 4 knobs",
+      "Missing section yields all-true defaults",
+      "Partial overrides merged with defaults"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-004",
+    "title": "Consistent config-driven ATDD across all touchpoints",
+    "story": "As a maintainer, I want ATDD behavior driven from one config surface (not scattered conditionals) so that ATDD semantics cannot drift between hooks, phase agents, and workflow configs.",
+    "acceptance_criteria": [
+      "Zero _when_atdd_mode blocks in workflows.json",
+      "Zero when: atdd_mode guards in iteration-requirements.json",
+      "Phase 05/06 delegations receive atdd.* via GATE REQUIREMENTS INJECTION"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004"]
+  },
+  {
+    "id": "US-005",
+    "title": "GWT enforcement via config",
+    "story": "As a test-strategy author, I want Phase 05 to hard-block on non-GWT ACs when require_gwt: true so that the knob name matches its behavior and the contract is clear.",
+    "acceptance_criteria": [
+      "require_gwt=true + non-GWT AC blocks Phase 05",
+      "require_gwt=false + non-GWT AC generates best-effort scaffold"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-005"]
+  },
+  {
+    "id": "US-006",
+    "title": "RED to GREEN tracking via config",
+    "story": "As a developer working through ATDD scaffolds, I want test-watcher to record RED to GREEN transitions when track_red_green: true so that my progress is visible in atdd-checklist.json.",
+    "acceptance_criteria": [
+      "track_red_green=true records transitions",
+      "track_red_green=false skips tracking entirely"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-006"]
+  },
+  {
+    "id": "US-007",
+    "title": "Priority-ordered test completion via config",
+    "story": "As a developer enforcing P0 first discipline, I want checkpoint-router to require tests to complete in priority order when enforce_priority_order: true so that critical behaviors ship first.",
+    "acceptance_criteria": [
+      "enforce_priority_order=true blocks out-of-order completion",
+      "enforce_priority_order=false accepts any order"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-007"]
+  },
+  {
+    "id": "US-008",
+    "title": "Master ATDD kill switch",
+    "story": "As a framework user with a legitimate need to opt out of ATDD entirely, I want atdd.enabled: false to disable all ATDD behaviors so that I have a single escape hatch without flipping each sub-knob individually.",
+    "acceptance_criteria": [
+      "enabled=false skips scaffold generation",
+      "enabled=false skips checklist creation",
+      "enabled=false skips discover sub-phase 1d",
+      "enabled=false makes sub-knob values irrelevant"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-008"]
+  },
+  {
+    "id": "US-009",
+    "title": "Documentation reflects config-driven model",
+    "story": "As a new contributor reading the framework docs, I want CLAUDE.md, ARCHITECTURE.md, HOOKS.md, and AGENTS.md to describe config-driven ATDD so that I understand the current surface without chasing stale flag references.",
+    "acceptance_criteria": [
+      "Docs reference atdd.* config keys",
+      "Zero --atdd / --atdd-ready references in active docs"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-009"]
+  }
+]

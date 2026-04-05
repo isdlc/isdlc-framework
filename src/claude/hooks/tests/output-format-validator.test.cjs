@@ -49,6 +49,18 @@ function writeArtifact(filePath, content) {
 function writeTemplates(baseDir) {
     const templatesDir = path.join(baseDir, '.isdlc', 'config', 'templates');
     fs.mkdirSync(templatesDir, { recursive: true });
+    fs.writeFileSync(path.join(templatesDir, 'traceability.template.json'), JSON.stringify({
+        domain: 'traceability',
+        format: {
+            columns: [
+                { key: 'fr_id', header: 'FR' },
+                { key: 'requirement', header: 'Requirement' },
+                { key: 'design_blast_radius', header: 'Design / Blast Radius' },
+                { key: 'related_tasks', header: 'Related Tasks' }
+            ],
+            post_table_sections: ['assumptions_and_inferences']
+        }
+    }, null, 2));
     fs.writeFileSync(path.join(templatesDir, 'requirements.template.json'), JSON.stringify({
         domain: 'requirements',
         format: {
@@ -122,18 +134,45 @@ describe('output-format-validator hook', () => {
         assert.ok(result.stderr.includes('stories'));
     });
 
-    it('AC-06b: validates traceability-matrix.csv headers', () => {
-        const filePath = path.join(tmpDir, 'docs', 'traceability-matrix.csv');
-        writeArtifact(filePath, 'FR,US,AC,Hook File,Test File,Hook Type\nFR-01,US-01,AC-01a,test.cjs,test.test.cjs,PreToolUse');
+    it('AC-06b: validates traceability-matrix.csv against the template-backed table shape', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'traceability-matrix.csv');
+        writeArtifact(filePath, [
+            '| FR | Requirement | Design / Blast Radius | Related Tasks |',
+            '|----|-------------|----------------------|---------------|',
+            '| FR-001 | Narrative',
+            'AC-001-01: detail | Design narrative',
+            'src/example.js (MODIFY) | T001 update validator |',
+            '## Assumptions and Inferences',
+            '- Assumption'
+        ].join('\n'));
         const result = runHook(tmpDir, makeToolInput(filePath));
         assert.equal(result.stderr, '');
     });
 
-    it('AC-06b: warns on traceability-matrix.csv missing headers', () => {
-        const filePath = path.join(tmpDir, 'docs', 'traceability-matrix.csv');
-        writeArtifact(filePath, 'Column1,Column2\nval1,val2');
+    it('AC-06b: warns on traceability-matrix.csv with wrong template columns', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'traceability-matrix.csv');
+        writeArtifact(filePath, [
+            '| ID | Requirement | Tests | Status |',
+            '|----|-------------|-------|--------|',
+            '| FR-001 | Narrative | T001 | pending |',
+            '## Assumptions and Inferences',
+            '- Assumption'
+        ].join('\n'));
         const result = runHook(tmpDir, makeToolInput(filePath));
-        assert.ok(result.stderr.includes('ARTIFACT FORMAT WARNING'));
+        assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
+        assert.ok(result.stderr.includes('EXACTLY these columns'));
+    });
+
+    it('GH-234: warns when traceability artifact omits assumptions and inferences section', () => {
+        const filePath = path.join(tmpDir, 'docs', 'requirements', 'REQ-GH-234', 'traceability-matrix.csv');
+        writeArtifact(filePath, [
+            '| FR | Requirement | Design / Blast Radius | Related Tasks |',
+            '|----|-------------|----------------------|---------------|',
+            '| FR-001 | Narrative | Design narrative | T001 implement |'
+        ].join('\n'));
+        const result = runHook(tmpDir, makeToolInput(filePath));
+        assert.ok(result.stderr.includes('TEMPLATE DRIFT DETECTED'));
+        assert.ok(result.stderr.includes('assumptions and inferences'));
     });
 
     it('AC-06c: validates ADR with required sections', () => {

@@ -140,3 +140,66 @@ describe('BUG-0009: writeState() version auto-increment', () => {
         assert.equal(written.state_version, 4, 'Third write: 3 -> 4');
     });
 });
+
+// REQ-GH-216: readAtddConfig passthrough
+describe('REQ-GH-216: readAtddConfig helper', () => {
+    let testDir;
+
+    beforeEach(() => {
+        testDir = setupTestEnv();
+    });
+
+    afterEach(() => {
+        cleanupTestEnv();
+    });
+
+    function getCommon() {
+        // Clear cache so lazy config bridge re-resolves
+        delete require.cache[require.resolve('../lib/common.cjs')];
+        return require('../lib/common.cjs');
+    }
+
+    it('TC-T001-10: readAtddConfig reflects user config partial override', () => {
+        const common = getCommon();
+        // Write user config with single override
+        fs.writeFileSync(
+            path.join(testDir, '.isdlc', 'config.json'),
+            JSON.stringify({ atdd: { enabled: false } }),
+            'utf8'
+        );
+        const atdd = common.readAtddConfig();
+        assert.deepStrictEqual(atdd, {
+            enabled: false,
+            require_gwt: true,
+            track_red_green: true,
+            enforce_priority_order: true,
+        });
+    });
+
+    it('TC-T002-15: readAtddConfig returns all-true defaults when no config section', () => {
+        const common = getCommon();
+        // No user config.json means all defaults
+        const atdd = common.readAtddConfig();
+        assert.deepStrictEqual(atdd, {
+            enabled: true,
+            require_gwt: true,
+            track_red_green: true,
+            enforce_priority_order: true,
+        });
+    });
+
+    it('TC-T002-16: readAtddConfig does not throw on bridge failure (fail-open)', () => {
+        const common = getCommon();
+        // Call with a projectRoot that does not exist still yields defaults
+        // (the helper catches any bridge error via its own try/catch).
+        let atdd;
+        assert.doesNotThrow(() => {
+            atdd = common.readAtddConfig();
+        });
+        assert.strictEqual(typeof atdd, 'object');
+        assert.strictEqual(atdd.enabled, true);
+        assert.strictEqual(atdd.require_gwt, true);
+        assert.strictEqual(atdd.track_red_green, true);
+        assert.strictEqual(atdd.enforce_priority_order, true);
+    });
+});

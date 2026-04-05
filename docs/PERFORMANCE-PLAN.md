@@ -226,7 +226,7 @@ Many hooks already have `active_workflow` guards internally. Lifting this to the
 ### T2-C: Conditional Agent Sections
 
 **What**: Some agent sections are only relevant in specific workflow types:
-- ATDD sections only needed when `--atdd` flag active
+- ATDD sections only needed when `atdd.enabled: true` in `.isdlc/config.json` (default per GH-216)
 - Discovery context sections only needed post-discover
 - Upgrade-specific sections only needed in upgrade workflow
 

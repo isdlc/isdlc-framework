@@ -4973,6 +4973,36 @@ function clearContractViolations(state) {
     state.contract_violations = [];
 }
 
+/**
+ * REQ-GH-216 FR-003: Read ATDD config via the CJS bridge.
+ *
+ * Thin passthrough to `getAtdd()` from the config bridge. Absorbs any bridge
+ * error and returns all-true defaults (Article X fail-safe).
+ *
+ * @returns {{ enabled: boolean, require_gwt: boolean, track_red_green: boolean, enforce_priority_order: boolean }}
+ */
+function readAtddConfig() {
+    const ATDD_DEFAULTS = {
+        enabled: true,
+        require_gwt: true,
+        track_red_green: true,
+        enforce_priority_order: true,
+    };
+    try {
+        const bridge = _getConfigBridge();
+        if (!bridge || typeof bridge.getAtdd !== 'function') {
+            return ATDD_DEFAULTS;
+        }
+        const result = bridge.getAtdd();
+        if (!result || typeof result !== 'object') {
+            return ATDD_DEFAULTS;
+        }
+        return result;
+    } catch {
+        return ATDD_DEFAULTS;
+    }
+}
+
 module.exports = {
     isAntigravity,
     getFrameworkDir,
@@ -5099,6 +5129,8 @@ module.exports = {
     // Project config (REQ-0067)
     readConfig,
     DEFAULT_CONFIG,
+    // ATDD config (REQ-GH-216)
+    readAtddConfig,
     // Contract violation helpers (REQ-0141)
     writeContractViolation,
     readContractViolations,

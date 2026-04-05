@@ -14,6 +14,8 @@ import {
   loadSchema,
   getConfigPath,
   clearConfigCache,
+  getAtdd,
+  ATDD_DEFAULTS,
 } from '../../../src/core/config/config-service.js';
 
 // ---------------------------------------------------------------------------
@@ -225,5 +227,146 @@ describe('clearConfigCache', () => {
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getAtdd (REQ-GH-216)
+// ---------------------------------------------------------------------------
+
+describe('getAtdd', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    clearConfigCache();
+    tmpDir = createTmpDir();
+    mkdirSync(join(tmpDir, '.isdlc'), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('TC-T001-01: missing atdd section returns all-true defaults', () => {
+    writeJson(tmpDir, '.isdlc/config.json', { cache: { budget_tokens: 100 } });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+    // All four fields present
+    assert.strictEqual(typeof atdd.enabled, 'boolean');
+    assert.strictEqual(typeof atdd.require_gwt, 'boolean');
+    assert.strictEqual(typeof atdd.track_red_green, 'boolean');
+    assert.strictEqual(typeof atdd.enforce_priority_order, 'boolean');
+  });
+
+  it('TC-T001-02: empty atdd section returns all-true defaults', () => {
+    writeJson(tmpDir, '.isdlc/config.json', { atdd: {} });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+  });
+
+  it('TC-T001-03: single-field override is preserved, others default', () => {
+    writeJson(tmpDir, '.isdlc/config.json', { atdd: { require_gwt: false } });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: false,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+  });
+
+  it('TC-T001-04: multi-field override preserves specified values', () => {
+    writeJson(tmpDir, '.isdlc/config.json', {
+      atdd: { require_gwt: false, enforce_priority_order: false },
+    });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: false,
+      track_red_green: true,
+      enforce_priority_order: false,
+    });
+  });
+
+  it('TC-T001-05: full explicit config — all false', () => {
+    writeJson(tmpDir, '.isdlc/config.json', {
+      atdd: {
+        enabled: false,
+        require_gwt: false,
+        track_red_green: false,
+        enforce_priority_order: false,
+      },
+    });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: false,
+      require_gwt: false,
+      track_red_green: false,
+      enforce_priority_order: false,
+    });
+  });
+
+  it('TC-T001-06: fail-open on config read error (nonexistent path)', () => {
+    const atdd = getAtdd('/nonexistent/path/xyz-definitely-not-there');
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+  });
+
+  it('TC-T001-07: invalid field types fall back per-field', () => {
+    writeJson(tmpDir, '.isdlc/config.json', {
+      atdd: { enabled: 'yes', require_gwt: false },
+    });
+    const atdd = getAtdd(tmpDir);
+    // enabled falls back to default (true); require_gwt preserved (false)
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: false,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+  });
+
+  it('TC-T001-08: idempotent / cached reads return equivalent objects', () => {
+    writeJson(tmpDir, '.isdlc/config.json', { atdd: { track_red_green: false } });
+    const first = getAtdd(tmpDir);
+    const second = getAtdd(tmpDir);
+    assert.deepStrictEqual(first, second);
+    assert.strictEqual(first.track_red_green, false);
+    assert.strictEqual(second.track_red_green, false);
+  });
+
+  it('exposes ATDD_DEFAULTS as a frozen all-true object', () => {
+    assert.deepStrictEqual({ ...ATDD_DEFAULTS }, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+    assert.ok(Object.isFrozen(ATDD_DEFAULTS));
+  });
+
+  it('treats non-object atdd value (array) as missing, returns defaults', () => {
+    writeJson(tmpDir, '.isdlc/config.json', { atdd: ['enabled'] });
+    const atdd = getAtdd(tmpDir);
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
   });
 });

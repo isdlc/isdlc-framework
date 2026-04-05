@@ -14,7 +14,8 @@
 
 const {
     debugLog,
-    logHookEvent
+    logHookEvent,
+    readAtddConfig
 } = require('./lib/common.cjs');
 
 const fs = require('fs');
@@ -148,21 +149,38 @@ function check(ctx) {
             return { decision: 'allow' };
         }
 
-        // Check if ATDD mode is active
+        // REQ-GH-216 FR-008: Gate on atdd config from .isdlc/config.json.
+        // Master kill switch first, then sub-knob for priority enforcement.
+        let atdd;
+        try {
+            atdd = readAtddConfig();
+        } catch (_) {
+            atdd = { enabled: true, require_gwt: true, track_red_green: true, enforce_priority_order: true };
+        }
+
+        if (!atdd.enabled) {
+            debugLog('ATDD disabled via config, skipping');
+            return { decision: 'allow' };
+        }
+
+        // Priority-ordering reporting is gated on enforce_priority_order.
+        // When false, skip violation detection so users can run tests in any order
+        // without noise in stderr.
+        if (!atdd.enforce_priority_order) {
+            debugLog('ATDD priority-order enforcement disabled, skipping violations check');
+            return { decision: 'allow' };
+        }
+
+        // REQ-GH-216 FR-005: require_gwt gates GWT-format validation. This hook
+        // does not currently perform GWT validation (that lives in Phase 05
+        // test-design agent), so require_gwt is read but not acted on here —
+        // it is surfaced in logs for traceability.
         const state = ctx.state;
         if (!state || !state.active_workflow) {
             return { decision: 'allow' };
         }
 
-        // ATDD mode check: look in active_workflow options or agent_modifiers
-        const atddActive = (state.active_workflow.options && state.active_workflow.options.atdd_mode) ||
-                           (state.active_workflow.atdd_mode);
-        if (!atddActive) {
-            debugLog('ATDD mode not active, skipping');
-            return { decision: 'allow' };
-        }
-
-        debugLog('ATDD mode active, checking priority ordering');
+        debugLog(`ATDD enabled (require_gwt=${atdd.require_gwt}), checking priority ordering`);
 
         // Extract test output
         const output = (input.tool_result && input.tool_result.text) ||

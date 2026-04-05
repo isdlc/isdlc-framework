@@ -1859,6 +1859,20 @@ Use Task tool → {agent_name} with:
     7. After the gate requirements block, append this acknowledgment instruction on a new line:
        "Read the CRITICAL CONSTRAINTS block above and confirm you will comply before starting work."
     8. Error handling: If any error occurs in steps 1-7, continue with unmodified prompt. Log warning but never block.}
+   {ATDD_CONFIG INJECTION (REQ-GH-216 FR-004, AC-004-03) -- Inject atdd.* config values into Phase 05 and Phase 06 delegation prompts. Fail-open.
+    1. Only inject for phase_key in ['05-test-strategy', '06-implementation']. Other phases: SKIP.
+    2. Read atdd config via ConfigService bridge:
+       `node -e 'const {getAtdd} = require("./src/core/bridge/config.cjs"); process.stdout.write(JSON.stringify(getAtdd()))'`
+       If the bash call fails or returns invalid JSON: SKIP injection (agent uses defaults).
+    3. Parse the JSON. If parse fails: SKIP injection.
+    4. Append to delegation prompt:
+       ATDD_CONFIG:
+         enabled: {atdd.enabled}
+         require_gwt: {atdd.require_gwt}
+         track_red_green: {atdd.track_red_green}
+         enforce_priority_order: {atdd.enforce_priority_order}
+    5. Phase 05 and Phase 06 agents MUST read ATDD_CONFIG and gate behavior on its values. Missing block -> agents fall back to all-true defaults.
+    6. Error handling: Any failure -> skip injection, continue. Never block delegation.}
    {BUDGET DEGRADATION INJECTION (REQ-0022) -- Inject degradation directive when budget is exceeded or approaching. Fail-open.
     1. Read `active_workflow.budget_status` from state.json.
        If `budget_status` is `"on_track"`, missing, or null: SKIP degradation injection.

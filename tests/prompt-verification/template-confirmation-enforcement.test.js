@@ -30,4 +30,11 @@ describe('GH-234 template-bound confirmation prompt', () => {
     assert.ok(content.includes('traceability.template.json` EXACTLY as written below'));
     assert.ok(content.includes('`## Assumptions and Inferences` — explicit assumptions and inferred execution constraints that affect the task plan'));
   });
+
+  it('binds the traceability summary to the exact 4-column traceability template', () => {
+    const content = readPrompt();
+    assert.ok(content.includes('| FR | Requirement | Design / Blast Radius | Related Tasks |'));
+    assert.ok(content.includes('Do not switch to bullets, prose-only output, or a different table shape'));
+    assert.ok(content.includes('Render as an ASCII box table with row separators'));
+  });
 });

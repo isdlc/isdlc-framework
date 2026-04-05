@@ -258,7 +258,7 @@ Based on priority scores and dependencies:
 - **Test Evaluator (D2)**: Consumes coverage data from test evaluation report
 - **Feature Mapper (D6)**: Uses domain mapping from feature discovery
 - **Orchestrator**: Reports priority breakdown for workflow planning
-- **ATDD Workflow**: P0/P1 targets recommended for --atdd-ready flag
+- **ATDD Workflow**: P0/P1 targets recommended for downstream ATDD consumption (atdd-bridge runs by default when `atdd.enabled: true` in `.isdlc/config.json`)
 
 ## Validation
 - All targets scored

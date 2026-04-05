@@ -98,22 +98,45 @@ describe('routeCheckpoint', () => {
     assert.ok(result.validators.includes('constitutional-iteration-validator'));
   });
 
-  it('should route PostToolUse:Bash with ATDD mode', () => {
+  it('should route PostToolUse:Bash with atdd enabled and enforce_priority_order (REQ-GH-216)', () => {
     const result = routeCheckpoint('PostToolUse', 'Bash', {
       hasActiveWorkflow: true,
-      options: { atdd_mode: true }
+      atdd: { enabled: true, require_gwt: true, track_red_green: true, enforce_priority_order: true }
     });
     assert.ok(result.observers.includes('test-watcher'));
     assert.ok(result.observers.includes('review-reminder'));
     assert.ok(result.observers.includes('atdd-completeness-validator'));
   });
 
-  it('should exclude atdd-completeness-validator without ATDD mode', () => {
+  it('TC-T002-13 / AC-008-03: should exclude atdd-completeness-validator when atdd.enabled=false', () => {
+    const result = routeCheckpoint('PostToolUse', 'Bash', {
+      hasActiveWorkflow: true,
+      atdd: { enabled: false, require_gwt: true, track_red_green: true, enforce_priority_order: true }
+    });
+    assert.ok(result.observers.includes('test-watcher'));
+    assert.ok(!result.observers.includes('atdd-completeness-validator'),
+      'master kill switch should exclude atdd hook even when enforce_priority_order=true');
+  });
+
+  it('TC-T002-12 / AC-007-02: should exclude atdd-completeness-validator when enforce_priority_order=false', () => {
+    const result = routeCheckpoint('PostToolUse', 'Bash', {
+      hasActiveWorkflow: true,
+      atdd: { enabled: true, require_gwt: true, track_red_green: true, enforce_priority_order: false }
+    });
+    assert.ok(result.observers.includes('test-watcher'));
+    assert.ok(!result.observers.includes('atdd-completeness-validator'),
+      'enforce_priority_order=false should exclude atdd hook');
+  });
+
+  it('no atdd context -> fail-open to defaults (includes atdd hook)', () => {
     const result = routeCheckpoint('PostToolUse', 'Bash', {
       hasActiveWorkflow: true
     });
     assert.ok(result.observers.includes('test-watcher'));
-    assert.ok(!result.observers.includes('atdd-completeness-validator'));
+    // When context.atdd is omitted, fail-open defaults (all-true) apply, so
+    // atdd-completeness-validator IS routed.
+    assert.ok(result.observers.includes('atdd-completeness-validator'),
+      'missing atdd context should assume all-true defaults');
   });
 
   it('should route PostToolUse:Write correctly', () => {

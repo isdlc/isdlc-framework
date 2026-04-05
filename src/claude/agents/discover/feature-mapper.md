@@ -332,7 +332,7 @@ Record for each command:
 ```json
 {
   "name": "discover",
-  "options": ["--existing", "--new", "--atdd-ready", "--project", "--skip-tests", "--skip-skills"],
+  "options": ["--existing", "--new", "--project", "--skip-tests", "--skip-skills"],
   "routes_to_agent": "discover-orchestrator",
   "prerequisites": [".isdlc/state.json must exist"]
 }

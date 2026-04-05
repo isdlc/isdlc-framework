@@ -14,6 +14,17 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+/**
+ * ATDD config defaults. Used by getAtdd() for fail-open behavior.
+ * REQ-GH-216 FR-003.
+ */
+const ATDD_DEFAULTS = Object.freeze({
+  enabled: true,
+  require_gwt: true,
+  track_red_green: true,
+  enforce_priority_order: true,
+});
+
 // Cache maps (same mtime-based strategy as ESM service)
 const _frameworkCache = new Map();
 const _projectCache = new Map();
@@ -118,6 +129,60 @@ function readProjectConfig(projectRoot) {
   }
 }
 
+/**
+ * Resolve project root via CLAUDE_PROJECT_DIR env or walking up from CWD
+ * to find `.isdlc/`. Returns null if not found.
+ */
+function autoDetectProjectRoot() {
+  try {
+    if (process.env.CLAUDE_PROJECT_DIR) {
+      return process.env.CLAUDE_PROJECT_DIR;
+    }
+    let dir = process.cwd();
+    while (dir !== path.parse(dir).root) {
+      if (fs.existsSync(path.join(dir, '.isdlc'))) {
+        return dir;
+      }
+      dir = path.dirname(dir);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Return the fully-resolved ATDD config object, merging user overrides with
+ * all-true defaults. Per-field fail-open: invalid field types fall back to
+ * their defaults, while valid overrides are retained.
+ *
+ * REQ-GH-216 FR-003, AC-003-01, AC-003-02 (Article X fail-safe).
+ *
+ * @param {string} [projectRoot] - Optional project root; auto-detected if omitted
+ * @returns {{ enabled: boolean, require_gwt: boolean, track_red_green: boolean, enforce_priority_order: boolean }}
+ */
+function getAtdd(projectRoot) {
+  try {
+    const root = projectRoot || autoDetectProjectRoot();
+    if (!root) return { ...ATDD_DEFAULTS };
+
+    const full = readProjectConfig(root);
+    const section = (full && typeof full.atdd === 'object' && full.atdd !== null && !Array.isArray(full.atdd))
+      ? full.atdd
+      : {};
+
+    const result = { ...ATDD_DEFAULTS };
+    for (const key of Object.keys(ATDD_DEFAULTS)) {
+      if (typeof section[key] === 'boolean') {
+        result[key] = section[key];
+      }
+    }
+    return result;
+  } catch {
+    return { ...ATDD_DEFAULTS };
+  }
+}
+
 function loadSchema(schemaId) {
   const filePath = path.join(frameworkConfigDir(), 'schemas', `${schemaId}.schema.json`);
   return readCachedJson(filePath, _frameworkCache);
@@ -139,4 +204,6 @@ module.exports = {
   loadSchema,
   getConfigPath,
   clearConfigCache,
+  getAtdd,
+  ATDD_DEFAULTS,
 };

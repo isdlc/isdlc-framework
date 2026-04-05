@@ -36,6 +36,69 @@ describe('config-bridge.cjs', () => {
     assert.strictEqual(typeof bridge.loadSchema, 'function');
     assert.strictEqual(typeof bridge.getConfigPath, 'function');
     assert.strictEqual(typeof bridge.clearConfigCache, 'function');
+    // REQ-GH-216: getAtdd bridge export
+    assert.strictEqual(typeof bridge.getAtdd, 'function');
+  });
+
+  it('TC-T001-09: getAtdd bridge returns partial-merged atdd config', () => {
+    const tmp = createTmpDir();
+    try {
+      fs.writeFileSync(
+        path.join(tmp, '.isdlc', 'config.json'),
+        JSON.stringify({ atdd: { track_red_green: false } }),
+        'utf8'
+      );
+      const atdd = bridge.getAtdd(tmp);
+      assert.deepStrictEqual(atdd, {
+        enabled: true,
+        require_gwt: true,
+        track_red_green: false,
+        enforce_priority_order: true,
+      });
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it('REQ-GH-216: getAtdd fails open to all-true defaults on bad path', () => {
+    const atdd = bridge.getAtdd('/nonexistent/path/xyz-absent');
+    assert.deepStrictEqual(atdd, {
+      enabled: true,
+      require_gwt: true,
+      track_red_green: true,
+      enforce_priority_order: true,
+    });
+  });
+
+  it('REQ-GH-216: getAtdd preserves explicit full overrides', () => {
+    const tmp = createTmpDir();
+    try {
+      fs.writeFileSync(
+        path.join(tmp, '.isdlc', 'config.json'),
+        JSON.stringify({
+          atdd: { enabled: false, require_gwt: false, track_red_green: false, enforce_priority_order: false },
+        }),
+        'utf8'
+      );
+      const atdd = bridge.getAtdd(tmp);
+      assert.deepStrictEqual(atdd, {
+        enabled: false,
+        require_gwt: false,
+        track_red_green: false,
+        enforce_priority_order: false,
+      });
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it('REQ-GH-216: ATDD_DEFAULTS export has all-true values and is frozen', () => {
+    assert.strictEqual(typeof bridge.ATDD_DEFAULTS, 'object');
+    assert.strictEqual(bridge.ATDD_DEFAULTS.enabled, true);
+    assert.strictEqual(bridge.ATDD_DEFAULTS.require_gwt, true);
+    assert.strictEqual(bridge.ATDD_DEFAULTS.track_red_green, true);
+    assert.strictEqual(bridge.ATDD_DEFAULTS.enforce_priority_order, true);
+    assert.ok(Object.isFrozen(bridge.ATDD_DEFAULTS));
   });
 
   it('TC-CB-02: loadFrameworkConfig returns same result as would ESM service', () => {
