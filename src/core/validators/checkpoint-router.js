@@ -58,11 +58,16 @@ const PRE_SKILL_HOOKS = [
 
 /**
  * Post-Bash hook routing table.
+ *
+ * REQ-GH-216 FR-007: atdd-completeness-validator gating switched from the
+ * legacy `options.atdd_mode` state flag to config-driven `atddGating` (reads
+ * `atdd.enabled` and `atdd.enforce_priority_order` from .isdlc/config.json
+ * via the context.atdd injection).
  */
 const POST_BASH_HOOKS = [
   { name: 'test-watcher', category: HOOK_CATEGORIES.OBSERVERS, requiresWorkflow: true },
   { name: 'review-reminder', category: HOOK_CATEGORIES.OBSERVERS, requiresWorkflow: true },
-  { name: 'atdd-completeness-validator', category: HOOK_CATEGORIES.OBSERVERS, requiresWorkflow: true, optionsFilter: 'atdd_mode' }
+  { name: 'atdd-completeness-validator', category: HOOK_CATEGORIES.OBSERVERS, requiresWorkflow: true, atddGating: 'enforce_priority_order' }
 ];
 
 /**
@@ -91,7 +96,10 @@ const ROUTING_TABLES = {
  *
  * @param {string} hookType - 'PreToolUse' or 'PostToolUse'
  * @param {string} toolName - 'Task', 'Skill', 'Bash', 'Write', 'Edit'
- * @param {object} context - { hasActiveWorkflow, workflowType, currentPhase, options }
+ * @param {object} context - { hasActiveWorkflow, workflowType, currentPhase, options, atdd }
+ *   - context.atdd: { enabled, require_gwt, track_red_green, enforce_priority_order }
+ *     When omitted, routeCheckpoint assumes all-true defaults (fail-open per
+ *     Article X). Callers that need strict gating must inject atdd explicitly.
  * @returns {{ validators: string[], guards: string[], observers: string[] }}
  */
 export function routeCheckpoint(hookType, toolName, context = {}) {
@@ -131,9 +139,20 @@ export function routeCheckpoint(hookType, toolName, context = {}) {
       }
     }
 
-    // Check options filter (e.g., atdd_mode)
+    // Check options filter (e.g., legacy atdd_mode — retained for back-compat)
     if (hook.optionsFilter && !(context.options && context.options[hook.optionsFilter])) {
       continue;
+    }
+
+    // REQ-GH-216 FR-007, AC-007-01/02: check atdd-config gating.
+    // atddGating names a sub-knob (e.g., 'enforce_priority_order'). The hook
+    // runs only when `atdd.enabled` AND `atdd[<sub-knob>]` are both true.
+    // When context.atdd is absent, assume all-true defaults (fail-open).
+    if (hook.atddGating) {
+      const atdd = context.atdd || { enabled: true, require_gwt: true, track_red_green: true, enforce_priority_order: true };
+      if (!atdd.enabled || !atdd[hook.atddGating]) {
+        continue;
+      }
     }
 
     // Check tool filter (e.g., Write-only for output-format-validator)

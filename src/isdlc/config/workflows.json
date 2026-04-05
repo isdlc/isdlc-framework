@@ -51,18 +51,14 @@
       },
       "agent_modifiers": {
         "05-test-strategy": {
-          "_when_atdd_mode": {
-            "generate_skipped_tests": true,
-            "require_given_when_then_ac": true,
-            "create_atdd_checklist": true
-          }
+          "generate_skipped_tests": true,
+          "require_given_when_then_ac": true,
+          "create_atdd_checklist": true
         },
         "06-implementation": {
-          "_when_atdd_mode": {
-            "track_red_green_transitions": true,
-            "require_priority_order": true,
-            "all_priorities_must_pass": true
-          }
+          "track_red_green_transitions": true,
+          "require_priority_order": true,
+          "all_priorities_must_pass": true
         },
         "16-quality-loop": {
           "scope": "parallel-quality-check"

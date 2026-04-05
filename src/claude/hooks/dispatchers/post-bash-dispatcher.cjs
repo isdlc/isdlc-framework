@@ -34,7 +34,8 @@ const {
     loadManifest,
     loadIterationRequirements,
     loadWorkflowDefinitions,
-    debugLog
+    debugLog,
+    readAtddConfig
 } = require('../lib/common.cjs');
 
 const fs = require('fs');
@@ -62,6 +63,22 @@ const { check: atddCompletenessValidatorCheck } = require('../atdd-completeness-
 const hasActiveWorkflow = (ctx) => !!ctx.state?.active_workflow;
 
 /**
+ * REQ-GH-216 FR-008: gate atdd-related dispatches on atdd.enabled via
+ * .isdlc/config.json (replaces the deprecated active_workflow.options.atdd_mode
+ * state check). Fail-open to defaults (all-true) on config read error.
+ * @param {object} _ctx
+ * @returns {boolean}
+ */
+const isAtddEnabled = (_ctx) => {
+    try {
+        const atdd = readAtddConfig();
+        return Boolean(atdd && atdd.enabled);
+    } catch (_) {
+        return true;
+    }
+};
+
+/**
  * Hook execution order with optional activation guards.
  * If shouldActivate is defined and returns false, the hook is skipped.
  * @type {Array<{ name: string, check: function, shouldActivate?: function }>}
@@ -69,7 +86,7 @@ const hasActiveWorkflow = (ctx) => !!ctx.state?.active_workflow;
 const HOOKS = [
     { name: 'test-watcher',                check: testWatcherCheck,                shouldActivate: hasActiveWorkflow },
     { name: 'review-reminder',             check: reviewReminderCheck,             shouldActivate: hasActiveWorkflow },
-    { name: 'atdd-completeness-validator', check: atddCompletenessValidatorCheck, shouldActivate: (ctx) => !!ctx.state?.active_workflow?.options?.atdd_mode }
+    { name: 'atdd-completeness-validator', check: atddCompletenessValidatorCheck, shouldActivate: isAtddEnabled }
 ];
 
 const DISPATCHER_NAME = 'post-bash-dispatcher';

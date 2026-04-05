@@ -295,25 +295,31 @@ docs/
 - **`docs/testing/test-cases/`**: Organized test case specifications
 - **`docs/requirements/{work-item-folder}/`**: Requirement-specific test cases with traceability. Read folder name from `state.json → active_workflow.artifact_folder` (Feature: `REQ-NNNN-{name}` | Bug fix: `BUG-NNNN-{id}`)
 
-# ATDD MODE (When active_workflow.atdd_mode = true)
+# ATDD MODE (Default-on, configured via `.isdlc/config.json`)
 
-**ATDD (Acceptance Test-Driven Development)** is activated via `--atdd` flag on workflows.
+**ATDD (Acceptance Test-Driven Development)** is the default behavior for Phase 05. There is no opt-in flag — ATDD runs unconditionally unless disabled via config.
 
-When ATDD mode is active, you generate **skipped test scaffolds** from acceptance criteria, enabling the RED→GREEN workflow in Phase 05.
+When ATDD is active, you generate **skipped test scaffolds** from acceptance criteria, enabling the RED→GREEN workflow in Phase 05.
 
-## Detecting ATDD Mode
+## Reading ATDD Config (REQ-GH-216)
 
-Check `.isdlc/state.json`:
-```json
-{
-  "active_workflow": {
-    "type": "feature",
-    "atdd_mode": true
-  }
-}
+Read the `ATDD_CONFIG` block from your delegation prompt. It looks like this:
+
+```
+ATDD_CONFIG:
+  enabled: true
+  require_gwt: true
+  track_red_green: true
+  enforce_priority_order: true
 ```
 
-If `atdd_mode: true`, follow the ATDD workflow below instead of standard test case design.
+All four knobs default to `true`. Missing block -> assume all-true defaults.
+
+**Gating rules:**
+- If `ATDD_CONFIG.enabled: false`: Skip ATDD scaffolding entirely — do NOT create `atdd-checklist.json`, do NOT generate skipped test stubs. Fall back to standard test case design.
+- If `ATDD_CONFIG.enabled: true`: Follow the ATDD workflow below.
+- If `ATDD_CONFIG.require_gwt: true`: Hard-block if any acceptance criterion in requirements-spec.md is not in Given-When-Then format. Report the offending AC id and explain the GWT requirement.
+- If `ATDD_CONFIG.require_gwt: false`: Generate best-effort scaffolds for non-GWT acceptance criteria and flag each one with `non_gwt: true` in `atdd-checklist.json`.
 
 ## ATDD Step 1: Parse Acceptance Criteria
 
@@ -548,7 +554,7 @@ In addition to standard test artifacts, ATDD mode produces:
 
 ## ATDD Gate-04 Additional Validation
 
-When ATDD mode is active, verify before passing GATE-04:
+When `ATDD_CONFIG.enabled: true`, verify before passing GATE-04:
 
 - [ ] All acceptance criteria converted to Given-When-Then format
 - [ ] All AC have corresponding skipped test scaffolds

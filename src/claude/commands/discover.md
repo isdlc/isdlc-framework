@@ -88,7 +88,6 @@ Enter selection (1-3):
 | `--project {id}` | Target a specific project in monorepo mode |
 | `--skip-tests` | Skip test infrastructure evaluation |
 | `--skip-skills` | Skip skills.sh integration |
-| `--atdd-ready` | Prepare AC for ATDD workflow integration |
 | `--help` | Show this help message |
 
 ### Deprecated Flags
@@ -97,6 +96,7 @@ The following flags have been removed and will produce errors if used:
 
 - `--party`: Error: "The --party flag has been replaced by --deep. Use /discover --deep [standard|full]"
 - `--classic`: Error: "The --classic flag has been removed. /discover now uses deep discovery by default."
+- `--atdd-ready`: Removed in REQ-GH-216. ATDD integration is now default-on, controlled via the `atdd` section of `.isdlc/config.json` (set `atdd.enabled: false` to skip).
 
 ### Examples
 
@@ -109,7 +109,7 @@ The following flags have been removed and will produce errors if used:
 | `/discover --deep standard --verbose` | Standard depth with full transcript output |
 | `/discover --existing --skip-tests` | Analyze existing project, skip test evaluation |
 | `/discover --project api-service` | Discover a specific project in a monorepo |
-| `/discover --atdd-ready` | Prepare for ATDD workflow |
+| `/discover` | ATDD integration runs by default — no flag required |
 
 ### What It Does
 
@@ -131,7 +131,7 @@ The following flags have been removed and will produce errors if used:
    - **Test Coverage** (D2) — Coverage by type, critical untested paths, test quality
 1b. **Characterization Tests** — Generate test.skip() scaffolds from extracted AC
 1c. **Artifact Integration** — Link AC to features, generate traceability matrix and report
-1d. **ATDD Bridge** (only if `--atdd-ready`) — Create ATDD checklists, tag AC
+1d. **ATDD Bridge** (default-on; skipped when `atdd.enabled: false` in `.isdlc/config.json`) — Create ATDD checklists, tag AC
 2. **Discovery Report** — Assemble unified report including RE artifacts
 3. **Generate constitution** — Informed by discovery findings
 4. **Install skills** — From skills.sh for your tech stack
@@ -215,7 +215,7 @@ When this command is invoked:
    - `architecture-designer` (D8) - Architecture blueprint from PRD and tech stack (new projects)
    - `characterization-test-generator` - Generate test.skip() scaffolds from AC (Phase 1b)
    - `artifact-integration` - Link AC to features, traceability matrix (Phase 1c)
-   - `atdd-bridge` - ATDD checklists and AC tagging (Phase 1d, --atdd-ready only)
+   - `atdd-bridge` - ATDD checklists and AC tagging (Phase 1d, default-on; disabled via `atdd.enabled: false`)
 
    For existing projects, D1, D2, D5, and D6 run **in parallel** during Phase 1.
    Phases 1b, 1c, 1d run **sequentially** after Phase 1.

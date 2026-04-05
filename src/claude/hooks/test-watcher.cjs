@@ -17,7 +17,8 @@ const {
     debugLog,
     getTimestamp,
     loadIterationRequirements: loadIterationRequirementsFromCommon,
-    resolveCoverageThreshold
+    resolveCoverageThreshold,
+    readAtddConfig
 } = require('./lib/common.cjs');
 
 const fs = require('fs');
@@ -380,10 +381,19 @@ function detectSkippedTests(output) {
 }
 
 /**
- * Check if ATDD mode is active
+ * Check if ATDD tracking is active via .isdlc/config.json atdd section.
+ * REQ-GH-216 FR-006: enabled && track_red_green gates the transition-logging
+ * and orphan-skip-detection blocks. Fail-open to all-true defaults.
+ * @returns {boolean}
  */
-function isATDDMode(state) {
-    return state?.active_workflow?.atdd_mode === true;
+function isATDDMode(/* state */) {
+    try {
+        const atdd = readAtddConfig();
+        return Boolean(atdd && atdd.enabled && atdd.track_red_green);
+    } catch (_) {
+        // Fail-open: default is all-true, so tracking is active
+        return true;
+    }
 }
 
 /**

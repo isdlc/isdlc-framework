@@ -10,9 +10,22 @@
  */
 
 import { readFileSync, existsSync, statSync } from 'node:fs';
-import { join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve, parse as parsePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_PROJECT_CONFIG } from './config-defaults.js';
+
+/**
+ * ATDD config defaults. Exported for consumers that need an in-place fallback
+ * object (e.g., fail-open branches in hooks).
+ *
+ * REQ-GH-216 FR-003 (all defaults true).
+ */
+export const ATDD_DEFAULTS = Object.freeze({
+  enabled: true,
+  require_gwt: true,
+  track_red_green: true,
+  enforce_priority_order: true,
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -144,6 +157,62 @@ export function readProjectConfig(projectRoot) {
     return merged;
   } catch {
     return { ...structuredClone(DEFAULT_PROJECT_CONFIG) };
+  }
+}
+
+/**
+ * Resolve the project root by checking CLAUDE_PROJECT_DIR env or walking up
+ * from CWD to find `.isdlc/`. Returns null if not found.
+ *
+ * @returns {string|null} Absolute path to project root or null
+ */
+function autoDetectProjectRoot() {
+  try {
+    if (process.env.CLAUDE_PROJECT_DIR) {
+      return process.env.CLAUDE_PROJECT_DIR;
+    }
+    let dir = process.cwd();
+    while (dir !== parsePath(dir).root) {
+      if (existsSync(join(dir, '.isdlc'))) {
+        return dir;
+      }
+      dir = dirname(dir);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Return the fully-resolved ATDD config object, merging user overrides with
+ * all-true defaults. Per-field fail-open: invalid field types fall back to
+ * their defaults, while valid overrides are retained.
+ *
+ * REQ-GH-216 FR-003, AC-003-01, AC-003-02 (Article X fail-safe).
+ *
+ * @param {string} [projectRoot] - Optional project root; auto-detected if omitted
+ * @returns {{ enabled: boolean, require_gwt: boolean, track_red_green: boolean, enforce_priority_order: boolean }}
+ */
+export function getAtdd(projectRoot) {
+  try {
+    const root = projectRoot || autoDetectProjectRoot();
+    if (!root) return { ...ATDD_DEFAULTS };
+
+    const full = readProjectConfig(root);
+    const section = (full && typeof full.atdd === 'object' && full.atdd !== null && !Array.isArray(full.atdd))
+      ? full.atdd
+      : {};
+
+    const result = { ...ATDD_DEFAULTS };
+    for (const key of Object.keys(ATDD_DEFAULTS)) {
+      if (typeof section[key] === 'boolean') {
+        result[key] = section[key];
+      }
+    }
+    return result;
+  } catch {
+    return { ...ATDD_DEFAULTS };
   }
 }
 

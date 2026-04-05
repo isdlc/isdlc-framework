@@ -26,6 +26,14 @@ function writeState(tmpDir, state) {
     );
 }
 
+// REQ-GH-216: write .isdlc/config.json with atdd section override
+function writeAtddConfig(tmpDir, atddOverride) {
+    fs.writeFileSync(
+        path.join(tmpDir, '.isdlc', 'config.json'),
+        JSON.stringify({ atdd: atddOverride }, null, 2)
+    );
+}
+
 function runHook(tmpDir, stdinJson) {
     const stdinStr = typeof stdinJson === 'string' ? stdinJson : JSON.stringify(stdinJson);
     const result = spawnSync('node', [HOOK_PATH], {
@@ -59,7 +67,7 @@ function makeAtddState(phase) {
     return {
         active_workflow: {
             current_phase: phase,
-            options: { atdd_mode: true }
+            options: {}
         }
     };
 }
@@ -91,13 +99,38 @@ describe('atdd-completeness-validator hook', () => {
         assert.ok(result.stderr.includes('skipped'));
     });
 
-    it('AC-05c: silent when ATDD mode not active', () => {
+    it('AC-05c / TC-T002-03: silent when atdd.enabled=false in config', () => {
         writeState(tmpDir, {
             active_workflow: {
                 current_phase: '06-implementation',
-                options: { atdd_mode: false }
+                options: {}
             }
         });
+        writeAtddConfig(tmpDir, { enabled: false });
+        const output = 'P0 test auth - fail\nP1 test feature - pass';
+        const result = runHook(tmpDir, makeBashOutput('node --test tests/', output));
+        assert.equal(result.stderr, '');
+    });
+
+    it('TC-T002-01: reports violations when atdd.enabled and enforce_priority_order both default-true', () => {
+        writeState(tmpDir, makeAtddState('06-implementation'));
+        // No config file -> all-true defaults
+        const output = 'P0 test auth - fail\nP1 test feature - pass';
+        const result = runHook(tmpDir, makeBashOutput('node --test tests/', output));
+        assert.ok(result.stderr.includes('ATDD PRIORITY VIOLATIONS'));
+    });
+
+    it('TC-T002-02 / AC-07-02: silent when enforce_priority_order=false (master enabled)', () => {
+        writeState(tmpDir, makeAtddState('06-implementation'));
+        writeAtddConfig(tmpDir, { enabled: true, enforce_priority_order: false });
+        const output = 'P0 test auth - fail\nP1 test feature - pass';
+        const result = runHook(tmpDir, makeBashOutput('node --test tests/', output));
+        assert.equal(result.stderr, '');
+    });
+
+    it('TC-T002-04: master kill switch wins over enforce_priority_order=true', () => {
+        writeState(tmpDir, makeAtddState('06-implementation'));
+        writeAtddConfig(tmpDir, { enabled: false, enforce_priority_order: true });
         const output = 'P0 test auth - fail\nP1 test feature - pass';
         const result = runHook(tmpDir, makeBashOutput('node --test tests/', output));
         assert.equal(result.stderr, '');

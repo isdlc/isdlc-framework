@@ -53,7 +53,7 @@ The Discover Orchestrator coordinates the `/discover` command workflow. It deter
 | `ops-readiness-reviewer` | D19 | Logging, health checks, graceful shutdown, monitoring | Existing (full depth only) |
 | `characterization-test-generator` | — | Generate test.skip() scaffolds from extracted AC | Existing |
 | `artifact-integration` | — | Link AC to features, generate traceability matrix | Existing |
-| `atdd-bridge` | — | Create ATDD checklists, tag AC for workflow integration | Existing (--atdd-ready) |
+| `atdd-bridge` | — | Create ATDD checklists, tag AC for workflow integration | Existing (default-on unless `atdd.enabled: false` in `.isdlc/config.json`) |
 
 ---
 
@@ -63,7 +63,7 @@ The Discover Orchestrator coordinates the `/discover` command workflow. It deter
 
 ### NO-ARGUMENT MENU (Before Fast Path Check)
 
-**CRITICAL**: When invoked via `/discover` with NO flags or options (no `--new`, `--existing`, `--atdd-ready`, `--skip-tests`, `--skip-skills`, `--project`), present a discovery mode selection menu BEFORE proceeding to the FAST PATH CHECK.
+**CRITICAL**: When invoked via `/discover` with NO flags or options (no `--new`, `--existing`, `--skip-tests`, `--skip-skills`, `--project`), present a discovery mode selection menu BEFORE proceeding to the FAST PATH CHECK.
 
 **If any flags/options ARE provided**, skip this menu entirely and proceed directly to the FAST PATH CHECK (or directly to the appropriate flow if `--new` or `--existing` is specified).
 
@@ -1321,7 +1321,8 @@ For existing projects, run comprehensive analysis with 4 sub-agents in parallel,
 - `--scope {all|module|endpoint|domain}`: Pass to D6 for narrowing behavior extraction scope
 - `--target {name}`: Pass to D6 with --scope for targeting specific features
 - `--priority {all|critical|high|medium}`: Pass to D6 for filtering by risk priority
-- `--atdd-ready`: Run Phase 1d (ATDD Bridge) after Phase 1c
+
+**Phase 1d gating (REQ-GH-216)**: The ATDD Bridge sub-phase runs by default. To skip it, set `atdd.enabled: false` in `.isdlc/config.json`.
 
 ### Step 1: Display Welcome and Present Plan
 
@@ -1366,7 +1367,8 @@ Here's what will happen:
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│ PHASE 1d: ATDD Bridge (only if --atdd-ready)                 │
+│ PHASE 1d: ATDD Bridge (default-on; skipped if               │
+│           atdd.enabled: false in .isdlc/config.json)          │
 ├──────────────────────────────────────────────────────────────┤
 │ □ Generate ATDD checklists per domain                        │
 │ □ Tag AC as captured behavior                                │
@@ -1874,9 +1876,16 @@ PHASE 1c: Artifact Integration                      [Complete ✓]
     → docs/isdlc/reverse-engineer-report.md
 ```
 
-### Step 2d: Execute PHASE 1d - ATDD Bridge (Conditional, --atdd-ready Only)
+### Step 2d: Execute PHASE 1d - ATDD Bridge (Default-on; skipped when atdd.enabled=false)
 
-**Skip this step unless `--atdd-ready` was passed.**
+**Gating (REQ-GH-216 FR-002, AC-002-01/02)**: Run this step BY DEFAULT. Skip it only when `atdd.enabled: false` in `.isdlc/config.json`.
+
+Check via a bash call:
+```bash
+node -e 'const {getAtdd} = require("./src/core/bridge/config.cjs"); process.exit(getAtdd().enabled ? 0 : 1)'
+```
+If exit code is 0 (enabled=true): run the atdd-bridge agent below.
+If exit code is non-zero (enabled=false): skip this step entirely and proceed to Step 3.
 
 ```json
 {

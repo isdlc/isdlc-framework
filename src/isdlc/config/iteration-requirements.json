@@ -177,7 +177,6 @@
       },
       "atdd_validation": {
         "enabled": true,
-        "when": "atdd_mode",
         "requires": [
           "atdd_checklist_generated",
           "all_ac_have_tests",
@@ -248,7 +247,6 @@
       },
       "atdd_validation": {
         "enabled": true,
-        "when": "atdd_mode",
         "requires": [
           "all_priority_tests_passing",
           "no_orphan_skips",
@@ -311,7 +309,6 @@
       },
       "atdd_validation": {
         "enabled": true,
-        "when": "atdd_mode",
         "requires": [
           "no_orphan_skips",
           "all_priorities_100_percent",

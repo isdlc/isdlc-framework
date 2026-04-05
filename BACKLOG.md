@@ -24,10 +24,13 @@
   - **Completed:** 2026-04-05 (bundled with #229)
 - [x] #229 Incremental embedding indexing via filesystem-hash diff — re-embed only changed files [github: GH-229] -> [requirements](docs/requirements/REQ-GH-227-embedding-scale-out/) **Completed**
   - **Completed:** 2026-04-05 (bundled with #227)
+- [A] #216 Make ATDD the default mode for all workflows — remove --atdd flag [github: GH-216] -> [requirements](docs/requirements/REQ-GH-216-make-atdd-the-default-mode-for-all-workflows-remov/)
+  - Remove opt-in flag, make AC-to-test traceability unconditional. Config-driven via .isdlc/config.json with 4 knobs (enabled, require_gwt, track_red_green, enforce_priority_order). Scope expanded to include --atdd-ready on discover.
 - [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
   - Group B — scale. Sequential chunking acceptable for MVP.
-- [ ] #234 Enforce artifact templates strictly in roundtable confirmations and artifact writes [github: GH-234]
+- [x] #234 Enforce artifact templates strictly in roundtable confirmations and artifact writes [github: GH-234] -> [requirements](docs/requirements/REQ-GH-234-strict-template-enforcement/) **Completed**
   - Gap revealed by REQ-GH-227 analysis. Templates exist but nothing enforces them; LLMs default to own structure. Needs strict binding in roundtable-analyst.md + template-validator hook.
+  - **Completed:** 2026-04-05
 - [ ] #233 task-dispatch-enforcer hook: verify task-level dispatch was used when configured [github: GH-233]
   - Gap revealed by REQ-GH-224 build. Enforces the Phase-Loop Controller's task-dispatch protocol.
 - [x] #232 task-completion-gate hook: block phase advancement if tasks.md has unfinished tasks [github: GH-232] -> [requirements](docs/requirements/REQ-GH-232-task-completion-gate-hook/) **Completed**
@@ -35,6 +38,9 @@
   - **Completed:** 2026-04-05
 - [x] #231 Configuration consolidation: unify config locations, eliminate duplicates, single config service [github: GH-231] -> [requirements](docs/requirements/REQ-GH-231-configuration-consolidation-unify-config/) **Completed**
 - [ ] #207 Mandatory web research enforcement in roundtable analysis — wire research: true flag [github: GH-207]
+- [x] #211 Folder naming uses external ticket ID (REQ-GH-NNN) instead of auto-increment counter [github: GH-211] **Completed**
+  - Convention: `{TYPE}-GH-{num}-{slug}` for GitHub-sourced items, `{TYPE}-JIRA-{num}-{slug}` for Jira, `{TYPE}-NNNN-{slug}` manual-only. Implemented in `src/claude/hooks/lib/three-verb-utils.cjs`.
+  - **Completed:** 2026-04-05 (verified in-place — 15 REQ-GH-NNN folders already using the convention)
 - [x] #212 Task list consumption model for build phase agents (05/06/16/08) [github: GH-212] -> [requirements](docs/requirements/REQ-GH-212-task-list-consumption-model-for-build-phase-agents/) **Completed**
   - Depends on #208. Covers how Phase 05/06/16/08 read and execute against pre-generated tasks.md.
   - **Completed:** 2026-03-26

@@ -48,7 +48,7 @@ These hooks run on **PostToolUse** and **never block** — they log activity, tr
 | 20 | `state-write-validator` | PostToolUse [Write, Edit] | **Fabricated state data** — validates `state.json` writes for impossible combinations (e.g., `constitutional_validation.completed = true` but `iterations_used = 0`). Detects 6 rule violations. |
 | 21 | `output-format-validator` | PostToolUse [Write, Edit] | **Malformed artifacts and template drift** — validates known artifact files (user-stories.json, test-strategy.md, ADR files, template-backed analysis artifacts) against expected schemas and template structure. Checks structure, not content. |
 | 22 | `review-reminder` | PostToolUse [Bash] | **Unreviewed team commits** — warns on `git commit` if code review is disabled but team size > 1. Reminds to enable manual code review. |
-| 23 | `atdd-completeness-validator` | PostToolUse [Bash] | **Test priority violations** — when ATDD mode is active, warns about P0/P1/P2/P3 priority violations and orphaned skipped tests in test output. |
+| 23 | `atdd-completeness-validator` | PostToolUse [Bash] | **Test priority violations** — when `atdd.enabled` and `atdd.enforce_priority_order` are true in `.isdlc/config.json` (both default-on), warns about P0/P1/P2/P3 priority violations and orphaned skipped tests in test output. |
 
 ---
 

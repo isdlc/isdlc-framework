@@ -55,7 +55,7 @@ const ADR_PATTERN = /adr-\d*.*\.md$/i;
 // Template-validated artifacts: only fire when the file is inside
 // docs/requirements/*/ to avoid false positives on docs/isdlc/tasks.md.
 const TEMPLATE_ARTIFACT_PATTERNS = new Set([
-    'requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'
+    'traceability-matrix.csv', 'requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'
 ]);
 
 /**
@@ -111,39 +111,6 @@ function validateUserStories(content) {
     } catch (e) {
         missing.push('valid JSON');
     }
-    return { valid: missing.length === 0, missing };
-}
-
-/**
- * Validate traceability-matrix.csv has required header columns.
- * @param {string} content - File content
- * @returns {{ valid: boolean, missing: string[] }}
- */
-function validateTraceabilityMatrix(content) {
-    const missing = [];
-    if (!content || !content.trim()) {
-        missing.push('non-empty content');
-        return { valid: false, missing };
-    }
-
-    const firstLine = content.split('\n')[0].toLowerCase();
-    const requiredColumns = ['id', 'requirement', 'test', 'status'];
-    // Also accept alternate column names
-    const alternates = {
-        'id': ['id', 'fr', 'ac', 'story'],
-        'requirement': ['requirement', 'req', 'fr', 'feature', 'us'],
-        'test': ['test', 'test file', 'test_file', 'hook file', 'hook'],
-        'status': ['status', 'hook type', 'hook_type', 'type', 'result']
-    };
-
-    for (const col of requiredColumns) {
-        const alts = alternates[col] || [col];
-        const found = alts.some(a => firstLine.includes(a));
-        if (!found) {
-            missing.push(`header column: ${col}`);
-        }
-    }
-
     return { valid: missing.length === 0, missing };
 }
 
@@ -276,6 +243,15 @@ function matchesTemplateSection(heading, templateKey) {
     return normalizeSectionName(heading) === normalizeSectionName(templateKey);
 }
 
+function parseMarkdownTableCells(line) {
+    return String(line || '')
+        .trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map(cell => cell.trim());
+}
+
 /**
  * Create a validator function for a given template domain.
  * Reads template JSON, extracts section_order, compares against H2 headings.
@@ -359,6 +335,111 @@ function validateAgainstTemplate(domain) {
 
         return { valid: true, missing: [] };
     };
+}
+
+/**
+ * Validate traceability-matrix.csv against traceability template.
+ * Enforces exact header order plus required post-table sections.
+ * @param {string} content
+ * @returns {{ valid: boolean, missing: string[], guidance?: string }}
+ */
+function validateTraceabilityMatrix(content) {
+    const missing = [];
+
+    const templatesDir = resolveTemplatesDir();
+    if (!templatesDir) return { valid: true, missing: [] };
+
+    const templatePath = path.join(templatesDir, 'traceability.template.json');
+    let template;
+    try {
+        if (!fs.existsSync(templatePath)) return { valid: true, missing: [] };
+        template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    } catch (e) {
+        return { valid: true, missing: [] };
+    }
+
+    if (!content || !content.trim()) {
+        return {
+            valid: false,
+            missing: ['non-empty content'],
+            guidance: 'TEMPLATE DRIFT: traceability-matrix.csv must contain the template-defined 4-column table and required post-table sections.'
+        };
+    }
+
+    const expectedHeaders = (((template.format || {}).columns) || []).map(col => col.header);
+    const requiredPostSections = (((template.format || {}).post_table_sections) || []);
+    if (expectedHeaders.length === 0) return { valid: true, missing: [] };
+
+    const lines = content.split('\n');
+    const headerIndex = lines.findIndex(line => {
+        const trimmed = line.trim();
+        return trimmed.startsWith('|') && trimmed.endsWith('|');
+    });
+
+    if (headerIndex === -1) {
+        return {
+            valid: false,
+            missing: ['traceability table header'],
+            guidance: `TEMPLATE DRIFT: traceability-matrix.csv must start with the exact 4-column table header: ${expectedHeaders.join(' | ')}.`
+        };
+    }
+
+    const foundHeaders = parseMarkdownTableCells(lines[headerIndex]);
+    const normalizedFound = foundHeaders.map(normalizeSectionName);
+    const normalizedExpected = expectedHeaders.map(normalizeSectionName);
+    const sameHeaderCount = normalizedFound.length === normalizedExpected.length;
+    const sameHeaderOrder = sameHeaderCount && normalizedExpected.every((header, index) => normalizedFound[index] === header);
+    if (!sameHeaderOrder) {
+        return {
+            valid: false,
+            missing: ['exact traceability table columns'],
+            guidance: `TEMPLATE DRIFT: traceability-matrix.csv must use EXACTLY these columns in this order: ${expectedHeaders.join(' | ')}. Do not add, remove, rename, or reorder columns.`
+        };
+    }
+
+    const separatorLine = lines[headerIndex + 1] || '';
+    if (!/^\|\s*[-: ]+\|\s*[-:| ]+\|?\s*$/.test(separatorLine.trim())) {
+        missing.push('markdown table separator row');
+    }
+
+    const foundHeadings = extractSectionHeadings(content, 2);
+    const unexpectedSections = foundHeadings.filter(heading =>
+        !requiredPostSections.some(section => matchesTemplateSection(heading, section))
+    );
+    if (unexpectedSections.length > 0) {
+        return {
+            valid: false,
+            missing: ['no extra sections'],
+            guidance: `TEMPLATE DRIFT: traceability-matrix.csv has unexpected sections: ${unexpectedSections.join(', ')}. Keep only the template-required post-table sections: ${requiredPostSections.join(', ')}.`
+        };
+    }
+
+    for (const section of requiredPostSections) {
+        if (!foundHeadings.some(h => matchesTemplateSection(h, section))) {
+            missing.push(section.replace(/_/g, ' '));
+        }
+    }
+
+    const tableEnd = headerIndex + 1;
+    for (const section of requiredPostSections) {
+        const sectionPattern = new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${section.replace(/_/g, '[ _-]+')}$`, 'gim');
+        const match = sectionPattern.exec(content);
+        if (!match || match.index < tableEnd) {
+            if (!missing.includes(section.replace(/_/g, ' '))) {
+                missing.push(`${section.replace(/_/g, ' ')} after table`);
+            }
+        }
+    }
+
+    if (missing.length > 0) {
+        return {
+            valid: false,
+            missing,
+            guidance: `TEMPLATE DRIFT: traceability-matrix.csv is missing required structure: ${missing.join(', ')}. Read .isdlc/config/templates/traceability.template.json and keep the exact 4-column table plus the required post-table sections.`
+        };
+    }
+
+    return { valid: true, missing: [] };
 }
 
 /**
@@ -492,7 +573,7 @@ function check(ctx) {
         }
 
         // GH-234: template-backed artifacts get loud corrective guidance; others get standard warning
-        const isTemplateArtifact = ['requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'].includes(pattern);
+        const isTemplateArtifact = ['traceability-matrix.csv', 'requirements-spec.md', 'architecture-overview.md', 'module-design.md', 'tasks.md'].includes(pattern);
 
         logHookEvent('output-format-validator', isTemplateArtifact ? 'template-drift' : 'warn', {
             reason: `${pattern} missing: ${result.missing.join(', ')}`

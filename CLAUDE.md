@@ -73,13 +73,27 @@ Progress updates, phase transitions, and quality checks remain fully visible to 
 
 Do NOT implement changes directly without going through a workflow. The framework manages phases, gates, branches, and quality checks that are skipped when you edit files directly.
 
-### Analysis Completion Rules
+### Analysis Protocol Authority
 
-**CRITICAL — These are mandatory steps after every roundtable analysis:**
+For `/isdlc analyze`, the authoritative conversation and confirmation protocol lives in:
+- `src/claude/agents/roundtable-analyst.md` for feature/change analysis
+- `src/claude/agents/bug-roundtable-analyst.md` for bug analysis
 
-1. **Four-domain confirmation sequence**: ALWAYS present confirmations sequentially per domain — Requirements (Maya) → Architecture (Alex) → Design (Jordan) → Tasks — each with explicit Accept/Amend. NEVER collapse into a single combined confirmation. Produce the corresponding artifacts (requirements-spec.md, architecture-overview.md, module-design.md, tasks.md) BEFORE their respective confirmation prompts. Use the templates in `src/claude/hooks/config/templates/` for both confirmation presentation and artifact structure.
+The analyze handler reads and executes these files inline. Not consulting them means freeform improvisation instead of following the framework protocol.
 
-2. **Finalize after acceptance**: After the user accepts all four domain confirmations, the analyze handler finalizes meta.json, updates BACKLOG.md marker, and syncs GitHub labels (steps 7.8-9 of the analyze handler in `src/claude/commands/isdlc.md`). Do NOT just update meta.json manually.
+Do not restate analysis-phase behavior here. Follow the agent protocol for:
+- clarifying-question behavior
+- ask-vs-infer decisions
+- persona participation
+- confirmation sequencing
+- amendment flow
+- analysis artifact structure
+
+Claude-specific framework responsibilities still apply:
+- route the user into the analyze workflow correctly
+- execute the analysis inline rather than improvising analysis behavior from memory
+- follow workflow finalization and hook recovery rules
+- let the analyze handler finalize meta.json, update BACKLOG.md markers, and sync labels rather than doing those steps ad hoc
 
 ---
 

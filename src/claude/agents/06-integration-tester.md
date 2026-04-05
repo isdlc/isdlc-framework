@@ -168,7 +168,7 @@ If parallel test execution produces failures:
 
 ### ATDD Mode Exclusion
 
-When `active_workflow.atdd_mode = true`, do NOT use parallel test execution. ATDD mode requires sequential P0->P1->P2->P3 priority ordering. Disable parallel execution during ATDD validation runs.
+When `ATDD_CONFIG.enabled: true` AND `ATDD_CONFIG.enforce_priority_order: true` (both default-true per `.isdlc/config.json`), do NOT use parallel test execution. ATDD requires sequential P0->P1->P2->P3 priority ordering. Disable parallel execution during ATDD validation runs. When either knob is false, parallel execution is allowed.
 
 ### Parallel Execution State Tracking
 
@@ -485,21 +485,29 @@ For each failing test:
    - Mark as "escalated to developer"
 4. **Track in iteration history**
 
-# ATDD MODE VALIDATION (When active_workflow.atdd_mode = true)
+# ATDD MODE VALIDATION (Default-on, configured via `.isdlc/config.json`)
 
-**When ATDD mode is active**, additional validation is required before passing GATE-06.
+**ATDD validation** runs by default during GATE-06 — there is no opt-in flag. Sub-knobs in the `atdd` section of `.isdlc/config.json` control which validations are active.
 
-## Detecting ATDD Mode
+## Reading ATDD Config (REQ-GH-216)
 
-Check `.isdlc/state.json`:
-```json
-{
-  "active_workflow": {
-    "type": "feature",
-    "atdd_mode": true
-  }
-}
+Check your delegation prompt for the `ATDD_CONFIG` block, or read `.isdlc/config.json` via the ConfigService:
+
 ```
+ATDD_CONFIG:
+  enabled: true
+  require_gwt: true
+  track_red_green: true
+  enforce_priority_order: true
+```
+
+**Gating rules:**
+- If `atdd.enabled: false`: Skip all ATDD validation. Do NOT scan for orphan skips, do NOT require priority completeness, do NOT validate atdd-checklist.json.
+- If `atdd.enabled: true` (default): Run the validation steps below.
+- If `atdd.enforce_priority_order: true` (default): Require all P0 tests to pass before any P1, all P1 before P2, all P2 before P3.
+- If `atdd.enforce_priority_order: false`: Accept any test completion order.
+- If `atdd.track_red_green: true` (default): Require `atdd-checklist.json` to contain `red_green_transitions` entries for all passing tests.
+- If `atdd.track_red_green: false`: Skip the transition-log completeness check.
 
 ## ATDD Validation Step 1: Scan for Orphan Skips
 
@@ -618,7 +626,7 @@ All acceptance tests passed ✅
 
 ## ATDD Gate-06 Additional Validation Checklist
 
-When ATDD mode is active, add these to GATE-06 checklist:
+When `atdd.enabled: true` (default), add these to GATE-06 checklist:
 
 - [ ] **No orphan skips**: Zero `it.skip()`, `test.skip()`, `@Disabled`, `@Ignore` in acceptance tests
 - [ ] **P0 100% passing**: All critical acceptance tests pass

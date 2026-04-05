@@ -55,6 +55,17 @@ The 18 SDLC agents implement a 1-to-1 mapping between phases and agents (plus 2 
 
 Exploration agents help understand the scope and impact of changes through specialized analysis.
 
+### Roundtable Analysis Protocol
+
+Feature analysis behavior is defined by `src/claude/agents/roundtable-analyst.md`.
+
+Current operating model:
+- inline conversational roundtable in a single assistant thread
+- Maya, Alex, and Jordan are simulated analytical perspectives inside one conversation
+- one high-value clarification question is asked when blocking uncertainty exists
+- non-blocking gaps are inferred and surfaced in Assumptions and Inferences
+- confirmations are presented sequentially per domain
+
 ### Quick Scan Agent (Phase 00 - Feature Workflow)
 
 For new features, the Quick Scan Agent performs a **lightweight** scope estimation BEFORE requirements gathering. This provides just enough context for the Requirements Analyst without over-investing in analysis that may change after requirements clarification.
@@ -149,7 +160,7 @@ The `/discover` command uses 23 specialized sub-agents to analyze projects befor
 
 **Output**: `docs/project-discovery-report.md`, `docs/isdlc/constitution.md`, `docs/requirements/reverse-engineered/`, `tests/characterization/`, `docs/isdlc/ac-traceability.csv`
 
-**Note**: D6 includes behavior extraction (formerly the Behavior Analyzer agent). Use `--atdd-ready` to enable ATDD Bridge integration. Use `--deep full` for maximum analysis depth (adds D18/D19 and extra debate rounds). Use `--new` for inception party mode (D9-D15 debate rounds).
+**Note**: D6 includes behavior extraction (formerly the Behavior Analyzer agent). ATDD Bridge integration runs by default — disable via `atdd.enabled: false` in `.isdlc/config.json` (REQ-GH-216). Use `--deep full` for maximum analysis depth (adds D18/D19 and extra debate rounds). Use `--new` for inception party mode (D9-D15 debate rounds).
 
 ---
 

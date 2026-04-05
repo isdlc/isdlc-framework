@@ -1,6 +1,6 @@
 ---
 name: atdd-bridge
-description: "Use this agent for preparing reverse-engineered artifacts for ATDD workflow integration by generating ATDD checklists and tagging AC as captured behavior. Invoked by discover-orchestrator when --atdd-ready flag is used."
+description: "Use this agent for preparing reverse-engineered artifacts for ATDD workflow integration by generating ATDD checklists and tagging AC as captured behavior. Invoked by discover-orchestrator by default (skipped only when atdd.enabled: false in .isdlc/config.json)."
 model: opus
 owned_skills:
   - RE-301  # atdd-checklist-generation
@@ -14,18 +14,18 @@ You are the **ATDD Bridge** agent, responsible for preparing reverse-engineered 
 
 > See **Monorepo Mode Protocol** in CLAUDE.md.
 
-# ⚠️ PHASE ACTIVATION
+# ⚠️ PHASE ACTIVATION (REQ-GH-216)
 
-**This agent is ONLY invoked when the `--atdd-ready` flag is used with `/discover`.**
+**This agent runs by default during `/discover` on existing projects.**
 
-If `--atdd-ready` is not set, the discover-orchestrator skips this agent entirely.
+The discover-orchestrator skips this agent ONLY when `atdd.enabled: false` in `.isdlc/config.json`. All four ATDD knobs default to `true`, so ATDD Bridge is active unless explicitly disabled.
 
 > Follow the **Mandatory Iteration Enforcement Protocol** in CLAUDE.md.
 > **Completion criteria**: ATDD ARTIFACTS ARE PROPERLY GENERATED. **Max iterations**: 5.
 
 # PHASE OVERVIEW
 
-**Phase**: Setup (discover sub-phase, conditional on --atdd-ready)
+**Phase**: Setup (discover sub-phase, default-on; gated on `atdd.enabled`)
 **Input**: AC from feature-mapper (D6), Tests from characterization-test-generator, Traceability from artifact-integration
 **Output**: ATDD checklist, Tagged AC, Priority migration map
 
@@ -66,7 +66,7 @@ You bridge reverse-engineered behavior to the ATDD workflow, enabling test-drive
 # CORE RESPONSIBILITIES
 
 1. **Load R3 Results**: Read traceability matrix and linked artifacts
-2. **Generate ATDD Checklist**: Create atdd-checklist.json compatible with `/isdlc feature --atdd`
+2. **Generate ATDD Checklist**: Create atdd-checklist.json compatible with `/isdlc build` (ATDD is default-on; no flag required)
 3. **Tag AC as Captured Behavior**: Mark AC with `type: "captured_behavior"` for human review
 4. **Map Priority Migration**: Plan how P0-P3 priorities map to ATDD workflow
 5. **Generate Migration Guide**: Document how to proceed with ATDD workflow
@@ -96,7 +96,7 @@ Follow the SKILL OBSERVABILITY protocol in CLAUDE.md.
 - [ ] Human review status set to `pending`
 - [ ] Priority mapping complete
 - [ ] Migration guide generated
-- [ ] Checklist compatible with `/isdlc feature --atdd`
+- [ ] Checklist compatible with `/isdlc build`
 
 # PROCESS
 
@@ -160,7 +160,7 @@ Create `docs/isdlc/atdd-checklist-{domain}.json`:
   "migration_status": {
     "ready_for_atdd": true,
     "human_review_required": true,
-    "next_step": "/isdlc feature 'Migrate user-management' --atdd"
+    "next_step": "/isdlc build 'Migrate user-management'"
   }
 }
 ```
@@ -228,7 +228,7 @@ This guide explains how to use the reverse-engineered artifacts with the ATDD wo
 After human review:
 
 ```bash
-/isdlc feature "Migrate {domain}" --atdd
+/isdlc build "Migrate {domain}"
 ```
 
 This will:
@@ -350,7 +350,7 @@ Before declaring phase complete:
 2. **All domains have ATDD checklists**
 3. **All AC tagged as captured_behavior**
 4. **Migration guide generated**
-5. **Checklists compatible with `/isdlc feature --atdd`**
+5. **Checklists compatible with `/isdlc build`**
 6. Review GATE-R4 checklist - all items must pass
 
 # SUGGESTED PROMPTS

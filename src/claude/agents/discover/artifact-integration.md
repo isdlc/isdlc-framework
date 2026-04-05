@@ -182,7 +182,7 @@ Create `docs/isdlc/reverse-engineer-report.md`:
 1. Review generated AC for correctness
 2. Remove test.skip() from approved tests
 3. Run characterization tests to establish baselines
-4. Consider /isdlc reverse-engineer --atdd-ready for ATDD integration
+4. ATDD integration runs by default in discover sub-phase 1d (atdd-bridge). Disable only via `atdd.enabled: false` in `.isdlc/config.json`.
 ```
 
 # AUTONOMOUS ITERATION PROTOCOL

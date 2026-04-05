@@ -24,8 +24,26 @@ const {
     runDispatcher,
     writeState,
     readState,
-    writeConfig
+    writeConfig,
+    getTestDir
 } = require('./hook-test-utils.cjs');
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * REQ-GH-216: helper to write an atdd config override into
+ * {testDir}/.isdlc/config.json. All four knobs default true when no override
+ * is written.
+ * @param {object} atddOverride - partial atdd section
+ */
+function writeAtddConfigOverride(atddOverride) {
+    const dir = getTestDir();
+    if (!dir) throw new Error('writeAtddConfigOverride before setupTestEnv');
+    fs.writeFileSync(
+        path.join(dir, '.isdlc', 'config.json'),
+        JSON.stringify({ atdd: atddOverride }, null, 2)
+    );
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -344,21 +362,56 @@ describe('post-bash-dispatcher', () => {
     });
 
     // -------------------------------------------------------------------------
-    // TC-13b: Conditional activation — atdd hook skipped when not in atdd mode
+    // TC-13b / TC-T002-10: Conditional activation — atdd hook skipped when
+    // atdd.enabled=false in config (REQ-GH-216 FR-008)
     // -------------------------------------------------------------------------
-    describe('conditional activation - atdd hook skipped when not in atdd mode', () => {
+    describe('conditional activation - atdd hook skipped when atdd.enabled=false', () => {
         before(() => {
-            // Active workflow but no atdd_mode option
+            // Active workflow plus atdd.enabled=false in config.json
             const state = activeWorkflowState();
             setupTestEnv(state);
+            writeAtddConfigOverride({ enabled: false });
             dispatcherPath = prepareDispatcher('post-bash-dispatcher.cjs');
         });
         after(() => { cleanupTestEnv(); });
 
-        it('TC-13b: atdd-completeness-validator skipped when atdd_mode not set', async () => {
+        it('TC-13b / TC-T002-10: atdd-completeness-validator skipped when atdd.enabled=false', async () => {
             const result = await runDispatcher(dispatcherPath, bashInput('echo hello'));
             assert.equal(result.code, 0);
-            // No ATDD warnings expected since hook is skipped
+            // No ATDD warnings expected since hook is skipped via config gate
+            assert.ok(
+                !result.stderr || !/ATDD PRIORITY VIOLATIONS/.test(result.stderr),
+                'no atdd warnings should be emitted when atdd.enabled=false'
+            );
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // TC-T002-09: atdd-completeness-validator runs when atdd.enabled=true (default)
+    // -------------------------------------------------------------------------
+    describe('conditional activation - atdd hook runs when atdd.enabled=true', () => {
+        before(() => {
+            const state = activeWorkflowState();
+            setupTestEnv(state);
+            // No config.json written -> defaults: atdd.enabled=true
+            dispatcherPath = prepareDispatcher('post-bash-dispatcher.cjs');
+        });
+        after(() => { cleanupTestEnv(); });
+
+        it('TC-T002-09: atdd dispatcher fires on test command when atdd.enabled=true', async () => {
+            // Simulate test output with priority violation to ensure hook ran
+            const input = {
+                tool_name: 'Bash',
+                tool_input: { command: 'npm test' },
+                tool_result: 'P0 test auth - fail\nP1 test feature - pass'
+            };
+            const result = await runDispatcher(dispatcherPath, input);
+            assert.equal(result.code, 0);
+            // atdd-completeness-validator should have emitted stderr
+            assert.ok(
+                /ATDD PRIORITY VIOLATIONS/.test(result.stderr),
+                `expected ATDD priority violations on stderr, got: ${result.stderr}`
+            );
         });
     });
 

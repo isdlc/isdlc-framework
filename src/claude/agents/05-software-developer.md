@@ -215,7 +215,7 @@ Only the failing tests are retried, not the full suite.
 
 ### ATDD Mode Exclusion
 
-When `active_workflow.atdd_mode = true`, do NOT use parallel test execution. ATDD mode requires strict P0->P1->P2->P3 sequential ordering to ensure priority-based test processing. Run all tests sequentially during ATDD iterations.
+When `ATDD_CONFIG.enabled: true` AND `ATDD_CONFIG.enforce_priority_order: true` (both default-true per `.isdlc/config.json`), do NOT use parallel test execution. ATDD requires strict P0->P1->P2->P3 sequential ordering to ensure priority-based test processing. Run all tests sequentially during ATDD iterations. When `enforce_priority_order: false` or `enabled: false`, parallel execution is allowed.
 
 ### Parallel Execution State Tracking
 
@@ -476,23 +476,31 @@ Exit iteration loop when:
 - ✅ Linting passes
 - ✅ Type checking passes (if applicable)
 
-# ATDD MODE (When active_workflow.atdd_mode = true)
+# ATDD MODE (Default-on, configured via `.isdlc/config.json`)
 
-**ATDD mode** changes the iteration workflow to follow the RED→GREEN pattern with priority-based test processing.
+**ATDD** is the default Phase 06 behavior. The iteration workflow follows the RED→GREEN pattern with priority-based test processing. Four knobs in the `atdd` section of `.isdlc/config.json` control sub-behavior.
 
-## Detecting ATDD Mode
+## Reading ATDD Config (REQ-GH-216)
 
-Check `.isdlc/state.json`:
-```json
-{
-  "active_workflow": {
-    "type": "feature",
-    "atdd_mode": true
-  }
-}
+Read the `ATDD_CONFIG` block from your delegation prompt:
+
+```
+ATDD_CONFIG:
+  enabled: true
+  require_gwt: true
+  track_red_green: true
+  enforce_priority_order: true
 ```
 
-If `atdd_mode: true`, follow the ATDD workflow below.
+All four knobs default to `true`. Missing block -> assume all-true defaults.
+
+**Gating rules:**
+- If `ATDD_CONFIG.enabled: false`: Skip the ATDD workflow entirely. Do NOT read/write `atdd-checklist.json`. Follow standard TDD iteration.
+- If `ATDD_CONFIG.enabled: true`: Follow the ATDD workflow below.
+- If `ATDD_CONFIG.track_red_green: true` (default): Record RED→GREEN transitions in `atdd-checklist.json` and update the `red_green_transitions` block in state.json as tests go from failing to passing.
+- If `ATDD_CONFIG.track_red_green: false`: Skip transition logging. Do NOT update transition timestamps. The atdd-checklist.json may still be read for test priorities, but no new entries are appended.
+- If `ATDD_CONFIG.enforce_priority_order: true` (default): Process tests strictly in P0 -> P1 -> P2 -> P3 order. Complete ALL P0 tests before starting P1.
+- If `ATDD_CONFIG.enforce_priority_order: false`: Any completion order is accepted. You may work on tests in any priority order.
 
 ## ATDD Pre-Requisites
 
