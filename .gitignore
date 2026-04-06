@@ -57,3 +57,6 @@ src/isdlc/checklists/update-agents.txt
  # RESEARCH DOCUMENTS (internal only)
  # =============================================================================
  research-docs/
+
+# Large embedding index files
+docs/.embeddings/*.emb
