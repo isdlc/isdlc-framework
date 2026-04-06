@@ -1,4 +1,4 @@
-# Security Scan Report: REQ-GH-237 — Replace CodeBERT with Jina v2 Base Code
+# Security Scan Report: REQ-GH-217 -- Task Execution UX Phase Summary Formatter
 
 **Date**: 2026-04-06
 
@@ -8,45 +8,34 @@
 npm audit: found 0 vulnerabilities
 ```
 
-**Status**: PASS — no known vulnerabilities in dependency tree.
+**Status**: PASS -- no known vulnerabilities in dependency tree.
 
 ## Dependency Changes
 
-| Action | Package | Version | Risk |
-|--------|---------|---------|------|
-| REMOVED | onnxruntime-node | (was dependency) | Risk reduction — removed native binary dep |
-| ADDED | @huggingface/transformers | ^4 | Low — well-maintained HuggingFace package |
+No dependency changes in this feature. `task-formatter.js` has zero imports from `node_modules`.
 
 ## SAST Review (QL-008)
 
-### New File: lib/embedding/engine/jina-code-adapter.js
+### New File: src/core/tasks/task-formatter.js
 
 | Check | Result |
 |-------|--------|
 | Hardcoded credentials | None found |
 | Dynamic code execution (eval, Function) | None |
 | Unsafe deserialization | None |
-| User input injection | None — inputs are text arrays for embedding |
-| File system access | None — model caching handled by transformers lib |
-| Network requests | None directly — handled by transformers lib |
-| Error information leakage | Errors include model/library messages only |
-| Dependency injection | config._pipelineFactory for testing only |
+| User input injection | None -- inputs are parsed plan objects |
+| File system access | None -- pure function, no I/O |
+| Network requests | None |
+| Error information leakage | N/A -- returns formatted strings only |
+| Prototype pollution | None -- uses Map, no dynamic property access on user input |
 
-### Modified File: lib/embedding/engine/index.js
+### Modified File: src/claude/commands/isdlc.md
 
 | Check | Result |
 |-------|--------|
-| New attack surface | None — removed a provider, added fail-safe routing |
-| Error messages | Generic removal message, no sensitive info |
-| Default provider change | codebert -> jina-code — safe, local-only default |
-
-### Deleted Files
-
-| File | Security Impact |
-|------|----------------|
-| codebert-adapter.js | Removed — reduces attack surface |
-| model-downloader.js | Removed — eliminated manual model download code (network code removed) |
+| New attack surface | None -- markdown instruction changes only |
+| Command injection | None -- no shell commands introduced |
 
 ## Overall Security Assessment
 
-**PASS** — The migration reduces attack surface by removing the manual model download pipeline and native ONNX runtime dependency. The new adapter delegates model management to `@huggingface/transformers` which handles caching and verification internally.
+**PASS** -- The new module is a pure function with zero I/O, zero dependencies, and zero attack surface. The isdlc.md changes are instruction-only (markdown) with no executable code.

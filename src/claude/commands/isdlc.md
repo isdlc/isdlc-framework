@@ -1786,10 +1786,10 @@ This protocol dispatches tasks one-per-agent in dependency order, with parallel 
 
    c. **Dispatch in parallel**: Issue one Task tool call per task in the tier, ALL in a single response (parallel execution). Use the agent type from the PHASE→AGENT table (same for all tasks in the phase).
 
-   d. **Create task visibility**: Before dispatching, create a `TaskCreate` entry for each task in the tier: subject = `{task.id}: {task.description}`, activeForm = `Implementing {task.id}`.
+   d. **Create task visibility**: Before dispatching, create a `TaskCreate` entry for each **top-level** task in the tier (task IDs matching `/^T\d+$/` — skip sub-tasks with letter suffixes like T006a). Subject = `{task.id}: {task.description}`, activeForm = `Implementing {task.id}`.
 
    e. **Handle returns**: For each task that returns:
-      - **Success**: Read `docs/isdlc/tasks.md`, replace `- [ ] {task.id}` with `- [X] {task.id}`, recalculate Progress Summary table, write tasks.md. Update the TaskCreate entry to completed. Add the task's file paths to `priorCompletedFiles`.
+      - **Success**: Read `docs/isdlc/tasks.md`, replace `- [ ] {task.id}` with `- [X] {task.id}`, recalculate Progress Summary table, write tasks.md. For top-level tasks (IDs matching `/^T\d+$/`): update the TaskCreate entry subject to `~~{task.id}: {task.description}~~` and set status to completed. Add the task's file paths to `priorCompletedFiles`.
       - **Failure**: Increment retry counter for this task. If retries < `task_dispatch.max_retries_per_task` (default 3): re-dispatch with the error message appended to the prompt. If retries >= max: present escalation menu:
         ```
         TASK FAILURE: {task.id} failed after {retries} retries.
@@ -1802,7 +1802,7 @@ This protocol dispatches tasks one-per-agent in dependency order, with parallel 
         ```
         If Skip: mark this task and all tasks that have it in `blocked_by` as `[SKIP]` in tasks.md with reason.
 
-   f. **Clean up sub-tasks**: After all tasks in the tier are handled, delete the per-task TaskCreate entries (same cleanup pattern as step 3f).
+   f. **Persist task entries**: Per-task TaskCreate entries remain visible. No deletion at tier boundary — entries persist through the phase and are cleaned up at STEP 3f (phase boundary).
 
    g. **Next tier**: Proceed to the next tier. Repeat from step 3a.
 
@@ -2357,8 +2357,17 @@ state update, check if adaptive workflow sizing should run.
 8. Error handling: If any check signal fails (git command error, etc.), skip that protocol and continue. Never block on check failure.
 
 **3f.** On return, check the result status:
-- `"passed"` or successful completion → Mark task as `completed` **with strikethrough**: update both `status` to `completed` AND `subject` to `~~[N] {base subject}~~` (wrap the original `[N] subject` in `~~`). Then **clean up sub-agent tasks**: call `TaskList`, and for every task whose `subject` does NOT start with `[` or `~~[` (i.e., it is NOT a main workflow phase task), call `TaskUpdate` with `status: "deleted"` to remove it from the display. Continue to next phase.
+- `"passed"` or successful completion → Mark task as `completed` **with strikethrough**: update both `status` to `completed` AND `subject` to `~~[N] {base subject}~~` (wrap the original `[N] subject` in `~~`).
    After marking phase task completed, also check `docs/isdlc/tasks.md`: if the completed phase has parent tasks, markTaskComplete() handles auto-completion of parents when all sub-tasks are done (REQ-GH-223 FR-004, AC-004-02).
+   After marking the phase task completed with strikethrough, print the phase summary (FR-002, FR-003, AC-002-02, AC-003-01):
+   1. Read `docs/isdlc/tasks.md` using `readTaskPlan()` from `src/core/tasks/task-reader.js`
+   2. Call `formatPhaseSummary(plan, phase_key)` from `src/core/tasks/task-formatter.js`
+   3. Output the returned string (the formatted phase summary table)
+   Then clean up per-task TaskCreate entries for this phase:
+   4. Call `TaskList` to retrieve all tasks
+   5. For each task whose subject matches `/^(~~)?T\d+/` (per-task entries): call `TaskUpdate` with `status: "deleted"`
+   6. Phase-level entries (subjects matching `/^(~~)?\[/`) are NOT deleted
+   Continue to next phase.
 - `"blocked_by_hook"` → Identify the block type from the message and dispatch:
   1. Contains `"BLAST RADIUS COVERAGE INCOMPLETE"` → Follow **3f-blast-radius** below (unchanged)
   2. Contains `"GATE BLOCKED"` → Follow **3f-gate-blocker** below

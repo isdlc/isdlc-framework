@@ -1,4 +1,4 @@
-# Coverage Report: REQ-GH-237 — Replace CodeBERT with Jina v2 Base Code
+# Coverage Report: REQ-GH-217 -- Task Execution UX Phase Summary Formatter
 
 **Date**: 2026-04-06
 **Tool**: NOT CONFIGURED (no c8/istanbul/nyc in package.json)
@@ -13,21 +13,26 @@ All implementation files have corresponding test files:
 
 | Implementation File | Test File | Tests | Status |
 |--------------------|-----------|-------|--------|
-| lib/embedding/engine/jina-code-adapter.js (NEW) | lib/embedding/engine/jina-code-adapter.test.js | 28 | All pass |
-| lib/embedding/engine/index.js | lib/embedding/engine/index.test.js | 26 | All pass |
-| lib/embedding/installer/semantic-search-setup.js | lib/embedding/installer/index.test.js | 13 | All pass |
-| lib/embedding/installer/lifecycle.test.js | (cross-file verification) | 14 | 13 pass, 1 pre-existing fail |
-| lib/embedding/discover-integration.test.js | (integration test) | 29 | All pass |
-| lib/embedding/package/builder.js | lib/embedding/package/index.test.js | 19 | All pass |
-| lib/embedding/package/reader.js | (tested via index.test.js) | — | Covered |
-| lib/embedding/package/manifest.js | (tested via index.test.js) | — | Covered |
-| lib/embedding/installer/pre-warm.test.js (NEW) | — | 14 | All skip (scaffolds) |
+| src/core/tasks/task-formatter.js (NEW) | tests/core/tasks/task-formatter.test.js (NEW) | 19 | All pass |
+| src/claude/commands/isdlc.md (MODIFY) | (no direct test -- behavioral) | -- | Verified by code review |
+
+## Test Coverage by Function
+
+| Function | Tests Covering It | Edge Cases |
+|----------|------------------|------------|
+| formatPhaseSummary() | TF-01 to TF-19 | null plan, missing phase, empty tasks, single task, all complete |
+| resolvePhaseDisplayName() | TF-17 (phase name in header) | Plan with name, static lookup fallback |
+| resolvePhaseData() | TF-02, TF-08 (missing key) | Direct match, bare number, prefix match |
+| deriveStatus() | TF-03 (done), TF-04 (pending), TF-05 (synthetic in_progress) | complete, in_progress, pending |
+| groupByCategory() | TF-05, TF-06 | With categories, without categories |
+| padRight() / visualWidth() | TF-02 to TF-18 (implicit via formatting) | Emoji characters, ASCII text |
+| formatEmptyBox() | TF-07, TF-08, TF-09 | Empty phase, missing phase, null plan |
 
 ## Recommendation
 
 Configure `c8` or `node:test` built-in coverage for future quality loops:
 ```json
 "scripts": {
-  "test:coverage": "c8 node --test lib/**/*.test.js"
+  "test:coverage": "c8 node --test tests/core/**/*.test.js"
 }
 ```

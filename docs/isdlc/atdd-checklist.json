@@ -1,0 +1,192 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-04-06T21:45:00Z",
+  "requirement_id": "REQ-GH-217",
+  "requirement_name": "Use Claude Code Plan Mode for task execution UX",
+  "scope": "formatPhaseSummary() in src/core/tasks/task-formatter.js",
+  "acceptance_criteria": [
+    {
+      "ac_id": "AC-003-01",
+      "description": "Formatted summary with stable order, grouping, progress counts",
+      "given_when_then": {
+        "given": "a phase completes",
+        "when": "STEP 3f runs",
+        "then": [
+          "a formatted summary table is printed",
+          "tasks are in stable document order",
+          "tasks are grouped by category",
+          "progress counts are accurate"
+        ]
+      },
+      "priority": "P0",
+      "test_file": "tests/core/tasks/task-formatter.test.js",
+      "tests": [
+        {
+          "test_id": "TF-01",
+          "test_name": "[P0] TF-01: Module exports formatPhaseSummary as a function",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-02",
+          "test_name": "[P0] TF-02: Returns a string with all tasks in stable document order",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-03",
+          "test_name": "[P0] TF-03: Completed tasks shown with done icon",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-04",
+          "test_name": "[P0] TF-04: Pending tasks shown with pending icon",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-05",
+          "test_name": "[P0] TF-05: Tasks grouped under category headers",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-06",
+          "test_name": "[P1] TF-06: Tasks without category header still included",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-07",
+          "test_name": "[P1] TF-07: Zero tasks produces empty summary",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-08",
+          "test_name": "[P1] TF-08: Non-existent phase key handled gracefully",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-09",
+          "test_name": "[P1] TF-09: Null plan handled gracefully",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-10",
+          "test_name": "[P1] TF-10: Single pending task formats correctly",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-11",
+          "test_name": "[P0] TF-11: 100% completion shown",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-12",
+          "test_name": "[P0] TF-12: All done icons, no pending icons",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-13",
+          "test_name": "[P0] TF-13: Done count matches completed tasks",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-14",
+          "test_name": "[P0] TF-14: Pending count matches incomplete tasks",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-15",
+          "test_name": "[P0] TF-15: Total count equals done + pending",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-16",
+          "test_name": "[P0] TF-16: Percentage is mathematically correct",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-17",
+          "test_name": "[P1] TF-17: Output contains phase name in header",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-18",
+          "test_name": "[P1] TF-18: Output includes task descriptions",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        },
+        {
+          "test_id": "TF-19",
+          "test_name": "[P1] TF-19: Pure function produces identical output",
+          "status": "skip",
+          "implemented": false,
+          "red_at": null,
+          "green_at": null
+        }
+      ]
+    }
+  ],
+  "coverage_summary": {
+    "total_ac": 1,
+    "tests_generated": 19,
+    "tests_skipped": 19,
+    "tests_red": 0,
+    "tests_passing": 0,
+    "by_priority": {
+      "P0": { "total": 11, "passing": 0 },
+      "P1": { "total": 8, "passing": 0 },
+      "P2": { "total": 0, "passing": 0 },
+      "P3": { "total": 0, "passing": 0 }
+    }
+  }
+}

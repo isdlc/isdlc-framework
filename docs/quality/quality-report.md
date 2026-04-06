@@ -1,4 +1,4 @@
-# Quality Report: REQ-GH-237 — Replace CodeBERT with Jina v2 Base Code
+# Quality Report: REQ-GH-217 -- Task Execution UX Phase Summary Formatter
 
 **Phase**: 16-quality-loop
 **Date**: 2026-04-06
@@ -11,11 +11,11 @@
 
 | Track | Groups | Elapsed (approx) | Verdict |
 |-------|--------|-------------------|---------|
-| Track A (Testing) | A1 (build+lint+type), A2 (tests+coverage) | ~41s | PASS |
-| Track B (Automated QA) | B1 (security+deps), B2 (code-review+traceability) | ~5s | PASS |
+| Track A (Testing) | A1 (build+lint+type), A2 (tests+coverage) | ~44s | PASS |
+| Track B (Automated QA) | B1 (security+deps), B2 (code-review+traceability) | ~3s | PASS |
 
-**Fan-out**: Not used (62 test files, below 250 threshold)
-**Parallelism**: node --test --test-concurrency=9 (10 CPU cores detected)
+**Fan-out**: Not used (< 250 test files, below threshold)
+**Parallelism**: Sequential (< 50 test files for new module; broader suite uses node --test defaults)
 
 ### Group Composition
 
@@ -25,55 +25,71 @@
 | A2 | QL-002, QL-004 | Test execution, Coverage analysis | PASS |
 | A3 | QL-003 | Mutation testing | NOT CONFIGURED |
 | B1 | QL-008, QL-009 | SAST scan, Dependency audit | PASS |
-| B2 | QL-010 | Automated code review, Traceability | PASS (with observations) |
+| B2 | QL-010 | Automated code review, Traceability | PASS |
 
 ---
 
 ## Track A: Testing Results
 
-### QL-007: Build Verification — PASS
+### QL-007: Build Verification -- PASS
 
 No explicit build step configured (Node.js runtime project, `package.json` has no `build` script producing compiled output). The project uses ESM modules loaded directly by Node.js. All imports resolve correctly at test time.
 
-### QL-005: Lint Check — NOT CONFIGURED
+ESM import verification:
+- `import { formatPhaseSummary } from './src/core/tasks/task-formatter.js'` resolves successfully
+- Module exports exactly one named export: `formatPhaseSummary`
+- `typeof formatPhaseSummary === 'function'` confirmed
+
+### QL-005: Lint Check -- NOT CONFIGURED
 
 `package.json` scripts.lint: `echo 'No linter configured'`. No `.eslintrc*` found.
 
-### QL-006: Type Check — NOT CONFIGURED
+### QL-006: Type Check -- NOT CONFIGURED
 
 No `tsconfig.json` found. Project is JavaScript (ESM), not TypeScript.
 
-### QL-002: Test Execution — PASS (no regressions)
+### QL-002: Test Execution -- PASS (no regressions)
+
+**Formatter-specific tests** (`tests/core/tasks/task-formatter.test.js`):
+
+| Metric | Value |
+|--------|-------|
+| Total tests | 19 |
+| Passing | 19 |
+| Failing | 0 |
+| Skipped | 0 |
+| Duration | 70ms |
+
+All 19 tests pass covering: module exports, mixed statuses, category grouping, empty tasks, single task, all complete, progress accuracy, output format structure.
 
 **Full test suite** (`npm test`):
 
 | Metric | Feature Branch | Baseline (main) | Delta |
 |--------|---------------|-----------------|-------|
-| Total tests | 1677 | 1703 | -26 (deleted tests) |
-| Passing | 1599 | 1624 | -25 (deleted passing tests) |
-| Failing | 64 | 65 | -1 (improvement) |
+| Total tests | 1663 | 1663 | 0 |
+| Passing | 1581 | 1581 | 0 |
+| Failing | 68 | 68 | 0 |
 | Skipped | 14 | 14 | 0 |
-| Duration | 40.6s | 45.3s | -4.7s (faster) |
+| Duration | ~44s | ~45s | ~-1s |
 
-**Regression analysis**: 0 new failures introduced. All 64 failures on the feature branch are pre-existing failures also present on main. The -1 in failure count is a net improvement.
+**Regression analysis**: 0 new failures introduced. All 68 failures on the feature branch are pre-existing failures verified by running the clean HEAD (git stash, npm test, git stash pop). Identical pass/fail counts confirm zero regressions.
 
-**Embedding-specific tests** (`lib/embedding/**/*.test.js`):
+**Core tests** (`npm run test:core`):
 
 | Metric | Value |
 |--------|-------|
-| Total tests | 482 |
-| Passing | 467 |
-| Failing | 1 (pre-existing TC-004-06) |
-| Skipped | 14 (pre-warm test scaffolds) |
-| Duration | 3.9s |
+| Total tests | 1569 |
+| Passing | 1530 |
+| Failing | 39 |
+| Skipped | 0 |
 
-**TC-004-06** (`tokenizers listed in package.json`): Pre-existing failure. Verified by running on main (same failure). The `tokenizers` package was never in `package.json` dependencies.
+All 39 failures are pre-existing (profile-loader path issues, contract generator stale references, traceability template, codex adapter parity).
 
-### QL-004: Coverage Analysis — NOT CONFIGURED
+### QL-004: Coverage Analysis -- NOT CONFIGURED
 
 No coverage tool (c8, istanbul, nyc) configured in `package.json`. Coverage measurement not available.
 
-### QL-003: Mutation Testing — NOT CONFIGURED
+### QL-003: Mutation Testing -- NOT CONFIGURED
 
 No mutation testing framework (Stryker, etc.) found.
 
@@ -81,77 +97,66 @@ No mutation testing framework (Stryker, etc.) found.
 
 ## Track B: Automated QA Results
 
-### QL-009: Dependency Audit — PASS
+### QL-009: Dependency Audit -- PASS
 
 ```
 npm audit: found 0 vulnerabilities
 ```
 
-### QL-008: SAST Security Scan — PASS
+### QL-008: SAST Security Scan -- PASS
 
 Manual security review of new/modified code:
 
-| File | Finding | Severity |
-|------|---------|----------|
-| jina-code-adapter.js | No hardcoded secrets, no eval, no user input injection | Clean |
-| engine/index.js | No security issues in routing logic | Clean |
-| package.json | @huggingface/transformers ^4 — no known CVEs | Clean |
+| File | Check | Finding |
+|------|-------|---------|
+| task-formatter.js | eval/Function/exec/child_process | None found |
+| task-formatter.js | require('fs')/readFile/writeFile | None -- pure function, no I/O |
+| task-formatter.js | Hardcoded secrets | None |
+| task-formatter.js | TODO/FIXME/HACK markers | None |
+| isdlc.md | Command injection vectors | None -- markdown instructions only |
 
-No dynamic code execution, no unsafe deserialization, no credential handling.
+The new `task-formatter.js` is a pure function module with zero file I/O, zero network calls, and zero dynamic code execution. Attack surface: none.
 
-### QL-010: Automated Code Review — PASS (with observations)
+### QL-010: Automated Code Review -- PASS
 
-**Observations** (non-blocking):
+**Code quality observations** (all non-blocking):
 
-1. **Remaining CodeBERT references in production code**: `lib/setup-project-knowledge.js` still uses `provider: 'codebert'` on lines 495, 567, 658. These calls will now hit the removal error and trigger the catch/fallback path. This is **fail-safe** (Article X) but not ideal. The catch block at line 502-506 handles this gracefully.
+1. **Pure function design**: `formatPhaseSummary()` takes data in, returns string out. No side effects. This is excellent for testability and follows Article V (Simplicity First).
 
-2. **Remaining CodeBERT references in `semantic-search-setup.js`**: Lines 6, 31, 57, 109, 117, 164, 165 still reference CodeBERT in comments and config. These are cosmetic/documentation debt.
+2. **Defensive input handling**: Null plan, error plan, missing phase key -- all handled gracefully with `formatEmptyBox()` fallback.
 
-3. **Remaining `onnxruntime-node` references in `semantic-search-setup.js`**: Lines 102-112 still check for `onnxruntime-node` availability. This check is now vestigial since the project uses `@huggingface/transformers`.
+3. **Visual width heuristic**: `visualWidth()` uses a simplified approach for emoji width calculation. This is adequate for terminal display but not pixel-accurate. Non-blocking -- the heuristic handles the common case (status icons).
 
-**Classification**: All observations are cosmetic or deferred-scope items. The core migration (adapter swap, routing, dependency update, file deletions) is complete and correct. The remaining references are in code paths that degrade gracefully.
+4. **Sub-task filtering**: Tasks are filtered to top-level only via `/^T\d{3}$/`. This correctly excludes sub-tasks (T006a, etc.) from the summary display, matching the isdlc.md instruction changes.
 
-### Traceability Verification — PASS
+5. **isdlc.md changes are syntactically consistent**: The diff shows 3 clean edit sites (STEP 3d-tasks.d, STEP 3d-tasks.f, STEP 3f) that integrate naturally with surrounding markdown structure. No dangling references or broken formatting.
 
-| Task | Traces | Test Coverage | Status |
-|------|--------|---------------|--------|
-| T013: Run full test suite | FR-001..FR-007 | 467/482 pass (14 skip scaffolds) | PASS |
-| T014: No CodeBERT in production | FR-004, AC-004-01 | engine/index.js removal error + lifecycle assertions | PASS (see observations) |
+### Traceability Verification -- PASS
 
-**FR traceability**:
+| Requirement | ACs | Implementation | Test Coverage |
+|-------------|-----|----------------|---------------|
+| FR-001 (AC-001-01, AC-001-02) | Filter main tasks only | STEP 3d-tasks.d regex `/^T\d+$/` | TF-02 stable order |
+| FR-002 (AC-002-01, AC-002-02) | Persist entries, phase summary | STEP 3d-tasks.f, STEP 3f | TF-17, TF-18 output structure |
+| FR-003 (AC-003-01) | formatPhaseSummary() | task-formatter.js | TF-01 through TF-19 (19 tests) |
 
-| FR | Description | Verified By |
-|----|-------------|-------------|
-| FR-001 | Jina Code adapter | 28 tests in jina-code-adapter.test.js (all pass) |
-| FR-002 | Engine routing | 6+ tests in engine/index.test.js (jina-code default, codebert removal) |
-| FR-003 | Dependency swap | package.json verified: @huggingface/transformers present, onnxruntime-node removed |
-| FR-004 | Delete CodeBERT files | codebert-adapter.js, codebert-adapter.test.js, model-downloader.js, model-downloader.test.js all deleted |
-| FR-005 | Pre-warm on discover | Pre-warm logic added to setup-project-knowledge.js, 14 test scaffolds |
-| FR-006 | Package metadata model_id | builder.js, reader.js, manifest.js updated |
-| FR-007 | Test fixture updates | index.test.js, discover-integration.test.js, installer tests updated |
+**Coverage**: 3/3 FRs traced, 5/5 ACs covered.
 
 ---
 
-## Blast Radius Coverage
+## Files Changed
 
-| Tier 1 File | Expected Change | In Diff | Status |
-|-------------|----------------|---------|--------|
-| lib/embedding/engine/jina-code-adapter.js | NEW | Yes (untracked) | COVERED |
-| lib/embedding/engine/index.js | MODIFY | Yes | COVERED |
-| package.json | MODIFY | Yes | COVERED |
-| lib/embedding/engine/codebert-adapter.js | DELETE | Yes (deleted) | COVERED |
-| lib/embedding/installer/model-downloader.js | DELETE | Yes (deleted) | COVERED |
-| lib/setup-project-knowledge.js | MODIFY | Yes | COVERED |
-| lib/embedding/package/builder.js | MODIFY | Yes | COVERED |
-| lib/embedding/package/reader.js | MODIFY | Yes | COVERED |
-
-**Blast radius coverage**: 8/8 Tier 1 files addressed (100%)
+| File | Type | Purpose |
+|------|------|---------|
+| src/core/tasks/task-formatter.js | NEW | Pure function: formatPhaseSummary() |
+| src/claude/commands/isdlc.md | MODIFY | STEP 3d/3f: main-task filtering, persist entries, phase summary + cleanup |
+| tests/core/tasks/task-formatter.test.js | NEW | 19 unit tests for formatter |
+| tests/core/tasks/fixtures/formatter-*.md | NEW (4 files) | Test fixtures: mixed, empty, single, all-complete |
 
 ---
 
 ## Pre-Existing Failures (not caused by this PR)
 
-64 pre-existing test failures across these categories:
+68 pre-existing test failures across these categories:
 
 | Category | Count | Root Cause |
 |----------|-------|-----------|
@@ -165,20 +170,21 @@ No dynamic code execution, no unsafe deserialization, no credential handling.
 | early-branch (T05, T06) | 2 | Branch creation assertion stale |
 | lifecycle (TC-004-06) | 1 | tokenizers never in package.json |
 | template consistency (T43) | 1 | Template drift |
+| contract generator (CG-*) | ~10 | Stale phase/artifact references |
+| profile-loader | 2 | Path to profiles directory incorrect |
 
 ---
 
 ## GATE-16 Checklist
 
-- [x] Build integrity check passes (no compiled build; imports resolve at test time)
-- [x] All tests pass — 0 regressions (64 pre-existing failures, same as main)
-- [x] Code coverage — NOT CONFIGURED (no coverage tool)
-- [x] Linter passes — NOT CONFIGURED
-- [x] Type checker passes — NOT CONFIGURED (JS, not TS)
-- [x] No critical/high SAST vulnerabilities — PASS
-- [x] No critical/high dependency vulnerabilities — PASS (0 vulns)
-- [x] Automated code review — PASS (observations noted, non-blocking)
-- [x] Quality report generated — this document
-- [x] Blast radius coverage — 100% (8/8 Tier 1 files)
+- [x] Build integrity check passes (ESM imports resolve, no build step needed)
+- [x] All tests pass -- 0 regressions (68 pre-existing failures, identical to main)
+- [x] Code coverage -- NOT CONFIGURED (no coverage tool)
+- [x] Linter passes -- NOT CONFIGURED
+- [x] Type checker passes -- NOT CONFIGURED (JS, not TS)
+- [x] No critical/high SAST vulnerabilities -- PASS
+- [x] No critical/high dependency vulnerabilities -- PASS (0 vulns)
+- [x] Automated code review -- PASS (no blockers)
+- [x] Quality report generated -- this document
 
 **GATE-16 VERDICT: PASS**
