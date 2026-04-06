@@ -133,17 +133,17 @@ async function runConfigure() {
   if (!config.embeddings) config.embeddings = {};
 
   // Provider selection
-  const currentProvider = config.embeddings.provider || 'codebert';
+  const currentProvider = config.embeddings.provider || 'jina-code';
   console.log(`Current provider: ${currentProvider}`);
   console.log('\nSelect embedding provider:');
-  console.log('  1. CodeBERT (local, free, requires ONNX model download)');
+  console.log('  1. Jina Code v2 (local, free, auto-downloads via Transformers.js)');
   console.log('  2. Voyage (API, voyage-code-3, high quality)');
   console.log('  3. OpenAI (API, text-embedding-3-small)');
   const choice = (await rl.question(`\nEnter choice [1-3] (default: 1): `)).trim() || '1';
 
-  const providerMap = { '1': 'codebert', '2': 'voyage', '3': 'openai' };
+  const providerMap = { '1': 'jina-code', '2': 'voyage', '3': 'openai' };
   const modelMap = {
-    codebert: 'microsoft/codebert-base',
+    'jina-code': 'jinaai/jina-embeddings-v2-base-code',
     voyage: 'voyage-code-3',
     openai: 'text-embedding-3-small',
   };
@@ -232,11 +232,11 @@ async function runGenerate(genArgs) {
     const { readFileSync, existsSync } = await import('node:fs');
     const { join } = await import('node:path');
     const configPath = join(workingCopy, '.isdlc', 'config.json');
-    let provider = 'codebert';
+    let provider = 'jina-code';
     if (existsSync(configPath)) {
       try {
         const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
-        provider = cfg?.embeddings?.provider || 'codebert';
+        provider = cfg?.embeddings?.provider || 'jina-code';
       } catch {}
     }
     console.log(`Provider: ${provider}`);
