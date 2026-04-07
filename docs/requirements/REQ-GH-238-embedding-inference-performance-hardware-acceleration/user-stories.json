@@ -1,0 +1,50 @@
+[
+  {
+    "id": "US-001",
+    "title": "Fast embedding generation with parallel workers",
+    "story": "As a framework developer, I want embedding generation to use multiple CPU cores so that regeneration completes in under 10 minutes instead of 55.",
+    "acceptance_criteria": [
+      "Worker pool distributes chunks across N threads",
+      "Auto-sizes to cpu_count - 1",
+      "Crashed workers are respawned and failed batches retried"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-001"]
+  },
+  {
+    "id": "US-002",
+    "title": "Hardware-accelerated embeddings",
+    "story": "As a framework user on Apple Silicon, I want the embedding pipeline to use my Neural Engine/GPU automatically so that I get maximum performance without manual configuration.",
+    "acceptance_criteria": [
+      "Auto-detects Apple Silicon and uses CoreML",
+      "Auto-detects NVIDIA GPU and uses CUDA",
+      "Auto-detects Windows and uses DirectML",
+      "Falls back to CPU gracefully on any platform"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-003"]
+  },
+  {
+    "id": "US-003",
+    "title": "Configurable performance knobs",
+    "story": "As a power user, I want to tune parallelism, device, batch size, and model precision through config.json or CLI flags so that I can optimize for my specific hardware.",
+    "acceptance_criteria": [
+      "All knobs in .isdlc/config.json embeddings namespace",
+      "CLI flags override config for one-off runs",
+      "Sensible defaults when nothing is configured"
+    ],
+    "priority": "Must Have",
+    "traces": ["FR-004", "FR-006"]
+  },
+  {
+    "id": "US-004",
+    "title": "Progress visibility during generation",
+    "story": "As a developer waiting for embeddings, I want to see chunks/sec, ETA, and worker utilization so that I know how long the generation will take.",
+    "acceptance_criteria": [
+      "Progress includes chunksPerSec, etaSeconds, activeWorkers",
+      "Aggregates across all workers"
+    ],
+    "priority": "Should Have",
+    "traces": ["FR-005"]
+  }
+]
