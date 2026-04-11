@@ -1762,10 +1762,17 @@ else {
 Write-Host "  $step. Run " -NoNewline
 Write-Host "/discover" -ForegroundColor Green -NoNewline
 Write-Host " to analyze your codebase and generate your constitution"
+if ($EmbeddingsEnabled) {
+    Write-Host "     (Embeddings will be generated automatically during /discover, ~30-60 min first time)" -ForegroundColor Yellow
+}
 $step++
 Write-Host "  $step. Review and edit " -NoNewline
 Write-Host "docs/isdlc/constitution.md" -ForegroundColor Green -NoNewline
 Write-Host " to reflect your team's standards"
+$step++
+Write-Host "  $step. Generate tests for existing code: " -NoNewline
+Write-Host "/isdlc test generate" -ForegroundColor Green -NoNewline
+Write-Host " (uses characterization scaffolds from /discover)"
 $step++
 Write-Host "  $step. Run " -NoNewline
 Write-Host "/add" -ForegroundColor Green -NoNewline

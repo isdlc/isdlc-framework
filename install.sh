@@ -1599,8 +1599,13 @@ else
 fi
 
 echo -e "  ${STEP}. Run ${GREEN}/discover${NC} to analyze your codebase and generate your constitution"
+if [ "$EMBEDDINGS_ENABLED" = "true" ]; then
+    echo -e "     ${YELLOW}(Embeddings will be generated automatically during /discover, ~30-60 min first time)${NC}"
+fi
 STEP=$((STEP + 1))
 echo -e "  ${STEP}. Review and edit ${GREEN}docs/isdlc/constitution.md${NC} to reflect your team's standards"
+STEP=$((STEP + 1))
+echo -e "  ${STEP}. Generate tests for existing code: ${GREEN}/isdlc test generate${NC} (uses characterization scaffolds from /discover)"
 STEP=$((STEP + 1))
 echo -e "  ${STEP}. Run ${GREEN}/add${NC} \"your first item\" to seed the backlog, then ${GREEN}/analyze${NC} and ${GREEN}/build${NC}"
 STEP=$((STEP + 1))
