@@ -176,11 +176,41 @@ COLLISION_LIST_FILE="$PROJECT_DIR/.isdlc-collisions.txt"
 STRAY_COUNT=0
 IDENT_COUNT=0
 COLLISION_COUNT=0
+STRAY_SYMLINK_COUNT=0
+STRAY_DIR_COUNT=0
 
+# Classify each path the framework ships. The tests must be in this order:
+#   1. [ -L "$f" ] — symlink: test FIRST because [ -f ] follows symlinks and
+#      would mask them. User has a symlink at a framework path → treat as
+#      framework artifact unconditionally (no content comparison possible
+#      in the general case, and symlinks to framework paths are unambiguous).
+#   2. [ -d "$f" ] — directory: user has a directory at a path the framework
+#      tracks as a (symlink) entry. Happens when the user extracted the
+#      framework archive via a method that dereferenced symlinks. Enumerate
+#      all files under the directory and treat each as a stray without
+#      content comparison — the directory shouldn't exist at this path.
+#   3. [ -f "$f" ] — regular file: the standard content-compare path.
 while IFS= read -r f; do
     [ -z "$f" ] && continue
-    if [ -f "$f" ]; then
-        if cmp -s "$f" "$TMPFW/framework/$f"; then
+    if [ -L "$f" ]; then
+        # Symlink at a framework path → unambiguous framework artifact.
+        printf '%s\n' "$f" >> "$STRAY_LIST_FILE"
+        STRAY_COUNT=$((STRAY_COUNT + 1))
+        STRAY_SYMLINK_COUNT=$((STRAY_SYMLINK_COUNT + 1))
+    elif [ -d "$f" ]; then
+        # Directory at a path the framework tracks as a single entry (symlink).
+        # Enumerate all files inside and flag them all as strays.
+        while IFS= read -r inner; do
+            [ -z "$inner" ] && continue
+            rel="${inner#./}"
+            printf '%s\n' "$rel" >> "$STRAY_LIST_FILE"
+            STRAY_COUNT=$((STRAY_COUNT + 1))
+            STRAY_DIR_COUNT=$((STRAY_DIR_COUNT + 1))
+        done < <(find "$f" -type f 2>/dev/null)
+        # Remember the dir itself so we can rm -rf it during apply.
+        printf '%s\n' "$f" >> "$STRAY_LIST_FILE.dirs"
+    elif [ -f "$f" ]; then
+        if cmp -s "$f" "$TMPFW/framework/$f" 2>/dev/null; then
             if is_identity_file "$f"; then
                 printf '%s\n' "$f" >> "$IDENT_LIST_FILE"
                 IDENT_COUNT=$((IDENT_COUNT + 1))
@@ -194,6 +224,15 @@ while IFS= read -r f; do
         fi
     fi
 done <<< "$FW_FILES"
+
+# The stray list may contain duplicates when a user-extracted directory at a
+# symlink-aliased path AND a file at a canonical path both point to the same
+# underlying content. De-dupe while preserving order.
+if [ -f "$STRAY_LIST_FILE" ] && [ -s "$STRAY_LIST_FILE" ]; then
+    awk '!seen[$0]++' "$STRAY_LIST_FILE" > "$STRAY_LIST_FILE.tmp" && \
+        mv "$STRAY_LIST_FILE.tmp" "$STRAY_LIST_FILE"
+    STRAY_COUNT=$(wc -l < "$STRAY_LIST_FILE" | tr -d ' ')
+fi
 
 echo -e "${CYAN}Scan complete:${NC}"
 echo "  Stray framework-unique files (identical to upstream):    $STRAY_COUNT"
@@ -278,12 +317,34 @@ if [ $STRAY_COUNT -gt 0 ]; then
     REMOVED=0
     while IFS= read -r f; do
         [ -z "$f" ] && continue
-        if [ -f "$f" ]; then
+        if [ -L "$f" ]; then
+            rm -f "$f"
+            REMOVED=$((REMOVED + 1))
+        elif [ -f "$f" ]; then
             rm -f "$f"
             REMOVED=$((REMOVED + 1))
         fi
     done < "$STRAY_LIST_FILE"
     echo -e "${GREEN}  ✓ Removed $REMOVED stray files${NC}"
+
+    # Also rm -rf any directories that stood at a framework symlink path.
+    # These were enumerated and their contents added to the stray list; the
+    # directory itself needs an rm -rf to clear any stragglers (hidden files,
+    # .DS_Store, etc.) that weren't tracked by git ls-files.
+    if [ -f "$STRAY_LIST_FILE.dirs" ]; then
+        DIR_REMOVED=0
+        while IFS= read -r d; do
+            [ -z "$d" ] && continue
+            if [ -d "$d" ]; then
+                rm -rf "$d"
+                DIR_REMOVED=$((DIR_REMOVED + 1))
+            fi
+        done < "$STRAY_LIST_FILE.dirs"
+        if [ $DIR_REMOVED -gt 0 ]; then
+            echo -e "${GREEN}  ✓ Removed $DIR_REMOVED framework dirs (symlink-aliased)${NC}"
+        fi
+        rm -f "$STRAY_LIST_FILE.dirs"
+    fi
 fi
 
 if [ $IDENT_COUNT -gt 0 ] && [ "$REMOVE_IDENTITY" = true ]; then
@@ -318,29 +379,64 @@ elif [ $COLLISION_COUNT -gt 0 ]; then
     echo -e "${YELLOW}Kept $COLLISION_COUNT collision files (use --force to remove).${NC}"
 fi
 
-# ---- Empty-directory pruning (aggressive) ----
+# ---- Empty-directory + residue pruning ----
 # After removing files, any framework-unique top-level directory that is now
-# empty (or only contains empty subdirs) gets pruned recursively. We ONLY
+# empty (or only contains empty subdirs, .DS_Store, etc.) gets pruned. We ONLY
 # touch a known allow-list of framework-shipped paths so we never clobber
 # user directories with the same name by accident.
+#
+# --force escalates this: under --force we `rm -rf` framework-UNIQUE paths
+# (.antigravity/, research-docs/, .validations/) outright, since the user
+# has explicitly told us the directory is framework residue. For paths that
+# CAN exist in user projects (bin/, docs/, src/, lib/, tests/) we stick to
+# the conservative find-delete-empty approach even under --force.
 echo ""
 echo -e "${YELLOW}Pruning empty framework subtrees...${NC}"
 PRUNED_DIRS=""
-for d in .antigravity .github .validations coverage research-docs packages \
-         docs/articles docs/designs docs/diagrams docs/quality docs/isdlc \
+
+# Sub-helper: remove any .DS_Store files inside a given tree before checking
+# if the tree is empty. These files are macOS Finder metadata and are not
+# tracked by git ls-files, so they wouldn't be in our stray list but they
+# do prevent `rmdir` from succeeding.
+strip_ds_store() {
+    find "$1" -name ".DS_Store" -type f -delete 2>/dev/null || true
+}
+
+# Framework-unique top-level paths — safe to nuke under --force
+FW_UNIQUE_PATHS=".antigravity .validations research-docs"
+# Ambiguous paths — always use conservative empty-prune
+FW_AMBIGUOUS_PATHS="docs/articles docs/designs docs/diagrams docs/quality docs/isdlc \
          src/claude src/core src/isdlc src/providers \
-         bin lib src tests docs .isdlc-framework; do
+         .github packages coverage \
+         bin lib src tests docs"
+
+for d in $FW_UNIQUE_PATHS; do
+    if [ -d "$d" ] || [ -L "$d" ]; then
+        if [ "$FORCE" = true ]; then
+            rm -rf "$d"
+            PRUNED_DIRS="${PRUNED_DIRS}${d} "
+        else
+            strip_ds_store "$d"
+            find "$d" -type d -empty -delete 2>/dev/null || true
+            if [ -d "$d" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
+                rmdir "$d" 2>/dev/null && PRUNED_DIRS="${PRUNED_DIRS}${d} " || true
+            fi
+        fi
+    fi
+done
+
+for d in $FW_AMBIGUOUS_PATHS; do
     if [ -d "$d" ]; then
-        # Prune empty subdirectories first (depth-first).
+        strip_ds_store "$d"
         find "$d" -type d -empty -delete 2>/dev/null || true
-        # If the top-level is now empty, remove it too.
         if [ -d "$d" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
             rmdir "$d" 2>/dev/null && PRUNED_DIRS="${PRUNED_DIRS}${d} " || true
         fi
     fi
 done
+
 if [ -n "$PRUNED_DIRS" ]; then
-    echo -e "${GREEN}  ✓ Pruned empty framework subtrees: $PRUNED_DIRS${NC}"
+    echo -e "${GREEN}  ✓ Pruned: $PRUNED_DIRS${NC}"
 else
     echo "  (no empty framework subtrees to prune)"
 fi
