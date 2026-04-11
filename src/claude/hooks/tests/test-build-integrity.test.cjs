@@ -262,8 +262,8 @@ describe('Section 3: quality-loop-engineer — build integrity', () => {
             'failure report should mention specific compilation/build errors');
         assert.ok(lower.includes('file path') || lower.includes('file paths'),
             'failure report should include file paths');
-        assert.ok(lower.includes('/isdlc fix') || lower.includes('isdlc fix'),
-            'failure report should suggest /isdlc fix');
+        assert.ok(lower.includes('/isdlc analyze') || lower.includes('isdlc analyze'),
+            'failure report should suggest /isdlc analyze');
     });
 
     it('TC-26: agent specifies workflow status FAILED on logical errors', () => {
@@ -357,24 +357,24 @@ describe('Section 5: qa-engineer — GATE-08 build integrity safety net', () => 
 // ===========================================================================
 describe('Section 6: cross-file consistency', () => {
 
-    it('TC-37: feature workflow still uses 16-quality-loop (no regression)', () => {
-        const phases = workflows.workflows.feature.phases;
+    it('TC-37: build workflow still uses 16-quality-loop (no regression)', () => {
+        const phases = workflows.workflows.build.phases;
         assert.ok(phases.includes('16-quality-loop'),
-            'feature workflow should still include 16-quality-loop');
+            'build workflow should still include 16-quality-loop');
         assert.ok(!phases.includes('11-local-testing'),
-            'feature workflow should not include 11-local-testing');
+            'build workflow should not include 11-local-testing');
         assert.ok(!phases.includes('07-testing'),
-            'feature workflow should not include 07-testing');
+            'build workflow should not include 07-testing');
     });
 
-    it('TC-38: fix workflow still uses 16-quality-loop (no regression)', () => {
-        const phases = workflows.workflows.fix.phases;
+    it('TC-38: test-generate workflow still uses 16-quality-loop (no regression)', () => {
+        const phases = workflows.workflows['test-generate'].phases;
         assert.ok(phases.includes('16-quality-loop'),
-            'fix workflow should still include 16-quality-loop');
+            'test-generate workflow should still include 16-quality-loop');
         assert.ok(!phases.includes('11-local-testing'),
-            'fix workflow should not include 11-local-testing');
+            'test-generate workflow should not include 11-local-testing');
         assert.ok(!phases.includes('07-testing'),
-            'fix workflow should not include 07-testing');
+            'test-generate workflow should not include 07-testing');
     });
 
     it('TC-39: when build passes, workflow proceeds normally with QA APPROVED', () => {

@@ -292,18 +292,18 @@ When receiving a new requirement brief:
 
 ## 3. Workflow Selection & Initialization
 
-When the user selects a workflow (via `/isdlc feature`, `/isdlc fix`, etc.), initialize it from the workflow definitions in `.isdlc/config/workflows.json`.
+When the user selects a workflow (via `/isdlc build`, `/isdlc analyze`, etc.), initialize it from the workflow definitions in `.isdlc/config/workflows.json`.
 
 ### Available Workflows
 
 | Command | Type | Phases | Description |
 |---------|------|--------|-------------|
-| `/isdlc build` | feature | 01 → 02 → 03 → 05 → 10 → 06 → 09 → 07 | Build a feature (same as /isdlc feature) |
-| `/isdlc feature` | feature | 01 → 02 → 03 → 05 → 10 → 06 → 09 → 07 | New feature end-to-end |
-| `/isdlc fix` | fix | 01 → 05 → 10 → 06 → 09 → 07 | Bug fix with TDD |
-| `/isdlc test run` | test-run | 10 → 06 | Execute existing tests |
-| `/isdlc test generate` | test-generate | 04 → 05 → 10 → 06 → 07 | Create new tests |
-| `/isdlc upgrade` | upgrade | 14-plan → 14-execute → 07 | Dependency/tool upgrade |
+| `/isdlc build` | feature | 05 → 06 → 16 → 08 | Build an analyzed backlog item |
+| `/isdlc test run` | test-run | 11 → 07 | Execute existing tests |
+| `/isdlc test generate` | test-generate | 05 → 06 → 16 → 08 | Create new tests |
+| `/isdlc upgrade` | upgrade | 15-plan → 15-execute → 08 | Dependency/tool upgrade |
+
+Note: `/isdlc feature` and `/isdlc fix` were removed in GH-215. Use `/isdlc analyze` (which auto-adds if missing and classifies bug vs feature inline) followed by `/isdlc build`.
 
 ### Initialization Process
 
@@ -439,7 +439,7 @@ When the user selects a workflow (via `/isdlc feature`, `/isdlc fix`, etc.), ini
 **test-run workflow:**
 - Present test type selection (unit/system/e2e, multi-select) before initializing
 - Single-phase workflow — reports results, does NOT fix failures
-- Suggest `/isdlc fix` for each failure found
+- Suggest `/isdlc analyze "<failure description>"` for each failure found
 
 **test-generate workflow:**
 - Present test type selection (unit/system/e2e, single-select) before initializing
@@ -1572,10 +1572,8 @@ You have access to these **12 orchestration skills**:
 # COMMANDS YOU SUPPORT
 
 - **/isdlc add "<description>"**: Add an item to the backlog
-- **/isdlc analyze "<item>"**: Run interactive analysis on a backlog item
-- **/isdlc build "<item>"**: Start a feature workflow for a backlog item
-- **/isdlc feature "<description>"**: Start a new feature workflow (alias for build)
-- **/isdlc fix "<description>"**: Start a bug fix workflow
+- **/isdlc analyze "<item>"**: Run interactive analysis on a backlog item (handles both features and bugs via inline classification)
+- **/isdlc build "<item>"**: Start a build workflow for an analyzed backlog item
 - **/isdlc test run**: Execute existing automation tests
 - **/isdlc test generate**: Create new tests for existing code
 - **/isdlc status**: Provide current project status across all phases

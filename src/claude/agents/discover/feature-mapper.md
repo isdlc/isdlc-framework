@@ -356,19 +356,19 @@ Read the following configuration files and extract structured data:
 
 From the data collected in 9a-9c, construct a delegation graph:
 
-1. **Identify entry points** — commands from 9b that users invoke directly (e.g., `/isdlc feature`, `/discover`)
+1. **Identify entry points** — commands from 9b that users invoke directly (e.g., `/isdlc build`, `/discover`)
 2. **Identify orchestrators** — agents that delegate to other agents (have non-empty `delegates_to[]`)
 3. **Identify leaf agents** — agents that do NOT delegate to any other agents
 4. **Map the call chain** — for each entry point command, trace: command -> orchestrator -> phase agents -> leaf agents
 
 Example graph structure:
 ```
-/isdlc feature
+/isdlc build
   -> 00-sdlc-orchestrator
-    -> 01-requirements-analyst (leaf)
-    -> 02-solution-architect (leaf)
-    -> 03-system-designer (leaf)
-    -> 04-test-architect (leaf)
+    -> 05-test-design-engineer (leaf)
+    -> 06-software-developer (leaf)
+    -> 16-quality-loop-engineer (leaf)
+    -> 08-qa-engineer (leaf)
     -> ...
 
 /discover

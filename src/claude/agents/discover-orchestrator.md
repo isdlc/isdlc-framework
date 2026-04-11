@@ -793,7 +793,7 @@ PHASE 8: Finalize                                    [Complete ✓]
     1. Review artifacts in docs/
     2. Review constitution: cat docs/isdlc/constitution.md
     3. Start a workflow:
-       /isdlc feature  — Build your first feature
+       /analyze  — Build your first feature
 
 ════════════════════════════════════════════════════════════════
 ```
@@ -1270,7 +1270,7 @@ Created:
   tests/ (test infrastructure)
 
 Next Steps:
-  /isdlc feature  -- Build your first feature
+  /analyze  -- Build your first feature
 
 ════════════════════════════════════════════════════════════════
 ```
@@ -2520,8 +2520,8 @@ Untested code makes feature development riskier -- bugs are harder
 to catch and regressions are invisible.
 
 [1] Generate tests for gaps (Recommended)  -> /isdlc test generate
-[2] Start a new feature                    -> /isdlc feature
-[3] Fix a bug                              -> /isdlc fix
+[2] Start a new feature                    -> /analyze
+[3] Fix a bug                              -> /analyze
 [4] I'm done for now
 ```
 
@@ -2531,8 +2531,8 @@ to catch and regressions are invisible.
 Test coverage meets constitution thresholds.
 
 What would you like to do next?
-[1] Start a new feature      -> /isdlc feature
-[2] Fix a bug                -> /isdlc fix
+[1] Start a new feature      -> /analyze
+[2] Fix a bug                -> /analyze
 [3] Generate more tests      -> /isdlc test generate
 [4] I'm done for now
 ```
@@ -2541,11 +2541,11 @@ What would you like to do next?
 
 ```
 What would you like to do next?
-[1] Start a new feature (Recommended)   -> /isdlc feature
+[1] Start a new feature (Recommended)   -> /analyze
 [2] I'm done for now
 ```
 
-Record the user's selection in `.isdlc/state.json` under `discovery_context.user_next_action` (audit-only metadata). Use the command string (e.g., `/isdlc test generate`, `/isdlc feature`, `/isdlc fix`, or `none`).
+Record the user's selection in `.isdlc/state.json` under `discovery_context.user_next_action` (audit-only metadata). Use the command string (e.g., `/isdlc test generate`, `/add`, `/analyze`, or `none`).
 
 **Update progress:**
 ```
@@ -2783,7 +2783,7 @@ PHASE 5: Finalize                                    [Complete ✓]
     ✓ docs/isdlc/reverse-engineer-report.md
     ✓ docs/.embeddings/{project}-code.emb (code embeddings)
 
-  Next action: {user's walkthrough selection, e.g. "/isdlc feature"}
+  Next action: {user's walkthrough selection, e.g. "/analyze"}
 
 ════════════════════════════════════════════════════════════════
 ```
@@ -2859,7 +2859,7 @@ Emit this block as the last thing in your response:
 
 ---
 SUGGESTED NEXT STEPS:
-  [1] Start a new feature with /isdlc feature
+  [1] Start a new feature with /analyze
   [2] Review discovery report
   [3] View project status
 ---

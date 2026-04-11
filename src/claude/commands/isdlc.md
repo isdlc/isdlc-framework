@@ -23,8 +23,8 @@ When the project is a monorepo (`.isdlc/monorepo.json` exists), all commands acc
 
 **Project flag on action commands:**
 ```
-/isdlc feature "description" --project api-service
-/isdlc fix "description" --project web-frontend
+/isdlc analyze "description" --project api-service
+/isdlc build "slug" --project web-frontend
 /isdlc status --project api-service
 ```
 
@@ -260,7 +260,7 @@ in `src/claude/hooks/lib/three-verb-utils.cjs` for testability.
 1. Present test type selection: Unit, System, E2E (multi-select)
 2. Initialize `active_workflow` with type `"test-run"` and phases `["11-local-testing", "07-testing"]`
 3. Delegate to Integration Tester (Phase 06) with selected test types
-4. Report results — does NOT fix failures (suggest `/isdlc fix` for each)
+4. Report results — does NOT fix failures (suggest `/isdlc analyze "<failure description>"` for each)
 
 **test generate** - Create new tests for existing code
 ```

@@ -118,7 +118,7 @@ async function main() {
             `codebase only.\n\n` +
             `Blocked: ${input.tool_name} to ${filePath}\n\n` +
             `To make changes, exit Chat/Explore mode first by ending the ` +
-            `exploration session, then use /isdlc feature or /isdlc fix.`
+            `exploration session, then use /isdlc analyze followed by /isdlc build.`
         );
         process.exit(0);
 

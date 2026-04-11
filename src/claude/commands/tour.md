@@ -79,9 +79,9 @@ After discovery, the framework knows your project. You only need to re-run `/dis
 
 #### 1b. Feature Development
 
-**Run:** `/isdlc feature "description of the feature"`
+**Run:** `/isdlc analyze "description of the feature"` followed by `/isdlc build "<slug>"` after analysis completes.
 
-The feature workflow runs 9 phases:
+The feature workflow runs 9 phases (analysis phases inline via `/analyze`, then build phases via `/build`):
 
 1. **Quick Scan** (Phase 00) — lightweight scope estimation using haiku model
 2. **Requirements** (Phase 01) — the requirements analyst captures functional requirements, user stories, and acceptance criteria through interactive A/R/C menus
@@ -100,7 +100,7 @@ Each phase has a quality gate that must pass before the next begins. If a gate f
 
 #### 1c. Bug Fix
 
-**Run:** `/isdlc fix "description of the bug"`
+**Run:** `/isdlc analyze "description of the bug"` followed by `/isdlc build "<slug>"` after analysis completes. The analyze command classifies bug vs feature inline and routes bugs through the bug-specific roundtable with tracing agents.
 
 Bug fixes use a TDD approach with tracing agents (6 phases):
 

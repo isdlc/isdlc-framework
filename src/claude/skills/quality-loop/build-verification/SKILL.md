@@ -51,7 +51,7 @@ For logical errors (not auto-fixable), report failure honestly:
 - List specific compilation errors with file paths
 - Classify each error as mechanical or logical
 - Do NOT declare QA APPROVED -- the build is broken
-- Suggest `/isdlc fix` workflow for remaining issues
+- Suggest `/isdlc analyze "<issue description>"` to address remaining issues
 
 ## Observability
 Skill usage is logged for observability. Cross-phase usage is recorded but never blocked.

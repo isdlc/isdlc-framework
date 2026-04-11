@@ -280,7 +280,7 @@ Follow the SKILL OBSERVABILITY protocol in CLAUDE.md.
 
 **Build command detection**: Use the language-aware build command detection from QL-007 (scan for `pom.xml`, `package.json`, `Cargo.toml`, `go.mod`, etc.) to determine the correct build command.
 
-**Gate enforcement**: QA APPROVED status cannot be granted if the project build is broken. If the build fails at this stage, report the specific errors and recommend running `/isdlc fix` to address them. Never approve code that does not compile.
+**Gate enforcement**: QA APPROVED status cannot be granted if the project build is broken. If the build fails at this stage, report the specific errors and recommend running `/isdlc analyze "<build failure description>"` to address them. Never approve code that does not compile.
 
 # PHASE GATE VALIDATION (GATE-07)
 

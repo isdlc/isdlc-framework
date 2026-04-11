@@ -310,7 +310,7 @@ ERROR: Discovery artifacts not found.
 The feature workflow requires project discovery first.
 Run: /discover
 
-Then retry: /isdlc feature "{description}"
+Then retry: /isdlc analyze "{description}"
 ```
 
 ### No Keyword Matches

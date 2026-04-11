@@ -520,7 +520,7 @@ When the build fails due to LOGICAL errors (after auto-fix attempts for any mech
    - Specific compilation errors with file paths and line numbers
    - Classification of each error (mechanical vs logical)
    - Clear statement that the build is broken
-   - Suggestion to run `/isdlc fix` workflow for remaining issues
+   - Suggestion to run `/isdlc analyze "<issue description>"` to address remaining issues
 3. **Set workflow status to FAILED** -- do NOT set to COMPLETED
 4. **NEVER declare QA APPROVED** when the build is broken
 

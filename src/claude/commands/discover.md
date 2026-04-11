@@ -229,8 +229,10 @@ When this command is invoked:
    e. **Code embeddings refresh**: If embedding pipeline is configured (`docs/.embeddings/` exists), trigger re-index of source files. If not configured or fails, skip silently.
 
 ### Related Commands
-- `/isdlc feature` - Build a new feature after discover completes
-- `/isdlc fix` - Fix a bug after discover completes
+- `/isdlc add "<description>"` - Add a feature or bug to the backlog after discover completes
+- `/isdlc analyze "<item>"` - Run the roundtable analysis on a backlog item (handles features and bugs)
+- `/isdlc build "<item>"` - Build an analyzed backlog item
+- `/isdlc test generate` - Generate tests for existing code (uses characterization scaffolds from discover)
 - `/isdlc test run` - Run existing tests
 - `/isdlc status` - Check current project status
 

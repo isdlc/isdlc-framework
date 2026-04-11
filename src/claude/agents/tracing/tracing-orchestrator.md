@@ -382,7 +382,7 @@ ERROR: Discovery artifacts not found.
 The fix workflow requires project discovery first.
 Run: /discover
 
-Then retry: /isdlc fix "{description}"
+Then retry: /isdlc analyze "{description}"
 ```
 
 ### No Root Cause Identified
