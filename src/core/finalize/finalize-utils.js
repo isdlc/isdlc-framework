@@ -8,7 +8,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -168,22 +168,83 @@ export function rebuildMemoryEmbeddings(projectRoot) {
 }
 
 /**
- * Refresh code embeddings if pipeline is configured.
+ * F0009 — Refresh code embeddings (REQ-GH-239 FR-007, FR-006, FR-008, NFR-006).
+ *
+ * Sync adapter wired into the finalize checklist runner. Delegates the heavy
+ * lifting to `isdlc-embedding generate --incremental` via execSync, with
+ * opt-in and bootstrap guards inline. The async equivalent used by non-runner
+ * callers lives in `src/core/finalize/refresh-code-embeddings.js`.
+ *
  * @param {string} projectRoot - Absolute path to project root
- * @returns {{ success: boolean, skipped?: boolean, error?: string }}
+ * @returns {{ success: boolean, skipped?: boolean, error?: string, message?: string }}
  */
 export function refreshCodeEmbeddings(projectRoot) {
+  // FR-006: raw opt-in check (bypasses the config merge layer so defaults
+  // cannot force embeddings on).
   try {
-    const embeddingsDir = join(projectRoot, 'docs', '.embeddings');
-    if (!existsSync(embeddingsDir)) {
-      return { success: true, skipped: true };
+    const cfgPath = join(projectRoot, '.isdlc', 'config.json');
+    if (!existsSync(cfgPath)) {
+      return { success: true, skipped: true, message: 'embeddings not configured' };
     }
-    execSync(
-      `node -e 'import("./lib/embedding/chunker/index.js").then(() => console.log("ok"))'`,
-      { cwd: projectRoot, stdio: 'pipe', timeout: 30000 }
-    );
-    return { success: true };
+    let raw;
+    try {
+      raw = JSON.parse(readFileSync(cfgPath, 'utf8'));
+    } catch {
+      // ERR-F0009-001 — invalid JSON treated as opted out (fail-open per NFR-006)
+      return { success: true, skipped: true, message: 'config read error (treated as opt-out)' };
+    }
+    if (raw.embeddings == null) {
+      return { success: true, skipped: true, message: 'embeddings not configured' };
+    }
+    if (raw.embeddings.refresh_on_finalize === false) {
+      return { success: true, skipped: true, message: 'refresh_on_finalize disabled' };
+    }
+
+    // FR-008: first-time bootstrap safety — do NOT run multi-hour generate on finalize.
+    const embDir = join(projectRoot, 'docs', '.embeddings');
+    const hasEmbPackage =
+      existsSync(embDir) &&
+      (() => {
+        try {
+          return readdirSync(embDir).some((f) => f.endsWith('.emb'));
+        } catch {
+          return false;
+        }
+      })();
+    if (!hasEmbPackage) {
+      const banner =
+        "F0009 Code embeddings: skipped — run 'isdlc-embedding generate .' manually to bootstrap (one-time ~30-60 min)";
+      // eslint-disable-next-line no-console
+      console.log(banner);
+      return { success: true, skipped: true, message: 'bootstrap_needed' };
+    }
+
+    // FR-007: incremental refresh via child process. stdio pipe to capture
+    // progress; prefix with [F0009] on our way out so finalize logs stay clean.
+    try {
+      const out = execSync('node bin/isdlc-embedding.js generate . --incremental', {
+        cwd: projectRoot,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 300000 // NFR-004: typical deltas ≤3min; 5min ceiling is generous
+      });
+      if (out && out.length > 0) {
+        for (const line of out.toString().split('\n')) {
+          if (line.trim()) {
+            // eslint-disable-next-line no-console
+            console.log(`[F0009] ${line}`);
+          }
+        }
+      }
+      return { success: true, message: 'code embeddings refreshed' };
+    } catch (err) {
+      // ERR-F0009-002 — fail-open: finalize continues despite child failure
+      return {
+        success: false,
+        error: `isdlc-embedding generate failed: ${err.message}`
+      };
+    }
   } catch (err) {
+    // Outer defensive catch (Article X fail-safe)
     return { success: false, error: err.message };
   }
 }

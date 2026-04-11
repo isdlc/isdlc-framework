@@ -4,6 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] #249 Re-enable graphOptimizationLevel for Jina v2 fp16 (remove GH-238 workaround) [github: GH-249]
+- [ ] #248 Calibrator under-measures per-worker memory by ~6x for real code chunks [github: GH-248]
 - [ ] #247 Auto-trigger incremental embedding refresh (file watcher / post-commit / PostToolUse) [github: GH-247]
 - [ ] #246 Embedding server: launchd/systemd integration for reboot survival [github: GH-246]
 - [ ] #245 Embedding server: auto-restart on crash (lifecycle supervision) [github: GH-245]
@@ -12,7 +14,9 @@
 - [ ] #242 Embedding staleness detection + auto-refresh on code changes [github: GH-242]
 - [ ] #241 Bug: embedding server CLI auto-start reports false success when port already bound [github: GH-241]
 - [ ] #240 Investigate: Jina v2 fp16 on CoreML routes to GPU instead of Apple Neural Engine [github: GH-240]
-- [A] #239 Worker pool parallelism: engine's sequential batch loop defeats multi-worker speedup [github: GH-239] -> [requirements](docs/requirements/REQ-GH-239-worker-pool-engine-parallelism/)
+- [x] #239 Worker pool parallelism: engine's sequential batch loop defeats multi-worker speedup [github: GH-239] -> [requirements](docs/requirements/REQ-GH-239-worker-pool-engine-parallelism/) **Completed**
+  - Single-call engine dispatch (outer batch loop removed), unified `embed(texts, opts)` adapter interface, worker-pool concurrent progress callback (10-batch moving window + throughput + ETA + active_workers), memory calibrator (`lib/embedding/engine/memory-calibrator.js`), device-detector calibration integration, F0009 `refreshCodeEmbeddings` finalize handler (opt-in via `hasUserEmbeddingsConfig` raw-file check, bootstrap-safe skip, incremental spawn + /reload auto-start), install-time embeddings opt-in prompt (bash + node, exact-text validated), worker serial-queue drain (prevents concurrent-handler memory blowup on real inputs). 135 new unit tests green. Empirical validation on 24GB Mac: synthetic P4 = 60.5 c/s (4× scaling confirmed); real-chunk P4 = 0.73× P1 regression due to calibrator under-measurement (#248) and `graphOptimizationLevel: disabled` GH-238 workaround (#249). Architectural fix is correct; NFR-002 3× throughput target blocked on those two follow-ups. Config ships with `parallelism: 1` as the empirically-correct default for Jina v2 fp16 CoreML on 24 GB hardware.
+  - **Completed:** 2026-04-11
 - [x] #238 Embedding inference performance: hardware acceleration + parallelism on Apple Silicon [github: GH-238] -> [requirements](docs/requirements/REQ-GH-238-embedding-inference-performance-hardware-acceleration/) **Completed**
   - Worker pool, embedding-worker, device detector, Jina code adapter pool integration. Added `max_memory_gb` memory cap, device-aware `perWorkerMemGB`, fp16 graph-optimizer workaround, tensor disposal fix (in-process + worker paths), CLI test/build artifact exclusion, discover-orchestrator embedding step, bin entries (`isdlc-embedding`, `isdlc-embedding-server`), discover orchestrator post-step for Codex path. Validated end-to-end: 19811 embeddings on 24GB Mac in ~1h40min, fp16 CoreML, 1.9GB stable RSS, searchable via HTTP `/search`. Follow-up issues #239-#247 cover engine perf, observability, and lifecycle gaps.
   - **Completed:** 2026-04-11

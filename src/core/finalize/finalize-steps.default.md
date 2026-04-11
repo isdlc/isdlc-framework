@@ -43,5 +43,5 @@
   blocked_by: [F0003]
 - [ ] F0008 Rebuild memory embeddings | critical: false, fail_open: true, max_retries: 1, type: shell
   blocked_by: [F0003]
-- [ ] F0009 Refresh code embeddings | critical: false, fail_open: true, max_retries: 1, type: shell
+- [ ] F0009 Refresh code embeddings | critical: false, fail_open: true, max_retries: 1, type: internal
   blocked_by: [F0003]

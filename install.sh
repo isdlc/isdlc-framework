@@ -15,7 +15,9 @@
 #   - Creates .isdlc/ folder for project state tracking
 #   - Removes the isdlc-framework folder after installation
 
-set -e
+# Note: `set -e` is deferred until after the helper functions below are
+# defined, so that sourcing this file from test harnesses (bats) does NOT
+# leak `set -e` into the caller. See the source-detection guard below.
 
 # Colors for output
 RED='\033[0;31m'
@@ -24,6 +26,120 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
+
+# ============================================================================
+# prompt_embeddings — FR-010: install-time embeddings opt-in prompt
+# ============================================================================
+# Displays the embeddings opt-in prompt. Sets the global EMBEDDINGS_ENABLED
+# variable to "true" or "false" and also echoes the result on stdout for
+# callers that want to capture it via command substitution.
+#
+# Default is N (Enter, empty, unrecognized, EOF, or broken stdin → "false").
+# NFR-006 / ERR-INSTALL-001: fail-open to NO on any stdin read failure.
+#
+# The prompt text is binding — must match FR-010 character-for-character.
+# This function is a pure helper (no file side effects) so bats tests can
+# source install.sh and drive the function directly.
+prompt_embeddings() {
+  echo ""
+  echo "Code Embeddings (Optional)"
+  echo "Enables semantic code search, sprawl detection, duplication analysis."
+  echo "First generation: ~30-60 min on medium codebases. Refresh: seconds-minutes."
+  echo ""
+
+  # Print the question explicitly (not via `read -p`) so it is visible on
+  # non-TTY stdin too (piped install, test harness). `read -p` suppresses its
+  # prompt string when stdin is not a terminal — we want the question visible
+  # in all cases for auditability and test assertions.
+  # Use echo (newline terminated) so subsequent output lines (e.g. the
+  # "true"/"false" result) appear on their own lines, which keeps stdout
+  # line-based and parseable by bats assertions.
+  echo "Enable code embeddings for semantic search? [y/N]:"
+
+  local answer=""
+  # `read -r` swallows EOF/non-zero exit via the `if !` so `set -e` does not
+  # kill the installer when stdin is closed (CI, piped install).
+  if ! IFS= read -r answer; then
+    answer=""
+  fi
+
+  case "${answer:-n}" in
+    y|Y|yes|YES)
+      EMBEDDINGS_ENABLED="true"
+      ;;
+    *)
+      EMBEDDINGS_ENABLED="false"
+      ;;
+  esac
+  echo "$EMBEDDINGS_ENABLED"
+}
+
+# ============================================================================
+# embeddings_config_block — FR-010: emit the embeddings JSON block
+# ============================================================================
+# When called, emits the `embeddings` JSON block exactly as specified, suitable
+# for embedding inside a larger JSON object. The caller is responsible for
+# deciding whether to include it (see prompt_embeddings → "true"/"false").
+embeddings_config_block() {
+  cat <<'EMBCFG'
+  "embeddings": {
+    "provider": "jina-code",
+    "model": "jinaai/jina-embeddings-v2-base-code",
+    "server": {
+      "port": 7777,
+      "host": "localhost",
+      "auto_start": true
+    },
+    "parallelism": "auto",
+    "device": "auto",
+    "dtype": "auto",
+    "batch_size": 32,
+    "session_options": {},
+    "max_memory_gb": null,
+    "refresh_on_finalize": true
+  }
+EMBCFG
+}
+
+# ============================================================================
+# write_isdlc_config_json — FR-010: write .isdlc/config.json
+# ============================================================================
+# Writes `.isdlc/config.json`. If $1 == "true", includes the embeddings block;
+# otherwise omits the `embeddings` key entirely (not null, not an empty block).
+# Arg 1: enable_embeddings ("true" | "false")
+# Arg 2: target path (defaults to .isdlc/config.json)
+write_isdlc_config_json() {
+  local enable_embeddings="${1:-false}"
+  local target_path="${2:-.isdlc/config.json}"
+  local target_dir
+  target_dir="$(dirname "$target_path")"
+  mkdir -p "$target_dir"
+
+  if [ "$enable_embeddings" = "true" ]; then
+    cat > "$target_path" <<EMBCFGJSON
+{
+$(embeddings_config_block)
+}
+EMBCFGJSON
+  else
+    cat > "$target_path" <<'EMBCFGJSON'
+{
+}
+EMBCFGJSON
+  fi
+}
+
+# If this file is being SOURCED (e.g. by bats tests) rather than executed,
+# stop here — tests drive the helpers directly and do not want the installer
+# to run its side effects. The `${BASH_SOURCE[0]}` vs `$0` comparison is the
+# portable source-detection pattern.
+if [ "${BASH_SOURCE[0]}" != "$0" ]; then
+  return 0 2>/dev/null || true
+fi
+
+# Now that the source-detection guard has fired, it is safe to enable `set -e`
+# for the installer's own execution. Sourced callers never reach this line.
+set -e
 
 # Get the directory where this script is located (the cloned isdlc-framework folder)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -794,6 +910,54 @@ cat > .isdlc/state.json << EOF
 EOF
 
 echo -e "${GREEN}  ✓ Created state.json${NC}"
+
+# ============================================================================
+# Embeddings opt-in prompt (FR-010)
+# ============================================================================
+# Prompt the user whether to enable code embeddings. Default: N.
+# NFR-006 / ERR-INSTALL-001: fail-open to NO on EOF or non-TTY stdin.
+# When enabled, the generated .isdlc/config.json includes an embeddings block;
+# when disabled, the embeddings key is omitted entirely (not null, not empty).
+#
+# Note: we inline the prompt here instead of calling prompt_embeddings() so
+# the user-facing banner writes directly to this shell's stdout (no subshell,
+# no capture), while the answer is read directly into a local variable. The
+# prompt_embeddings() function is a thin wrapper around the same logic,
+# intended for tests that need to drive the helper via command substitution.
+EMBEDDINGS_ENABLED="false"
+if [ -t 0 ]; then
+    echo ""
+    echo "Code Embeddings (Optional)"
+    echo "Enables semantic code search, sprawl detection, duplication analysis."
+    echo "First generation: ~30-60 min on medium codebases. Refresh: seconds-minutes."
+    echo ""
+    echo "Enable code embeddings for semantic search? [y/N]:"
+    EMB_ANSWER=""
+    if ! IFS= read -r EMB_ANSWER; then
+        EMB_ANSWER=""
+    fi
+    case "${EMB_ANSWER:-n}" in
+        y|Y|yes|YES) EMBEDDINGS_ENABLED="true" ;;
+        *)           EMBEDDINGS_ENABLED="false" ;;
+    esac
+    unset EMB_ANSWER
+fi
+# else: non-interactive (piped install, CI) — fall through to default NO
+# per NFR-006. No banner emitted to keep the install log clean.
+
+ISDLC_CONFIG_TARGET="$PROJECT_ROOT/.isdlc/config.json"
+if [ -f "$ISDLC_CONFIG_TARGET" ]; then
+    echo -e "${YELLOW}  .isdlc/config.json already exists — leaving user config untouched${NC}"
+else
+    write_isdlc_config_json "$EMBEDDINGS_ENABLED" "$ISDLC_CONFIG_TARGET"
+    if [ "$EMBEDDINGS_ENABLED" = "true" ]; then
+        echo -e "${GREEN}  ✓ Created .isdlc/config.json (embeddings enabled)${NC}"
+        echo "  → Embeddings enabled. Run 'isdlc-embedding generate .' to bootstrap."
+    else
+        echo -e "${GREEN}  ✓ Created .isdlc/config.json${NC}"
+        echo "  → Embeddings disabled. Run 'isdlc-embedding configure' at any time to enable."
+    fi
+fi
 
 # Create provider.env for Ollama users
 if [ "$PROVIDER_MODE" = "ollama" ]; then

@@ -238,6 +238,40 @@ export function getConfigPath(projectRoot) {
 }
 
 /**
+ * Check whether the user has explicitly configured embeddings.
+ *
+ * Reads the RAW .isdlc/config.json file and checks for a top-level
+ * `embeddings` key that is not null/undefined. This deliberately bypasses
+ * the defaults merge layer used by {@link readProjectConfig} — which
+ * always injects an `embeddings` section from DEFAULT_PROJECT_CONFIG —
+ * so callers can distinguish "user opted in" from "framework defaulted in".
+ *
+ * Behavior:
+ * - Missing file → false
+ * - Malformed JSON → false (fail-open, no exception propagates)
+ * - `embeddings: null` → false (explicit null treated as "not configured")
+ * - `embeddings: { ... }` (any non-null value) → true
+ * - No caching: each call re-reads the file so edits take effect immediately
+ *
+ * REQ-GH-239 FR-006 (Opt-in via config presence), ERR-F0009-001 (fail-open).
+ * Article X (Fail-Safe Defaults — opt-out via silence).
+ *
+ * @param {string} projectRoot - Absolute path to project root
+ * @returns {boolean} true if user's raw config has an embeddings key (non-null)
+ */
+export function hasUserEmbeddingsConfig(projectRoot) {
+  try {
+    const configPath = join(projectRoot, '.isdlc', 'config.json');
+    if (!existsSync(configPath)) return false;
+    const raw = readFileSync(configPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return parsed != null && parsed.embeddings != null;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Clear all internal caches. For testing.
  */
 export function clearConfigCache() {

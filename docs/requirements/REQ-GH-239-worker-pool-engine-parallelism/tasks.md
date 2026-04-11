@@ -31,7 +31,7 @@
   files: lib/embedding/engine/memory-calibrator.js (CREATE), lib/embedding/engine/memory-calibrator.test.js (MODIFY)
   blocked_by: [T002]
   blocks: [T008, T015]
-- [ ] T005 Extend worker-pool.js pool.embed with options.onProgress, add 10-batch moving average rate window, compute chunks_per_sec and eta_seconds, fire per-batch callback with throughput+ETA object | traces: FR-001, FR-005, NFR-005
+- [X] T005 Extend worker-pool.js pool.embed with options.onProgress, add 10-batch moving average rate window, compute chunks_per_sec and eta_seconds, fire per-batch callback with throughput+ETA object | traces: FR-001, FR-005, NFR-005
   files: lib/embedding/engine/worker-pool.js (MODIFY), lib/embedding/engine/worker-pool.test.js (MODIFY)
   blocked_by: [T001]
   blocks: [T006]

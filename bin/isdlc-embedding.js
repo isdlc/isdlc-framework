@@ -248,6 +248,9 @@ async function runGenerate(genArgs) {
     const { chunkFile, detectLanguage } = await import('../lib/embedding/chunker/index.js');
     const { embed } = await import('../lib/embedding/engine/index.js');
     const { buildPackage } = await import('../lib/embedding/package/builder.js');
+    // REQ-GH-239 T015: pre-pool memory calibration (FR-003, NFR-003)
+    const { computeFingerprint, readCachedCalibration, calibratePerWorkerMemory } =
+      await import('../lib/embedding/engine/memory-calibrator.js');
 
     // 1. Detect VCS and get file list
     const vcs = await createAdapter(workingCopy);
@@ -302,6 +305,50 @@ async function runGenerate(genArgs) {
 
     // 4. Generate embeddings (with hardware acceleration config)
     const texts = allChunks.map(c => c.content);
+
+    // REQ-GH-239 T015: one-time memory calibration before pool creation.
+    // Cache hit = zero overhead. Cache miss = one ~1-2 min measurement then cached.
+    // Failure is non-blocking (device-detector falls back to hardcoded constants).
+    try {
+      const calibrationConfig = {
+        device: embConfig.device || 'auto',
+        dtype: embConfig.dtype || 'auto',
+        model: embConfig.model || 'jinaai/jina-embeddings-v2-base-code',
+      };
+      const fingerprint = computeFingerprint(calibrationConfig);
+      const cached = readCachedCalibration(workingCopy, fingerprint);
+      if (!cached) {
+        console.log('[calibrate] no cached calibration; running one-time measurement...');
+        const calibration = await calibratePerWorkerMemory(calibrationConfig, { projectRoot: workingCopy });
+        if (calibration && typeof calibration.perWorkerMemGB === 'number') {
+          console.log(
+            `[calibrate] measured perWorkerMemGB=${calibration.perWorkerMemGB.toFixed(1)} (${calibration.durationMs}ms)`
+          );
+        } else {
+          console.log('[calibrate] failed or timed out; falling back to hardcoded constants');
+        }
+      }
+    } catch (err) {
+      console.log(`[calibrate] error: ${err.message}; falling back to hardcoded constants`);
+    }
+
+    // REQ-GH-239 T016: progress rendering — new unified FR-005 shape
+    // { processed, total, chunks_per_sec, eta_seconds, active_workers }
+    const isTty = process.stdout.isTTY;
+    const renderProgress = (update) => {
+      if (!update || typeof update !== 'object') return;
+      const { processed, total, chunks_per_sec = 0, eta_seconds = 0, active_workers = 1 } = update;
+      const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+      const etaMin = Math.round(eta_seconds / 60);
+      const etaLabel = eta_seconds >= 60 ? `${etaMin}min` : `${Math.round(eta_seconds)}s`;
+      const line = `[generate] ${processed}/${total} (${pct}%) | ${chunks_per_sec} chunks/s | ETA ${etaLabel} | workers: ${active_workers}`;
+      if (isTty) {
+        process.stdout.write(`\r${line}`);
+      } else {
+        console.log(line);
+      }
+    };
+
     const result = await embed(texts, {
       provider,
       parallelism: embConfig.parallelism,
@@ -311,12 +358,11 @@ async function runGenerate(genArgs) {
       session_options: embConfig.session_options,
       max_memory_gb: embConfig.max_memory_gb,
     }, {
-      onProgress: (processed, total) => {
-        process.stdout.write(`\rEmbedding: ${processed}/${total} chunks`);
-      },
+      onProgress: renderProgress,
     });
 
-    console.log(`\nGenerated ${result.vectors.length} embeddings (${result.dimensions}-dim, ${result.model})`);
+    if (isTty) process.stdout.write('\n');
+    console.log(`Generated ${result.vectors.length} embeddings (${result.dimensions}-dim, ${result.model})`);
 
     // 5. Build .emb package
     const outputDir = join(workingCopy, 'docs', '.embeddings');
