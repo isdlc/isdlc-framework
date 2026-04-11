@@ -17,6 +17,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import process from 'node:process';
+import { hasUserEmbeddingsConfig } from '../src/core/config/config-service.js';
 
 async function main() {
   const projectRoot = process.cwd();
@@ -28,6 +29,16 @@ async function main() {
   for (const arg of process.argv.slice(2)) {
     if (arg.startsWith('--port=')) portOverride = parseInt(arg.split('=')[1], 10);
     if (arg.startsWith('--host=')) hostOverride = arg.split('=')[1];
+  }
+
+  // REQ-GH-239 FR-006 / BUG-GH-250 AC-250-03: opt-in guard
+  // Refuse to start unless the user has explicitly configured embeddings
+  // in .isdlc/config.json. Bypasses the defaults-merge layer so framework
+  // defaults do NOT count as opt-in.
+  const optedIn = hasUserEmbeddingsConfig(projectRoot);
+  if (!optedIn) {
+    console.error(`[server] embeddings not configured — run 'isdlc-embedding configure' to enable`);
+    process.exit(1);
   }
 
   // Read config

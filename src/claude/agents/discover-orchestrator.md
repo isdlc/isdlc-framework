@@ -2575,7 +2575,20 @@ EMBEDDING GENERATION                                  [In Progress]
 
 Generate vector embeddings for the project source code so the embedding server can provide semantic search. This step uses hardware acceleration (CoreML on Apple Silicon, CUDA on Linux) and respects the `max_memory_gb` memory cap from `.isdlc/config.json`.
 
-**Run embedding generation:**
+**Opt-in gate (FR-006, AC-250-02):** Embeddings are an opt-in feature. Before invoking the generator, run this pre-check to confirm the user has explicitly configured embeddings in `.isdlc/config.json`. The check mirrors the exact `readFileSync` + `JSON.parse` + `.embeddings` presence pattern used by `src/core/config/config-service.js :: hasUserEmbeddingsConfig`, so the agent pre-check and the library guard agree on what counts as "opted in".
+
+**Pre-check (opt-in gate):**
+```bash
+node -e 'process.exit(JSON.parse(require("fs").readFileSync(".isdlc/config.json","utf8")).embeddings ? 0 : 1)'
+```
+
+**Handling the pre-check result:**
+
+- **Exit code 0 (opt-in present):** proceed with the generate command below.
+- **Exit code non-zero (opt-out / `embeddings` key absent):** SKIP this step entirely. Do NOT run the generate command. Add the following note to the completion banner: `⊘ Embeddings skipped (opted out) — run 'isdlc-embedding configure' to enable`.
+- **Fail-open clause (Article X):** If the pre-check itself fails because `.isdlc/config.json` is missing, unreadable, or malformed (e.g., invalid JSON), also SKIP. Log a warning like `Embeddings pre-check failed — fail-open skip (Article X)` and continue to finalize. Never block discovery completion on a malformed config.
+
+**Run embedding generation (only if pre-check exit code is 0):**
 ```bash
 npx isdlc-embedding generate .
 ```
@@ -2597,10 +2610,16 @@ EMBEDDING GENERATION                                  [Complete ✓]
 └─ ✓ Server reloaded
 ```
 
-**On skip/failure:**
+**On opt-out skip (pre-check exit non-zero):**
 ```
 EMBEDDING GENERATION                                  [Skipped ⊘]
-└─ ⊘ {reason — e.g., "transformers not installed", "no supported files"}
+└─ ⊘ Embeddings skipped (opted out) — run 'isdlc-embedding configure' to enable
+```
+
+**On skip/failure (other reasons):**
+```
+EMBEDDING GENERATION                                  [Skipped ⊘]
+└─ ⊘ {reason — e.g., "transformers not installed", "no supported files", "malformed .isdlc/config.json (fail-open)"}
 ```
 
 ---
