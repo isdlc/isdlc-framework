@@ -233,10 +233,12 @@ async function runGenerate(genArgs) {
     const { join } = await import('node:path');
     const configPath = join(workingCopy, '.isdlc', 'config.json');
     let provider = 'jina-code';
+    let embConfig = {};
     if (existsSync(configPath)) {
       try {
         const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
-        provider = cfg?.embeddings?.provider || 'jina-code';
+        embConfig = cfg?.embeddings || {};
+        provider = embConfig.provider || 'jina-code';
       } catch {}
     }
     console.log(`Provider: ${provider}`);
@@ -254,9 +256,27 @@ async function runGenerate(genArgs) {
     const files = await vcs.getFileList();
     console.log(`Found ${files.length} tracked files`);
 
-    // 2. Filter to supported languages
-    const supportedFiles = files.filter(f => detectLanguage(f) !== null);
-    console.log(`${supportedFiles.length} files with supported languages`);
+    // 2. Filter to supported languages, excluding test/build artifacts
+    // These paths contain generated/minified content that isn't useful for
+    // semantic code search and often contains oversized files that exceed
+    // model context limits.
+    const EXCLUDE_PATTERNS = [
+      /^coverage\//,
+      /^dist\//,
+      /^build\//,
+      /^\.next\//,
+      /^\.nuxt\//,
+      /^node_modules\//,
+      /\.min\.js$/,
+      /\.min\.css$/,
+      /package-lock\.json$/,
+      /yarn\.lock$/,
+      /pnpm-lock\.yaml$/,
+    ];
+    const isExcluded = (f) => EXCLUDE_PATTERNS.some(re => re.test(f));
+    const supportedFiles = files.filter(f => detectLanguage(f) !== null && !isExcluded(f));
+    const excludedCount = files.filter(f => detectLanguage(f) !== null && isExcluded(f)).length;
+    console.log(`${supportedFiles.length} files with supported languages (${excludedCount} excluded as test/build artifacts)`);
 
     // 3. Chunk each file
     let totalChunks = 0;
@@ -280,9 +300,17 @@ async function runGenerate(genArgs) {
       return;
     }
 
-    // 4. Generate embeddings
+    // 4. Generate embeddings (with hardware acceleration config)
     const texts = allChunks.map(c => c.content);
-    const result = await embed(texts, { provider }, {
+    const result = await embed(texts, {
+      provider,
+      parallelism: embConfig.parallelism,
+      device: embConfig.device,
+      batch_size: embConfig.batch_size,
+      dtype: embConfig.dtype,
+      session_options: embConfig.session_options,
+      max_memory_gb: embConfig.max_memory_gb,
+    }, {
       onProgress: (processed, total) => {
         process.stdout.write(`\rEmbedding: ${processed}/${total} chunks`);
       },
@@ -307,14 +335,27 @@ async function runGenerate(genArgs) {
     });
     console.log(`Package created: ${packagePath}`);
 
-    // 6. Auto-start server (FR-006 AC-006-02)
+    // 6. Auto-start or reload server (FR-006 AC-006-02)
     if (autoStart) {
-      console.log('\nAuto-starting embedding server...');
       const { startServer, serverStatus } = await import('../lib/embedding/server/lifecycle.js');
       const status = await serverStatus(workingCopy);
-      if (status.running) {
-        console.log('Server already running. Restart to pick up new package.');
+      if (status.running && status.responsive) {
+        // Server already running — reload the new package
+        console.log('\nReloading package into running server...');
+        const { getServerConfig } = await import('../lib/embedding/server/port-discovery.js');
+        const srvCfg = getServerConfig(workingCopy);
+        try {
+          const reloadResult = await reloadServer(srvCfg.host, srvCfg.port, [packagePath]);
+          console.log(`Server reloaded: ${reloadResult.reloaded} package(s) loaded`);
+          if (reloadResult.errors?.length > 0) {
+            for (const e of reloadResult.errors) console.warn(`  reload error: ${e.path}: ${e.error}`);
+          }
+        } catch (err) {
+          console.warn(`Failed to reload server: ${err.message}`);
+          console.warn('Restart manually: isdlc embedding server restart');
+        }
       } else {
+        console.log('\nAuto-starting embedding server...');
         const start = await startServer(workingCopy);
         if (start.success) {
           console.log(`Server started (pid=${start.pid}, port=${start.port})`);
@@ -405,6 +446,31 @@ function promptStdin() {
       resolve(data);
     });
     process.stdin.resume();
+  });
+}
+
+/**
+ * POST /reload to a running embedding server.
+ * @param {string} host
+ * @param {number} port
+ * @param {string[]} paths - .emb package paths to load
+ * @returns {Promise<{reloaded: number, errors: Array}>}
+ */
+async function reloadServer(host, port, paths) {
+  const http = await import('node:http');
+  const body = JSON.stringify({ paths });
+  return new Promise((resolve, reject) => {
+    const req = http.request({ hostname: host, port, path: '/reload', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch { reject(new Error(`Invalid response: ${data}`)); }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(10000, () => { req.destroy(new Error('Reload request timed out')); });
+    req.write(body);
+    req.end();
   });
 }
 

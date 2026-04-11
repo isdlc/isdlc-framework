@@ -55,6 +55,13 @@ export const DEFAULT_PROJECT_CONFIG = {
       { type: 'code', path: 'src/', tier: 'full' },
       { type: 'docs', path: 'docs/' },
     ],
+    // Hardware acceleration defaults (REQ-GH-238 FR-004)
+    parallelism: 'auto',    // worker threads: 'auto' = min(cpus-1, memory-cap, 4), or integer
+    device: 'auto',         // ONNX execution provider: 'auto','cpu','coreml','cuda','dml','rocm'
+    batch_size: 32,         // texts per inference call within each worker
+    dtype: 'auto',          // model precision: 'auto','fp32','fp16','q8'
+    session_options: {},    // passthrough to ONNX Runtime session options
+    max_memory_gb: null,    // total system memory budget (GB); null = use all available RAM
   },
   workflows: {
     sizing_thresholds: {

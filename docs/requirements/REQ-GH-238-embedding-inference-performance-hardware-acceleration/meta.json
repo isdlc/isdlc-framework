@@ -9,8 +9,14 @@
     "01-requirements",
     "02-impact-analysis",
     "03-architecture",
-    "04-design"
+    "04-design",
+    "05-test-strategy",
+    "06-implementation",
+    "16-quality-loop",
+    "08-code-review"
   ],
+  "build_completed_at": "2026-04-11T04:30:00.000Z",
+  "build_status": "completed",
   "topics_covered": [
     "problem-discovery",
     "requirements-definition",
@@ -36,5 +42,7 @@
     "accepted_at": "2026-04-06T23:10:00.000Z",
     "domains": ["requirements", "architecture", "design", "tasks"],
     "amendment_cycles": 0
-  }
+  },
+  "build_started_at": "2026-04-06T23:20:00.000Z",
+  "workflow_type": "build"
 }

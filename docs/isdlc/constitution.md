@@ -1,7 +1,7 @@
 # Project Constitution - iSDLC Framework
 
 **Created**: 2026-02-07
-**Version**: 1.5.0
+**Version**: 1.6.0
 **Project Type**: Developer tooling / CLI framework / Agent orchestration system
 
 ---
@@ -12,7 +12,7 @@ This constitution establishes the fundamental principles governing all developme
 
 All agents (01-13) and the SDLC Orchestrator (00) MUST read and enforce these principles throughout the project lifecycle.
 
-**Project Context**: The iSDLC framework is a Claude Code and Codex extension that installs into target projects via symlinks. It consists of a Node.js CLI (ESM), runtime hooks (CommonJS), a provider-neutral core layer (`src/core/`), provider adapters (`src/providers/`), 70 agent definitions, 276 skill definitions, 30 hooks, and shell scripts. It has no database -- all state is managed via JSON files on the filesystem. Dual-provider support enables both Claude Code (agent markdown + Task tool) and Codex (projection bundles + `codex exec`).
+**Project Context**: The iSDLC framework is a Claude Code and Codex extension that installs into target projects via symlinks. It consists of a Node.js CLI (ESM), runtime hooks (CommonJS), a provider-neutral core layer (`src/core/`), provider adapters (`src/providers/`), 71 agent definitions, 280 skill definitions, 30 hooks, and shell scripts. It has no database -- all state is managed via JSON files on the filesystem. Dual-provider support enables both Claude Code (agent markdown + Task tool) and Codex (projection bundles + `codex exec`).
 
 ---
 
@@ -54,22 +54,23 @@ These 10 articles are mandatory for all projects. They represent industry best p
 - Unit test coverage: >=80% (adjusted from 95% -- CLI/framework tooling has many interactive code paths that require integration-level testing)
 - Integration test coverage: >=70%
 - Critical paths: 100% coverage required (installer, updater, hook enforcement logic)
-- Baseline: 1,600 tests across 365 test files as of 2026-03-27
+- Baseline: 7,400+ tests across 597 test files as of 2026-04-09
 - Regression threshold: total test count MUST NOT decrease without documented justification in an ADR
 
-**Current Coverage by Module** (updated during re-discovery 2026-03-27):
-- lib/ (12 prod + 4 util + 28 embedding + 12 search modules): ~600 tests, ~80% estimated coverage
-- hooks/ (30 hooks + 14 lib modules): ~600 tests, ~90% estimated coverage
-- core/ (112 provider-neutral modules): ~250 tests, ~85% estimated coverage
-- providers/ (11 provider adapter modules): ~100 tests, ~85% estimated coverage
+**Current Coverage by Module** (updated during re-discovery 2026-04-09):
+- lib/ (69 prod modules including 41 embedding + 12 search): ~900 tests, ~80% estimated coverage
+- hooks/ (30 hooks + 14 lib modules): ~4,664 tests, ~90% estimated coverage
+- core/ (137 provider-neutral modules): ~1,578 tests, ~85% estimated coverage
+- providers/ (13 provider adapter modules): ~249 tests, ~85% estimated coverage
+- E2E: ~20 tests across 2 test files
 - Critical paths (installer, updater, hook enforcement): ~95% estimated coverage
-- Prompt verification tests: ~30 tests (3 currently failing -- stale content expectations)
+- Known failures: ~420 tests failing (primarily stale expectations in workflow-finalizer, contract-generator, profile-loader)
 
 **Enforcement Note (BUG-0054-GH-52)**: The coverage thresholds above are aspirational targets. Practical enforcement uses intensity-based tiered thresholds configured in `iteration-requirements.json`. Light workflows enforce lower thresholds (60% unit, 50% integration), standard workflows enforce the baseline thresholds (80% unit, 70% integration), and epic workflows enforce higher thresholds (95% unit, 85% integration). When no intensity is configured (e.g., fix workflows), the standard tier is used as default.
 
 **Validation**:
 - GATE-04: Test strategy approved
-- GATE-05: Unit test coverage >=80%, total tests >= 1,600 baseline
+- GATE-05: Unit test coverage >=80%, total tests >= 7,400 baseline
 - Agent 05 follows TDD: Red -> Green -> Refactor
 
 ---
@@ -400,6 +401,7 @@ The constitution is enforced through a 4-layer pipeline (see `docs/ARCHITECTURE.
 | 1.4.0 | 2026-03-29 | Article XV: Tool Preference Enforcement added. Agents must use highest-fidelity tool available; config-driven routing via tool-routing.json; fail-open when preferred tool unavailable. | REQ-GH-214: PreToolUse enforcement for higher-fidelity MCP tool routing |
 | 1.5.0 | 2026-04-04 | Article I req 5: User-confirmed task plans are binding specifications. Phase agents may refine into sub-tasks but must not alter parent task scope without user approval. | REQ-GH-223: Tasks as user contract |
 | 1.5.0 | 2026-04-03 | Article XI rewritten: "Integration Testing Integrity" → "Test Quality Beyond Coverage". Removed unenforceable requirements (mutation testing, fuzz testing, adversarial testing, property-based testing) that required specific tooling dependencies. Replaced with framework-enforceable principles (error path coverage, mock-in-integration scan, test name quality). Article III: Added secret scan enforcement block with patterns, exemptions, and override mechanism. | Constitution must be enforceable by the framework without requiring project-specific tool dependencies |
+| 1.6.0 | 2026-04-09 | Preamble: Updated counts (71 agents, 280 skills). Article II: Updated baseline from 1,600 to 7,400+ tests across 597 files. Updated module coverage: lib 69 prod modules (~900 tests), hooks 30+14 (~4,664 tests), core 137 modules (~1,578 tests), providers 13 modules (~249 tests). Noted ~420 known failing tests (stale expectations). | Full re-discovery revealed 4.6x test count growth since 2026-03-27 |
 
 ---
 

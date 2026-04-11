@@ -2563,6 +2563,48 @@ If the user selected an action other than "I'm done for now", proceed to finaliz
 
 ---
 
+### Step 7.9: Execute EMBEDDING GENERATION (Post-Walkthrough, Pre-Finalize)
+
+**Show progress:**
+```
+EMBEDDING GENERATION                                  [In Progress]
+├─ ◐ Generate code embeddings with hardware acceleration  (running)
+├─ □ Build .emb package                                (pending)
+└─ □ Load into embedding server                        (pending)
+```
+
+Generate vector embeddings for the project source code so the embedding server can provide semantic search. This step uses hardware acceleration (CoreML on Apple Silicon, CUDA on Linux) and respects the `max_memory_gb` memory cap from `.isdlc/config.json`.
+
+**Run embedding generation:**
+```bash
+npx isdlc-embedding generate .
+```
+
+This command:
+1. Scans all tracked files via VCS
+2. Chunks source files by language
+3. Generates embeddings using the configured provider + hardware acceleration
+4. Builds a `.emb` package in `docs/.embeddings/`
+5. Reloads the running embedding server (or auto-starts one)
+
+**If the command fails** (e.g., `@huggingface/transformers` not installed, model download fails), log the error and continue to finalize — embedding generation is optional and should not block discovery completion.
+
+**On completion:**
+```
+EMBEDDING GENERATION                                  [Complete ✓]
+├─ ✓ Generated {N} embeddings ({dimensions}-dim, {model})
+├─ ✓ Package: docs/.embeddings/{project}-code.emb
+└─ ✓ Server reloaded
+```
+
+**On skip/failure:**
+```
+EMBEDDING GENERATION                                  [Skipped ⊘]
+└─ ⊘ {reason — e.g., "transformers not installed", "no supported files"}
+```
+
+---
+
 ### Step 8: Execute PHASE 5 - Finalize
 
 **Show progress:**
@@ -2713,6 +2755,11 @@ WALKTHROUGH PHASE                                    [Complete ✓]
 └─ ✓ Step 4: Smart Next Steps
     → User selected: {selection description}
 
+EMBEDDING GENERATION                                  [Complete ✓]
+├─ ✓ Generated {N} embeddings ({dimensions}-dim)
+├─ ✓ Package: docs/.embeddings/{project}-code.emb
+└─ ✓ Server reloaded
+
 PHASE 5: Finalize                                    [Complete ✓]
 ├─ ✓ Update project state
 └─ ✓ Generate setup summary
@@ -2734,6 +2781,7 @@ PHASE 5: Finalize                                    [Complete ✓]
     ✓ tests/characterization/ (characterization tests)
     ✓ docs/isdlc/ac-traceability.csv (traceability matrix)
     ✓ docs/isdlc/reverse-engineer-report.md
+    ✓ docs/.embeddings/{project}-code.emb (code embeddings)
 
   Next action: {user's walkthrough selection, e.g. "/isdlc feature"}
 

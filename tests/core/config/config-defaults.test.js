@@ -1,6 +1,7 @@
 /**
  * Tests for src/core/config/config-defaults.js
  * REQ-GH-231 FR-001, AC-001-02, AC-001-05
+ * REQ-GH-238 FR-004, AC-004-01 through AC-004-08
  */
 
 import { describe, it } from 'node:test';
@@ -59,5 +60,71 @@ describe('DEFAULT_PROJECT_CONFIG', () => {
   it('workflows.sizing_thresholds has light and epic bounds', () => {
     assert.strictEqual(DEFAULT_PROJECT_CONFIG.workflows.sizing_thresholds.light_max_files, 5);
     assert.strictEqual(DEFAULT_PROJECT_CONFIG.workflows.sizing_thresholds.epic_min_files, 20);
+  });
+
+  // REQ-GH-238 FR-004: Hardware acceleration config defaults
+  describe('embeddings section', () => {
+    const emb = DEFAULT_PROJECT_CONFIG.embeddings;
+
+    it('has all required sections including hardware acceleration fields', () => {
+      assert.ok('server' in emb, 'missing server');
+      assert.ok('provider' in emb, 'missing provider');
+      assert.ok('model' in emb, 'missing model');
+      assert.ok('api_key_env' in emb, 'missing api_key_env');
+      assert.ok('sources' in emb, 'missing sources');
+      assert.ok('parallelism' in emb, 'missing parallelism');
+      assert.ok('device' in emb, 'missing device');
+      assert.ok('batch_size' in emb, 'missing batch_size');
+      assert.ok('dtype' in emb, 'missing dtype');
+      assert.ok('session_options' in emb, 'missing session_options');
+      assert.ok('max_memory_gb' in emb, 'missing max_memory_gb');
+    });
+
+    it('parallelism defaults to auto (AC-004-01)', () => {
+      assert.strictEqual(emb.parallelism, 'auto');
+    });
+
+    it('device defaults to auto (AC-004-02)', () => {
+      assert.strictEqual(emb.device, 'auto');
+    });
+
+    it('batch_size defaults to 32 (AC-004-03)', () => {
+      assert.strictEqual(emb.batch_size, 32);
+    });
+
+    it('dtype defaults to auto (AC-004-04)', () => {
+      assert.strictEqual(emb.dtype, 'auto');
+    });
+
+    it('session_options defaults to empty object (AC-004-05)', () => {
+      assert.deepStrictEqual(emb.session_options, {});
+    });
+
+    it('max_memory_gb defaults to null', () => {
+      assert.strictEqual(emb.max_memory_gb, null);
+    });
+
+    it('all hardware fields are present with safe defaults (AC-004-06)', () => {
+      // AC-004-06: schema extension — all fields exist with documented defaults
+      const fields = { parallelism: 'auto', device: 'auto', batch_size: 32, dtype: 'auto', session_options: {}, max_memory_gb: null };
+      for (const [key, expected] of Object.entries(fields)) {
+        if (typeof expected === 'object') {
+          assert.deepStrictEqual(emb[key], expected, `${key} mismatch`);
+        } else {
+          assert.strictEqual(emb[key], expected, `${key} mismatch`);
+        }
+      }
+    });
+
+    it('existing embeddings fields are preserved (AC-004-08)', () => {
+      assert.strictEqual(emb.server.port, 7777);
+      assert.strictEqual(emb.server.host, 'localhost');
+      assert.strictEqual(emb.server.auto_start, true);
+      assert.strictEqual(emb.server.startup_timeout_ms, 30000);
+      assert.strictEqual(emb.provider, 'jina-code');
+      assert.strictEqual(emb.model, 'jinaai/jina-embeddings-v2-base-code');
+      assert.strictEqual(emb.api_key_env, null);
+      assert.strictEqual(emb.sources.length, 2);
+    });
   });
 });

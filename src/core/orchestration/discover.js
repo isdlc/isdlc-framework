@@ -10,6 +10,8 @@
  * @module src/core/orchestration/discover
  */
 
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { getDiscoverMode, getAgentGroup } from '../discover/index.js';
 import {
   createInitialDiscoverState,
@@ -241,9 +243,136 @@ async function executeGroupsForMode(runtime, modeId, state, projectRoot) {
   // Check completion
   const resumePoint = computeResumePoint(state);
   if (!resumePoint) {
+    // Run embedding generation as post-discover step
+    if (projectRoot) {
+      await runPostDiscoverEmbeddings(projectRoot);
+    }
     state.status = 'completed';
     state.completed_at = new Date().toISOString();
   }
 
   return state;
+}
+
+// ---------------------------------------------------------------------------
+// Post-Discover Embedding Generation
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate embeddings after discover completes, then load into running server.
+ * Reads config from .isdlc/config.json. Skips silently if embedding engine
+ * is unavailable or config disables auto generation.
+ *
+ * @param {string} projectRoot - Absolute path to project root
+ */
+async function runPostDiscoverEmbeddings(projectRoot) {
+  // Read config
+  const configPath = join(projectRoot, '.isdlc', 'config.json');
+  let embConfig = {};
+  try {
+    if (existsSync(configPath)) {
+      const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
+      embConfig = cfg?.embeddings || {};
+    }
+  } catch {
+    return; // Can't read config — skip silently
+  }
+
+  const provider = embConfig.provider || 'jina-code';
+
+  // Import embedding modules (fail silently if unavailable)
+  let createAdapter, chunkFile, detectLanguage, embed, buildPackage;
+  try {
+    ({ createAdapter } = await import('../../../lib/embedding/vcs/index.js'));
+    ({ chunkFile, detectLanguage } = await import('../../../lib/embedding/chunker/index.js'));
+    ({ embed } = await import('../../../lib/embedding/engine/index.js'));
+    ({ buildPackage } = await import('../../../lib/embedding/package/builder.js'));
+  } catch {
+    return; // Embedding dependencies not available — skip
+  }
+
+  try {
+    // 1. Get file list via VCS
+    const vcs = await createAdapter(projectRoot);
+    const files = await vcs.getFileList();
+    const supportedFiles = files.filter(f => detectLanguage(f) !== null);
+    if (supportedFiles.length === 0) return;
+
+    // 2. Chunk files
+    const allChunks = [];
+    for (const file of supportedFiles) {
+      const lang = detectLanguage(file);
+      try {
+        const chunks = await chunkFile(resolve(projectRoot, file), lang);
+        allChunks.push(...chunks);
+      } catch {
+        // Skip files that fail to chunk
+      }
+    }
+    if (allChunks.length === 0) return;
+
+    // 3. Generate embeddings with hardware acceleration config
+    const texts = allChunks.map(c => c.content);
+    const result = await embed(texts, {
+      provider,
+      parallelism: embConfig.parallelism,
+      device: embConfig.device,
+      batch_size: embConfig.batch_size,
+      dtype: embConfig.dtype,
+      session_options: embConfig.session_options,
+      max_memory_gb: embConfig.max_memory_gb,
+    });
+
+    // 4. Build .emb package
+    const outputDir = join(projectRoot, 'docs', '.embeddings');
+    const projectName = (projectRoot.split('/').pop() || 'project').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+    const packagePath = await buildPackage({
+      vectors: result.vectors,
+      chunks: allChunks,
+      meta: {
+        moduleId: `${projectName}-code`,
+        version: '0.1.0',
+        model: result.model,
+        dimensions: result.dimensions,
+      },
+      outputDir,
+      tier: 'full',
+    });
+
+    // 5. Reload running server
+    await reloadRunningServer(projectRoot, packagePath);
+  } catch {
+    // Embedding generation failed — don't block discover completion
+  }
+}
+
+/**
+ * POST /reload to a running embedding server to pick up new packages.
+ *
+ * @param {string} projectRoot
+ * @param {string} packagePath - Path to the new .emb package
+ */
+async function reloadRunningServer(projectRoot, packagePath) {
+  try {
+    const { getServerConfig, isServerReachable } = await import('../../../lib/embedding/server/port-discovery.js');
+    const srvCfg = getServerConfig(projectRoot);
+    const reachable = await isServerReachable(srvCfg.host, srvCfg.port, 2000);
+    if (!reachable) return; // Server not running — nothing to reload
+
+    const http = await import('node:http');
+    const body = JSON.stringify({ paths: [packagePath] });
+    await new Promise((resolve, reject) => {
+      const req = http.request({ hostname: srvCfg.host, port: srvCfg.port, path: '/reload', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => resolve(data));
+      });
+      req.on('error', reject);
+      req.setTimeout(10000, () => req.destroy());
+      req.write(body);
+      req.end();
+    });
+  } catch {
+    // Server reload failed — non-fatal
+  }
 }

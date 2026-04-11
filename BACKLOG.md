@@ -4,7 +4,18 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [A] #238 Embedding inference performance: hardware acceleration + parallelism on Apple Silicon [github: GH-238] -> [requirements](docs/requirements/REQ-GH-238-embedding-inference-performance-hardware-acceleration/)
+- [ ] #247 Auto-trigger incremental embedding refresh (file watcher / post-commit / PostToolUse) [github: GH-247]
+- [ ] #246 Embedding server: launchd/systemd integration for reboot survival [github: GH-246]
+- [ ] #245 Embedding server: auto-restart on crash (lifecycle supervision) [github: GH-245]
+- [ ] #244 Claude Code status line integration for embedding server [github: GH-244]
+- [ ] #243 CLI status command for embedding server and package [github: GH-243]
+- [ ] #242 Embedding staleness detection + auto-refresh on code changes [github: GH-242]
+- [ ] #241 Bug: embedding server CLI auto-start reports false success when port already bound [github: GH-241]
+- [ ] #240 Investigate: Jina v2 fp16 on CoreML routes to GPU instead of Apple Neural Engine [github: GH-240]
+- [ ] #239 Worker pool parallelism: engine's sequential batch loop defeats multi-worker speedup [github: GH-239]
+- [x] #238 Embedding inference performance: hardware acceleration + parallelism on Apple Silicon [github: GH-238] -> [requirements](docs/requirements/REQ-GH-238-embedding-inference-performance-hardware-acceleration/) **Completed**
+  - Worker pool, embedding-worker, device detector, Jina code adapter pool integration. Added `max_memory_gb` memory cap, device-aware `perWorkerMemGB`, fp16 graph-optimizer workaround, tensor disposal fix (in-process + worker paths), CLI test/build artifact exclusion, discover-orchestrator embedding step, bin entries (`isdlc-embedding`, `isdlc-embedding-server`), discover orchestrator post-step for Codex path. Validated end-to-end: 19811 embeddings on 24GB Mac in ~1h40min, fp16 CoreML, 1.9GB stable RSS, searchable via HTTP `/search`. Follow-up issues #239-#247 cover engine perf, observability, and lifecycle gaps.
+  - **Completed:** 2026-04-11
 - [x] #217 Use Claude Code Plan Mode for task execution UX — keep tasks.md for traceability metadata [github: GH-217] -> [requirements](docs/requirements/REQ-GH-217-use-claude-code-plan-mode-for-task-execution-ux-ke/) **Completed**
   - TaskCreate entries for main tasks during phase execution, persist through phase, formatted summary at boundary. New task-formatter.js module. 19 tests.
 - [x] #237 Replace CodeBERT with Jina v2 Base Code — unblock embedding pipeline [github: GH-237] -> [requirements](docs/requirements/REQ-GH-237-replace-codebert-with-jina-v2-base-code/) **Completed**

@@ -5,7 +5,7 @@ skill_id: PROJ-002
 owner: discover-orchestrator
 collaborators: []
 project: isdlc-framework
-version: 1.0.0
+version: 2.0.0
 when_to_use: When writing new code, reviewing code, or making style decisions
 dependencies: []
 ---
@@ -31,20 +31,18 @@ dependencies: []
 - Bridge modules: catch import errors, return fallback values
 
 ## File Organization
-- `bin/` -- CLI entry points (ESM)
-- `lib/` -- CLI modules, embedding, search (ESM, with co-located .test.js files)
-- `src/core/` -- Provider-neutral business logic (ESM, tests in tests/core/)
-- `src/core/bridge/` -- CJS wrappers for ESM modules
+- `bin/` -- CLI entry points (ESM): isdlc, setup-knowledge, embedding, embedding-server, embedding-mcp, rebuild-cache, generate-contracts
+- `lib/` -- CLI modules, embedding (41 modules), search (12 modules) (ESM, with co-located .test.js files)
+- `src/core/` -- Provider-neutral business logic (137 ESM modules, tests in tests/core/)
+- `src/core/bridge/` -- CJS wrappers for ESM modules (23 bridge adapters)
 - `src/providers/{claude,codex}/` -- Provider-specific adapters
-- `src/claude/hooks/` -- Runtime enforcement hooks (CJS)
-- `src/claude/hooks/lib/` -- Shared hook utilities (CJS)
-- `src/claude/hooks/dispatchers/` -- Event routing (CJS)
-- `src/claude/hooks/config/` -- Configuration files (JSON, YAML)
-- `src/claude/agents/` -- Agent markdown specifications
-- `src/claude/skills/` -- Skill definitions (SKILL.md per skill)
-- `src/claude/commands/` -- Command handler specifications
-- `src/antigravity/` -- Workflow automation scripts (CJS)
-- `tests/` -- Test files mirroring src/ structure
+- `src/claude/hooks/` -- Runtime enforcement hooks (30 CJS hooks)
+- `src/claude/hooks/lib/` -- Shared hook utilities (14 CJS modules)
+- `src/claude/agents/` -- Agent markdown specifications (71 agents)
+- `src/claude/skills/` -- Skill definitions (280 SKILL.md across 20 categories)
+- `src/claude/commands/` -- Command handler specifications (7 commands)
+- `src/isdlc/config/` -- Canonical framework config (iteration-requirements, phase-topology, profiles, contracts, templates, workflows, tool-routing)
+- `tests/` -- Test files: core/, e2e/, embedding/, providers/, hooks/, verification/, characterization/
 - `docs/` -- Requirements, architecture, design, isdlc config
 
 ## Framework Usage
@@ -54,11 +52,13 @@ dependencies: []
 - `fs-extra` for filesystem operations in CLI modules
 - `js-yaml` for YAML parsing
 - `semver` for version comparison
-- `@huggingface/transformers` for local Jina v2 embeddings
+- `@huggingface/transformers` ^4 for local Jina v2 embeddings with CoreML hardware acceleration
+- `prompts` for interactive CLI prompts
 - Single-line bash convention: all bash in agent/command files must be one line (for permission auto-allow)
 - Dual-file awareness (dogfooding): changes to src/ must also update root .isdlc/ and .claude/
+- Three-verb command model: add/analyze/build (no /fix or /feature)
 
 ## Provenance
 - **Source**: docs/project-discovery-report.md (patterns/conventions section)
-- **Distilled**: 2026-03-28
+- **Distilled**: 2026-04-09
 - **Discovery run**: full

@@ -56,9 +56,22 @@ async function main() {
   let embedFn = null;
   try {
     const { embed } = await import('../lib/embedding/engine/index.js');
-    embedFn = async (texts) => {
-      const result = await embed(texts, { provider });
-      return result.vectors;
+    // Contract: the MCP orchestrator calls embedFn(singleText) and expects
+    // a single Float32Array back. Normalize input so callers can pass either
+    // a single string (for queries) or an array (for bulk refresh).
+    embedFn = async (textOrArray) => {
+      const isArray = Array.isArray(textOrArray);
+      const texts = isArray ? textOrArray : [textOrArray];
+      const result = await embed(texts, {
+        provider,
+        parallelism: embConfig.parallelism,
+        device: embConfig.device,
+        batch_size: embConfig.batch_size,
+        dtype: embConfig.dtype,
+        session_options: embConfig.session_options,
+        max_memory_gb: embConfig.max_memory_gb,
+      });
+      return isArray ? result.vectors : result.vectors[0];
     };
   } catch (err) {
     console.error(`[server] failed to load embedding engine: ${err.message}`);
