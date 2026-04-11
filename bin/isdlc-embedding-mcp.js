@@ -21,6 +21,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import readline from 'node:readline';
+import { hasUserEmbeddingsConfig } from '../src/core/config/config-service.js';
 
 // ---------------------------------------------------------------------------
 // Config loading
@@ -28,6 +29,21 @@ import readline from 'node:readline';
 
 const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const DEFAULTS = { host: 'localhost', port: 7777 };
+
+// ---------------------------------------------------------------------------
+// FR-006 opt-in guard (BUG-GH-250 AC-250-04)
+// ---------------------------------------------------------------------------
+// Embeddings are opt-in via the presence of an `embeddings` key in the user's
+// .isdlc/config.json. If the user has not opted in, this MCP bridge must
+// exit cleanly BEFORE entering the readline stdin loop — otherwise Claude
+// Code / Codex / Antigravity see a hung child process on every session.
+//
+// Exit code 0 (not 1) so the host's MCP launcher treats this as a clean
+// "server declined to start" scenario rather than a crash.
+if (!hasUserEmbeddingsConfig(PROJECT_ROOT)) {
+  console.error('[isdlc-embedding-mcp] embeddings opted out — exiting cleanly');
+  process.exit(0);
+}
 
 function loadServerConfig() {
   try {

@@ -6,7 +6,7 @@
 ## Open
 - [ ] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252]
 - [ ] #251 Extend task-level dispatch to /isdlc test generate and /isdlc upgrade workflows [github: GH-251]
-- [ ] #250 Bug: FR-006 opt-in gap — isdlc-embedding generate and discover Step 7.9 ignore hasUserEmbeddingsConfig() [github: GH-250]
+- [A] #250 Bug: FR-006 opt-in gap — isdlc-embedding generate and discover Step 7.9 ignore hasUserEmbeddingsConfig() [github: GH-250]
 - [ ] #249 Re-enable graphOptimizationLevel for Jina v2 fp16 (remove GH-238 workaround) [github: GH-249]
 - [ ] #248 Calibrator under-measures per-worker memory by ~6x for real code chunks [github: GH-248]
 - [ ] #247 Auto-trigger incremental embedding refresh (file watcher / post-commit / PostToolUse) [github: GH-247]

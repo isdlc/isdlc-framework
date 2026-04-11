@@ -210,6 +210,86 @@ async function runGenerate(genArgs) {
   const autoStart = !genArgs.includes('--no-auto-start');
   const tier = (genArgs.find(a => a.startsWith('--tier=')) || '--tier=full').split('=')[1];
 
+  // BUG-GH-250 / FR-006 / AC-250-01: opt-in guard.
+  // If the user's raw .isdlc/config.json does NOT contain an `embeddings`
+  // key, treat the project as opted-out. In non-TTY contexts this is a
+  // clean skip (exit 0); in TTY contexts we prompt for one-shot opt-in
+  // and, on "y", merge buildInitialEmbeddingsBlock() into config.json
+  // before falling through to the existing generation pipeline. This
+  // guard runs BEFORE --incremental routing so incremental generate
+  // inherits the same contract.
+  const { hasUserEmbeddingsConfig } = await import('../src/core/config/config-service.js');
+  if (!hasUserEmbeddingsConfig(workingCopy)) {
+    const forcedInteractive = process.env.ISDLC_FORCE_INTERACTIVE === '1';
+    const interactive = forcedInteractive || (Boolean(process.stdout.isTTY) && Boolean(process.stdin.isTTY));
+
+    if (!interactive) {
+      // Non-TTY opted-out: emit a one-line skip message to stderr and
+      // exit cleanly. The message pins both the opt-out reason and the
+      // `isdlc-embedding configure` pointer per AC-250-01.
+      process.stderr.write(
+        'Embeddings not configured (opted-out): .isdlc/config.json has no `embeddings` block. ' +
+        "Run `isdlc-embedding configure` to enable.\n"
+      );
+      process.exit(0);
+    }
+
+    // Interactive branch: prompt for opt-in via readline/promises.
+    const { readFileSync: rfs, writeFileSync: wfs, existsSync: efs, mkdirSync: mks } = await import('node:fs');
+    const { join: pjoin } = await import('node:path');
+    const readline = await import('node:readline/promises');
+    const { stdin: rStdin, stdout: rStdout } = await import('node:process');
+    const { buildInitialEmbeddingsBlock } = await import('../lib/install/embeddings-prompt.js');
+
+    const rl = readline.createInterface({ input: rStdin, output: rStdout });
+    let answer = '';
+    try {
+      answer = await rl.question(
+        'Embeddings are not enabled in .isdlc/config.json. Without enabling, ' +
+        'generated embeddings will not be consumed by /discover, finalize, search, ' +
+        'or other framework paths. Enable now? [y/N]: '
+      );
+    } catch {
+      // EOF / broken stdin: fail-open to NO (Article X).
+      answer = '';
+    } finally {
+      rl.close();
+    }
+
+    const normalized = String(answer || '').trim().toLowerCase();
+    if (normalized !== 'y' && normalized !== 'yes') {
+      console.log('Embeddings not enabled. Aborting generation.');
+      process.exit(0);
+    }
+
+    // "y" path: merge buildInitialEmbeddingsBlock() into config.json,
+    // preserving any existing top-level keys. Ensure .isdlc/ exists first.
+    const isdlcDir = pjoin(workingCopy, '.isdlc');
+    if (!efs(isdlcDir)) mks(isdlcDir, { recursive: true });
+    const cfgPath = pjoin(isdlcDir, 'config.json');
+    let existing = {};
+    if (efs(cfgPath)) {
+      try {
+        const raw = rfs(cfgPath, 'utf8');
+        const parsed = raw && raw.trim() ? JSON.parse(raw) : {};
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          existing = parsed;
+        }
+      } catch {
+        // Malformed config: start from empty to avoid losing other keys.
+        // We deliberately do NOT clobber a file we failed to parse — but
+        // since the user explicitly opted in, a fresh `embeddings` block
+        // is still written alongside whatever JSON shape we could not
+        // parse. Matching config-service's fail-open posture.
+        existing = {};
+      }
+    }
+    existing.embeddings = buildInitialEmbeddingsBlock();
+    wfs(cfgPath, JSON.stringify(existing, null, 2) + '\n');
+    console.log('Embeddings enabled. Proceeding with generation.');
+    // Fall through to the existing generation pipeline below.
+  }
+
   // REQ-GH-227 / FR-004: --incremental flag routing
   const { parseIncrementalFlag, translateErrorCode, shouldPromptFullGenerate } = await import('../lib/embedding/incremental/cli-helpers.js');
   if (parseIncrementalFlag(genArgs)) {
