@@ -4,19 +4,61 @@
 # Cleans up stray iSDLC framework files that leaked into a project
 # directory from a botched install. SAFE: content-aware — only removes
 # files that are bit-for-bit identical to the framework's shipped version.
-# Files with the same name but different content (e.g. your own LICENSE,
-# README.md, bin/build.js, src/whatever) are LEFT ALONE.
+# Files with the same name but different content (your own LICENSE with
+# a different year, your own README.md, your own bin/build.js, your own
+# src/*) are LEFT ALONE.
+#
+# Three-bucket classification to protect against false positives:
+#
+#   1. COLLISIONS  — framework name, different content → always KEPT
+#   2. IDENTITY    — common-across-projects files (LICENSE, README.md,
+#                    .gitignore, .editorconfig, etc.) that match by
+#                    content → REVIEW bucket, not removed automatically
+#                    even on --apply; user must pass --remove-identity
+#   3. STRAY       — framework-unique names that match by content →
+#                    removed on --apply
+#
+# The full stray + identity lists are always written to a sidecar file
+# in the project root so users can review all entries (even 1000+).
 #
 # Usage:
 #   cd /path/to/your/project
-#   /tmp/isdlc-recover-stray-framework.sh            # dry-run, shows plan
-#   /tmp/isdlc-recover-stray-framework.sh --apply    # actually remove
+#   /path/to/recover-stray-framework.sh                    # dry-run
+#   /path/to/recover-stray-framework.sh --apply            # remove STRAY only
+#   /path/to/recover-stray-framework.sh --apply --remove-identity
+#       also remove IDENTITY files (LICENSE/README.md/etc that match upstream)
 
 set -e
 
 PROJECT_DIR="$(pwd)"
-MODE="${1:-dry-run}"
+MODE="dry-run"
+REMOVE_IDENTITY=false
 FRAMEWORK_REPO="https://dev.enactor.co.uk/gitea/DevOpsInfra/isdlc-framework.git"
+
+for arg in "$@"; do
+    case "$arg" in
+        --apply)
+            MODE="apply"
+            ;;
+        --remove-identity)
+            REMOVE_IDENTITY=true
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--apply] [--remove-identity]"
+            echo "  (no flags)         dry-run — list what would be removed"
+            echo "  --apply            remove STRAY framework-unique files"
+            echo "  --remove-identity  ALSO remove IDENTITY collisions (LICENSE,"
+            echo "                     README.md, .gitignore, etc. that match"
+            echo "                     the framework byte-for-byte)"
+            exit 0
+            ;;
+        *)
+            echo "Unknown arg: $arg" >&2
+            echo "See: $0 --help" >&2
+            exit 2
+            ;;
+    esac
+done
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -24,21 +66,13 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-if [ "$MODE" != "dry-run" ] && [ "$MODE" != "--apply" ]; then
-    echo "Usage: $0 [--apply]"
-    echo "  (no argument) dry-run — list what would be removed, no changes"
-    echo "  --apply       actually remove the stray framework files"
-    exit 1
-fi
-
 echo -e "${CYAN}iSDLC stray-framework recovery${NC}"
-echo "Project: $PROJECT_DIR"
-echo "Mode:    $MODE"
+echo "Project:         $PROJECT_DIR"
+echo "Mode:            $MODE"
+echo "Identity files:  $( [ "$REMOVE_IDENTITY" = true ] && echo 'will remove' || echo 'KEPT (use --remove-identity to change)')"
 echo ""
 
 # Undo accidental `git init` if .git exists but was just created empty.
-# Heuristic: if .git has no HEAD commit yet AND no remote, it's from our
-# botched `git init`. Safe to remove.
 if [ -d .git ]; then
     if git rev-parse --verify HEAD >/dev/null 2>&1; then
         echo -e "${YELLOW}Warning: existing .git has real commits. Leaving it alone.${NC}"
@@ -47,7 +81,7 @@ if [ -d .git ]; then
         echo ""
     else
         echo -e "${YELLOW}.git has no commits — assuming botched git-init.${NC}"
-        if [ "$MODE" = "--apply" ]; then
+        if [ "$MODE" = "apply" ]; then
             rm -rf .git
             echo -e "${GREEN}  ✓ Removed empty .git${NC}"
         else
@@ -63,55 +97,122 @@ trap 'rm -rf "$TMPFW"' EXIT
 
 echo "Cloning framework to temp location for comparison..."
 if ! git clone --quiet --depth 1 "$FRAMEWORK_REPO" "$TMPFW/framework" 2>&1; then
-    echo -e "${RED}Error: failed to clone $FRAMEWORK_REPO${NC}"
+    echo -e "${RED}Error: failed to clone $FRAMEWORK_REPO${NC}" >&2
     exit 1
 fi
 echo -e "${GREEN}  ✓ Cloned${NC}"
 echo ""
 
-# Walk the framework file list. For each file that exists in the project dir
-# at the same relative path, compare content. If identical → stray; record.
+# Walk the framework file list and classify each path that exists locally.
 cd "$TMPFW/framework"
 FW_FILES="$(git ls-files)"
 cd "$PROJECT_DIR"
 
+# Identity files: commonly shared across projects (MIT license, default
+# gitignore, generated README templates, etc). If the user's copy matches
+# the framework byte-for-byte it MIGHT be the user's own boilerplate or the
+# framework's leaked copy. Default: keep, report for review.
+#
+# Heuristic: basename matches one of these sentinels. (Extend the list if
+# you hit more false-positive patterns.)
+is_identity_file() {
+    case "$(basename "$1")" in
+        LICENSE|LICENSE.md|LICENSE.txt|COPYING|COPYING.md|\
+        README|README.md|README.txt|README.rst|\
+        .gitignore|.gitattributes|.editorconfig|\
+        CHANGELOG.md|CONTRIBUTING.md|CODE_OF_CONDUCT.md|\
+        .npmignore|.prettierrc|.prettierrc.json|\
+        .eslintrc|.eslintrc.json|.eslintrc.js)
+            return 0
+            ;;
+    esac
+    return 1
+}
+
+STRAY_LIST_FILE="$PROJECT_DIR/.isdlc-stray-files.txt"
+IDENT_LIST_FILE="$PROJECT_DIR/.isdlc-identity-files.txt"
+COLLISION_LIST_FILE="$PROJECT_DIR/.isdlc-collisions.txt"
+: > "$STRAY_LIST_FILE"
+: > "$IDENT_LIST_FILE"
+: > "$COLLISION_LIST_FILE"
+
 STRAY_COUNT=0
+IDENT_COUNT=0
 COLLISION_COUNT=0
-STRAY_LIST=""
-COLLISION_LIST=""
 
 while IFS= read -r f; do
     [ -z "$f" ] && continue
     if [ -f "$f" ]; then
         if cmp -s "$f" "$TMPFW/framework/$f"; then
-            STRAY_LIST="${STRAY_LIST}${f}
-"
-            STRAY_COUNT=$((STRAY_COUNT + 1))
+            if is_identity_file "$f"; then
+                printf '%s\n' "$f" >> "$IDENT_LIST_FILE"
+                IDENT_COUNT=$((IDENT_COUNT + 1))
+            else
+                printf '%s\n' "$f" >> "$STRAY_LIST_FILE"
+                STRAY_COUNT=$((STRAY_COUNT + 1))
+            fi
         else
-            COLLISION_LIST="${COLLISION_LIST}${f}
-"
+            printf '%s\n' "$f" >> "$COLLISION_LIST_FILE"
             COLLISION_COUNT=$((COLLISION_COUNT + 1))
         fi
     fi
 done <<< "$FW_FILES"
 
 echo -e "${CYAN}Scan complete:${NC}"
-echo "  Stray framework files (identical to upstream): $STRAY_COUNT"
-echo "  Name collisions (different content, KEPT):     $COLLISION_COUNT"
+echo "  Stray framework-unique files (identical to upstream):    $STRAY_COUNT"
+echo "  Identity files (LICENSE/README.md/etc., review-required): $IDENT_COUNT"
+echo "  Name collisions (different content, KEPT):               $COLLISION_COUNT"
+echo ""
+echo -e "${CYAN}Full lists written to:${NC}"
+echo "  $STRAY_LIST_FILE"
+echo "  $IDENT_LIST_FILE"
+echo "  $COLLISION_LIST_FILE"
+echo ""
+echo "Review with:"
+echo "  less '$STRAY_LIST_FILE'"
+echo "  less '$IDENT_LIST_FILE'"
+echo "  less '$COLLISION_LIST_FILE'"
 echo ""
 
+# Show collisions inline (usually a small set — always KEPT).
 if [ $COLLISION_COUNT -gt 0 ]; then
-    echo -e "${YELLOW}The following files share a framework name but have DIFFERENT${NC}"
-    echo -e "${YELLOW}content — probably yours, will be left alone:${NC}"
-    printf "%s" "$COLLISION_LIST" | sed 's/^/  /' | head -20
-    if [ $COLLISION_COUNT -gt 20 ]; then
-        echo "  ... and $((COLLISION_COUNT - 20)) more"
+    echo -e "${YELLOW}COLLISIONS (different content, always KEPT):${NC}"
+    sed 's/^/  /' "$COLLISION_LIST_FILE"
+    echo ""
+fi
+
+# Show identity files inline (usually small — flagged for review).
+if [ $IDENT_COUNT -gt 0 ]; then
+    echo -e "${YELLOW}IDENTITY FILES (common-across-projects, match framework byte-for-byte):${NC}"
+    sed 's/^/  /' "$IDENT_LIST_FILE"
+    echo ""
+    echo -e "${YELLOW}These might be YOUR OWN boilerplate (MIT LICENSE, generated README,${NC}"
+    echo -e "${YELLOW}standard .gitignore) that happens to match the framework byte-for-byte.${NC}"
+    echo -e "${YELLOW}They are NOT removed by default, even on --apply. Review each one:${NC}"
+    echo "  cat $IDENT_LIST_FILE | xargs -I{} sh -c 'echo ===== {} =====; head -5 {}'"
+    echo ""
+    echo "If you've reviewed and they ARE the framework's (not yours), re-run with:"
+    echo "  $0 --apply --remove-identity"
+    echo ""
+fi
+
+# Show a sample of strays inline — user can see the full list in the
+# sidecar file. For small sets (<=100) print all inline; otherwise first
+# 20 + last 10 so the user can sanity-check head and tail.
+if [ $STRAY_COUNT -gt 0 ]; then
+    echo -e "${CYAN}STRAY FILES (framework-unique, will be removed on --apply):${NC}"
+    if [ $STRAY_COUNT -le 100 ]; then
+        sed 's/^/  /' "$STRAY_LIST_FILE"
+    else
+        head -20 "$STRAY_LIST_FILE" | sed 's/^/  /'
+        echo "  ... [$((STRAY_COUNT - 30)) more omitted — see $STRAY_LIST_FILE for full list]"
+        tail -10 "$STRAY_LIST_FILE" | sed 's/^/  /'
     fi
     echo ""
 fi
 
-if [ $STRAY_COUNT -eq 0 ]; then
-    echo -e "${GREEN}Nothing to clean up. Directory is free of stray framework files.${NC}"
+if [ $STRAY_COUNT -eq 0 ] && [ $IDENT_COUNT -eq 0 ]; then
+    echo -e "${GREEN}Nothing to clean up.${NC}"
     echo ""
     echo "Next step: install the framework the proper way:"
     echo "  git clone $FRAMEWORK_REPO isdlc-framework"
@@ -119,42 +220,58 @@ if [ $STRAY_COUNT -eq 0 ]; then
     exit 0
 fi
 
-echo -e "${CYAN}Stray files to remove (first 30):${NC}"
-printf "%s" "$STRAY_LIST" | sed 's/^/  /' | head -30
-if [ $STRAY_COUNT -gt 30 ]; then
-    echo "  ... and $((STRAY_COUNT - 30)) more"
-fi
-echo ""
-
-if [ "$MODE" != "--apply" ]; then
+if [ "$MODE" != "apply" ]; then
     echo -e "${YELLOW}DRY RUN — no changes made.${NC}"
     echo ""
-    echo "Re-run with --apply to actually remove the $STRAY_COUNT stray files:"
-    echo "  $0 --apply"
+    echo "Next steps:"
+    echo "  1) Review the sidecar files above (especially $IDENT_LIST_FILE)"
+    echo "  2) Re-run with --apply to remove the $STRAY_COUNT stray files:"
+    echo "       $0 --apply"
+    if [ $IDENT_COUNT -gt 0 ]; then
+        echo "  3) If the $IDENT_COUNT identity files are framework-owned, add --remove-identity:"
+        echo "       $0 --apply --remove-identity"
+    fi
     exit 0
 fi
 
-# --apply mode
-echo -e "${YELLOW}Removing $STRAY_COUNT stray files...${NC}"
-REMOVED=0
-while IFS= read -r f; do
-    [ -z "$f" ] && continue
-    if [ -f "$f" ]; then
-        rm -f "$f"
-        REMOVED=$((REMOVED + 1))
-    fi
-done <<< "$STRAY_LIST"
-echo -e "${GREEN}  ✓ Removed $REMOVED files${NC}"
+# ---- APPLY MODE ----
 
-# Clean up now-empty framework directories (best-effort, only if they exist
-# and are framework-shipped — never touch user-created dirs).
+if [ $STRAY_COUNT -gt 0 ]; then
+    echo -e "${YELLOW}Removing $STRAY_COUNT stray files...${NC}"
+    REMOVED=0
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        if [ -f "$f" ]; then
+            rm -f "$f"
+            REMOVED=$((REMOVED + 1))
+        fi
+    done < "$STRAY_LIST_FILE"
+    echo -e "${GREEN}  ✓ Removed $REMOVED stray files${NC}"
+fi
+
+if [ $IDENT_COUNT -gt 0 ] && [ "$REMOVE_IDENTITY" = true ]; then
+    echo -e "${YELLOW}Removing $IDENT_COUNT identity files (--remove-identity)...${NC}"
+    IREMOVED=0
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        if [ -f "$f" ]; then
+            rm -f "$f"
+            IREMOVED=$((IREMOVED + 1))
+        fi
+    done < "$IDENT_LIST_FILE"
+    echo -e "${GREEN}  ✓ Removed $IREMOVED identity files${NC}"
+elif [ $IDENT_COUNT -gt 0 ]; then
+    echo -e "${YELLOW}Kept $IDENT_COUNT identity files (use --remove-identity to remove).${NC}"
+fi
+
+# Clean up now-empty framework directories (best-effort).
 for d in .antigravity .github .validations coverage research-docs packages; do
     if [ -d "$d" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
         rmdir "$d" 2>/dev/null && echo -e "${GREEN}  ✓ Removed empty $d/${NC}" || true
     fi
 done
 
-# Clean up empty framework subtrees under docs/ that we uniquely ship
+# Clean up empty framework subtrees under docs/.
 for d in docs/articles docs/designs docs/diagrams docs/quality docs/isdlc; do
     if [ -d "$d" ]; then
         find "$d" -type d -empty -delete 2>/dev/null || true
@@ -163,6 +280,14 @@ done
 
 echo ""
 echo -e "${GREEN}Cleanup complete.${NC}"
+echo ""
+echo "Sidecar lists are left in place for your reference:"
+echo "  $STRAY_LIST_FILE"
+echo "  $IDENT_LIST_FILE"
+echo "  $COLLISION_LIST_FILE"
+echo ""
+echo "You can remove them with:"
+echo "  rm -f '$STRAY_LIST_FILE' '$IDENT_LIST_FILE' '$COLLISION_LIST_FILE'"
 echo ""
 echo "Next step: install the framework the proper way:"
 echo "  git clone $FRAMEWORK_REPO isdlc-framework"
