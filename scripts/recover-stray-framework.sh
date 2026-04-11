@@ -402,12 +402,22 @@ strip_ds_store() {
     find "$1" -name ".DS_Store" -type f -delete 2>/dev/null || true
 }
 
-# Framework-unique top-level paths — safe to nuke under --force
-FW_UNIQUE_PATHS=".antigravity .validations research-docs"
-# Ambiguous paths — always use conservative empty-prune
-FW_AMBIGUOUS_PATHS="docs/articles docs/designs docs/diagrams docs/quality docs/isdlc \
-         src/claude src/core src/isdlc src/providers \
-         .github packages coverage \
+# Framework-unique paths — 100% iSDLC-specific, safe to nuke under --force
+# because no normal user project has these paths. Includes both top-level
+# framework dirs AND framework-specific subpaths under otherwise-ambiguous
+# top-level dirs like src/ and docs/ (`src/claude` exists because this
+# framework puts agents there; `docs/quality` is where the framework stores
+# review artifacts; etc.). If you add a new framework-specific subpath,
+# add it here.
+FW_UNIQUE_PATHS=".antigravity .validations research-docs .isdlc-framework \
+         docs/articles docs/designs docs/diagrams docs/quality docs/isdlc \
+         src/claude src/core src/isdlc src/providers"
+
+# Ambiguous paths — user projects legitimately have bin/, src/, docs/, lib/,
+# tests/, .github/, coverage/. ALWAYS conservative (strip + find-empty-delete
+# + rmdir) even under --force, because content-based collision detection and
+# the user's own files are the last line of defense here.
+FW_AMBIGUOUS_PATHS=".github packages coverage \
          bin lib src tests docs"
 
 for d in $FW_UNIQUE_PATHS; do
