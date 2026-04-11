@@ -137,29 +137,11 @@ if [ "${BASH_SOURCE[0]}" != "$0" ]; then
   return 0 2>/dev/null || true
 fi
 
-# Bash version preflight — catches macOS's bundled Bash 3.2 (frozen at 3.2 due
-# to GPL-3 licensing) before we hit any 4.0+ feature like associative arrays.
-# We require 4.0+ for a clean install; fail fast with a helpful hint if older.
-_BASH_MAJOR="${BASH_VERSINFO[0]:-0}"
-if [ "$_BASH_MAJOR" -lt 4 ]; then
-    echo ""
-    echo -e "${RED}ERROR: iSDLC installer requires Bash 4.0 or newer.${NC}" >&2
-    echo "  Current: Bash ${BASH_VERSION:-unknown}" >&2
-    echo "" >&2
-    echo "macOS ships with Bash 3.2 by default. To upgrade:" >&2
-    echo "  brew install bash" >&2
-    echo "  /opt/homebrew/bin/bash ./isdlc-framework/install.sh   (Apple Silicon)" >&2
-    echo "  /usr/local/bin/bash ./isdlc-framework/install.sh      (Intel)" >&2
-    echo "" >&2
-    echo "Or run with a specific newer bash:" >&2
-    echo "  \$(brew --prefix bash)/bin/bash ./isdlc-framework/install.sh" >&2
-    exit 1
-fi
-unset _BASH_MAJOR
-
-# Now that the source-detection guard and bash version check have fired, it
-# is safe to enable `set -e` for the installer's own execution. Sourced
-# callers never reach this line.
+# Now that the source-detection guard has fired, it is safe to enable `set -e`
+# for the installer's own execution. Sourced callers never reach this line.
+# This installer is intentionally portable back to Bash 3.2 (the version
+# macOS ships by default) — no associative arrays, no `mapfile`, no `${var^^}`,
+# no bash-4+ features. Contributors: keep it that way.
 set -e
 
 # Get the directory where this script is located (the cloned isdlc-framework folder)
