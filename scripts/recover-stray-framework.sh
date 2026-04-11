@@ -31,8 +31,11 @@
 set -e
 
 PROJECT_DIR="$(pwd)"
+SCRIPT_PATH_RESOLVED="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 MODE="dry-run"
 REMOVE_IDENTITY=false
+FORCE=false
+REMOVE_SELF=false
 FRAMEWORK_REPO="https://dev.enactor.co.uk/gitea/DevOpsInfra/isdlc-framework.git"
 
 for arg in "$@"; do
@@ -43,13 +46,45 @@ for arg in "$@"; do
         --remove-identity)
             REMOVE_IDENTITY=true
             ;;
+        --force)
+            FORCE=true
+            ;;
+        --remove-self)
+            REMOVE_SELF=true
+            ;;
         -h|--help)
-            echo "Usage: $0 [--apply] [--remove-identity]"
-            echo "  (no flags)         dry-run — list what would be removed"
-            echo "  --apply            remove STRAY framework-unique files"
-            echo "  --remove-identity  ALSO remove IDENTITY collisions (LICENSE,"
-            echo "                     README.md, .gitignore, etc. that match"
-            echo "                     the framework byte-for-byte)"
+            cat <<'HELP'
+Usage: recover-stray-framework.sh [FLAGS]
+
+FLAGS:
+  (none)              dry-run — classify files, write sidecar lists, show plan
+  --apply             remove STRAY files (framework-unique name + identical content)
+  --remove-identity   ALSO remove IDENTITY files (LICENSE, README.md, .gitignore,
+                      etc. whose content matches framework byte-for-byte — these
+                      might be your own boilerplate, review before using)
+  --force             ALSO remove COLLISIONS (same framework path but different
+                      content — normally kept for safety). USE WHEN you are sure
+                      the files under framework paths in your project are all
+                      residue from a botched framework extraction (e.g. older
+                      install.sh that differs from current upstream because the
+                      framework has since been updated).
+  --remove-self       remove the recovery script itself from the project dir at
+                      the end of a successful --apply run. Skip if running from
+                      .isdlc/scripts/ (the installed copy, which you want to
+                      keep for future use).
+  -h, --help          show this message
+
+EXAMPLES:
+  # Dry run — safe, writes sidecar files, shows plan:
+  ./recover-stray-framework.sh
+
+  # Conservative cleanup — remove only definite strays:
+  ./recover-stray-framework.sh --apply
+
+  # Full cleanup when you know the directory has only framework residue
+  # plus your own project files outside the framework path list:
+  ./recover-stray-framework.sh --apply --remove-identity --force --remove-self
+HELP
             exit 0
             ;;
         *)
@@ -70,6 +105,8 @@ echo -e "${CYAN}iSDLC stray-framework recovery${NC}"
 echo "Project:         $PROJECT_DIR"
 echo "Mode:            $MODE"
 echo "Identity files:  $( [ "$REMOVE_IDENTITY" = true ] && echo 'will remove' || echo 'KEPT (use --remove-identity to change)')"
+echo "Collisions:      $( [ "$FORCE" = true ] && echo 'will remove (--force)' || echo 'KEPT (use --force to remove)')"
+echo "Self-removal:    $( [ "$REMOVE_SELF" = true ] && echo 'will remove script after --apply' || echo 'keep (use --remove-self to change)')"
 echo ""
 
 # Undo accidental `git init` if .git exists but was just created empty.
@@ -264,19 +301,66 @@ elif [ $IDENT_COUNT -gt 0 ]; then
     echo -e "${YELLOW}Kept $IDENT_COUNT identity files (use --remove-identity to remove).${NC}"
 fi
 
-# Clean up now-empty framework directories (best-effort).
-for d in .antigravity .github .validations coverage research-docs packages; do
-    if [ -d "$d" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
-        rmdir "$d" 2>/dev/null && echo -e "${GREEN}  ✓ Removed empty $d/${NC}" || true
-    fi
-done
+if [ $COLLISION_COUNT -gt 0 ] && [ "$FORCE" = true ]; then
+    echo -e "${YELLOW}Removing $COLLISION_COUNT collision files (--force)...${NC}"
+    echo -e "${YELLOW}  Note: these had different content from current upstream but share${NC}"
+    echo -e "${YELLOW}  framework paths. Usually old framework files from a prior version.${NC}"
+    CREMOVED=0
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        if [ -f "$f" ]; then
+            rm -f "$f"
+            CREMOVED=$((CREMOVED + 1))
+        fi
+    done < "$COLLISION_LIST_FILE"
+    echo -e "${GREEN}  ✓ Removed $CREMOVED collision files${NC}"
+elif [ $COLLISION_COUNT -gt 0 ]; then
+    echo -e "${YELLOW}Kept $COLLISION_COUNT collision files (use --force to remove).${NC}"
+fi
 
-# Clean up empty framework subtrees under docs/.
-for d in docs/articles docs/designs docs/diagrams docs/quality docs/isdlc; do
+# ---- Empty-directory pruning (aggressive) ----
+# After removing files, any framework-unique top-level directory that is now
+# empty (or only contains empty subdirs) gets pruned recursively. We ONLY
+# touch a known allow-list of framework-shipped paths so we never clobber
+# user directories with the same name by accident.
+echo ""
+echo -e "${YELLOW}Pruning empty framework subtrees...${NC}"
+PRUNED_DIRS=""
+for d in .antigravity .github .validations coverage research-docs packages \
+         docs/articles docs/designs docs/diagrams docs/quality docs/isdlc \
+         src/claude src/core src/isdlc src/providers \
+         bin lib src tests docs .isdlc-framework; do
     if [ -d "$d" ]; then
+        # Prune empty subdirectories first (depth-first).
         find "$d" -type d -empty -delete 2>/dev/null || true
+        # If the top-level is now empty, remove it too.
+        if [ -d "$d" ] && [ -z "$(ls -A "$d" 2>/dev/null)" ]; then
+            rmdir "$d" 2>/dev/null && PRUNED_DIRS="${PRUNED_DIRS}${d} " || true
+        fi
     fi
 done
+if [ -n "$PRUNED_DIRS" ]; then
+    echo -e "${GREEN}  ✓ Pruned empty framework subtrees: $PRUNED_DIRS${NC}"
+else
+    echo "  (no empty framework subtrees to prune)"
+fi
+
+# ---- Self-removal (optional) ----
+if [ "$REMOVE_SELF" = true ]; then
+    # Only remove ourselves if we're NOT running from .isdlc/scripts/ (the
+    # installed copy). Removing the installed copy would be user-hostile.
+    case "$SCRIPT_PATH_RESOLVED" in
+        */.isdlc/scripts/*)
+            echo -e "${YELLOW}  --remove-self ignored: script is inside .isdlc/scripts/ (installed copy)${NC}"
+            ;;
+        *)
+            if [ -f "$SCRIPT_PATH_RESOLVED" ]; then
+                rm -f "$SCRIPT_PATH_RESOLVED"
+                echo -e "${GREEN}  ✓ Removed self: $SCRIPT_PATH_RESOLVED${NC}"
+            fi
+            ;;
+    esac
+fi
 
 echo ""
 echo -e "${GREEN}Cleanup complete.${NC}"
