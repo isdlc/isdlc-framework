@@ -1,0 +1,22 @@
+{
+  "source": "github",
+  "source_id": "GH-241",
+  "slug": "BUG-GH-241-embedding-server-auto-start-false-success",
+  "item_type": "BUG",
+  "created_at": "2026-04-12T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["01-requirements", "02-tracing"],
+  "codebase_hash": "b4937db8",
+  "bug_classification": {
+    "classification": "bug",
+    "reasoning": "PID file write before child confirmation + waitForServer doesn't verify responder identity + postReload lacks package verification",
+    "confirmed_by_user": true
+  },
+  "acceptance": {
+    "accepted_at": "2026-04-13T00:30:00.000Z",
+    "domains": ["bug-summary", "root-cause", "fix-strategy", "tasks"],
+    "amendment_cycles": 0
+  },
+  "build_started_at": "2026-04-12T18:00:00.000Z",
+  "workflow_type": "build"
+}

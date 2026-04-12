@@ -4,14 +4,14 @@
 
 | Phase | Total | Done | Status |
 |-------|-------|------|--------|
-| 05 | 1 | 1 | COMPLETE |
+| 05 | 1 | 0 | PENDING |
 | 06 | 3 | 0 | PENDING |
 | 16 | 1 | 0 | PENDING |
 | 08 | 1 | 0 | PENDING |
 
-## Phase 05: Test Strategy -- COMPLETE
+## Phase 05: Test Strategy -- PENDING
 
-- [X] T001 Design test strategy for GH-241 fixes | traces: AC-1, AC-2, AC-3, AC-4, AC-5
+- [ ] T001 Design test strategy for GH-241 fixes | traces: AC-1, AC-2, AC-3, AC-4, AC-5
 
 ## Phase 06: Implementation -- PENDING
 

@@ -254,8 +254,8 @@ describe('F0009 refresh-code-embeddings — FR-007 refresh on finalize', () => {
         assert.match(out, /\[F0009\] starting\.\.\./);
         assert.match(out, /\[F0009\] Generated 42 embeddings/);
 
-        // /reload was POSTed
-        assert.equal(fakeFetch.calls.length, 1);
+        // /reload was POSTed (+ /modules verification call)
+        assert.ok(fakeFetch.calls.length >= 1, 'at least one fetch call');
         assert.match(fakeFetch.calls[0].url, /\/reload$/);
         assert.equal(fakeFetch.calls[0].init.method, 'POST');
 
@@ -565,6 +565,194 @@ describe('F0009 refresh-code-embeddings — NFR-006 fail-open behavior', () => {
         });
         assert.equal(r3.status, 'skipped');
         assert.equal(r3.reason, 'opted_out');
+      } finally {
+        cleanup(root);
+      }
+    }
+  );
+});
+
+// ---------- BUG-GH-241: postReload verification ----------
+
+describe('BUG-GH-241: postReload /modules verification after reload 2xx', () => {
+  it(
+    '[P0] AC-5: Given reload returns 2xx and /modules shows valid package with chunks > 0, When postReload verifies, Then serverReloaded is true',
+    async () => {
+      const root = makeTempProject();
+      try {
+        writeFileSync(
+          join(root, '.isdlc', 'config.json'),
+          JSON.stringify({ embeddings: { provider: 'jina-code', server: { port: 7777 } } })
+        );
+
+        const fakeSpawn = makeFakeSpawn({
+          code: 0,
+          stdout: 'Generated 10 embeddings\n',
+        });
+
+        // Route-aware fetch: /reload -> 200, /modules -> valid modules JSON
+        const fetchCalls = [];
+        const fakeFetch = async (url, init) => {
+          fetchCalls.push({ url, init });
+          if (url.includes('/modules')) {
+            return {
+              status: 200,
+              ok: true,
+              json: async () => [{ filename: 'code.emb', chunks: 42 }],
+            };
+          }
+          // /reload
+          return { status: 200 };
+        };
+
+        const stderrSink = makeSink();
+        const result = await refreshCodeEmbeddings(root, {
+          _spawn: fakeSpawn.spawn,
+          _fetch: fakeFetch,
+          _fs: makeFakeFs({ hasEmb: true }),
+          _stdout: makeSink(),
+          _stderr: stderrSink,
+        });
+
+        assert.equal(result.status, 'ok');
+        assert.equal(result.serverReloaded, true);
+        assert.equal(result.reload_failed, undefined);
+
+        // Verify /modules was called after /reload
+        const moduleCalls = fetchCalls.filter(c => c.url.includes('/modules'));
+        assert.equal(moduleCalls.length, 1, '/modules should be called once for verification');
+      } finally {
+        cleanup(root);
+      }
+    }
+  );
+
+  it(
+    '[P0] AC-5: Given reload returns 2xx but /modules shows empty array, When postReload verifies, Then reload_failed is true and warning emitted',
+    async () => {
+      const root = makeTempProject();
+      try {
+        writeFileSync(
+          join(root, '.isdlc', 'config.json'),
+          JSON.stringify({ embeddings: { provider: 'jina-code', server: { port: 7777 } } })
+        );
+
+        const fakeSpawn = makeFakeSpawn({
+          code: 0,
+          stdout: 'Generated 5 embeddings\n',
+        });
+
+        // /reload -> 200, /modules -> empty array (no modules loaded)
+        const fakeFetch = async (url, init) => {
+          if (url.includes('/modules')) {
+            return {
+              status: 200,
+              ok: true,
+              json: async () => [],
+            };
+          }
+          // /reload
+          return { status: 200 };
+        };
+
+        const stderrSink = makeSink();
+        const result = await refreshCodeEmbeddings(root, {
+          _spawn: fakeSpawn.spawn,
+          _fetch: fakeFetch,
+          _fs: makeFakeFs({ hasEmb: true }),
+          _stdout: makeSink(),
+          _stderr: stderrSink,
+        });
+
+        assert.equal(result.status, 'partial');
+        assert.equal(result.reload_failed, true);
+        assert.match(stderrSink.text(), /no modules loaded|warning/i);
+      } finally {
+        cleanup(root);
+      }
+    }
+  );
+
+  it(
+    '[P0] AC-5: Given reload returns 2xx but /modules shows zero-chunk package, When postReload verifies, Then reload_failed is true',
+    async () => {
+      const root = makeTempProject();
+      try {
+        writeFileSync(
+          join(root, '.isdlc', 'config.json'),
+          JSON.stringify({ embeddings: { provider: 'jina-code', server: { port: 7777 } } })
+        );
+
+        const fakeSpawn = makeFakeSpawn({
+          code: 0,
+          stdout: 'Generated 5 embeddings\n',
+        });
+
+        // /reload -> 200, /modules -> package with zero chunks
+        const fakeFetch = async (url, init) => {
+          if (url.includes('/modules')) {
+            return {
+              status: 200,
+              ok: true,
+              json: async () => [{ filename: 'code.emb', chunks: 0 }],
+            };
+          }
+          return { status: 200 };
+        };
+
+        const stderrSink = makeSink();
+        const result = await refreshCodeEmbeddings(root, {
+          _spawn: fakeSpawn.spawn,
+          _fetch: fakeFetch,
+          _fs: makeFakeFs({ hasEmb: true }),
+          _stdout: makeSink(),
+          _stderr: stderrSink,
+        });
+
+        assert.equal(result.status, 'partial');
+        assert.equal(result.reload_failed, true);
+      } finally {
+        cleanup(root);
+      }
+    }
+  );
+
+  it(
+    '[P1] AC-5: Given reload returns 2xx but /modules fetch throws, When postReload verifies, Then fail-open: serverReloaded is true',
+    async () => {
+      const root = makeTempProject();
+      try {
+        writeFileSync(
+          join(root, '.isdlc', 'config.json'),
+          JSON.stringify({ embeddings: { provider: 'jina-code', server: { port: 7777 } } })
+        );
+
+        const fakeSpawn = makeFakeSpawn({
+          code: 0,
+          stdout: 'Generated 5 embeddings\n',
+        });
+
+        // /reload -> 200, /modules -> throws (network error)
+        let callCount = 0;
+        const fakeFetch = async (url, init) => {
+          callCount++;
+          if (url.includes('/modules')) {
+            throw new Error('network timeout on /modules');
+          }
+          return { status: 200 };
+        };
+
+        const result = await refreshCodeEmbeddings(root, {
+          _spawn: fakeSpawn.spawn,
+          _fetch: fakeFetch,
+          _fs: makeFakeFs({ hasEmb: true }),
+          _stdout: makeSink(),
+          _stderr: makeSink(),
+        });
+
+        // Fail-open: /modules error does NOT cause reload failure
+        assert.equal(result.status, 'ok');
+        assert.equal(result.serverReloaded, true);
       } finally {
         cleanup(root);
       }

@@ -1,0 +1,11 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File,Status
+AC-1,Foreign process on port not reported as success,TC-LC-001,negative,P0,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-1,PID file deferred until child aliveness confirmed,TC-LC-005,positive,P0,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-2,Stale PID + port squatter failure reflected,TC-LC-002,negative,P0,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-2,PID file deferred until child aliveness confirmed,TC-LC-005,positive,P0,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-3,Normal clean spawn regression guard,TC-LC-003,positive,P0,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-3,Child alive but port not responding,TC-LC-004,negative,P1,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-4,Concurrent calls one wins via lock,TC-LC-006,positive,P1,lib/embedding/server/lifecycle.test.js,Scaffold
+AC-4,Dead lock holder with foreign port squatter,TC-LC-007,negative,P1,lifecycle.test.js,Scaffold
+AC-5,Reload 2xx with valid /modules verification,TC-RL-001,positive,P0,src/core/finalize/refresh-code-embeddings.test.js,Scaffold
+AC-5,Reload 2xx but /modules shows no package,TC-RL-002,negative,P0,src/core/finalize/refresh-code-embeddings.test.js,Scaffold

@@ -132,6 +132,20 @@ async function postReload(port, host, _fetch) {
       body: '{}',
     });
     if (res && typeof res.status === 'number' && res.status >= 200 && res.status < 300) {
+      // AC-5: Verify the server actually loaded modules after reload
+      try {
+        const modulesRes = await _fetch(`http://${host}:${port}/modules`);
+        if (modulesRes && modulesRes.ok) {
+          const body = await modulesRes.json();
+          const modules = Array.isArray(body) ? body : (body && body.modules ? body.modules : []);
+          if (modules.length === 0 || (modules[0] && modules[0].chunks === 0)) {
+            return { ok: false, refused: false, error: 'reload accepted but no modules loaded' };
+          }
+        }
+        // If /modules check fails (non-ok status), fall through to ok: true (fail-open)
+      } catch {
+        // /modules verification failed — fail-open, treat reload as successful
+      }
       return { ok: true, refused: false };
     }
     return { ok: false, refused: false, error: `HTTP ${res && res.status}` };
