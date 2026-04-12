@@ -1,0 +1,16 @@
+Requirement,AC,Test Case,Test Type,Priority,File Under Test,Status
+FR-001,AC-001-01,TGD-01,positive,P0,src/claude/commands/isdlc.md,designed
+FR-001,AC-001-01,TGD-02,positive,P0,src/claude/commands/isdlc.md,designed
+FR-001,AC-001-01,TGD-03,negative,P0,src/claude/commands/isdlc.md,designed
+FR-002,AC-002-01,TGD-04,positive,P0,src/claude/commands/isdlc.md,designed
+FR-002,AC-002-01,TGD-05,positive,P1,src/claude/commands/isdlc.md,designed
+FR-003,AC-003-01,TGD-06,positive,P0,src/claude/agents/04-test-design-engineer.md,designed
+FR-003,AC-003-01,TGD-07,positive,P0,src/claude/agents/04-test-design-engineer.md,designed
+FR-003,AC-003-01,TGD-08,positive,P1,src/claude/agents/04-test-design-engineer.md,designed
+FR-004,AC-004-01,TGD-09,positive,P0,src/claude/agents/04-test-design-engineer.md,designed
+FR-004,AC-004-01,TGD-10,positive,P1,src/claude/agents/04-test-design-engineer.md,designed
+FR-005,AC-005-01,TGD-11,positive,P0,src/isdlc/config/workflows.json,designed
+FR-005,AC-005-01,TGD-12,negative,P1,src/core/tasks/task-dispatcher.js,designed
+FR-006,AC-006-01,TGD-13,positive,P0,src/claude/agents/04-test-design-engineer.md,designed
+FR-001-FR-006,,TGD-14,positive,P1,src/providers/codex/projections/test-generate.md,designed
+FR-004 FR-005,,TGD-15,positive,P2,src/providers/codex/projections/test-generate.md,designed

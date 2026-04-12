@@ -4,7 +4,31 @@
   "slug": "REQ-GH-251-task-dispatch-test-generate-upgrade",
   "item_type": "REQ",
   "created_at": "2026-04-11T00:00:00.000Z",
-  "analysis_status": "raw",
-  "phases_completed": [],
-  "codebase_hash": "fa8ea539"
+  "analysis_status": "analyzed",
+  "phases_completed": [
+    "01-requirements",
+    "02-impact-analysis",
+    "03-architecture",
+    "04-design"
+  ],
+  "topics_covered": [
+    "requirements",
+    "architecture",
+    "design",
+    "tasks"
+  ],
+  "codebase_hash": "5f4394cd",
+  "acceptance": {
+    "accepted_at": "2026-04-12T22:45:00.000Z",
+    "domains": ["requirements", "architecture", "design", "tasks"],
+    "amendment_cycles": 0
+  },
+  "build_started_at": "2026-04-12T23:00:00.000Z",
+  "workflow_type": "build",
+  "recommended_scope": {
+    "scope": "light",
+    "rationale": "4 files affected (3 MODIFY, 1 CREATE), all agent markdown and config changes, no core JS modules touched",
+    "user_confirmed": true,
+    "user_override": null
+  }
 }

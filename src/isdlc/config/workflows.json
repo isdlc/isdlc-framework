@@ -120,6 +120,9 @@
       ],
       "gate_mode": "strict",
       "agent_modifiers": {
+        "05-test-strategy": {
+          "workflow_type": "test-generate"
+        },
         "16-quality-loop": {
           "scope": "parallel-quality-check"
         }

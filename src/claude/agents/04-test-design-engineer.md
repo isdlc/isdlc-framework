@@ -186,6 +186,85 @@ When refining a parent task into specific test cases, create sub-tasks for each 
 
 For each test case derived from a parent task's traces, call addSubTask() with the test file path and AC traces. This makes test case granularity visible to the user in tasks.md and optionally in the Claude Task tool.
 
+# TEST-GENERATE MODE
+
+When `WORKFLOW_TYPE: test-generate` is present in WORKFLOW MODIFIERS, execute the scaffold-based test strategy path instead of the standard requirements-driven path.
+
+## Mode Detection
+
+Read `WORKFLOW_TYPE` from the WORKFLOW MODIFIERS block in the delegation prompt. If the value is `test-generate`, enter this mode. Otherwise, use the standard test strategy path.
+
+## Step 1: Scan Characterization Scaffolds
+
+Glob `tests/characterization/{domain}/*.characterization.*` to discover all scaffold files from `/discover`.
+
+For each scaffold file:
+1. Read the file content
+2. Extract `AC-RE-{NNN}` references from test comments (pattern: `// AC-RE-NNN:` or `AC-RE-NNN:` in describe/it blocks)
+3. Extract `Source:` file references from header comments
+4. Note the describe/it block structure (number of test cases)
+
+If zero scaffolds found: this should not happen (precondition gate in isdlc.md blocks), but if it does, fall back to standard test strategy path.
+
+## Step 2: Classify Scaffolds by Test Type
+
+For each scaffold, classify as **unit** or **system** based on content analysis:
+
+**Unit test signals** (any of these → unit):
+- Single `Source:` reference in header
+- Tests a single exported function/method
+- Uses direct imports (not HTTP requests)
+- Mock-heavy (mocks external dependencies)
+- No `request(app)` or HTTP client patterns
+
+**System test signals** (any of these → system):
+- Multiple `Source:` references in header
+- Tests cross-module flows
+- Uses `request(app)` or HTTP client patterns
+- Wires multiple services together
+- Integration fixtures
+
+**Ambiguous default**: If classification is unclear, default to **unit** (safer — does not block system tests).
+
+Surface the classification in `test-strategy.md` for user visibility.
+
+## Step 3: Generate tasks.md
+
+Emit `docs/isdlc/tasks.md` with the following structure:
+
+**Phase 05 section**: One task (T001) for the test strategy design itself (this task).
+
+**Phase 06 section — Unit test tasks (Tier 0)**:
+For each unit-classified scaffold, create one task:
+- ID: sequential T{NNN} starting from T002
+- Description: "Implement {domain}/{feature} unit tests"
+- `files:` — scaffold path (MODIFY)
+- `traces:` — AC-RE references extracted from the scaffold
+- No `blocked_by` — all unit tasks are parallel (Tier 0)
+
+**Phase 06 section — System test tasks (Tier 1)**:
+For each system-classified scaffold, create one task:
+- ID: continuing sequential T{NNN}
+- Description: "Implement {domain}/{feature} system tests"
+- `files:` — scaffold path (MODIFY)
+- `traces:` — AC-RE references extracted from the scaffold
+- `blocked_by:` — list ALL unit test task IDs (enforces unit-first ordering)
+
+Follow the tasks.md format from `src/isdlc/config/templates/tasks.template.json`:
+- Task IDs: T{3-digits} format (T001, T002, etc.)
+- Sub-lines: 2-space indent, no dash prefix
+- File operations in parentheses: (MODIFY)
+- blocked_by/blocks in square brackets: [T002, T003]
+
+Include Progress Summary table, Dependency Graph, and Traceability Matrix sections.
+
+## Step 4: Write Test Strategy Artifacts
+
+Write the following to the artifact folder (from ARTIFACT_FOLDER in delegation prompt):
+1. `test-strategy.md` — scaffold-based strategy document listing all scaffolds, their classifications, and the test execution plan
+2. `test-cases/` — one test case spec per scaffold, referencing the AC-RE IDs
+3. `traceability-matrix.csv` — mapping AC-RE references to scaffold files to tasks
+
 # CORE RESPONSIBILITIES
 
 1. **Test Strategy Design**: Define testing approach for unit, integration, E2E, security, performance

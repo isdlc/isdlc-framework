@@ -266,12 +266,19 @@ in `src/claude/hooks/lib/three-verb-utils.cjs` for testability.
 ```
 /isdlc test generate
 ```
-1. Present test type selection: Unit, System, E2E (single-select)
-2. Initialize `active_workflow` with type `"test-generate"` and phases `["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`
-3. Phase 05: Check for existing `test.skip()` scaffolds in `tests/characterization/` (from `/discover`). If found, use them as the test design basis and generate a `docs/isdlc/tasks.md` where each scaffold file becomes a Phase 06 task (one task per scaffold file, with `files:` pointing to the scaffold and `traces:` from the scaffold's AC references). If not found, analyze code and design test cases from scratch.
-4. Phase 06: Write the test code. If tasks.md was generated from scaffolds in step 3, the Phase-Loop Controller uses task-level dispatch (REQ-GH-220) to implement each scaffold as a separate task. Otherwise, single-call delegation.
-5. Phase 16: Run quality loop including build verification, test execution, and automated QA
-6. Phase 08: Review test quality
+0. **Precondition: Characterization scaffolds must exist.** Glob for `tests/characterization/**/*.characterization.*`. If zero matches found, display the following message and exit the handler immediately (do NOT create an `active_workflow` in state.json, do NOT create a branch): `"No characterization scaffolds found in tests/characterization/. Run /discover first to generate test scaffolds from your codebase."` If matches are found, continue to step 1.
+1. Present test type selection: Unit, System, E2E (single-select). Store the user's selection as `testType` (lowercase: `"unit"`, `"system"`, or `"e2e"`).
+2. **Create artifact folder** (FR-002, AC-002-01):
+   a. Generate slug: `TEST-GEN-{YYYY-MM-DD}-{testType}` where `{YYYY-MM-DD}` is today's date and `{testType}` is the selection from step 1 (e.g., `TEST-GEN-2026-04-12-unit`).
+   b. Create directory: `docs/requirements/{slug}/`
+   c. Create `docs/requirements/{slug}/meta.json` with v2 schema:
+      `{ "source": "test-generate", "source_id": null, "slug": "{slug}", "item_type": "REQ", "created_at": "{ISO-8601}", "analysis_status": "raw", "phases_completed": [], "codebase_hash": "{git rev-parse --short HEAD}" }`
+   d. Log: `"Created artifact folder: docs/requirements/{slug}/"`
+3. Initialize `active_workflow` with type `"test-generate"` and phases `["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"]`. Include `ARTIFACT_FOLDER: "{slug}"` in the orchestrator init prompt (same pattern as the build handler).
+4. Phase 05: Check for existing `test.skip()` scaffolds in `tests/characterization/` (from `/discover`). If found, use them as the test design basis and generate a `docs/isdlc/tasks.md` where each scaffold file becomes a Phase 06 task (one task per scaffold file, with `files:` pointing to the scaffold and `traces:` from the scaffold's AC references). If not found, analyze code and design test cases from scratch.
+5. Phase 06: Write the test code. If tasks.md was generated from scaffolds in step 4, the Phase-Loop Controller uses task-level dispatch (REQ-GH-220) to implement each scaffold as a separate task. Otherwise, single-call delegation.
+6. Phase 16: Run quality loop including build verification, test execution, and automated QA
+7. Phase 08: Review test quality
 
 **cancel** - Cancel the active workflow
 ```
@@ -1592,7 +1599,8 @@ Use Task tool → sdlc-orchestrator with:
   // REQ-0026: Build auto-detection parameters (only for build/feature):
   // Include these ONLY when the build handler (steps 4a-4e) determined them:
   START_PHASE: "{startPhase}"       // Only if startPhase is not null
-  ARTIFACT_FOLDER: "{item.slug}"    // Only if item was resolved from an existing directory
+  ARTIFACT_FOLDER: "{item.slug}"    // For build: if item was resolved from an existing directory
+                                    // For test-generate: always present (created in handler step 2)
 ```
 
 The orchestrator initializes the workflow and creates the branch but does NOT execute any phase. It returns:
