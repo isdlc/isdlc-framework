@@ -425,15 +425,29 @@ async function runGenerate(genArgs) {
     process.exit(preflightResult.exitCode);
   }
 
-  // REQ-GH-227 / FR-004: --incremental flag routing
+  // REQ-GH-227 / FR-004: incremental by default when prior .emb exists
   const { parseIncrementalFlag, translateErrorCode, shouldPromptFullGenerate } = await import('../lib/embedding/incremental/cli-helpers.js');
-  if (parseIncrementalFlag(genArgs)) {
+  const forceFullFlag = genArgs.includes('--full');
+  const hasExplicitIncremental = parseIncrementalFlag(genArgs);
+
+  // Auto-detect: use incremental if prior package exists, unless --full is passed
+  const { join: joinPath } = await import('node:path');
+  const { existsSync: fileExists, readdirSync: readDir } = await import('node:fs');
+  const embDirs = [
+    joinPath(workingCopy, '.isdlc', 'embeddings'),
+    joinPath(workingCopy, 'docs', '.embeddings'),
+  ];
+  const hasPriorEmb = embDirs.some(d => {
+    try { return fileExists(d) && readDir(d).some(f => f.endsWith('.emb')); } catch { return false; }
+  });
+
+  if (!forceFullFlag && (hasExplicitIncremental || hasPriorEmb)) {
     const handled = await runIncrementalGenerate(workingCopy, genArgs, {
       translateErrorCode,
       shouldPromptFullGenerate
     });
     if (handled === 'fallthrough') {
-      // fall through to full generation
+      // fall through to full generation (e.g., NO_PRIOR_PACKAGE error)
     } else {
       return handled;
     }
@@ -658,12 +672,27 @@ async function runStatus() {
  */
 async function runIncrementalGenerate(workingCopy, genArgs, { translateErrorCode, shouldPromptFullGenerate }) {
   const { join } = await import('node:path');
-  const { existsSync } = await import('node:fs');
+  const { existsSync, readdirSync, statSync } = await import('node:fs');
   const { runIncremental } = await import('../lib/embedding/incremental/index.js');
 
-  // Default prior .emb location — convention: .isdlc/embeddings/latest.emb
-  const priorPackagePath = join(workingCopy, '.isdlc', 'embeddings', 'latest.emb');
-  const outputPath = priorPackagePath;
+  // Find newest .emb package across known locations
+  const embDirs = [
+    join(workingCopy, 'docs', '.embeddings'),
+    join(workingCopy, '.isdlc', 'embeddings'),
+  ];
+  let priorPackagePath = null;
+  let newestMtime = 0;
+  for (const dir of embDirs) {
+    if (!existsSync(dir)) continue;
+    try {
+      for (const f of readdirSync(dir).filter(n => n.endsWith('.emb'))) {
+        const full = join(dir, f);
+        const mt = statSync(full).mtimeMs;
+        if (mt > newestMtime) { newestMtime = mt; priorPackagePath = full; }
+      }
+    } catch { /* skip */ }
+  }
+  const outputPath = priorPackagePath || join(workingCopy, '.isdlc', 'embeddings', 'output.emb');
 
   console.log(`Running incremental embedding for: ${workingCopy}`);
 
@@ -747,7 +776,8 @@ function printHelp() {
 iSDLC Embedding CLI
 
 Usage:
-  isdlc-embedding generate [path]        Generate embeddings for working copy
+  isdlc-embedding generate [path]        Generate embeddings (incremental by default)
+  isdlc-embedding generate --full        Force full regeneration from scratch
   isdlc-embedding status                 Show embedding status
   isdlc-embedding server start           Start the embedding server
   isdlc-embedding server stop            Stop the embedding server

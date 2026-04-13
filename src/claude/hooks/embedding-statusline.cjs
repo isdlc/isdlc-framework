@@ -91,8 +91,8 @@ function isEnabled(projectRoot) {
 /** Find newest .emb package across known embedding dirs. */
 function findNewestEmb(projectRoot) {
   const dirs = [
-    path.join(projectRoot, 'docs', '.embeddings'),
     path.join(projectRoot, '.isdlc', 'embeddings'),
+    path.join(projectRoot, 'docs', '.embeddings'),
   ];
   let newest = null;
   for (const dir of dirs) {
@@ -132,8 +132,8 @@ function probeServer(projectRoot) {
 function getStaleness(projectRoot) {
   let files = 0, commits = 0;
   const metaPaths = [
+    path.join(projectRoot, '.isdlc', 'embeddings', '.generation-meta.json'),
     path.join(projectRoot, 'docs', '.embeddings', '.generation-meta.json'),
-    path.join(projectRoot, '.embeddings', '.generation-meta.json'),
   ];
   for (const p of metaPaths) {
     try {

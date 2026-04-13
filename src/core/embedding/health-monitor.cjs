@@ -59,7 +59,7 @@ function readServerConfig(projectRoot) {
  * @returns {boolean}
  */
 function embFilesExist(projectRoot) {
-  const embDir = path.join(projectRoot, '.embeddings');
+  const embDir = path.join(projectRoot, '.isdlc', 'embeddings');
   const embDirAlt = path.join(projectRoot, 'docs', '.embeddings');
   return fs.existsSync(embDir) || fs.existsSync(embDirAlt);
 }
@@ -82,10 +82,10 @@ function readGeneratedAtCommit(projectRoot) {
   try {
     // Check sidecar metadata file in both possible .embeddings locations
     const locations = [
+      path.join(projectRoot, '.isdlc', 'embeddings', '.generation-meta.json'),
       path.join(projectRoot, 'docs', '.embeddings', '.generation-meta.json'),
-      path.join(projectRoot, '.embeddings', '.generation-meta.json'),
+      path.join(projectRoot, '.isdlc', 'embeddings', 'manifest.json'),
       path.join(projectRoot, 'docs', '.embeddings', 'manifest.json'),
-      path.join(projectRoot, '.embeddings', 'manifest.json'),
     ];
     for (const loc of locations) {
       if (fs.existsSync(loc)) {
