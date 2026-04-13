@@ -60,6 +60,7 @@ src/isdlc/checklists/update-agents.txt
 
 # Large embedding index files
 .isdlc/embeddings/*.emb
+docs/.embeddings/
 
 # Test coverage output
 coverage/
