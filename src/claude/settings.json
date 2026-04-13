@@ -421,6 +421,12 @@
       }
     ]
   },
+  "statusLine": [
+    {
+      "command": "node $CLAUDE_PROJECT_DIR/src/providers/claude/embedding-statusline.cjs",
+      "timeout": 5000
+    }
+  ],
   "mcpServers": {
     "code-index-mcp": {
       "command": "code-index-mcp",

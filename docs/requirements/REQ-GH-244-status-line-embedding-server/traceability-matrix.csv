@@ -1,0 +1,26 @@
+Requirement,AC,Test Case,Test Type,Priority,Test File,Status
+FR-001,AC-001-01,"Given server running and embeddings fresh, When status line renders, Then shows emb: {N} chunks checkmark",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-02,"Given server running but remote commits behind, When status line renders, Then shows emb: stale ({N} commits behind)",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-03,"Given server running but local files modified, When status line renders, Then shows emb: stale ({N} files modified)",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-04,"Given both remote commits and local changes, When status line renders, Then shows emb: stale ({N} commits behind, {M} files modified)",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-05,"Given server not running, When status line renders, Then shows emb: offline",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-06,"Given embedding generation in progress, When status line renders, Then shows emb: loading...",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-07,"Given no .emb files exist, When status line renders, Then shows emb: not configured",positive,P0,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-08,"Given status line disabled via config, When Claude Code starts, Then no status line output",positive,P1,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-09,"Given health file is fresh, When status line script runs, Then reads from file without probing — display-refresh < 5ms",positive,P1,src/providers/claude/embedding-statusline.test.cjs,scaffold
+FR-001,AC-001-10,"Given Codex provider, When agent projection is built, Then EMBEDDING_STATUS line reflects health file data",positive,P1,tests/providers/codex/projection.test.js,scaffold
+FR-002,AC-002-01,"Given server healthy and embeddings fresh, When data-refresh fires, Then health file shows status healthy with chunks and port",positive,P0,src/core/embedding/health-monitor.test.cjs,scaffold
+FR-002,AC-002-02,"Given server goes down between checks, When next data-refresh fires, Then health file updates to offline and transition is logged",positive,P0,src/core/embedding/health-monitor.test.cjs,scaffold
+FR-002,AC-002-03,"Given health_check_interval_minutes set to 2, When status line script runs, Then data-refresh uses 2-minute threshold",positive,P1,src/core/embedding/health-monitor.test.cjs,scaffold
+FR-002,AC-002-04,"Given health probe fails (timeout), When data-refresh fires, Then health file shows offline with error — never crashes",negative,P0,src/core/embedding/health-monitor.test.cjs,scaffold
+FR-002,AC-002-05,"Given health file exists, When tool-router reads it, Then it gets the same structured data for routing",positive,P2,src/core/embedding/health-monitor.test.cjs,scaffold
+FR-003,AC-003-01,"Given Git repo with remote, When staleness runs, Then returns commits_behind and files_changed",positive,P0,src/core/vcs/staleness.test.cjs,scaffold
+FR-003,AC-003-02,"Given SVN repo with local modifications, When staleness runs, Then files_changed reflects svn status count",positive,P0,src/core/vcs/staleness.test.cjs,scaffold
+FR-003,AC-003-03,"Given no VCS detected, When staleness runs, Then returns nulls with vcs unknown",positive,P0,src/core/vcs/staleness.test.cjs,scaffold
+FR-003,AC-003-04,"Given Git repo with no upstream configured, When staleness runs, Then falls back to local HEAD",positive,P1,src/core/vcs/staleness.test.cjs,scaffold
+FR-003,AC-003-05,"Given git fetch fails (no network), When staleness runs, Then falls back to local HEAD — fail-open",negative,P1,src/core/vcs/staleness.test.cjs,scaffold
+FR-003,AC-003-06,"Given embeddings generated, When .emb manifest is written, Then generatedAtCommit field contains VCS ref",positive,P0,lib/embedding/package/manifest.test.js,scaffold
+FR-003,AC-003-07,"Given files modified locally but not committed, When staleness runs, Then status shows stale with file count",positive,P0,src/core/vcs/staleness.test.cjs,scaffold
+FR-004,AC-004-01,"Given any error in status line script, When Claude Code calls it, Then exit 0 with no output",negative,P0,tests/integration/embedding-statusline-failopen.test.cjs,scaffold
+FR-004,AC-004-02,"Given health probe times out, When data-refresh runs, Then status offline and script continues",negative,P0,tests/integration/embedding-statusline-failopen.test.cjs,scaffold
+FR-004,AC-004-03,"Given VCS commands fail, When staleness runs, Then nulls returned and script continues",negative,P0,tests/integration/embedding-statusline-failopen.test.cjs,scaffold

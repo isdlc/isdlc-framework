@@ -4,65 +4,65 @@
 
 | Phase | Total | Done | Remaining |
 |-------|-------|------|-----------|
-| 05    | 1     | 0    | 1         |
-| 06    | 12    | 0    | 12        |
+| 05    | 1     | 1    | 0         |
+| 06    | 12    | 12   | 0         |
 | 16    | 1     | 0    | 1         |
 | 08    | 1     | 0    | 1         |
-| **Total** | **15** | **0** | **15** |
+| **Total** | **15** | **13** | **2** |
 
-## Phase 05: Test Strategy -- PENDING
+## Phase 05: Test Strategy -- COMPLETE
 
-- [ ] T001 Design test strategy for all modules | traces: FR-001, FR-002, FR-003, FR-004
+- [X] T001 Design test strategy for all modules | traces: FR-001, FR-002, FR-003, FR-004
   files: docs/requirements/REQ-GH-244-status-line-embedding-server/test-strategy.md (CREATE)
 
-## Phase 06: Implementation -- PENDING
+## Phase 06: Implementation -- COMPLETE
 
-- [ ] T002 Implement VCS staleness abstraction with git and SVN dual-metric | traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04, AC-003-05, AC-003-07
+- [X] T002 Implement VCS staleness abstraction with git and SVN dual-metric | traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04, AC-003-05, AC-003-07
   files: src/core/vcs/staleness.cjs (CREATE)
   blocks: [T003, T008]
 
-- [ ] T003 Implement health monitor with HTTP probe and VCS staleness and atomic file write | traces: FR-002, AC-002-01, AC-002-02, AC-002-04
+- [X] T003 Implement health monitor with HTTP probe and VCS staleness and atomic file write | traces: FR-002, AC-002-01, AC-002-02, AC-002-04
   files: src/core/embedding/health-monitor.cjs (CREATE)
   blocked_by: [T002]
   blocks: [T005, T006, T009, T012]
 
-- [ ] T004 Add generatedAtCommit to emb manifest and builder | traces: FR-003, AC-003-06
+- [X] T004 Add generatedAtCommit to emb manifest and builder | traces: FR-003, AC-003-06
   files: lib/embedding/package/manifest.js (MODIFY), lib/embedding/package/builder.js (MODIFY)
   blocks: [T011]
 
-- [ ] T005 Implement Claude status line script with two-tier refresh | traces: FR-001, AC-001-01, AC-001-02, AC-001-03, AC-001-04, AC-001-05, AC-001-06, AC-001-07, AC-001-08, AC-001-09
+- [X] T005 Implement Claude status line script with two-tier refresh | traces: FR-001, AC-001-01, AC-001-02, AC-001-03, AC-001-04, AC-001-05, AC-001-06, AC-001-07, AC-001-08, AC-001-09
   files: src/providers/claude/embedding-statusline.cjs (CREATE)
   blocked_by: [T003]
   blocks: [T010, T012]
 
-- [ ] T006 Extend Codex projection for EMBEDDING_STATUS injection | traces: FR-001, AC-001-10
+- [X] T006 Extend Codex projection for EMBEDDING_STATUS injection | traces: FR-001, AC-001-10
   files: src/providers/codex/projection.js (MODIFY)
   blocked_by: [T003]
 
-- [ ] T007 Register status line in settings.json and add config schema | traces: FR-001, AC-001-08, AC-002-03
+- [X] T007 Register status line in settings.json and add config schema | traces: FR-001, AC-001-08, AC-002-03
   files: src/claude/settings.json (MODIFY)
 
-- [ ] T008 Unit tests for VCS staleness git and SVN and no-VCS | traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04, AC-003-05, AC-003-07
+- [X] T008 Unit tests for VCS staleness git and SVN and no-VCS | traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04, AC-003-05, AC-003-07
   files: src/core/vcs/staleness.test.cjs (CREATE)
   blocked_by: [T002]
 
-- [ ] T009 Unit tests for health monitor all states and transitions | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04, AC-002-05
+- [X] T009 Unit tests for health monitor all states and transitions | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04, AC-002-05
   files: src/core/embedding/health-monitor.test.cjs (CREATE)
   blocked_by: [T003]
 
-- [ ] T010 Unit tests for status line script format and config | traces: FR-001, AC-001-01, AC-001-02, AC-001-03, AC-001-04, AC-001-05, AC-001-06, AC-001-07, AC-001-08, AC-001-09
+- [X] T010 Unit tests for status line script format and config | traces: FR-001, AC-001-01, AC-001-02, AC-001-03, AC-001-04, AC-001-05, AC-001-06, AC-001-07, AC-001-08, AC-001-09
   files: src/providers/claude/embedding-statusline.test.cjs (CREATE)
   blocked_by: [T005]
 
-- [ ] T011 Unit tests for manifest generatedAtCommit | traces: FR-003, AC-003-06
+- [X] T011 Unit tests for manifest generatedAtCommit | traces: FR-003, AC-003-06
   files: lib/embedding/package/manifest.test.js (MODIFY)
   blocked_by: [T004]
 
-- [ ] T012 Integration tests end-to-end status line flow | traces: FR-001, FR-002, FR-003
+- [X] T012 Integration tests end-to-end status line flow | traces: FR-001, FR-002, FR-003
   files: tests/integration/embedding-statusline.test.cjs (CREATE)
   blocked_by: [T003, T005]
 
-- [ ] T013 Fail-open integration tests for all error paths | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
+- [X] T013 Fail-open integration tests for all error paths | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
   files: tests/integration/embedding-statusline-failopen.test.cjs (CREATE)
   blocked_by: [T002, T003, T005]
 

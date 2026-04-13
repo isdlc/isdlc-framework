@@ -190,6 +190,43 @@ When the embedding server is unavailable, all searches automatically fall back t
 }
 
 // ---------------------------------------------------------------------------
+// FR-001 (REQ-GH-244): Embedding Status Instruction
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the embedding status instruction for Codex agents.
+ * Reads the health file written by the health monitor and returns
+ * an EMBEDDING_STATUS instruction string for injection into agent context.
+ *
+ * REQ-GH-244 FR-001, AC-001-10
+ *
+ * @param {string} projectRoot - Absolute path to project root
+ * @returns {string|null} Instruction string or null if health file missing
+ */
+export function buildEmbeddingStatusInstruction(projectRoot) {
+  if (!projectRoot) return null;
+  try {
+    const healthPath = join(projectRoot, '.isdlc', 'embedding-health.json');
+    if (!existsSync(healthPath)) return null;
+    const health = JSON.parse(readFileSync(healthPath, 'utf-8'));
+    if (!health || !health.status) return null;
+
+    const parts = [`EMBEDDING_STATUS: ${health.status}`];
+    if (health.chunks != null) parts.push(`${health.chunks} chunks`);
+    if (health.commits_behind != null && health.commits_behind > 0) {
+      parts.push(`${health.commits_behind} commits behind`);
+    }
+    if (health.files_changed != null && health.files_changed > 0) {
+      parts.push(`${health.files_changed} files modified`);
+    }
+    return parts.join(', ');
+  } catch {
+    // Fail-open (Article X): missing or malformed health file is non-fatal
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // FR-001 (REQ-0116): Instruction Projection Service
 // ---------------------------------------------------------------------------
 
