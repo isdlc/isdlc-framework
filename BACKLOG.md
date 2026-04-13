@@ -5,7 +5,9 @@
 
 ## Open
 - [ ] #254 Context-manager hooks: inject phase-specific instructions before delegation [github: GH-254]
-- [A] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252] -> [requirements](docs/requirements/REQ-GH-252-smooth-embeddings-ux/) **Analyzed**
+- [x] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252] -> [requirements](docs/requirements/REQ-GH-252-smooth-embeddings-ux/) **Completed**
+  - Preflight checks, health probe, query classifier, tool-router semantic routing, CLI consolidation. 57 tests, 100% AC coverage.
+  - **Completed:** 2026-04-13
 - [x] #251 Extend task-level dispatch to /isdlc test generate and /isdlc upgrade workflows [github: GH-251] -> [requirements](docs/requirements/REQ-GH-251-task-dispatch-test-generate-upgrade/) **Completed (Track 1)**
   - Track 1 (test-generate): Precondition gate requiring `/discover` scaffolds, artifact folder creation (TEST-GEN-{slug}), Phase 05 scaffold-to-tasks generation with unit/system tier ordering, Phase 06 dispatch via existing infrastructure, Codex projection bundle. 15 prompt verification tests. Track 2 (upgrade) remains open.
   - **Completed:** 2026-04-12
