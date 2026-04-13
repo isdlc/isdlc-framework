@@ -135,27 +135,43 @@ function readStdin() {
 }
 
 /**
- * Format default session info from stdin data.
+ * Format Claude Code session info from stdin JSON data.
+ * Fields based on Claude Code statusLine API.
  * @param {Object|null} session
  * @returns {string}
  */
 function formatSessionInfo(session) {
   if (!session) return '';
   const parts = [];
+
+  // Model name
   if (session.model) {
-    const modelName = typeof session.model === 'string' ? session.model
-      : session.model.name || session.model.id || String(session.model);
-    if (modelName && modelName !== '[object Object]') parts.push(modelName);
+    const name = typeof session.model === 'string' ? session.model
+      : session.model.display_name || session.model.name || session.model.id || null;
+    if (name) parts.push(name);
   }
+
+  // Context usage
   if (session.context_window?.used_percentage != null) {
     parts.push(`ctx: ${Math.round(session.context_window.used_percentage)}%`);
   }
+
+  // Cost
+  if (session.cost?.total_cost_usd != null && session.cost.total_cost_usd > 0) {
+    parts.push(`$${session.cost.total_cost_usd.toFixed(2)}`);
+  }
+
   return parts.join(' | ');
 }
 
 // When executed as main script
 if (require.main === module) {
+  // DEBUG: dump stdin JSON to file so we can see the exact schema
   Promise.all([run(), readStdin()]).then(([embStatus, session]) => {
+    try {
+      const debugPath = path.join(process.env.CLAUDE_PROJECT_DIR || process.cwd(), '.isdlc', 'statusline-debug.json');
+      fs.writeFileSync(debugPath, JSON.stringify(session, null, 2));
+    } catch { /* ignore */ }
     const sessionInfo = formatSessionInfo(session);
     const parts = [embStatus, sessionInfo].filter(Boolean);
     if (parts.length > 0) process.stdout.write(parts.join(' | '));

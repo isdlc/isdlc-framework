@@ -423,8 +423,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node $CLAUDE_PROJECT_DIR/src/providers/claude/embedding-statusline.cjs",
-    "refreshInterval": 300
+    "command": "node /Users/vihang/.claude/statusline-emb.cjs"
   },
   "mcpServers": {
     "code-index-mcp": {
