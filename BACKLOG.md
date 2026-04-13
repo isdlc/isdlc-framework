@@ -19,7 +19,9 @@
 - [x] #247 Auto-trigger incremental embedding refresh (file watcher / post-commit / PostToolUse) [github: GH-247] **Closed — folded into #244 (status line shows staleness, manual refresh)**
 - [ ] #246 Embedding server: launchd/systemd integration + auto-restart (future — team server use case) [github: GH-246] `future-enhancement` (includes #245)
 - [x] #245 Embedding server: auto-restart on crash (lifecycle supervision) [github: GH-245] **Closed — merged into #246**
-- [A] #244 Claude Code status line integration for embedding server [github: GH-244] -> [requirements](docs/requirements/REQ-GH-244-status-line-embedding-server/) **Analyzed**
+- [x] #244 Claude Code status line integration for embedding server [github: GH-244] -> [requirements](docs/requirements/REQ-GH-244-status-line-embedding-server/) *(merged 525cd1f3)*
+  - VCS staleness detection, health monitor, status line formatter with fail-open defaults, Codex projection, manifest model-hash. 48 tests, command injection fix.
+  - **Completed:** 2026-04-13
 - [x] #243 CLI status command for embedding server and package [github: GH-243] **Closed — folded into #244 (status line shows all diagnostic info)**
 - [x] #242 Embedding staleness detection + auto-refresh on code changes [github: GH-242] **Closed — folded into #244 (status line shows commits-behind count)**
 - [x] #241 Bug: embedding server CLI auto-start reports false success when port already bound [github: GH-241] -> [requirements](docs/requirements/BUG-GH-241-embedding-server-auto-start-false-success/) **Completed**
