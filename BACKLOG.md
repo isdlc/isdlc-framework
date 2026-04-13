@@ -5,7 +5,7 @@
 
 ## Open
 - [ ] #254 Context-manager hooks: inject phase-specific instructions before delegation [github: GH-254]
-- [ ] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252]
+- [A] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252] -> [requirements](docs/requirements/REQ-GH-252-smooth-embeddings-ux/) **Analyzed**
 - [x] #251 Extend task-level dispatch to /isdlc test generate and /isdlc upgrade workflows [github: GH-251] -> [requirements](docs/requirements/REQ-GH-251-task-dispatch-test-generate-upgrade/) **Completed (Track 1)**
   - Track 1 (test-generate): Precondition gate requiring `/discover` scaffolds, artifact folder creation (TEST-GEN-{slug}), Phase 05 scaffold-to-tasks generation with unit/system tier ordering, Phase 06 dispatch via existing infrastructure, Codex projection bundle. 15 prompt verification tests. Track 2 (upgrade) remains open.
   - **Completed:** 2026-04-12
@@ -61,7 +61,7 @@
 - [x] #216 Make ATDD the default mode for all workflows — remove --atdd flag [github: GH-216] -> [requirements](docs/requirements/REQ-GH-216-make-atdd-the-default-mode-for-all-workflows-remov/) **Completed**
   - Remove opt-in flag, make AC-to-test traceability unconditional. Config-driven via .isdlc/config.json with 4 knobs (enabled, require_gwt, track_red_green, enforce_priority_order). Scope expanded to include --atdd-ready on discover.
   - **Completed:** 2026-04-05
-- [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230]
+- [ ] #230 Chunking performance: parallelize tree-sitter parsing for large codebases [github: GH-230] `future-enhancement`
   - Group B — scale. Sequential chunking acceptable for MVP.
 - [x] #234 Enforce artifact templates strictly in roundtable confirmations and artifact writes [github: GH-234] -> [requirements](docs/requirements/REQ-GH-234-strict-template-enforcement/) **Completed**
   - Gap revealed by REQ-GH-227 analysis. Templates exist but nothing enforces them; LLMs default to own structure. Needs strict binding in roundtable-analyst.md + template-validator hook.
@@ -83,7 +83,7 @@
   - **Completed:** 2026-03-26
 - [x] #206 Conversational enforcement via Stop hook — bulleted format, three-domain confirmation, roundtable skip [github: GH-206] → `REQ-0140-conversational-enforcement-stop-hook/` -> [requirements](docs/requirements/REQ-0140-conversational-enforcement-stop-hook/) **Completed**
   - **Completed:** 2026-03-25
-- [ ] #133 Memory infrastructure scale-out — HNSW indexing, remote vector store, incremental indexing [github: GH-133] → `REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/` -> [requirements](docs/requirements/REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/)
+- [ ] #133 Memory infrastructure scale-out — HNSW indexing, remote vector store, incremental indexing [github: GH-133] `future-enhancement` → `REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/` -> [requirements](docs/requirements/REQ-0069-memory-infrastructure-scale-out-hnsw-indexing-r/)
   - Depends on REQ-0064, REQ-0066, BUG-0056. Not urgent for dogfooding; critical for enterprise adoption.
 - [x] #126 CodeBERT embedding non-functional — stub tokenizer, missing model download, handler not wired [github: GH-126] → `BUG-0056-codebert-embedding-non-functional-stub-tokenize/` -> [requirements](docs/requirements/BUG-0056-codebert-embedding-non-functional-stub-tokenize/) **Completed**
   - **Completed:** 2026-03-21
