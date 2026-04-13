@@ -430,6 +430,6 @@
       "command": "code-index-mcp",
       "args": [],
       "env": {}
-    },
+    }
   }
 }
