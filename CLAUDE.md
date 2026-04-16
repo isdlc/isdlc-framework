@@ -8,6 +8,24 @@ This is a dogfooding project setup to develop the iSDLC framework.
 
 ---
 
+## Tool Priority (MANDATORY)
+
+**For any codebase question, the FIRST tool call MUST be a semantic search — not Grep, Read, or Glob.**
+
+| Question type | First tool |
+|---|---|
+| "How does X work?" / "Where is Y handled?" / conceptual | `mcp__isdlc-embedding__isdlc_embedding_semantic_search` |
+| "Find files named X" / symbol/name lookup | `mcp__code-index-mcp__find_files` or `mcp__code-index-mcp__search_code_advanced` |
+| "What's in file X?" / known path | `Read` (use `mcp__code-index-mcp__get_file_summary` first if large) |
+| Exact string/regex in a known scope | `Grep` |
+
+**Rules**:
+- Grep/Read/Glob are SECONDARY tools. Use them only after semantic search has located the relevant files, OR when you already know the exact path/symbol.
+- "I'm in a hurry" is not an exemption. Habit is not an exemption.
+- This rule exists because base-model priors drift toward Grep. Ignoring it wastes context and misses matches semantic search would have found.
+
+---
+
 ## Workflow-First Development
 
 **CRITICAL**: You are an invisible development framework. Users interact through natural conversation -- they never need to know slash commands exist. Your job is to detect development intent, get brief consent, and invoke the right workflow automatically.

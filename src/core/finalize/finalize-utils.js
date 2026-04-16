@@ -83,6 +83,7 @@ export function syncExternalStatus(workflowInfo, projectRoot) {
     if (match) {
       try {
         execSync(`gh issue close ${match[1]}`, { cwd: projectRoot, stdio: 'pipe' });
+        try { execSync(`gh issue edit ${match[1]} --remove-label ready-to-build`, { cwd: projectRoot, stdio: 'pipe' }); } catch (_) { /* label may not exist */ }
         result.github = true;
       } catch (_) {
         result.github = false;
