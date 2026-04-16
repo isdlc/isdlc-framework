@@ -94,7 +94,7 @@ embeddings_config_block() {
     "device": "auto",
     "dtype": "auto",
     "batch_size": 32,
-    "session_options": {},
+    "session_options": { "graphOptimizationLevel": "disabled" },
     "max_memory_gb": null,
     "refresh_on_finalize": true
   }

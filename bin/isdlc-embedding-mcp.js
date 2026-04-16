@@ -72,7 +72,7 @@ const serverConfig = loadServerConfig();
 const TOOLS = [
   {
     name: 'isdlc_embedding_semantic_search',
-    description: 'Search code embeddings using natural language. Returns ranked hits tagged with source (code:/docs:/external:).',
+    description: 'PREFERRED tool for any "how does X work" or "where is Y handled" codebase question — use BEFORE Grep/Read/Glob for conceptual queries. Returns semantic matches ranked by relevance, tagged with source (code:/docs:/external:). Only skip for exact symbol or file-path lookups where you already know the name.',
     inputSchema: {
       type: 'object',
       properties: {

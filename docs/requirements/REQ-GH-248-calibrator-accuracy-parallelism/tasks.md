@@ -31,93 +31,93 @@ Artifacts: bug-report.md, root-cause-analysis.md, fix-strategy.md
   blocked_by: [T001]
   blocks: [T014, T024]
 
-## Phase 06: Implementation -- COMPLETE
+## Phase 06: Implementation -- PENDING
 
-- [X] T007 Pin fixture corpus of 100 multi-language chunks for parity test | traces: FR-005, AC-005-04
+- [ ] T007 Pin fixture corpus of 100 multi-language chunks for parity test | traces: FR-005, AC-005-04
   files: lib/embedding/engine/fixtures/parity-corpus/ (CREATE)
   blocked_by: [T004]
   blocks: [T008]
-- [X] T008 Add cosine-similarity parity test infrastructure | traces: FR-005, AC-005-04
+- [ ] T008 Add cosine-similarity parity test infrastructure | traces: FR-005, AC-005-04
   files: lib/embedding/engine/graph-optimization-parity.test.js (CREATE)
   blocked_by: [T007]
   blocks: [T009]
-- [X] T009 Flip graphOptimizationLevel default to all in config-defaults and embeddings-prompt | traces: FR-005, AC-005-01, AC-005-02, AC-005-03
+- [ ] T009 Flip graphOptimizationLevel default to all in config-defaults and embeddings-prompt | traces: FR-005, AC-005-01, AC-005-02, AC-005-03
   files: src/core/config/config-defaults.js (MODIFY), lib/install/embeddings-prompt.js (MODIFY)
   blocked_by: [T008]
   blocks: [T010, T027]
-- [X] T010 Propagate session_options into calibrationConfig at CLI calibration call site | traces: FR-003, AC-003-01, AC-003-02, AC-003-03
+- [ ] T010 Propagate session_options into calibrationConfig at CLI calibration call site | traces: FR-003, AC-003-01, AC-003-02, AC-003-03
   files: bin/isdlc-embedding.js (MODIFY)
   blocked_by: [T003, T009]
   blocks: [T011]
-- [X] T011 Expand computeFingerprint to hash session_options keys | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
+- [ ] T011 Expand computeFingerprint to hash session_options keys | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
   files: lib/embedding/engine/memory-calibrator.js (MODIFY)
   blocked_by: [T003, T010]
   blocks: [T012, T021]
-- [X] T012 Rework calibrator sample source to pull real chunks via chunker | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
+- [ ] T012 Rework calibrator sample source to pull real chunks via chunker | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
   files: lib/embedding/engine/memory-calibrator.js (MODIFY), bin/isdlc-embedding.js (MODIFY)
   blocked_by: [T001, T011]
   blocks: [T013]
-- [X] T013 Adjust calibrator cadence window and timeout defaults | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04
+- [ ] T013 Adjust calibrator cadence window and timeout defaults | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04
   files: lib/embedding/engine/memory-calibrator.js (MODIFY)
   blocked_by: [T002, T012]
   blocks: [T014, T020]
-- [X] T014 Fix jina-code-adapter pool construction to pass calibrated value through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
+- [ ] T014 Fix jina-code-adapter pool construction to pass calibrated value through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
   files: lib/embedding/engine/jina-code-adapter.js (MODIFY)
   blocked_by: [T006, T013]
   blocks: [T015, T024]
-- [X] T015 Extract computeEffectiveParallelism helper | traces: FR-008, AC-008-01
+- [ ] T015 Extract computeEffectiveParallelism helper | traces: FR-008, AC-008-01
   files: lib/embedding/engine/device-detector.js (MODIFY)
   blocked_by: [T005, T014]
   blocks: [T016, T017, T018]
-- [X] T016 Update autoParallelism to use helper with workloadFloor | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
+- [ ] T016 Update autoParallelism to use helper with workloadFloor | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
   files: lib/embedding/engine/device-detector.js (MODIFY)
   blocked_by: [T005, T015]
   blocks: [T019, T022]
-- [X] T017 Update resolvePoolSize to use helper with workloadFloor | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-02
+- [ ] T017 Update resolvePoolSize to use helper with workloadFloor | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-02
   files: lib/embedding/engine/worker-pool.js (MODIFY)
   blocked_by: [T005, T015]
   blocks: [T018, T023]
-- [X] T018 Dedup constants between device-detector and worker-pool | traces: FR-008, AC-008-02, AC-008-03
+- [ ] T018 Dedup constants between device-detector and worker-pool | traces: FR-008, AC-008-02, AC-008-03
   files: lib/embedding/engine/device-detector.js (MODIFY), lib/embedding/engine/worker-pool.js (MODIFY)
   blocked_by: [T016, T017]
   blocks: [T023]
-- [X] T019 Thread workloadSize through CLI to resolveConfig via engine and adapter | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
+- [ ] T019 Thread workloadSize through CLI to resolveConfig via engine and adapter | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
   files: bin/isdlc-embedding.js (MODIFY), lib/embedding/engine/index.js (MODIFY), lib/embedding/engine/jina-code-adapter.js (MODIFY)
   blocked_by: [T016]
   blocks: [T028]
-- [X] T020 Unit tests for calibrator real-chunk sampling and steady-state | traces: FR-001, FR-002, AC-001-01, AC-001-02, AC-001-03, AC-002-01, AC-002-02, AC-002-03, AC-002-04
+- [ ] T020 Unit tests for calibrator real-chunk sampling and steady-state | traces: FR-001, FR-002, AC-001-01, AC-001-02, AC-001-03, AC-002-01, AC-002-02, AC-002-03, AC-002-04
   files: lib/embedding/engine/memory-calibrator.test.js (MODIFY)
   blocked_by: [T013]
   blocks: [T029]
-- [X] T021 Unit tests for session_options propagation and fingerprint expansion | traces: FR-003, FR-004, AC-003-01, AC-003-02, AC-003-03, AC-004-01, AC-004-02, AC-004-03
+- [ ] T021 Unit tests for session_options propagation and fingerprint expansion | traces: FR-003, FR-004, AC-003-01, AC-003-02, AC-003-03, AC-004-01, AC-004-02, AC-004-03
   files: lib/embedding/engine/memory-calibrator.test.js (MODIFY)
   blocked_by: [T011]
   blocks: [T029]
-- [X] T022 Unit tests for workload-aware autoParallelism | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
+- [ ] T022 Unit tests for workload-aware autoParallelism | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
   files: lib/embedding/engine/device-detector.test.js (MODIFY)
   blocked_by: [T016]
   blocks: [T029]
-- [X] T023 Unit tests for workload-aware resolvePoolSize and dedup | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-01, AC-008-02, AC-008-03
+- [ ] T023 Unit tests for workload-aware resolvePoolSize and dedup | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-01, AC-008-02, AC-008-03
   files: lib/embedding/engine/worker-pool.test.js (MODIFY)
   blocked_by: [T018]
   blocks: [T029]
-- [X] T024 Unit tests for adapter calibrated value pass-through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
+- [ ] T024 Unit tests for adapter calibrated value pass-through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
   files: lib/embedding/engine/jina-code-adapter.test.js (MODIFY)
   blocked_by: [T014]
   blocks: [T029]
-- [X] T025 Verify no Claude agent or hook file impacts (dual-file awareness) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
+- [ ] T025 Verify no Claude agent or hook file impacts (dual-file awareness) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
   files: src/claude/ (VERIFY)
   blocked_by: [T019]
   blocks: [T029]
-- [X] T026 Verify no src providers codex impacts (dual-provider parity) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
+- [ ] T026 Verify no src providers codex impacts (dual-provider parity) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
   files: src/providers/codex/ (VERIFY)
   blocked_by: [T019]
   blocks: [T029]
-- [X] T027 Update docs isdlc config-reference for graphOptimizationLevel default change | traces: FR-005, AC-005-01
+- [ ] T027 Update docs isdlc config-reference for graphOptimizationLevel default change | traces: FR-005, AC-005-01
   files: docs/isdlc/config-reference.md (MODIFY)
   blocked_by: [T009]
   blocks: [T029]
-- [X] T028 Cross-reference fix in REQ-GH-239 benchmark-report | traces: FR-001, FR-005, FR-006
+- [ ] T028 Cross-reference fix in REQ-GH-239 benchmark-report | traces: FR-001, FR-005, FR-006
   files: docs/requirements/REQ-GH-239-worker-pool-engine-parallelism/benchmark-report.md (MODIFY)
   blocked_by: [T019]
   blocks: [T029]
@@ -161,10 +161,10 @@ Artifacts: bug-report.md, root-cause-analysis.md, fix-strategy.md
 | Phase | Name | Total | Done | % |
 |---|---|---|---|---|
 | 05 | Test Strategy | 6 | 6 | 100% |
-| 06 | Implementation | 22 | 22 | 100% |
+| 06 | Implementation | 22 | 0 | 0% |
 | 16 | Quality Loop | 5 | 0 | 0% |
 | 08 | Code Review | 2 | 0 | 0% |
-| **Total** | | **35** | **28** | **80%** |
+| **Total** | | **35** | **6** | **17%** |
 
 ## Dependency Graph
 

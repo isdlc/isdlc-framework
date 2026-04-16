@@ -1,0 +1,506 @@
+{
+  "version": 1,
+  "description": "Pinned parity corpus for REQ-GH-248 graphOptimizationLevel regression gate",
+  "chunks": [
+    {
+      "id": 1,
+      "language": "javascript",
+      "content": "function add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a * b;\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}"
+    },
+    {
+      "id": 2,
+      "language": "javascript",
+      "content": "class User {\n  constructor(id, name, email) {\n    this.id = id;\n    this.name = name;\n    this.email = email;\n    this.createdAt = new Date();\n  }\n\n  toJSON() {\n    return { id: this.id, name: this.name, email: this.email };\n  }\n\n  greet() {\n    return `Hello, my name is ${this.name}`;\n  }\n}\n\nexport default User;"
+    },
+    {
+      "id": 3,
+      "language": "javascript",
+      "content": "async function fetchUser(id) {\n  const response = await fetch(`/api/users/${id}`);\n  if (!response.ok) {\n    throw new Error(`HTTP ${response.status}: ${response.statusText}`);\n  }\n  const data = await response.json();\n  return new User(data.id, data.name, data.email);\n}"
+    },
+    {
+      "id": 4,
+      "language": "javascript",
+      "content": "const debounce = (fn, delay) => {\n  let timeoutId;\n  return (...args) => {\n    clearTimeout(timeoutId);\n    timeoutId = setTimeout(() => fn.apply(this, args), delay);\n  };\n};\n\nconst throttle = (fn, limit) => {\n  let inThrottle;\n  return (...args) => {\n    if (!inThrottle) {\n      fn.apply(this, args);\n      inThrottle = true;\n      setTimeout(() => (inThrottle = false), limit);\n    }\n  };\n};"
+    },
+    {
+      "id": 5,
+      "language": "javascript",
+      "content": "import { readFileSync, writeFileSync } from 'node:fs';\nimport { createHash } from 'node:crypto';\n\nexport function hashFile(filePath) {\n  const content = readFileSync(filePath);\n  return createHash('sha256').update(content).digest('hex');\n}\n\nexport function writeJson(filePath, data) {\n  writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');\n}"
+    },
+    {
+      "id": 6,
+      "language": "javascript",
+      "content": "function memoize(fn) {\n  const cache = new Map();\n  return function(...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) {\n      return cache.get(key);\n    }\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}\n\nconst fibonacci = memoize((n) => n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2));"
+    },
+    {
+      "id": 7,
+      "language": "javascript",
+      "content": "export class EventEmitter {\n  constructor() {\n    this.listeners = new Map();\n  }\n\n  on(event, callback) {\n    if (!this.listeners.has(event)) {\n      this.listeners.set(event, []);\n    }\n    this.listeners.get(event).push(callback);\n  }\n\n  emit(event, ...args) {\n    const callbacks = this.listeners.get(event) || [];\n    for (const cb of callbacks) cb(...args);\n  }\n\n  off(event, callback) {\n    const callbacks = this.listeners.get(event) || [];\n    const idx = callbacks.indexOf(callback);\n    if (idx !== -1) callbacks.splice(idx, 1);\n  }\n}"
+    },
+    {
+      "id": 8,
+      "language": "javascript",
+      "content": "const express = require('express');\nconst app = express();\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'ok', timestamp: Date.now() });\n});\n\napp.post('/users', async (req, res) => {\n  try {\n    const user = await createUser(req.body);\n    res.status(201).json(user);\n  } catch (err) {\n    res.status(400).json({ error: err.message });\n  }\n});\n\napp.listen(3000);"
+    },
+    {
+      "id": 9,
+      "language": "javascript",
+      "content": "function quickSort(arr) {\n  if (arr.length <= 1) return arr;\n  const pivot = arr[Math.floor(arr.length / 2)];\n  const left = arr.filter(x => x < pivot);\n  const middle = arr.filter(x => x === pivot);\n  const right = arr.filter(x => x > pivot);\n  return [...quickSort(left), ...middle, ...quickSort(right)];\n}"
+    },
+    {
+      "id": 10,
+      "language": "javascript",
+      "content": "export const pipe = (...fns) => (value) => fns.reduce((acc, fn) => fn(acc), value);\nexport const compose = (...fns) => (value) => fns.reduceRight((acc, fn) => fn(acc), value);\n\nconst double = x => x * 2;\nconst square = x => x * x;\nconst addOne = x => x + 1;\n\nconst transform = pipe(double, square, addOne);\nconsole.log(transform(3)); // ((3*2)^2)+1 = 37"
+    },
+    {
+      "id": 11,
+      "language": "typescript",
+      "content": "interface User {\n  id: number;\n  name: string;\n  email: string;\n  roles: string[];\n}\n\ninterface Repository<T> {\n  findById(id: number): Promise<T | null>;\n  findAll(): Promise<T[]>;\n  save(entity: T): Promise<T>;\n  delete(id: number): Promise<boolean>;\n}\n\nclass UserRepository implements Repository<User> {\n  private users: Map<number, User> = new Map();\n\n  async findById(id: number): Promise<User | null> {\n    return this.users.get(id) ?? null;\n  }\n\n  async findAll(): Promise<User[]> {\n    return Array.from(this.users.values());\n  }\n\n  async save(user: User): Promise<User> {\n    this.users.set(user.id, user);\n    return user;\n  }\n\n  async delete(id: number): Promise<boolean> {\n    return this.users.delete(id);\n  }\n}"
+    },
+    {
+      "id": 12,
+      "language": "typescript",
+      "content": "type Result<T, E = Error> =\n  | { ok: true; value: T }\n  | { ok: false; error: E };\n\nfunction success<T>(value: T): Result<T> {\n  return { ok: true, value };\n}\n\nfunction failure<E>(error: E): Result<never, E> {\n  return { ok: false, error };\n}\n\nfunction parseJson<T>(input: string): Result<T> {\n  try {\n    return success(JSON.parse(input) as T);\n  } catch (err) {\n    return failure(err as Error);\n  }\n}"
+    },
+    {
+      "id": 13,
+      "language": "typescript",
+      "content": "enum LogLevel {\n  DEBUG = 'debug',\n  INFO = 'info',\n  WARN = 'warn',\n  ERROR = 'error',\n}\n\nclass Logger {\n  constructor(private readonly name: string, private readonly level: LogLevel = LogLevel.INFO) {}\n\n  log(level: LogLevel, message: string, context?: Record<string, unknown>): void {\n    const timestamp = new Date().toISOString();\n    const entry = { timestamp, name: this.name, level, message, context };\n    console.log(JSON.stringify(entry));\n  }\n\n  info(message: string, context?: Record<string, unknown>): void {\n    this.log(LogLevel.INFO, message, context);\n  }\n\n  error(message: string, context?: Record<string, unknown>): void {\n    this.log(LogLevel.ERROR, message, context);\n  }\n}"
+    },
+    {
+      "id": 14,
+      "language": "typescript",
+      "content": "import { z } from 'zod';\n\nconst UserSchema = z.object({\n  id: z.number().int().positive(),\n  name: z.string().min(1).max(100),\n  email: z.string().email(),\n  age: z.number().int().min(0).max(150).optional(),\n  roles: z.array(z.enum(['admin', 'user', 'guest'])).default(['user']),\n});\n\ntype User = z.infer<typeof UserSchema>;\n\nexport function validateUser(input: unknown): User {\n  return UserSchema.parse(input);\n}"
+    },
+    {
+      "id": 15,
+      "language": "typescript",
+      "content": "export async function retry<T>(\n  fn: () => Promise<T>,\n  options: { maxAttempts?: number; delayMs?: number; backoff?: number } = {},\n): Promise<T> {\n  const { maxAttempts = 3, delayMs = 1000, backoff = 2 } = options;\n  let lastError: Error | undefined;\n\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await fn();\n    } catch (err) {\n      lastError = err as Error;\n      if (attempt < maxAttempts) {\n        const delay = delayMs * Math.pow(backoff, attempt - 1);\n        await new Promise((resolve) => setTimeout(resolve, delay));\n      }\n    }\n  }\n  throw lastError;\n}"
+    },
+    {
+      "id": 16,
+      "language": "typescript",
+      "content": "interface DatabaseConfig {\n  host: string;\n  port: number;\n  database: string;\n  username: string;\n  password: string;\n  pool: {\n    min: number;\n    max: number;\n    idleTimeoutMillis: number;\n  };\n}\n\nconst config: DatabaseConfig = {\n  host: process.env.DB_HOST ?? 'localhost',\n  port: parseInt(process.env.DB_PORT ?? '5432', 10),\n  database: process.env.DB_NAME ?? 'app',\n  username: process.env.DB_USER ?? 'postgres',\n  password: process.env.DB_PASSWORD ?? '',\n  pool: {\n    min: 2,\n    max: 10,\n    idleTimeoutMillis: 30000,\n  },\n};\nexport default config;"
+    },
+    {
+      "id": 17,
+      "language": "typescript",
+      "content": "class Stack<T> {\n  private items: T[] = [];\n\n  push(item: T): void {\n    this.items.push(item);\n  }\n\n  pop(): T | undefined {\n    return this.items.pop();\n  }\n\n  peek(): T | undefined {\n    return this.items[this.items.length - 1];\n  }\n\n  get size(): number {\n    return this.items.length;\n  }\n\n  isEmpty(): boolean {\n    return this.items.length === 0;\n  }\n\n  clear(): void {\n    this.items = [];\n  }\n}"
+    },
+    {
+      "id": 18,
+      "language": "typescript",
+      "content": "import React, { useState, useEffect } from 'react';\n\ninterface Props {\n  userId: number;\n}\n\nconst UserProfile: React.FC<Props> = ({ userId }) => {\n  const [user, setUser] = useState<User | null>(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    fetchUser(userId).then(setUser).finally(() => setLoading(false));\n  }, [userId]);\n\n  if (loading) return <div>Loading...</div>;\n  if (!user) return <div>User not found</div>;\n  return (\n    <div>\n      <h1>{user.name}</h1>\n      <p>{user.email}</p>\n    </div>\n  );\n};\n\nexport default UserProfile;"
+    },
+    {
+      "id": 19,
+      "language": "python",
+      "content": "def fibonacci(n: int) -> int:\n    \"\"\"Return the nth Fibonacci number.\"\"\"\n    if n < 2:\n        return n\n    a, b = 0, 1\n    for _ in range(n - 1):\n        a, b = b, a + b\n    return b\n\n\ndef is_prime(n: int) -> bool:\n    \"\"\"Check if a number is prime.\"\"\"\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True"
+    },
+    {
+      "id": 20,
+      "language": "python",
+      "content": "from dataclasses import dataclass, field\nfrom typing import List, Optional\nfrom datetime import datetime\n\n\n@dataclass\nclass User:\n    id: int\n    name: str\n    email: str\n    created_at: datetime = field(default_factory=datetime.now)\n    roles: List[str] = field(default_factory=lambda: ['user'])\n    metadata: Optional[dict] = None\n\n    def to_dict(self) -> dict:\n        return {\n            'id': self.id,\n            'name': self.name,\n            'email': self.email,\n            'created_at': self.created_at.isoformat(),\n            'roles': self.roles,\n            'metadata': self.metadata,\n        }"
+    },
+    {
+      "id": 21,
+      "language": "python",
+      "content": "import json\nfrom pathlib import Path\nfrom typing import Any\n\n\ndef read_json(path: Path) -> Any:\n    \"\"\"Read and parse a JSON file.\"\"\"\n    with path.open('r', encoding='utf-8') as f:\n        return json.load(f)\n\n\ndef write_json(path: Path, data: Any) -> None:\n    \"\"\"Write data as indented JSON to a file.\"\"\"\n    path.parent.mkdir(parents=True, exist_ok=True)\n    with path.open('w', encoding='utf-8') as f:\n        json.dump(data, f, indent=2, ensure_ascii=False)"
+    },
+    {
+      "id": 22,
+      "language": "python",
+      "content": "import asyncio\nimport aiohttp\nfrom typing import List, Dict\n\n\nasync def fetch_url(session: aiohttp.ClientSession, url: str) -> Dict:\n    async with session.get(url) as response:\n        response.raise_for_status()\n        return await response.json()\n\n\nasync def fetch_all(urls: List[str]) -> List[Dict]:\n    async with aiohttp.ClientSession() as session:\n        tasks = [fetch_url(session, url) for url in urls]\n        return await asyncio.gather(*tasks)\n\n\nif __name__ == '__main__':\n    urls = ['https://api.example.com/users', 'https://api.example.com/posts']\n    results = asyncio.run(fetch_all(urls))\n    print(results)"
+    },
+    {
+      "id": 23,
+      "language": "python",
+      "content": "class BinarySearchTree:\n    def __init__(self):\n        self.root = None\n\n    def insert(self, value):\n        if self.root is None:\n            self.root = Node(value)\n            return\n        self._insert_recursive(self.root, value)\n\n    def _insert_recursive(self, node, value):\n        if value < node.value:\n            if node.left is None:\n                node.left = Node(value)\n            else:\n                self._insert_recursive(node.left, value)\n        else:\n            if node.right is None:\n                node.right = Node(value)\n            else:\n                self._insert_recursive(node.right, value)"
+    },
+    {
+      "id": 24,
+      "language": "python",
+      "content": "from functools import wraps\nimport time\n\n\ndef timing(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        elapsed = time.perf_counter() - start\n        print(f'{func.__name__} took {elapsed:.4f}s')\n        return result\n    return wrapper\n\n\n@timing\ndef compute_sum(n):\n    return sum(range(n))"
+    },
+    {
+      "id": 25,
+      "language": "python",
+      "content": "import numpy as np\n\n\ndef cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:\n    \"\"\"Compute cosine similarity between two vectors.\"\"\"\n    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))\n\n\ndef euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:\n    \"\"\"Compute Euclidean distance between two vectors.\"\"\"\n    return float(np.linalg.norm(a - b))\n\n\ndef normalize(v: np.ndarray) -> np.ndarray:\n    \"\"\"L2-normalize a vector.\"\"\"\n    norm = np.linalg.norm(v)\n    return v / norm if norm > 0 else v"
+    },
+    {
+      "id": 26,
+      "language": "python",
+      "content": "import logging\nfrom logging.handlers import RotatingFileHandler\n\n\ndef setup_logger(name: str, log_file: str, level: int = logging.INFO) -> logging.Logger:\n    formatter = logging.Formatter(\n        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'\n    )\n    handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)\n    handler.setFormatter(formatter)\n    logger = logging.getLogger(name)\n    logger.setLevel(level)\n    logger.addHandler(handler)\n    return logger"
+    },
+    {
+      "id": 27,
+      "language": "python",
+      "content": "from flask import Flask, request, jsonify\n\napp = Flask(__name__)\n\n\n@app.route('/api/users', methods=['GET'])\ndef list_users():\n    users = get_all_users()\n    return jsonify([u.to_dict() for u in users])\n\n\n@app.route('/api/users/<int:user_id>', methods=['GET'])\ndef get_user(user_id):\n    user = find_user_by_id(user_id)\n    if user is None:\n        return jsonify({'error': 'Not found'}), 404\n    return jsonify(user.to_dict())\n\n\n@app.route('/api/users', methods=['POST'])\ndef create_user():\n    data = request.get_json()\n    user = User(**data)\n    save_user(user)\n    return jsonify(user.to_dict()), 201"
+    },
+    {
+      "id": 28,
+      "language": "python",
+      "content": "import pytest\n\n\n@pytest.fixture\ndef sample_user():\n    return {'id': 1, 'name': 'Alice', 'email': 'alice@example.com'}\n\n\ndef test_user_creation(sample_user):\n    user = User(**sample_user)\n    assert user.id == 1\n    assert user.name == 'Alice'\n\n\ndef test_user_to_dict(sample_user):\n    user = User(**sample_user)\n    result = user.to_dict()\n    assert result['name'] == 'Alice'\n    assert 'created_at' in result"
+    },
+    {
+      "id": 29,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n)\n\nfunc healthHandler(w http.ResponseWriter, r *http.Request) {\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tfmt.Fprintln(w, `{\"status\": \"ok\"}`)\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/health\", healthHandler)\n\tfmt.Println(\"Listening on :8080\")\n\tif err := http.ListenAndServe(\":8080\", nil); err != nil {\n\t\tpanic(err)\n\t}\n}"
+    },
+    {
+      "id": 30,
+      "language": "go",
+      "content": "package user\n\nimport (\n\t\"errors\"\n\t\"time\"\n)\n\ntype User struct {\n\tID        int       `json:\"id\"`\n\tName      string    `json:\"name\"`\n\tEmail     string    `json:\"email\"`\n\tCreatedAt time.Time `json:\"created_at\"`\n}\n\nvar ErrNotFound = errors.New(\"user not found\")\n\nfunc (u *User) Validate() error {\n\tif u.Name == \"\" {\n\t\treturn errors.New(\"name is required\")\n\t}\n\tif u.Email == \"\" {\n\t\treturn errors.New(\"email is required\")\n\t}\n\treturn nil\n}"
+    },
+    {
+      "id": 31,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"sync\"\n)\n\ntype Counter struct {\n\tmu    sync.Mutex\n\tvalue int\n}\n\nfunc (c *Counter) Increment() {\n\tc.mu.Lock()\n\tdefer c.mu.Unlock()\n\tc.value++\n}\n\nfunc (c *Counter) Value() int {\n\tc.mu.Lock()\n\tdefer c.mu.Unlock()\n\treturn c.value\n}"
+    },
+    {
+      "id": 32,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"context\"\n\t\"database/sql\"\n\t\"time\"\n\n\t_ \"github.com/lib/pq\"\n)\n\nfunc newDB(ctx context.Context, dsn string) (*sql.DB, error) {\n\tdb, err := sql.Open(\"postgres\", dsn)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdb.SetMaxOpenConns(25)\n\tdb.SetMaxIdleConns(5)\n\tdb.SetConnMaxLifetime(5 * time.Minute)\n\n\tctx, cancel := context.WithTimeout(ctx, 5*time.Second)\n\tdefer cancel()\n\tif err := db.PingContext(ctx); err != nil {\n\t\treturn nil, err\n\t}\n\treturn db, nil\n}"
+    },
+    {
+      "id": 33,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"io\"\n\t\"net/http\"\n)\n\ntype APIClient struct {\n\tBaseURL string\n\tClient  *http.Client\n}\n\nfunc (c *APIClient) GetUser(id int) (*User, error) {\n\turl := fmt.Sprintf(\"%s/users/%d\", c.BaseURL, id)\n\tresp, err := c.Client.Get(url)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer resp.Body.Close()\n\n\tbody, err := io.ReadAll(resp.Body)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\n\tvar user User\n\tif err := json.Unmarshal(body, &user); err != nil {\n\t\treturn nil, err\n\t}\n\treturn &user, nil\n}"
+    },
+    {
+      "id": 34,
+      "language": "go",
+      "content": "package main\n\nimport \"fmt\"\n\nfunc fibonacci(n int) int {\n\tif n < 2 {\n\t\treturn n\n\t}\n\ta, b := 0, 1\n\tfor i := 2; i <= n; i++ {\n\t\ta, b = b, a+b\n\t}\n\treturn b\n}\n\nfunc main() {\n\tfor i := 0; i < 10; i++ {\n\t\tfmt.Printf(\"fib(%d) = %d\\n\", i, fibonacci(i))\n\t}\n}"
+    },
+    {
+      "id": 35,
+      "language": "go",
+      "content": "package worker\n\nimport (\n\t\"context\"\n\t\"sync\"\n)\n\ntype Pool struct {\n\tworkers int\n\ttasks   chan func()\n\twg      sync.WaitGroup\n}\n\nfunc NewPool(workers int) *Pool {\n\tp := &Pool{\n\t\tworkers: workers,\n\t\ttasks:   make(chan func(), workers*2),\n\t}\n\tfor i := 0; i < workers; i++ {\n\t\tgo p.run()\n\t}\n\treturn p\n}\n\nfunc (p *Pool) run() {\n\tfor task := range p.tasks {\n\t\ttask()\n\t\tp.wg.Done()\n\t}\n}\n\nfunc (p *Pool) Submit(ctx context.Context, task func()) {\n\tp.wg.Add(1)\n\tselect {\n\tcase p.tasks <- task:\n\tcase <-ctx.Done():\n\t\tp.wg.Done()\n\t}\n}\n\nfunc (p *Pool) Wait() {\n\tp.wg.Wait()\n}"
+    },
+    {
+      "id": 36,
+      "language": "rust",
+      "content": "use std::collections::HashMap;\n\n#[derive(Debug, Clone)]\npub struct User {\n    pub id: u64,\n    pub name: String,\n    pub email: String,\n}\n\nimpl User {\n    pub fn new(id: u64, name: String, email: String) -> Self {\n        User { id, name, email }\n    }\n\n    pub fn display(&self) -> String {\n        format!(\"{} <{}>\", self.name, self.email)\n    }\n}"
+    },
+    {
+      "id": 37,
+      "language": "rust",
+      "content": "use std::io::{self, BufRead, Write};\n\nfn main() -> io::Result<()> {\n    let stdin = io::stdin();\n    let stdout = io::stdout();\n    let mut out = stdout.lock();\n\n    for line in stdin.lock().lines() {\n        let line = line?;\n        let trimmed = line.trim();\n        if trimmed.is_empty() {\n            continue;\n        }\n        writeln!(out, \"echo: {}\", trimmed)?;\n    }\n    Ok(())\n}"
+    },
+    {
+      "id": 38,
+      "language": "rust",
+      "content": "#[derive(Debug)]\npub enum Error {\n    NotFound(String),\n    InvalidInput(String),\n    Internal(Box<dyn std::error::Error + Send + Sync>),\n}\n\nimpl std::fmt::Display for Error {\n    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {\n        match self {\n            Error::NotFound(msg) => write!(f, \"not found: {}\", msg),\n            Error::InvalidInput(msg) => write!(f, \"invalid input: {}\", msg),\n            Error::Internal(err) => write!(f, \"internal: {}\", err),\n        }\n    }\n}\n\nimpl std::error::Error for Error {}"
+    },
+    {
+      "id": 39,
+      "language": "rust",
+      "content": "use tokio::net::TcpListener;\nuse tokio::io::{AsyncReadExt, AsyncWriteExt};\n\n#[tokio::main]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let listener = TcpListener::bind(\"127.0.0.1:8080\").await?;\n    loop {\n        let (mut socket, _) = listener.accept().await?;\n        tokio::spawn(async move {\n            let mut buf = [0; 1024];\n            loop {\n                let n = match socket.read(&mut buf).await {\n                    Ok(0) => return,\n                    Ok(n) => n,\n                    Err(_) => return,\n                };\n                if socket.write_all(&buf[..n]).await.is_err() {\n                    return;\n                }\n            }\n        });\n    }\n}"
+    },
+    {
+      "id": 40,
+      "language": "rust",
+      "content": "use std::sync::{Arc, Mutex};\nuse std::thread;\n\nfn main() {\n    let counter = Arc::new(Mutex::new(0));\n    let mut handles = vec![];\n\n    for _ in 0..10 {\n        let counter = Arc::clone(&counter);\n        let handle = thread::spawn(move || {\n            let mut num = counter.lock().unwrap();\n            *num += 1;\n        });\n        handles.push(handle);\n    }\n\n    for handle in handles {\n        handle.join().unwrap();\n    }\n\n    println!(\"Result: {}\", *counter.lock().unwrap());\n}"
+    },
+    {
+      "id": 41,
+      "language": "rust",
+      "content": "#[derive(Debug, PartialEq)]\npub struct Point {\n    pub x: f64,\n    pub y: f64,\n}\n\nimpl Point {\n    pub fn new(x: f64, y: f64) -> Self {\n        Point { x, y }\n    }\n\n    pub fn distance(&self, other: &Point) -> f64 {\n        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()\n    }\n\n    pub fn midpoint(&self, other: &Point) -> Point {\n        Point::new((self.x + other.x) / 2.0, (self.y + other.y) / 2.0)\n    }\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn test_distance() {\n        let p1 = Point::new(0.0, 0.0);\n        let p2 = Point::new(3.0, 4.0);\n        assert_eq!(p1.distance(&p2), 5.0);\n    }\n}"
+    },
+    {
+      "id": 42,
+      "language": "rust",
+      "content": "use serde::{Deserialize, Serialize};\n\n#[derive(Debug, Serialize, Deserialize)]\npub struct Config {\n    pub host: String,\n    pub port: u16,\n    pub database: DatabaseConfig,\n}\n\n#[derive(Debug, Serialize, Deserialize)]\npub struct DatabaseConfig {\n    pub url: String,\n    pub pool_size: u32,\n}\n\nimpl Config {\n    pub fn from_file(path: &str) -> Result<Self, Box<dyn std::error::Error>> {\n        let contents = std::fs::read_to_string(path)?;\n        let config: Config = toml::from_str(&contents)?;\n        Ok(config)\n    }\n}"
+    },
+    {
+      "id": 43,
+      "language": "markdown",
+      "content": "# Project README\n\n## Overview\n\nThis project provides a REST API for managing users, posts, and comments.\nIt uses Node.js, Express, and PostgreSQL.\n\n## Installation\n\n```bash\nnpm install\nnpm run migrate\nnpm start\n```\n\n## API Endpoints\n\n- `GET /api/users` — list all users\n- `POST /api/users` — create a user\n- `GET /api/users/:id` — get a user by ID\n- `PUT /api/users/:id` — update a user\n- `DELETE /api/users/:id` — delete a user\n\n## License\n\nMIT"
+    },
+    {
+      "id": 44,
+      "language": "markdown",
+      "content": "## Architecture Overview\n\nThe system is organized into three main layers:\n\n1. **API Layer** — handles HTTP requests and responses\n2. **Service Layer** — implements business logic\n3. **Data Layer** — persists data to the database\n\nEach layer is independently testable and follows the dependency inversion\nprinciple. The API layer depends on service interfaces, not concrete\nimplementations. Services depend on repository interfaces, not concrete\ndatabase clients.\n\n### Data Flow\n\nRequests flow downward: API → Service → Repository → Database.\nResponses flow upward: Database → Repository → Service → API."
+    },
+    {
+      "id": 45,
+      "language": "markdown",
+      "content": "# Contributing Guide\n\nThank you for considering contributing to this project. Please follow the\nsteps below to submit a pull request.\n\n## Development Setup\n\n1. Fork the repository\n2. Clone your fork locally\n3. Create a feature branch: `git checkout -b feature/my-feature`\n4. Install dependencies: `npm install`\n5. Run tests: `npm test`\n\n## Commit Messages\n\nWe follow the Conventional Commits specification. Your commit messages\nshould be structured as follows:\n\n```\n<type>(<scope>): <short summary>\n\n<body>\n\n<footer>\n```\n\nTypes: feat, fix, docs, style, refactor, test, chore"
+    },
+    {
+      "id": 46,
+      "language": "markdown",
+      "content": "## Testing Strategy\n\nThis project has four levels of tests:\n\n- **Unit tests**: fast, isolated, mock external dependencies. Run with\n  `npm run test:unit`.\n- **Integration tests**: exercise the full stack against a test database.\n  Run with `npm run test:integration`.\n- **End-to-end tests**: exercise the deployed system through the public API.\n  Run with `npm run test:e2e`.\n- **Performance tests**: measure throughput and latency under load.\n\nTarget coverage: 80% lines, 70% branches. CI fails builds below threshold."
+    },
+    {
+      "id": 47,
+      "language": "yaml",
+      "content": "name: CI\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node-version: [18.x, 20.x, 22.x]\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: ${{ matrix.node-version }}\n          cache: npm\n      - run: npm ci\n      - run: npm test\n      - run: npm run lint\n"
+    },
+    {
+      "id": 48,
+      "language": "shell",
+      "content": "#!/usr/bin/env bash\nset -euo pipefail\n\n# Deploy script for production environment\nENVIRONMENT=\"${1:-staging}\"\nVERSION=\"${2:-latest}\"\n\nif [[ \"$ENVIRONMENT\" != \"staging\" && \"$ENVIRONMENT\" != \"production\" ]]; then\n  echo \"Error: environment must be 'staging' or 'production'\" >&2\n  exit 1\n fi\n\necho \"Deploying $VERSION to $ENVIRONMENT...\"\n\ndocker build -t myapp:\"$VERSION\" .\ndocker tag myapp:\"$VERSION\" registry.example.com/myapp:\"$VERSION\"\ndocker push registry.example.com/myapp:\"$VERSION\"\nkubectl apply -f k8s/\"$ENVIRONMENT\".yaml\nkubectl rollout status deployment/myapp -n \"$ENVIRONMENT\""
+    },
+    {
+      "id": 49,
+      "language": "javascript",
+      "content": "export function parseQueryString(str) {\n  const params = {};\n  const pairs = str.replace(/^\\?/, '').split('&');\n  for (const pair of pairs) {\n    if (!pair) continue;\n    const [key, value = ''] = pair.split('=');\n    params[decodeURIComponent(key)] = decodeURIComponent(value);\n  }\n  return params;\n}\n\nexport function stringifyQuery(params) {\n  return Object.entries(params)\n    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)\n    .join('&');\n}"
+    },
+    {
+      "id": 50,
+      "language": "javascript",
+      "content": "function levenshtein(a, b) {\n  const m = a.length;\n  const n = b.length;\n  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));\n  for (let i = 0; i <= m; i++) dp[i][0] = i;\n  for (let j = 0; j <= n; j++) dp[0][j] = j;\n  for (let i = 1; i <= m; i++) {\n    for (let j = 1; j <= n; j++) {\n      const cost = a[i - 1] === b[j - 1] ? 0 : 1;\n      dp[i][j] = Math.min(\n        dp[i - 1][j] + 1,\n        dp[i][j - 1] + 1,\n        dp[i - 1][j - 1] + cost,\n      );\n    }\n  }\n  return dp[m][n];\n}"
+    },
+    {
+      "id": 51,
+      "language": "javascript",
+      "content": "class LRUCache {\n  constructor(capacity) {\n    this.capacity = capacity;\n    this.cache = new Map();\n  }\n\n  get(key) {\n    if (!this.cache.has(key)) return undefined;\n    const value = this.cache.get(key);\n    this.cache.delete(key);\n    this.cache.set(key, value);\n    return value;\n  }\n\n  set(key, value) {\n    if (this.cache.has(key)) {\n      this.cache.delete(key);\n    } else if (this.cache.size >= this.capacity) {\n      const firstKey = this.cache.keys().next().value;\n      this.cache.delete(firstKey);\n    }\n    this.cache.set(key, value);\n  }\n}"
+    },
+    {
+      "id": 52,
+      "language": "javascript",
+      "content": "import { Router } from 'express';\nimport { authenticate } from './middleware/auth.js';\nimport { validate } from './middleware/validate.js';\nimport { userSchema } from './schemas/user.js';\n\nconst router = Router();\n\nrouter.use(authenticate);\n\nrouter.get('/', async (req, res, next) => {\n  try {\n    const users = await userService.list();\n    res.json(users);\n  } catch (err) {\n    next(err);\n  }\n});\n\nrouter.post('/', validate(userSchema), async (req, res, next) => {\n  try {\n    const user = await userService.create(req.body);\n    res.status(201).json(user);\n  } catch (err) {\n    next(err);\n  }\n});\n\nexport default router;"
+    },
+    {
+      "id": 53,
+      "language": "typescript",
+      "content": "import { EventEmitter } from 'events';\n\nexport interface Job<T = unknown> {\n  id: string;\n  type: string;\n  payload: T;\n  attempts: number;\n  createdAt: Date;\n}\n\nexport class JobQueue extends EventEmitter {\n  private jobs: Job[] = [];\n  private processing = false;\n\n  enqueue<T>(type: string, payload: T): void {\n    const job: Job<T> = {\n      id: crypto.randomUUID(),\n      type,\n      payload,\n      attempts: 0,\n      createdAt: new Date(),\n    };\n    this.jobs.push(job);\n    this.emit('enqueued', job);\n    this.process();\n  }\n\n  private async process(): Promise<void> {\n    if (this.processing || this.jobs.length === 0) return;\n    this.processing = true;\n    const job = this.jobs.shift()!;\n    try {\n      this.emit('processing', job);\n      await this.handle(job);\n      this.emit('done', job);\n    } catch (err) {\n      this.emit('failed', job, err);\n    } finally {\n      this.processing = false;\n      this.process();\n    }\n  }\n\n  private async handle(job: Job): Promise<void> {\n    throw new Error('Must override handle()');\n  }\n}"
+    },
+    {
+      "id": 54,
+      "language": "python",
+      "content": "from typing import Callable, TypeVar, Generic\n\nT = TypeVar('T')\nU = TypeVar('U')\n\n\nclass Maybe(Generic[T]):\n    def __init__(self, value: T = None):\n        self._value = value\n\n    def is_just(self) -> bool:\n        return self._value is not None\n\n    def is_nothing(self) -> bool:\n        return self._value is None\n\n    def map(self, f: Callable[[T], U]) -> 'Maybe[U]':\n        if self.is_nothing():\n            return Maybe()\n        return Maybe(f(self._value))\n\n    def get_or_else(self, default: T) -> T:\n        return self._value if self.is_just() else default"
+    },
+    {
+      "id": 55,
+      "language": "python",
+      "content": "from abc import ABC, abstractmethod\nfrom typing import List\n\n\nclass Observer(ABC):\n    @abstractmethod\n    def update(self, event: str, data: dict) -> None:\n        pass\n\n\nclass Subject:\n    def __init__(self):\n        self._observers: List[Observer] = []\n\n    def attach(self, observer: Observer) -> None:\n        self._observers.append(observer)\n\n    def detach(self, observer: Observer) -> None:\n        self._observers.remove(observer)\n\n    def notify(self, event: str, data: dict) -> None:\n        for observer in self._observers:\n            observer.update(event, data)"
+    },
+    {
+      "id": 56,
+      "language": "python",
+      "content": "import re\nfrom typing import Optional\n\n\nEMAIL_REGEX = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')\nPHONE_REGEX = re.compile(r'^\\+?[1-9]\\d{1,14}$')\n\n\ndef validate_email(email: str) -> bool:\n    return bool(EMAIL_REGEX.match(email))\n\n\ndef validate_phone(phone: str) -> bool:\n    cleaned = re.sub(r'[\\s\\-()]', '', phone)\n    return bool(PHONE_REGEX.match(cleaned))\n\n\ndef normalize_phone(phone: str) -> Optional[str]:\n    cleaned = re.sub(r'[\\s\\-()]', '', phone)\n    if not validate_phone(cleaned):\n        return None\n    if not cleaned.startswith('+'):\n        cleaned = '+1' + cleaned\n    return cleaned"
+    },
+    {
+      "id": 57,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"errors\"\n\t\"log\"\n)\n\ntype Stack struct {\n\titems []int\n}\n\nfunc (s *Stack) Push(item int) {\n\ts.items = append(s.items, item)\n}\n\nfunc (s *Stack) Pop() (int, error) {\n\tif len(s.items) == 0 {\n\t\treturn 0, errors.New(\"stack is empty\")\n\t}\n\tlast := s.items[len(s.items)-1]\n\ts.items = s.items[:len(s.items)-1]\n\treturn last, nil\n}\n\nfunc (s *Stack) Size() int {\n\treturn len(s.items)\n}\n\nfunc main() {\n\ts := &Stack{}\n\ts.Push(1)\n\ts.Push(2)\n\tlog.Println(s.Size())\n}"
+    },
+    {
+      "id": 58,
+      "language": "go",
+      "content": "package middleware\n\nimport (\n\t\"net/http\"\n\t\"time\"\n)\n\nfunc LoggingMiddleware(next http.Handler) http.Handler {\n\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n\t\tstart := time.Now()\n\t\tnext.ServeHTTP(w, r)\n\t\tdur := time.Since(start)\n\t\tlog.Printf(\"%s %s %s\", r.Method, r.URL.Path, dur)\n\t})\n}\n\nfunc CORSMiddleware(next http.Handler) http.Handler {\n\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {\n\t\tw.Header().Set(\"Access-Control-Allow-Origin\", \"*\")\n\t\tw.Header().Set(\"Access-Control-Allow-Methods\", \"GET, POST, PUT, DELETE\")\n\t\tif r.Method == http.MethodOptions {\n\t\t\treturn\n\t\t}\n\t\tnext.ServeHTTP(w, r)\n\t})\n}"
+    },
+    {
+      "id": 59,
+      "language": "rust",
+      "content": "use std::collections::VecDeque;\n\npub struct CircularBuffer<T> {\n    buffer: VecDeque<T>,\n    capacity: usize,\n}\n\nimpl<T> CircularBuffer<T> {\n    pub fn new(capacity: usize) -> Self {\n        CircularBuffer {\n            buffer: VecDeque::with_capacity(capacity),\n            capacity,\n        }\n    }\n\n    pub fn push(&mut self, item: T) {\n        if self.buffer.len() == self.capacity {\n            self.buffer.pop_front();\n        }\n        self.buffer.push_back(item);\n    }\n\n    pub fn len(&self) -> usize {\n        self.buffer.len()\n    }\n}"
+    },
+    {
+      "id": 60,
+      "language": "rust",
+      "content": "pub trait Animal {\n    fn name(&self) -> &str;\n    fn sound(&self) -> String;\n\n    fn introduce(&self) -> String {\n        format!(\"I am {} and I say {}\", self.name(), self.sound())\n    }\n}\n\npub struct Dog {\n    name: String,\n}\n\nimpl Animal for Dog {\n    fn name(&self) -> &str {\n        &self.name\n    }\n\n    fn sound(&self) -> String {\n        String::from(\"woof\")\n    }\n}\n\npub struct Cat {\n    name: String,\n}\n\nimpl Animal for Cat {\n    fn name(&self) -> &str {\n        &self.name\n    }\n\n    fn sound(&self) -> String {\n        String::from(\"meow\")\n    }\n}"
+    },
+    {
+      "id": 61,
+      "language": "javascript",
+      "content": "export function deepClone(obj) {\n  if (obj === null || typeof obj !== 'object') return obj;\n  if (obj instanceof Date) return new Date(obj.getTime());\n  if (obj instanceof Array) return obj.map(deepClone);\n  if (obj instanceof Map) return new Map(Array.from(obj, ([k, v]) => [k, deepClone(v)]));\n  if (obj instanceof Set) return new Set(Array.from(obj, deepClone));\n  const cloned = {};\n  for (const key of Object.keys(obj)) {\n    cloned[key] = deepClone(obj[key]);\n  }\n  return cloned;\n}"
+    },
+    {
+      "id": 62,
+      "language": "javascript",
+      "content": "const os = require('os');\nconst cluster = require('cluster');\n\nif (cluster.isPrimary) {\n  const numWorkers = os.cpus().length;\n  console.log(`Primary ${process.pid} is running`);\n\n  for (let i = 0; i < numWorkers; i++) {\n    cluster.fork();\n  }\n\n  cluster.on('exit', (worker) => {\n    console.log(`Worker ${worker.process.pid} died, forking replacement`);\n    cluster.fork();\n  });\n} else {\n  require('./server.js');\n  console.log(`Worker ${process.pid} started`);\n}"
+    },
+    {
+      "id": 63,
+      "language": "typescript",
+      "content": "import { pipe } from 'fp-ts/function';\nimport * as TE from 'fp-ts/TaskEither';\n\ntype AppError = { code: string; message: string };\n\nconst fetchUser = (id: number): TE.TaskEither<AppError, User> =>\n  TE.tryCatch(\n    () => fetch(`/api/users/${id}`).then(r => r.json()),\n    (reason) => ({ code: 'FETCH_ERROR', message: String(reason) })\n  );\n\nconst enrichUser = (user: User): TE.TaskEither<AppError, EnrichedUser> =>\n  TE.tryCatch(\n    () => enrichmentService.enrich(user),\n    (reason) => ({ code: 'ENRICH_ERROR', message: String(reason) })\n  );\n\nconst program = (id: number): TE.TaskEither<AppError, EnrichedUser> =>\n  pipe(fetchUser(id), TE.chain(enrichUser));"
+    },
+    {
+      "id": 64,
+      "language": "typescript",
+      "content": "import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';\n\nexport function useUser(id: number) {\n  return useQuery({\n    queryKey: ['user', id],\n    queryFn: () => fetchUser(id),\n    staleTime: 5 * 60 * 1000,\n    retry: 3,\n  });\n}\n\nexport function useUpdateUser() {\n  const queryClient = useQueryClient();\n  return useMutation({\n    mutationFn: (user: User) => updateUser(user),\n    onSuccess: (data) => {\n      queryClient.setQueryData(['user', data.id], data);\n      queryClient.invalidateQueries({ queryKey: ['users'] });\n    },\n  });\n}"
+    },
+    {
+      "id": 65,
+      "language": "python",
+      "content": "import pandas as pd\nimport numpy as np\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import classification_report\n\n\ndef train_model(data_path: str):\n    df = pd.read_csv(data_path)\n    X = df.drop('target', axis=1)\n    y = df['target']\n    X_train, X_test, y_train, y_test = train_test_split(\n        X, y, test_size=0.2, random_state=42, stratify=y\n    )\n    model = RandomForestClassifier(n_estimators=100, random_state=42)\n    model.fit(X_train, y_train)\n    y_pred = model.predict(X_test)\n    print(classification_report(y_test, y_pred))\n    return model"
+    },
+    {
+      "id": 66,
+      "language": "python",
+      "content": "from contextlib import contextmanager\nimport sqlite3\n\n\n@contextmanager\ndef database(path: str):\n    conn = sqlite3.connect(path)\n    conn.row_factory = sqlite3.Row\n    try:\n        yield conn\n        conn.commit()\n    except Exception:\n        conn.rollback()\n        raise\n    finally:\n        conn.close()\n\n\ndef get_user(user_id: int) -> dict:\n    with database('app.db') as conn:\n        cursor = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,))\n        row = cursor.fetchone()\n        return dict(row) if row else None"
+    },
+    {
+      "id": 67,
+      "language": "go",
+      "content": "package cache\n\nimport (\n\t\"sync\"\n\t\"time\"\n)\n\ntype entry struct {\n\tvalue     interface{}\n\texpiresAt time.Time\n}\n\ntype Cache struct {\n\tmu   sync.RWMutex\n\tdata map[string]entry\n\tttl  time.Duration\n}\n\nfunc New(ttl time.Duration) *Cache {\n\treturn &Cache{\n\t\tdata: make(map[string]entry),\n\t\tttl:  ttl,\n\t}\n}\n\nfunc (c *Cache) Set(key string, value interface{}) {\n\tc.mu.Lock()\n\tdefer c.mu.Unlock()\n\tc.data[key] = entry{value: value, expiresAt: time.Now().Add(c.ttl)}\n}\n\nfunc (c *Cache) Get(key string) (interface{}, bool) {\n\tc.mu.RLock()\n\tdefer c.mu.RUnlock()\n\tentry, ok := c.data[key]\n\tif !ok || time.Now().After(entry.expiresAt) {\n\t\treturn nil, false\n\t}\n\treturn entry.value, true\n}"
+    },
+    {
+      "id": 68,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"os\"\n)\n\nvar (\n\tinputPath  = flag.String(\"input\", \"\", \"input file path\")\n\toutputPath = flag.String(\"output\", \"\", \"output file path\")\n\tverbose    = flag.Bool(\"verbose\", false, \"enable verbose logging\")\n)\n\nfunc main() {\n\tflag.Parse()\n\n\tif *inputPath == \"\" {\n\t\tfmt.Fprintln(os.Stderr, \"Error: --input is required\")\n\t\tos.Exit(1)\n\t}\n\n\tif err := process(*inputPath, *outputPath, *verbose); err != nil {\n\t\tfmt.Fprintf(os.Stderr, \"Error: %v\\n\", err)\n\t\tos.Exit(1)\n\t}\n}"
+    },
+    {
+      "id": 69,
+      "language": "rust",
+      "content": "use clap::Parser;\nuse std::path::PathBuf;\n\n#[derive(Parser, Debug)]\n#[command(version, about)]\nstruct Args {\n    #[arg(short, long)]\n    input: PathBuf,\n\n    #[arg(short, long, default_value = \"output.txt\")]\n    output: PathBuf,\n\n    #[arg(short, long, default_value_t = false)]\n    verbose: bool,\n}\n\nfn main() -> anyhow::Result<()> {\n    let args = Args::parse();\n    if args.verbose {\n        println!(\"Processing {:?} -> {:?}\", args.input, args.output);\n    }\n    let contents = std::fs::read_to_string(&args.input)?;\n    let processed = contents.to_uppercase();\n    std::fs::write(&args.output, processed)?;\n    Ok(())\n}"
+    },
+    {
+      "id": 70,
+      "language": "rust",
+      "content": "use std::collections::HashMap;\nuse std::sync::RwLock;\n\npub struct KVStore {\n    data: RwLock<HashMap<String, String>>,\n}\n\nimpl KVStore {\n    pub fn new() -> Self {\n        KVStore {\n            data: RwLock::new(HashMap::new()),\n        }\n    }\n\n    pub fn set(&self, key: String, value: String) {\n        let mut data = self.data.write().unwrap();\n        data.insert(key, value);\n    }\n\n    pub fn get(&self, key: &str) -> Option<String> {\n        let data = self.data.read().unwrap();\n        data.get(key).cloned()\n    }\n\n    pub fn delete(&self, key: &str) -> bool {\n        let mut data = self.data.write().unwrap();\n        data.remove(key).is_some()\n    }\n}"
+    },
+    {
+      "id": 71,
+      "language": "markdown",
+      "content": "## Design Principles\n\nThis codebase follows several core principles that guide implementation\ndecisions throughout the project.\n\n### SOLID\n\n- **S**ingle Responsibility: each module does one thing well\n- **O**pen/Closed: code is open for extension, closed for modification\n- **L**iskov Substitution: subtypes must honor their parent's contract\n- **I**nterface Segregation: prefer small, focused interfaces\n- **D**ependency Inversion: depend on abstractions, not concretions\n\n### DRY, KISS, YAGNI\n\n- Don't Repeat Yourself — extract shared logic\n- Keep It Simple, Stupid — prefer obvious code\n- You Aren't Gonna Need It — don't speculate on future requirements"
+    },
+    {
+      "id": 72,
+      "language": "markdown",
+      "content": "# Security Guidelines\n\nAll user input must be validated before processing. Secrets must never be\ncommitted to version control; use environment variables or a secret\nmanager (e.g., AWS Secrets Manager, HashiCorp Vault).\n\n## Common vulnerabilities to avoid\n\n- **SQL Injection**: use parameterized queries, not string concatenation\n- **XSS**: escape all user-provided data before rendering in HTML\n- **CSRF**: use CSRF tokens on state-changing requests\n- **Path Traversal**: validate and normalize file paths, reject `..`\n- **SSRF**: validate URLs and restrict outbound network access"
+    },
+    {
+      "id": 73,
+      "language": "javascript",
+      "content": "export async function* streamLines(readable) {\n  const decoder = new TextDecoder('utf-8');\n  let buffer = '';\n  for await (const chunk of readable) {\n    buffer += decoder.decode(chunk, { stream: true });\n    const lines = buffer.split('\\n');\n    buffer = lines.pop() ?? '';\n    for (const line of lines) {\n      yield line;\n    }\n  }\n  buffer += decoder.decode();\n  if (buffer.length > 0) {\n    yield buffer;\n  }\n}"
+    },
+    {
+      "id": 74,
+      "language": "javascript",
+      "content": "class RateLimiter {\n  constructor(maxRequests, windowMs) {\n    this.maxRequests = maxRequests;\n    this.windowMs = windowMs;\n    this.requests = new Map();\n  }\n\n  isAllowed(key) {\n    const now = Date.now();\n    const timestamps = this.requests.get(key) || [];\n    const recent = timestamps.filter(t => t > now - this.windowMs);\n    if (recent.length >= this.maxRequests) {\n      return false;\n    }\n    recent.push(now);\n    this.requests.set(key, recent);\n    return true;\n  }\n}"
+    },
+    {
+      "id": 75,
+      "language": "typescript",
+      "content": "export class StateMachine<S extends string, E extends string> {\n  private state: S;\n  private readonly transitions: Map<string, S>;\n  private readonly listeners: Map<S, Array<() => void>>;\n\n  constructor(initial: S, transitions: Array<{ from: S; event: E; to: S }>) {\n    this.state = initial;\n    this.transitions = new Map();\n    this.listeners = new Map();\n    for (const { from, event, to } of transitions) {\n      this.transitions.set(`${from}:${event}`, to);\n    }\n  }\n\n  send(event: E): boolean {\n    const next = this.transitions.get(`${this.state}:${event}`);\n    if (next === undefined) return false;\n    this.state = next;\n    const listeners = this.listeners.get(next) ?? [];\n    for (const listener of listeners) listener();\n    return true;\n  }\n\n  current(): S {\n    return this.state;\n  }\n\n  onEnter(state: S, listener: () => void): void {\n    if (!this.listeners.has(state)) {\n      this.listeners.set(state, []);\n    }\n    this.listeners.get(state)!.push(listener);\n  }\n}"
+    },
+    {
+      "id": 76,
+      "language": "python",
+      "content": "import asyncio\nfrom typing import AsyncIterator\n\n\nclass AsyncQueue:\n    def __init__(self, maxsize: int = 0):\n        self._queue = asyncio.Queue(maxsize)\n        self._closed = False\n\n    async def put(self, item) -> None:\n        if self._closed:\n            raise RuntimeError('queue is closed')\n        await self._queue.put(item)\n\n    async def get(self):\n        return await self._queue.get()\n\n    def close(self) -> None:\n        self._closed = True\n\n    async def drain(self) -> AsyncIterator:\n        while not self._queue.empty():\n            yield await self._queue.get()"
+    },
+    {
+      "id": 77,
+      "language": "python",
+      "content": "from typing import Protocol, runtime_checkable\n\n\n@runtime_checkable\nclass Drawable(Protocol):\n    def draw(self, canvas) -> None: ...\n\n\n@runtime_checkable\nclass Resizable(Protocol):\n    def resize(self, width: int, height: int) -> None: ...\n\n\nclass Widget:\n    def __init__(self, width, height):\n        self.width = width\n        self.height = height\n\n    def draw(self, canvas):\n        canvas.fill_rect(0, 0, self.width, self.height)\n\n    def resize(self, width, height):\n        self.width = width\n        self.height = height"
+    },
+    {
+      "id": 78,
+      "language": "go",
+      "content": "package ratelimit\n\nimport (\n\t\"sync\"\n\t\"time\"\n)\n\ntype TokenBucket struct {\n\tmu         sync.Mutex\n\ttokens     float64\n\tcapacity   float64\n\trefillRate float64\n\tlastRefill time.Time\n}\n\nfunc NewTokenBucket(capacity, refillRate float64) *TokenBucket {\n\treturn &TokenBucket{\n\t\ttokens:     capacity,\n\t\tcapacity:   capacity,\n\t\trefillRate: refillRate,\n\t\tlastRefill: time.Now(),\n\t}\n}\n\nfunc (tb *TokenBucket) Allow() bool {\n\ttb.mu.Lock()\n\tdefer tb.mu.Unlock()\n\tnow := time.Now()\n\telapsed := now.Sub(tb.lastRefill).Seconds()\n\ttb.tokens = min(tb.capacity, tb.tokens+elapsed*tb.refillRate)\n\ttb.lastRefill = now\n\tif tb.tokens < 1 {\n\t\treturn false\n\t}\n\ttb.tokens--\n\treturn true\n}"
+    },
+    {
+      "id": 79,
+      "language": "rust",
+      "content": "use std::time::{Duration, Instant};\n\npub struct ExponentialBackoff {\n    current: Duration,\n    max: Duration,\n    factor: f64,\n}\n\nimpl ExponentialBackoff {\n    pub fn new(initial: Duration, max: Duration) -> Self {\n        ExponentialBackoff {\n            current: initial,\n            max,\n            factor: 2.0,\n        }\n    }\n\n    pub fn next(&mut self) -> Duration {\n        let current = self.current;\n        let next_secs = (current.as_secs_f64() * self.factor).min(self.max.as_secs_f64());\n        self.current = Duration::from_secs_f64(next_secs);\n        current\n    }\n\n    pub fn reset(&mut self, initial: Duration) {\n        self.current = initial;\n    }\n}"
+    },
+    {
+      "id": 80,
+      "language": "rust",
+      "content": "use async_trait::async_trait;\n\n#[async_trait]\npub trait Repository<T: Send> {\n    async fn find_by_id(&self, id: u64) -> Result<Option<T>, Error>;\n    async fn find_all(&self) -> Result<Vec<T>, Error>;\n    async fn save(&self, entity: &T) -> Result<(), Error>;\n    async fn delete(&self, id: u64) -> Result<bool, Error>;\n}\n\npub struct PostgresUserRepository {\n    pool: sqlx::PgPool,\n}\n\n#[async_trait]\nimpl Repository<User> for PostgresUserRepository {\n    async fn find_by_id(&self, id: u64) -> Result<Option<User>, Error> {\n        let row = sqlx::query_as::<_, User>(\"SELECT * FROM users WHERE id = $1\")\n            .bind(id as i64)\n            .fetch_optional(&self.pool)\n            .await?;\n        Ok(row)\n    }\n}"
+    },
+    {
+      "id": 81,
+      "language": "javascript",
+      "content": "function binarySearch(arr, target) {\n  let left = 0;\n  let right = arr.length - 1;\n  while (left <= right) {\n    const mid = Math.floor((left + right) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}"
+    },
+    {
+      "id": 82,
+      "language": "javascript",
+      "content": "export const fetchWithTimeout = async (url, options = {}, timeoutMs = 5000) => {\n  const controller = new AbortController();\n  const id = setTimeout(() => controller.abort(), timeoutMs);\n  try {\n    const response = await fetch(url, { ...options, signal: controller.signal });\n    if (!response.ok) {\n      throw new Error(`HTTP ${response.status}`);\n    }\n    return await response.json();\n  } finally {\n    clearTimeout(id);\n  }\n};"
+    },
+    {
+      "id": 83,
+      "language": "javascript",
+      "content": "const crypto = require('crypto');\n\nfunction generateSalt(length = 16) {\n  return crypto.randomBytes(length).toString('hex');\n}\n\nfunction hashPassword(password, salt) {\n  return crypto\n    .pbkdf2Sync(password, salt, 100000, 64, 'sha512')\n    .toString('hex');\n}\n\nfunction verifyPassword(password, salt, expectedHash) {\n  const actualHash = hashPassword(password, salt);\n  return crypto.timingSafeEqual(\n    Buffer.from(actualHash, 'hex'),\n    Buffer.from(expectedHash, 'hex')\n  );\n}"
+    },
+    {
+      "id": 84,
+      "language": "typescript",
+      "content": "export interface Middleware<Req, Res> {\n  (req: Req, res: Res, next: () => Promise<void>): Promise<void>;\n}\n\nexport class MiddlewareChain<Req, Res> {\n  private readonly middlewares: Middleware<Req, Res>[] = [];\n\n  use(middleware: Middleware<Req, Res>): this {\n    this.middlewares.push(middleware);\n    return this;\n  }\n\n  async run(req: Req, res: Res): Promise<void> {\n    const dispatch = async (i: number): Promise<void> => {\n      if (i >= this.middlewares.length) return;\n      await this.middlewares[i](req, res, () => dispatch(i + 1));\n    };\n    await dispatch(0);\n  }\n}"
+    },
+    {
+      "id": 85,
+      "language": "python",
+      "content": "from typing import Iterator\n\n\ndef chunks(iterable, size: int) -> Iterator:\n    \"\"\"Yield successive chunks of a given size from an iterable.\"\"\"\n    buffer = []\n    for item in iterable:\n        buffer.append(item)\n        if len(buffer) >= size:\n            yield buffer\n            buffer = []\n    if buffer:\n        yield buffer\n\n\ndef flatten(nested):\n    \"\"\"Flatten a nested iterable by one level.\"\"\"\n    for item in nested:\n        if isinstance(item, (list, tuple)):\n            yield from item\n        else:\n            yield item"
+    },
+    {
+      "id": 86,
+      "language": "python",
+      "content": "from datetime import datetime, timedelta\nfrom typing import Optional\nimport jwt\n\n\ndef create_token(user_id: int, secret: str, expires_in: int = 3600) -> str:\n    payload = {\n        'user_id': user_id,\n        'iat': datetime.utcnow(),\n        'exp': datetime.utcnow() + timedelta(seconds=expires_in),\n    }\n    return jwt.encode(payload, secret, algorithm='HS256')\n\n\ndef verify_token(token: str, secret: str) -> Optional[int]:\n    try:\n        payload = jwt.decode(token, secret, algorithms=['HS256'])\n        return payload.get('user_id')\n    except jwt.InvalidTokenError:\n        return None"
+    },
+    {
+      "id": 87,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"bufio\"\n\t\"fmt\"\n\t\"os\"\n\t\"strings\"\n)\n\nfunc wordCount(path string) (map[string]int, error) {\n\tfile, err := os.Open(path)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\tdefer file.Close()\n\n\tcounts := make(map[string]int)\n\tscanner := bufio.NewScanner(file)\n\tscanner.Split(bufio.ScanWords)\n\tfor scanner.Scan() {\n\t\tword := strings.ToLower(scanner.Text())\n\t\tcounts[word]++\n\t}\n\tif err := scanner.Err(); err != nil {\n\t\treturn nil, err\n\t}\n\treturn counts, nil\n}"
+    },
+    {
+      "id": 88,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"context\"\n\t\"errors\"\n\t\"time\"\n)\n\nfunc withRetry(ctx context.Context, fn func() error, maxAttempts int) error {\n\tvar lastErr error\n\tbackoff := 100 * time.Millisecond\n\n\tfor attempt := 1; attempt <= maxAttempts; attempt++ {\n\t\tif err := fn(); err == nil {\n\t\t\treturn nil\n\t\t} else {\n\t\t\tlastErr = err\n\t\t}\n\n\t\tselect {\n\t\tcase <-ctx.Done():\n\t\t\treturn ctx.Err()\n\t\tcase <-time.After(backoff):\n\t\t\tbackoff *= 2\n\t\t}\n\t}\n\treturn errors.New(\"max attempts reached: \" + lastErr.Error())\n}"
+    },
+    {
+      "id": 89,
+      "language": "rust",
+      "content": "use std::fs::File;\nuse std::io::{self, BufRead, BufReader};\nuse std::path::Path;\n\npub fn read_lines<P: AsRef<Path>>(path: P) -> io::Result<Vec<String>> {\n    let file = File::open(path)?;\n    let reader = BufReader::new(file);\n    reader.lines().collect()\n}\n\npub fn count_words(text: &str) -> usize {\n    text.split_whitespace().count()\n}\n\npub fn reverse_words(text: &str) -> String {\n    text.split_whitespace()\n        .rev()\n        .collect::<Vec<_>>()\n        .join(\" \")\n}"
+    },
+    {
+      "id": 90,
+      "language": "rust",
+      "content": "use std::sync::mpsc;\nuse std::thread;\nuse std::time::Duration;\n\nfn main() {\n    let (tx, rx) = mpsc::channel();\n\n    for i in 0..5 {\n        let tx = tx.clone();\n        thread::spawn(move || {\n            thread::sleep(Duration::from_millis(i * 100));\n            tx.send(format!(\"Message from thread {}\", i)).unwrap();\n        });\n    }\n    drop(tx);\n\n    for received in rx {\n        println!(\"Received: {}\", received);\n    }\n}"
+    },
+    {
+      "id": 91,
+      "language": "markdown",
+      "content": "## Configuration\n\nThe application reads configuration from three sources, in order of\nprecedence (highest first):\n\n1. Command-line flags\n2. Environment variables\n3. Config file at `~/.config/myapp/config.toml`\n\nMissing keys fall through to the next layer; all keys have sensible\ndefaults so the application starts even with no configuration.\n\n### Environment variables\n\n- `MYAPP_HOST` — server hostname (default: `localhost`)\n- `MYAPP_PORT` — server port (default: `8080`)\n- `MYAPP_LOG_LEVEL` — log level: debug, info, warn, error (default: `info`)"
+    },
+    {
+      "id": 92,
+      "language": "javascript",
+      "content": "export function createStore(reducer, initialState) {\n  let state = initialState;\n  const listeners = [];\n\n  const getState = () => state;\n\n  const dispatch = (action) => {\n    state = reducer(state, action);\n    for (const listener of listeners) {\n      listener(state);\n    }\n  };\n\n  const subscribe = (listener) => {\n    listeners.push(listener);\n    return () => {\n      const idx = listeners.indexOf(listener);\n      if (idx !== -1) listeners.splice(idx, 1);\n    };\n  };\n\n  return { getState, dispatch, subscribe };\n}"
+    },
+    {
+      "id": 93,
+      "language": "typescript",
+      "content": "export type DeepReadonly<T> = {\n  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];\n};\n\nexport type DeepPartial<T> = {\n  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];\n};\n\nexport type Nullable<T> = T | null;\nexport type AsyncResult<T> = Promise<{ ok: true; data: T } | { ok: false; error: string }>;\n\nexport type Entries<T> = { [K in keyof T]: [K, T[K]] }[keyof T][];\nexport function entries<T extends object>(obj: T): Entries<T> {\n  return Object.entries(obj) as Entries<T>;\n}"
+    },
+    {
+      "id": 94,
+      "language": "python",
+      "content": "from collections import deque\n\n\nclass Graph:\n    def __init__(self):\n        self.adjacency = {}\n\n    def add_edge(self, u, v):\n        self.adjacency.setdefault(u, []).append(v)\n        self.adjacency.setdefault(v, []).append(u)\n\n    def bfs(self, start):\n        visited = {start}\n        queue = deque([start])\n        order = []\n        while queue:\n            node = queue.popleft()\n            order.append(node)\n            for neighbor in self.adjacency.get(node, []):\n                if neighbor not in visited:\n                    visited.add(neighbor)\n                    queue.append(neighbor)\n        return order"
+    },
+    {
+      "id": 95,
+      "language": "go",
+      "content": "package main\n\nimport \"sort\"\n\ntype person struct {\n\tName string\n\tAge  int\n}\n\ntype byAge []person\n\nfunc (a byAge) Len() int           { return len(a) }\nfunc (a byAge) Less(i, j int) bool { return a[i].Age < a[j].Age }\nfunc (a byAge) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }\n\nfunc main() {\n\tpeople := []person{\n\t\t{\"Alice\", 30},\n\t\t{\"Bob\", 25},\n\t\t{\"Charlie\", 35},\n\t}\n\tsort.Sort(byAge(people))\n\tfor _, p := range people {\n\t\tprintln(p.Name, p.Age)\n\t}\n}"
+    },
+    {
+      "id": 96,
+      "language": "rust",
+      "content": "use std::iter::Iterator;\n\nfn main() {\n    let numbers = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];\n\n    let sum: i32 = numbers.iter().sum();\n    let product: i32 = numbers.iter().product();\n    let max = numbers.iter().max().unwrap();\n    let min = numbers.iter().min().unwrap();\n\n    let squares: Vec<i32> = numbers.iter().map(|x| x * x).collect();\n    let evens: Vec<&i32> = numbers.iter().filter(|&&x| x % 2 == 0).collect();\n\n    println!(\"sum={} product={} max={} min={}\", sum, product, max, min);\n    println!(\"squares={:?}\", squares);\n    println!(\"evens={:?}\", evens);\n}"
+    },
+    {
+      "id": 97,
+      "language": "javascript",
+      "content": "async function readStream(stream) {\n  const chunks = [];\n  for await (const chunk of stream) {\n    chunks.push(chunk);\n  }\n  return Buffer.concat(chunks).toString('utf8');\n}\n\nasync function writeStream(stream, text) {\n  return new Promise((resolve, reject) => {\n    stream.write(text, 'utf8', (err) => {\n      if (err) reject(err);\n      else resolve();\n    });\n  });\n}"
+    },
+    {
+      "id": 98,
+      "language": "python",
+      "content": "def merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    left = merge_sort(arr[:mid])\n    right = merge_sort(arr[mid:])\n    return merge(left, right)\n\n\ndef merge(left, right):\n    result = []\n    i = j = 0\n    while i < len(left) and j < len(right):\n        if left[i] <= right[j]:\n            result.append(left[i])\n            i += 1\n        else:\n            result.append(right[j])\n            j += 1\n    result.extend(left[i:])\n    result.extend(right[j:])\n    return result"
+    },
+    {
+      "id": 99,
+      "language": "typescript",
+      "content": "export const assertNever = (value: never): never => {\n  throw new Error(`Unexpected value: ${JSON.stringify(value)}`);\n};\n\nexport const isDefined = <T>(value: T | null | undefined): value is T =>\n  value !== null && value !== undefined;\n\nexport const groupBy = <T, K extends string | number>(\n  items: T[],\n  keyFn: (item: T) => K,\n): Record<K, T[]> => {\n  const result = {} as Record<K, T[]>;\n  for (const item of items) {\n    const key = keyFn(item);\n    if (!result[key]) result[key] = [];\n    result[key].push(item);\n  }\n  return result;\n};"
+    },
+    {
+      "id": 100,
+      "language": "go",
+      "content": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"net/http\"\n)\n\ntype HealthStatus struct {\n\tStatus   string `json:\"status\"`\n\tVersion  string `json:\"version\"`\n\tUptime   int64  `json:\"uptime_seconds\"`\n\tDBHealth bool   `json:\"db_healthy\"`\n}\n\nfunc healthCheck(w http.ResponseWriter, r *http.Request) {\n\tstatus := HealthStatus{\n\t\tStatus:   \"ok\",\n\t\tVersion:  \"1.0.0\",\n\t\tUptime:   getUptimeSeconds(),\n\t\tDBHealth: checkDBHealth(),\n\t}\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tif err := json.NewEncoder(w).Encode(status); err != nil {\n\t\thttp.Error(w, fmt.Sprintf(\"encode error: %v\", err), http.StatusInternalServerError)\n\t}\n}"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "source": "github",
+  "source_id": "GH-248",
+  "slug": "REQ-GH-248-calibrator-accuracy-parallelism",
+  "item_type": "REQ",
+  "created_at": "2026-04-13T23:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["01-requirements", "02-tracing"],
+  "codebase_hash": "7880d356",
+  "bug_classification": {
+    "classification": "bug",
+    "reasoning": "Title and body describe a concrete measurement defect with observed vs expected values (1.1 GB reported vs ~7 GB real, ~6x under-measurement). Root-cause and proposed-fix structure in the draft. Breaks auto-parallelism math on the canonical 24 GB Apple Silicon target. Piggybacked enhancement (#249 graphOptimizationLevel re-enable) is also bug-fix-adjacent (undoing a GH-238 workaround).",
+    "confirmed_by_user": true
+  },
+  "bundles": ["GH-249"],
+  "acceptance": {
+    "accepted_at": "2026-04-15T00:00:00.000Z",
+    "domains": ["bug-summary", "root-cause", "fix-strategy", "tasks"],
+    "amendment_cycles": 0
+  },
+  "build_started_at": "2026-04-15T00:00:00.000Z",
+  "workflow_type": "build"
+}

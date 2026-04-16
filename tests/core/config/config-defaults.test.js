@@ -96,19 +96,36 @@ describe('DEFAULT_PROJECT_CONFIG', () => {
       assert.strictEqual(emb.dtype, 'auto');
     });
 
-    it('session_options defaults to empty object (AC-004-05)', () => {
-      assert.deepStrictEqual(emb.session_options, {});
+    it('session_options defaults to { graphOptimizationLevel: "disabled" } (REQ-GH-248 FR-005 / ASM-002 revert)', () => {
+      // REQ-GH-248 ASM-002 revert: the parity test (graph-optimization-parity.test.js)
+      // cannot measure cosine parity on the pinned onnxruntime-node release because
+      // "all" crashes pipeline init with a SimplifiedLayerNormFusion missing-node
+      // error. Per fix-strategy R8/ASM-002 the default stays "disabled" (Article X
+      // fail-safe) until the upstream bug is fixed. Commits 3-7 (calibrator rework
+      // + workload-aware parallelism) still ship and are net-positive.
+      assert.deepStrictEqual(emb.session_options, { graphOptimizationLevel: 'disabled' });
     });
 
     it('max_memory_gb defaults to null', () => {
       assert.strictEqual(emb.max_memory_gb, null);
     });
 
-    it('all hardware fields are present with safe defaults (AC-004-06)', () => {
+    it('all hardware fields are present with safe defaults (AC-004-06 / REQ-GH-248 FR-005)', () => {
       // AC-004-06: schema extension — all fields exist with documented defaults
-      const fields = { parallelism: 'auto', device: 'auto', batch_size: 32, dtype: 'auto', session_options: {}, max_memory_gb: null };
+      // REQ-GH-248 FR-005 / ASM-002 revert: session_options default stays
+      // { graphOptimizationLevel: "disabled" } until the upstream onnxruntime-node
+      // SimplifiedLayerNormFusion bug is fixed (parity test cannot measure cosine
+      // parity on the pinned release).
+      const fields = {
+        parallelism: 'auto',
+        device: 'auto',
+        batch_size: 32,
+        dtype: 'auto',
+        session_options: { graphOptimizationLevel: 'disabled' },
+        max_memory_gb: null,
+      };
       for (const [key, expected] of Object.entries(fields)) {
-        if (typeof expected === 'object') {
+        if (expected !== null && typeof expected === 'object') {
           assert.deepStrictEqual(emb[key], expected, `${key} mismatch`);
         } else {
           assert.strictEqual(emb[key], expected, `${key} mismatch`);

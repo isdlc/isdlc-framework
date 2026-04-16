@@ -2,7 +2,26 @@
 
 **Status**: Structural validation PASS, empirical validation on target hardware FAILED NFR-002 (blocked by #248 + #249)
 **Generated**: 2026-04-11 (updated with empirical run)
+**Updated**: 2026-04-15 — cross-reference to REQ-GH-248 fix
 **Commit**: feature/REQ-GH-239-worker-pool-engine-parallelism
+
+> **Cross-reference (REQ-GH-248, 2026-04-15)**: The NFR-002 ≥3× throughput
+> target that blocked this report is addressed by REQ-GH-248
+> (`docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/`). That
+> fix reworks the memory calibrator to use real chunks (FR-001) with a
+> 200 ms sampling cadence and 20-30 s steady-state window (FR-002),
+> propagates `session_options` into calibration (FR-003) and expands the
+> fingerprint (FR-004), flips the `graphOptimizationLevel` default to
+> `"all"` (FR-005), and makes `autoParallelism()` workload-aware via the
+> shared `computeEffectiveParallelism()` helper (FR-006, FR-008). Adapter
+> pool construction now passes the calibrated per-worker value through
+> (FR-007) instead of silently re-clamping against the hardcoded 6 GB
+> constant that caused the GH-239 dogfood run to sit at 1 worker.
+>
+> After REQ-GH-248 ships, re-run the Phase 16 benchmark protocol below
+> on a 24 GB Apple Silicon with `"parallelism": "auto"` and no
+> `graphOptimizationLevel` override. Expected outcome: 2-4 workers and
+> ≥3× throughput vs `parallelism: 1`.
 
 ---
 

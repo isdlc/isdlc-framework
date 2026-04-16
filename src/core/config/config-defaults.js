@@ -55,12 +55,23 @@ export const DEFAULT_PROJECT_CONFIG = {
       { type: 'code', path: 'src/', tier: 'full' },
       { type: 'docs', path: 'docs/' },
     ],
-    // Hardware acceleration defaults (REQ-GH-238 FR-004)
+    // Hardware acceleration defaults (REQ-GH-238 FR-004, REQ-GH-248 FR-005)
     parallelism: 'auto',    // worker threads: 'auto' = min(cpus-1, memory-cap, 4), or integer
     device: 'auto',         // ONNX execution provider: 'auto','cpu','coreml','cuda','dml','rocm'
     batch_size: 32,         // texts per inference call within each worker
     dtype: 'auto',          // model precision: 'auto','fp32','fp16','q8'
-    session_options: {},    // passthrough to ONNX Runtime session options
+    // REQ-GH-248 FR-005 (ASM-002 revert): graphOptimizationLevel defaults to
+    // "disabled" because the pinned onnxruntime-node release has an upstream
+    // SimplifiedLayerNormFusion bug that crashes pipeline init at "all" (and
+    // at the empty-object transformers.js default) on Jina v2 fp16 CoreML.
+    // The parity test (lib/embedding/engine/graph-optimization-parity.test.js)
+    // is the gate: when it can measure cosine parity the default can flip;
+    // until then "disabled" is the fail-safe default (Article X). Users who
+    // have verified their onnxruntime-node is patched can override with
+    // `session_options: { graphOptimizationLevel: "all" }` to unlock the
+    // 3-4 GB/worker regime. Commits 3-7 of REQ-GH-248 (calibrator rework +
+    // workload-aware parallelism) still ship and are net-positive.
+    session_options: { graphOptimizationLevel: 'disabled' },
     max_memory_gb: null,    // total system memory budget (GB); null = use all available RAM
   },
   workflows: {

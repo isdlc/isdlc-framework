@@ -136,7 +136,12 @@ describe('isdlc init — FR-010 install-time embeddings opt-in prompt', () => {
     assert.equal(config.embeddings.device, 'auto');
     assert.equal(config.embeddings.dtype, 'auto');
     assert.equal(config.embeddings.batch_size, 32);
-    assert.deepEqual(config.embeddings.session_options, {});
+    // REQ-GH-248 FR-005 / ASM-002 revert: session_options defaults to
+    // { graphOptimizationLevel: "disabled" } because the pinned onnxruntime-node
+    // release has the SimplifiedLayerNormFusion upstream bug — the parity test
+    // gate cannot measure cosine parity at "all", so "disabled" stays as the
+    // fail-safe default (Article X). Commits 3-7 still ship.
+    assert.deepEqual(config.embeddings.session_options, { graphOptimizationLevel: 'disabled' });
     assert.equal(config.embeddings.max_memory_gb, null);
     assert.equal(config.embeddings.refresh_on_finalize, true);
   });

@@ -208,7 +208,7 @@ assert e['parallelism'] == 'auto'
 assert e['device'] == 'auto'
 assert e['dtype'] == 'auto'
 assert e['batch_size'] == 32
-assert e['session_options'] == {}
+assert e['session_options'] == {'graphOptimizationLevel': 'disabled'}
 assert e['max_memory_gb'] is None
 assert e['refresh_on_finalize'] is True
 "

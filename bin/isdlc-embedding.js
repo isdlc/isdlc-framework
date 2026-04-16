@@ -478,8 +478,13 @@ async function runGenerate(genArgs) {
     const { embed } = await import('../lib/embedding/engine/index.js');
     const { buildPackage } = await import('../lib/embedding/package/builder.js');
     // REQ-GH-239 T015: pre-pool memory calibration (FR-003, NFR-003)
-    const { computeFingerprint, readCachedCalibration, calibratePerWorkerMemory } =
-      await import('../lib/embedding/engine/memory-calibrator.js');
+    // REQ-GH-248 FR-001/FR-003: real-chunk sampling + session_options propagation
+    const {
+      computeFingerprint,
+      readCachedCalibration,
+      calibratePerWorkerMemory,
+      buildCalibrationConfig,
+    } = await import('../lib/embedding/engine/memory-calibrator.js');
 
     // 1. Detect VCS and get file list
     const vcs = await createAdapter(workingCopy);
@@ -536,22 +541,38 @@ async function runGenerate(genArgs) {
     const texts = allChunks.map(c => c.content);
 
     // REQ-GH-239 T015: one-time memory calibration before pool creation.
-    // Cache hit = zero overhead. Cache miss = one ~1-2 min measurement then cached.
-    // Failure is non-blocking (device-detector falls back to hardcoded constants).
+    // Cache hit = zero overhead. Cache miss = one real-chunk measurement
+    // (~20-30 s) then cached. Failure is non-blocking (device-detector
+    // falls back to hardcoded constants).
+    //
+    // REQ-GH-248 FR-001: real chunks from the current project drive the
+    // measurement, avoiding the synthetic 38-word vocabulary that produced
+    // under-estimates. REQ-GH-248 FR-003: session_options propagate so the
+    // calibrator measures the same session production runs.
     try {
-      const calibrationConfig = {
+      const calibrationConfig = buildCalibrationConfig({
         device: embConfig.device || 'auto',
         dtype: embConfig.dtype || 'auto',
         model: embConfig.model || 'jinaai/jina-embeddings-v2-base-code',
-      };
+        session_options: embConfig.session_options,
+      });
       const fingerprint = computeFingerprint(calibrationConfig);
       const cached = readCachedCalibration(workingCopy, fingerprint);
       if (!cached) {
-        console.log('[calibrate] no cached calibration; running one-time measurement...');
-        const calibration = await calibratePerWorkerMemory(calibrationConfig, { projectRoot: workingCopy });
+        console.log('[calibrate] no cached calibration; running one-time measurement on real chunks...');
+        const calibration = await calibratePerWorkerMemory(calibrationConfig, {
+          projectRoot: workingCopy,
+          // REQ-GH-248 FR-001 / ASM-001: feed the already-computed allChunks
+          // into the calibrator so it measures the real steady-state cost.
+          // The calibrator subsamples to MAX_REAL_CHUNK_SAMPLES and falls
+          // back to synthetic samples if fewer than MIN_REAL_CHUNKS are
+          // available.
+          _sampleProvider: () => allChunks.map((c) => c.content),
+        });
         if (calibration && typeof calibration.perWorkerMemGB === 'number') {
           console.log(
-            `[calibrate] measured perWorkerMemGB=${calibration.perWorkerMemGB.toFixed(1)} (${calibration.durationMs}ms)`
+            `[calibrate] measured perWorkerMemGB=${calibration.perWorkerMemGB.toFixed(1)} ` +
+            `(${calibration.durationMs}ms, ${calibration.sampleCount} ${calibration.sampleSource} samples)`
           );
         } else {
           console.log('[calibrate] failed or timed out; falling back to hardcoded constants');

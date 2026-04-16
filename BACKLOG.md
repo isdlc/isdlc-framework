@@ -5,7 +5,8 @@
 
 ## Open
 - [ ] #255 Roundtable escape hatches: licensed persona dissent + trivial-scope sanity gate [github: GH-255]
-- [ ] #254 Context-manager hooks: inject phase-specific instructions before delegation [github: GH-254]
+- [ ] #253 Context-manager hooks: inject phase-specific instructions before delegation, not just block after [github: GH-253]
+- [x] #254 Context-manager hooks: inject phase-specific instructions before delegation [github: GH-254] **Closed — duplicate of #253**
 - [x] #252 Smooth embeddings UX — discover → generation → server → search wiring should be seamless by default [github: GH-252] -> [requirements](docs/requirements/REQ-GH-252-smooth-embeddings-ux/) **Completed**
   - Preflight checks, health probe, query classifier, tool-router semantic routing, CLI consolidation. 57 tests, 100% AC coverage.
   - **Completed:** 2026-04-13
@@ -16,7 +17,7 @@
   - FR-006 opt-in guard (`hasUserEmbeddingsConfig`) now called at 4 entry points: `bin/isdlc-embedding.js` (runGenerate CLI — interactive readline prompt when TTY, silent skip when non-TTY), `bin/isdlc-embedding-server.js` (main() refuse-to-start with exit 1), `bin/isdlc-embedding-mcp.js` (module-level clean exit 0 before readline, MCP handshake fast-fail), `src/claude/agents/discover-orchestrator.md` (Step 7.9 single-line `node -e` pre-check + opt-out banner variant). 4 new test files covering 10 test gaps (TG1-TG10), all RED-first per ATDD, all GREEN after production lands. 5/5 AC coverage. Phase 16 68/68 in-scope tests green. Phase 08 QA approved (0 CRITICAL/MAJOR, 4 MINOR, 5 NIT — non-blocking). Out-of-scope: `lib/memory-embedder.js` session record embeddings (different data flow, follow-up).
   - **Completed:** 2026-04-11
 - [x] #249 Re-enable graphOptimizationLevel for Jina v2 fp16 (remove GH-238 workaround) [github: GH-249] **Closed — merged into #248**
-- [ ] #248 Calibrator accuracy + graphOptimizationLevel re-enablement for parallelism: auto [github: GH-248] (includes #249)
+- [A] #248 Calibrator accuracy + graphOptimizationLevel re-enablement for parallelism: auto [github: GH-248] (includes #249) -> [requirements](docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/) **Analyzed**
 - [x] #247 Auto-trigger incremental embedding refresh (file watcher / post-commit / PostToolUse) [github: GH-247] **Closed — folded into #244 (status line shows staleness, manual refresh)**
 - [ ] #246 Embedding server: launchd/systemd integration + auto-restart (future — team server use case) [github: GH-246] `future-enhancement` (includes #245)
 - [x] #245 Embedding server: auto-restart on crash (lifecycle supervision) [github: GH-245] **Closed — merged into #246**

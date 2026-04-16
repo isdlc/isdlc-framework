@@ -91,11 +91,11 @@ Controls the code embedding pipeline (semantic search). The embedding server loa
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `parallelism` | number\|`"auto"` | `"auto"` | Worker thread count. `"auto"` resolves to `min(cpus-1, memory-cap, 4)`. Explicit integer forces that count. **Note**: with the current engine integration, `parallelism > 1` does not speed up CLI generation — the engine's sequential batch loop calls the pool one batch at a time, so additional workers sit idle. Use `1` for in-process mode until the engine loop is fixed (tracked separately). |
+| `parallelism` | number\|`"auto"` | `"auto"` | Worker thread count. `"auto"` resolves to `min(cpus-1, memory-cap, workload-floor, 4)` where `workload-floor = ceil(chunkCount / batchSize / 2)` — REQ-GH-248 FR-006 prevents the pool from spawning more workers than there is work to do. Explicit integer values are respected (warn-but-respect). |
 | `device` | string | `"auto"` | ONNX Runtime execution provider: `"auto"`, `"cpu"`, `"coreml"` (macOS ARM), `"cuda"` (Linux NVIDIA), `"rocm"` (Linux AMD), `"directml"` (Windows). Auto resolves to the best supported provider for your platform. |
-| `dtype` | string | `"auto"` | Model precision: `"auto"`, `"fp32"`, `"fp16"`, `"q8"`. Auto picks `fp16` for hardware-accelerated devices, `q8` for CPU. **Known issue**: Jina v2's fp16 ONNX variant triggers a broken ONNX Runtime graph optimizer (`SimplifiedLayerNormFusion` missing-node bug). Add `session_options.graphOptimizationLevel: "disabled"` to use fp16. |
+| `dtype` | string | `"auto"` | Model precision: `"auto"`, `"fp32"`, `"fp16"`, `"q8"`. Auto picks `fp16` for hardware-accelerated devices, `q8` for CPU. |
 | `batch_size` | number | `32` | Texts processed per inference call. Larger batches trade memory for throughput. |
-| `session_options` | object | `{}` | Passthrough to ONNX Runtime session options. Common keys: `graphOptimizationLevel` (`"disabled"`, `"basic"`, `"extended"`, `"all"`), `intraOpNumThreads`, `interOpNumThreads`. |
+| `session_options` | object | `{ "graphOptimizationLevel": "disabled" }` | Passthrough to ONNX Runtime session options. REQ-GH-248 FR-005 attempted to flip the default to `{ graphOptimizationLevel: "all" }` to unlock the 3-4 GB/worker regime on Jina v2 fp16 CoreML, but the pinned `onnxruntime-node` release has an upstream `SimplifiedLayerNormFusion` missing-node bug that crashes pipeline init at `"all"`. Per fix-strategy ASM-002 the default stays `"disabled"` until the parity test (`lib/embedding/engine/graph-optimization-parity.test.js`) can measure cosine parity. Users who have verified their `onnxruntime-node` is patched can override with `session_options: { graphOptimizationLevel: "all" }` to unlock the faster regime. Common keys: `graphOptimizationLevel` (`"disabled"`, `"basic"`, `"extended"`, `"all"`), `intraOpNumThreads`, `interOpNumThreads`. |
 | `max_memory_gb` | number\|null | `null` | Total system memory budget in GB. When set, caps the auto-parallelism calculation so the embedding pipeline doesn't exceed this budget. Leaves headroom for OS and other apps. Example: `18` on a 24GB machine reserves 6GB for everything else. `null` uses all available RAM. |
 
 #### Sources (what to embed)
@@ -130,7 +130,7 @@ Transformer attention is O(n²) on token count, so throughput depends heavily on
 "embeddings": {
   "provider": "jina-code",
   "model": "jinaai/jina-embeddings-v2-base-code",
-  "parallelism": 1,
+  "parallelism": "auto",
   "device": "auto",
   "dtype": "fp16",
   "batch_size": 32,
@@ -145,6 +145,24 @@ Transformer attention is O(n²) on token count, so throughput depends heavily on
   }
 }
 ```
+
+> **REQ-GH-248**: `"parallelism": "auto"` is now workload-aware and
+> calibration-driven. The calibrator measures real per-worker memory from
+> 100 chunks of the project's real content (not synthetic strings) and
+> the `autoParallelism` / `resolvePoolSize` path applies a workload floor
+> of `ceil(chunkCount / batchSize / 2)` so small differential refreshes
+> never spawn the full pool unnecessarily.
+>
+> **Opt-in escape hatch (faster per-worker footprint)**: users whose
+> `onnxruntime-node` build has the `SimplifiedLayerNormFusion` fix can
+> set `"session_options": { "graphOptimizationLevel": "all" }` as a
+> per-user override to unlock the 3-4 GB/worker regime. The calibrator
+> fingerprint includes `graphOptimizationLevel`, so switching values
+> invalidates the cache and re-measures automatically. REQ-GH-248 keeps
+> `"disabled"` as the shipped default (fix-strategy ASM-002) because the
+> currently-pinned `onnxruntime-node` release crashes pipeline init at
+> `"all"`; the parity test (`lib/embedding/engine/graph-optimization-parity.test.js`)
+> is the regression gate for flipping the default.
 
 #### Starting the server manually
 
