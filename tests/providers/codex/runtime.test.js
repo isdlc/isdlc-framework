@@ -238,6 +238,64 @@ describe('Codex executeTask (REQ-0135 FR-002)', () => {
     assert.strictEqual(result.status, 'completed');
     assert.strictEqual(result.output, '');
   });
+
+  // XRT-36: composedCard is appended to projection content (REQ-GH-253 T046)
+  it('XRT-36: composedCard is appended to projection content (REQ-GH-253)', async () => {
+    let capturedArgs = null;
+    const runtime = createRuntime(mockConfig({
+      _projectInstructions: mockProjectInstructions('# Base Instructions'),
+      _execFile: (cmd, args, opts, cb) => {
+        capturedArgs = { cmd, args };
+        const callback = typeof opts === 'function' ? opts : cb;
+        process.nextTick(() => callback(null, '{"ok":true}', ''));
+      }
+    }));
+    await runtime.executeTask('06-implementation', '05-software-developer', {
+      composedCard: '## Roundtable State Card\nYou are in CONVERSATION state.'
+    });
+    assert.ok(capturedArgs, 'execFile should have been called');
+    const argsStr = capturedArgs.args.join(' ');
+    assert.ok(argsStr.includes('Roundtable State Card'), 'Should include composedCard in exec args');
+    assert.ok(argsStr.includes('Base Instructions'), 'Should still include base projection');
+  });
+
+  // XRT-37: composedCard is appended after projection content (REQ-GH-253 T046)
+  it('XRT-37: composedCard appears after projection content (REQ-GH-253)', async () => {
+    let capturedContent = null;
+    const runtime = createRuntime(mockConfig({
+      _projectInstructions: mockProjectInstructions('PROJ_MARKER'),
+      _execFile: (cmd, args, opts, cb) => {
+        capturedContent = args[args.length - 1]; // last arg is the content
+        const callback = typeof opts === 'function' ? opts : cb;
+        process.nextTick(() => callback(null, '{}', ''));
+      }
+    }));
+    await runtime.executeTask('06-implementation', '05-software-developer', {
+      composedCard: 'CARD_MARKER'
+    });
+    assert.ok(capturedContent, 'Content should have been captured');
+    const projIdx = capturedContent.indexOf('PROJ_MARKER');
+    const cardIdx = capturedContent.indexOf('CARD_MARKER');
+    assert.ok(projIdx >= 0, 'Projection marker should be present');
+    assert.ok(cardIdx >= 0, 'Card marker should be present');
+    assert.ok(projIdx < cardIdx, 'Projection should come before composedCard');
+  });
+
+  // XRT-38: no composedCard — content unchanged (REQ-GH-253 T046)
+  it('XRT-38: content unchanged when composedCard absent (REQ-GH-253)', async () => {
+    let capturedContent = null;
+    const runtime = createRuntime(mockConfig({
+      _projectInstructions: mockProjectInstructions('# Only Instructions'),
+      _execFile: (cmd, args, opts, cb) => {
+        capturedContent = args[args.length - 1];
+        const callback = typeof opts === 'function' ? opts : cb;
+        process.nextTick(() => callback(null, '{}', ''));
+      }
+    }));
+    await runtime.executeTask('06-implementation', '05-software-developer', {});
+    assert.ok(capturedContent.includes('Only Instructions'));
+    assert.ok(!capturedContent.includes('Roundtable'), 'Should not contain card text');
+  });
 });
 
 // ---------------------------------------------------------------------------

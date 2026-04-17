@@ -1,210 +1,339 @@
-# Task Plan: SLUG REQGH248calibrator
-
-Generated: 2026-04-15
-Source: REQ-GH-248-calibrator-accuracy-parallelism
-Artifacts: bug-report.md, root-cause-analysis.md, fix-strategy.md
-
-## Phase 05: Test Strategy -- COMPLETE
-
-- [X] T001 Design calibrator real-chunk sampling tests | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (CREATE)
-  blocked_by: []
-  blocks: [T012, T020]
-- [X] T002 Design steady-state measurement tests | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (MODIFY)
-  blocked_by: [T001]
-  blocks: [T013, T020]
-- [X] T003 Design session_options propagation and fingerprint tests | traces: FR-003, FR-004, AC-003-01, AC-003-02, AC-003-03, AC-004-01, AC-004-02, AC-004-03
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (MODIFY)
-  blocked_by: [T001]
-  blocks: [T010, T011, T021]
-- [X] T004 Design graphOpt parity and default flip tests | traces: FR-005, AC-005-01, AC-005-02, AC-005-03, AC-005-04
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (MODIFY)
-  blocked_by: [T001]
-  blocks: [T008, T009, T032]
-- [X] T005 Design workload-aware parallelism and dedup tests | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-006-04, AC-008-01, AC-008-02, AC-008-03
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (MODIFY)
-  blocked_by: [T001]
-  blocks: [T015, T016, T017, T018, T022, T023]
-- [X] T006 Design adapter calibrated-value pass-through tests | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
-  files: docs/requirements/REQ-GH-248-calibrator-accuracy-parallelism/test-strategy.md (MODIFY)
-  blocked_by: [T001]
-  blocks: [T014, T024]
-
-## Phase 06: Implementation -- COMPLETE
-
-- [X] T007 Pin fixture corpus of 100 multi-language chunks for parity test | traces: FR-005, AC-005-04
-  files: lib/embedding/engine/fixtures/parity-corpus/ (CREATE)
-  blocked_by: [T004]
-  blocks: [T008]
-- [X] T008 Add cosine-similarity parity test infrastructure | traces: FR-005, AC-005-04
-  files: lib/embedding/engine/graph-optimization-parity.test.js (CREATE)
-  blocked_by: [T007]
-  blocks: [T009]
-- [X] T009 Flip graphOptimizationLevel default to all in config-defaults and embeddings-prompt | traces: FR-005, AC-005-01, AC-005-02, AC-005-03
-  files: src/core/config/config-defaults.js (MODIFY), lib/install/embeddings-prompt.js (MODIFY)
-  blocked_by: [T008]
-  blocks: [T010, T027]
-- [X] T010 Propagate session_options into calibrationConfig at CLI calibration call site | traces: FR-003, AC-003-01, AC-003-02, AC-003-03
-  files: bin/isdlc-embedding.js (MODIFY)
-  blocked_by: [T003, T009]
-  blocks: [T011]
-- [X] T011 Expand computeFingerprint to hash session_options keys | traces: FR-004, AC-004-01, AC-004-02, AC-004-03
-  files: lib/embedding/engine/memory-calibrator.js (MODIFY)
-  blocked_by: [T003, T010]
-  blocks: [T012, T021]
-- [X] T012 Rework calibrator sample source to pull real chunks via chunker | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
-  files: lib/embedding/engine/memory-calibrator.js (MODIFY), bin/isdlc-embedding.js (MODIFY)
-  blocked_by: [T001, T011]
-  blocks: [T013]
-- [X] T013 Adjust calibrator cadence window and timeout defaults | traces: FR-002, AC-002-01, AC-002-02, AC-002-03, AC-002-04
-  files: lib/embedding/engine/memory-calibrator.js (MODIFY)
-  blocked_by: [T002, T012]
-  blocks: [T014, T020]
-- [X] T014 Fix jina-code-adapter pool construction to pass calibrated value through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
-  files: lib/embedding/engine/jina-code-adapter.js (MODIFY)
-  blocked_by: [T006, T013]
-  blocks: [T015, T024]
-- [X] T015 Extract computeEffectiveParallelism helper | traces: FR-008, AC-008-01
-  files: lib/embedding/engine/device-detector.js (MODIFY)
-  blocked_by: [T005, T014]
-  blocks: [T016, T017, T018]
-- [X] T016 Update autoParallelism to use helper with workloadFloor | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
-  files: lib/embedding/engine/device-detector.js (MODIFY)
-  blocked_by: [T005, T015]
-  blocks: [T019, T022]
-- [X] T017 Update resolvePoolSize to use helper with workloadFloor | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-02
-  files: lib/embedding/engine/worker-pool.js (MODIFY)
-  blocked_by: [T005, T015]
-  blocks: [T018, T023]
-- [X] T018 Dedup constants between device-detector and worker-pool | traces: FR-008, AC-008-02, AC-008-03
-  files: lib/embedding/engine/device-detector.js (MODIFY), lib/embedding/engine/worker-pool.js (MODIFY)
-  blocked_by: [T016, T017]
-  blocks: [T023]
-- [X] T019 Thread workloadSize through CLI to resolveConfig via engine and adapter | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
-  files: bin/isdlc-embedding.js (MODIFY), lib/embedding/engine/index.js (MODIFY), lib/embedding/engine/jina-code-adapter.js (MODIFY)
-  blocked_by: [T016]
-  blocks: [T028]
-- [X] T020 Unit tests for calibrator real-chunk sampling and steady-state | traces: FR-001, FR-002, AC-001-01, AC-001-02, AC-001-03, AC-002-01, AC-002-02, AC-002-03, AC-002-04
-  files: lib/embedding/engine/memory-calibrator.test.js (MODIFY)
-  blocked_by: [T013]
-  blocks: [T029]
-- [X] T021 Unit tests for session_options propagation and fingerprint expansion | traces: FR-003, FR-004, AC-003-01, AC-003-02, AC-003-03, AC-004-01, AC-004-02, AC-004-03
-  files: lib/embedding/engine/memory-calibrator.test.js (MODIFY)
-  blocked_by: [T011]
-  blocks: [T029]
-- [X] T022 Unit tests for workload-aware autoParallelism | traces: FR-006, AC-006-01, AC-006-02, AC-006-03, AC-006-04
-  files: lib/embedding/engine/device-detector.test.js (MODIFY)
-  blocked_by: [T016]
-  blocks: [T029]
-- [X] T023 Unit tests for workload-aware resolvePoolSize and dedup | traces: FR-006, FR-008, AC-006-01, AC-006-02, AC-006-03, AC-008-01, AC-008-02, AC-008-03
-  files: lib/embedding/engine/worker-pool.test.js (MODIFY)
-  blocked_by: [T018]
-  blocks: [T029]
-- [X] T024 Unit tests for adapter calibrated value pass-through | traces: FR-007, AC-007-01, AC-007-02, AC-007-03
-  files: lib/embedding/engine/jina-code-adapter.test.js (MODIFY)
-  blocked_by: [T014]
-  blocks: [T029]
-- [X] T025 Verify no Claude agent or hook file impacts (dual-file awareness) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-  files: src/claude/ (VERIFY)
-  blocked_by: [T019]
-  blocks: [T029]
-- [X] T026 Verify no src providers codex impacts (dual-provider parity) | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-  files: src/providers/codex/ (VERIFY)
-  blocked_by: [T019]
-  blocks: [T029]
-- [X] T027 Update docs isdlc config-reference for graphOptimizationLevel default change | traces: FR-005, AC-005-01
-  files: docs/isdlc/config-reference.md (MODIFY)
-  blocked_by: [T009]
-  blocks: [T029]
-- [X] T028 Cross-reference fix in REQ-GH-239 benchmark-report | traces: FR-001, FR-005, FR-006
-  files: docs/requirements/REQ-GH-239-worker-pool-engine-parallelism/benchmark-report.md (MODIFY)
-  blocked_by: [T019]
-  blocks: [T029]
-
-## Phase 16: Quality Loop -- PENDING
-
-- [ ] T029 Run full test suite with node test runner | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-  files: (test execution, no file changes)
-  blocked_by: [T020, T021, T022, T023, T024, T025, T026, T027, T028]
-  blocks: [T030]
-- [ ] T030 End-to-end calibration on 24GB Apple Silicon with Jina v2 fp16 CoreML | traces: FR-001, FR-002, FR-003, FR-005
-  files: (manual verification, no file changes)
-  blocked_by: [T029]
-  blocks: [T031, T032, T033]
-- [ ] T031 Verify auto-parallelism picks sane pool size on target hardware | traces: FR-006, FR-007
-  files: (manual verification, no file changes)
-  blocked_by: [T030]
-  blocks: [T033]
-- [ ] T032 Run cosine-similarity parity test against pinned fixture corpus | traces: FR-005, AC-005-04
-  files: (parity test execution, no file changes)
-  blocked_by: [T030]
-  blocks: [T034]
-- [ ] T033 Measure throughput improvement assert at least 3x baseline with parallelism auto | traces: FR-006, FR-007
-  files: (benchmark execution, no file changes)
-  blocked_by: [T031]
-  blocks: [T034]
-
-## Phase 08: Code Review -- PENDING
-
-- [ ] T034 Constitutional review against Articles I II V X XII | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-  files: (review, no file changes)
-  blocked_by: [T032, T033]
-  blocks: [T035]
-- [ ] T035 Dual-file check verify no symlinked claude or isdlc files diverge from src | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-  files: (review, no file changes)
-  blocked_by: [T034]
-  blocks: []
+# Task Plan: REQ-GH-253 — Context-Manager Hooks
 
 ## Progress Summary
 
-| Phase | Name | Total | Done | % |
-|---|---|---|---|---|
-| 05 | Test Strategy | 6 | 6 | 100% |
-| 06 | Implementation | 22 | 22 | 100% |
-| 16 | Quality Loop | 5 | 0 | 0% |
-| 08 | Code Review | 2 | 0 | 0% |
-| **Total** | | **35** | **28** | **80%** |
+| Phase | Total | Done | Remaining |
+|-------|-------|------|-----------|
+| 05 - Test Strategy | 4 | 4 | 0 |
+| 06 - Implementation | 48 | 48 | 0 |
+| 16 - Quality Loop | 5 | 0 | 5 |
+| 08 - Code Review | 3 | 0 | 3 |
+| **Total** | **60** | **52** | **8** |
+
+## Phase 05: Test Strategy -- COMPLETE
+
+- [X] T001 Design test strategy for state machine runtime, composers, markers, trailer parser
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (CREATE)
+  traces: FR-001, FR-002, FR-003
+  blocked_by: [T060]
+
+- [X] T002 Design test strategy for bucketed audit verification
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
+  traces: FR-007
+
+- [X] T003 Design test strategy for parallel-run comparison harness
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
+  traces: FR-008
+  blocked_by: [T060]
+
+- [X] T004 Design cross-provider parity tests
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
+  traces: FR-005, NFR-002
+  blocked_by: [T060]
+
+## Phase 06: Implementation -- PENDING
+
+### Tier 0: Audit FIRST (no dependencies)
+
+- [X] T034 Conduct bucketed audit of roundtable-analyst.md
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/audit-roundtable-analyst.md (CREATE)
+  traces: FR-007, AC-007-01, AC-007-02, AC-007-03
+
+- [X] T035 Conduct bucketed audit of bug-roundtable-analyst.md
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/audit-bug-roundtable-analyst.md (CREATE)
+  traces: FR-007, AC-007-01, AC-007-02, AC-007-03
+
+### Decision Gate: Scope Calibration (depends on audit)
+
+- [X] T060 Evaluate audit results and confirm or adjust design scope
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/scope-calibration.md (CREATE)
+  traces: FR-007, NFR-005
+  blocked_by: [T034, T035]
+
+Decision criteria:
+  If heavy bucket-1/2/3/5 (>50% of prose is mechanism-replaceable) -> proceed with full state machine design
+  If heavy bucket-4 (>60% is LLM-prose-needed) -> scale down to lighter approach (template inclusion at confirmation boundaries + tool-router extensions only)
+  If mixed -> proceed with full design but reduce scope of state machine to confirmed-necessary states only
+
+### Tier 1: Schemas (after scope confirmed)
+
+- [X] T005 Create core state machine schema
+  files: src/core/roundtable/schemas/core.schema.json (CREATE)
+  traces: FR-002
+  blocked_by: [T060]
+
+- [X] T006 Create workflow state machine schema
+  files: src/core/roundtable/schemas/workflow.schema.json (CREATE)
+  traces: FR-002
+  blocked_by: [T060]
+
+- [X] T007 Create trailer schema
+  files: src/core/roundtable/schemas/trailer.schema.json (CREATE)
+  traces: FR-003
+  blocked_by: [T060]
+
+- [X] T008 Create rolling state schema
+  files: src/core/roundtable/schemas/rolling-state.schema.json (CREATE)
+  traces: FR-003
+  blocked_by: [T060]
+
+- [X] T009 Create state card schema
+  files: src/core/roundtable/schemas/state-card.schema.json (CREATE)
+  traces: FR-001
+  blocked_by: [T060]
+
+- [X] T010 Create task card schema
+  files: src/core/roundtable/schemas/task-card.schema.json (CREATE)
+  traces: FR-001
+  blocked_by: [T060]
+
+### Tier 1: Definition files (informed by audit results)
+
+- [X] T011 Author shared core definition
+  files: src/isdlc/config/roundtable/core.json (CREATE)
+  traces: FR-002, FR-006
+  blocked_by: [T034, T035, T060]
+
+- [X] T012 Author analyze workflow definition
+  files: src/isdlc/config/roundtable/analyze.json (CREATE)
+  traces: FR-002, FR-006
+  blocked_by: [T034, T060]
+
+- [X] T013 Author bug-gather workflow definition
+  files: src/isdlc/config/roundtable/bug-gather.json (CREATE)
+  traces: FR-002, FR-006
+  blocked_by: [T035, T060]
+
+- [X] T014 Author state card templates
+  files: src/isdlc/config/roundtable/state-cards/ (CREATE)
+  traces: FR-001, AC-001-01
+  blocked_by: [T034, T035, T060]
+
+- [X] T015 Author task card templates
+  files: src/isdlc/config/roundtable/task-cards/ (CREATE)
+  traces: FR-001, AC-001-02
+  blocked_by: [T034, T035, T060]
+
+### Tier 1: Config extensions (parallel with schemas and definitions)
+
+- [X] T024 Extend config-service with getRoundtableConfig
+  files: src/core/config/config-service.js (MODIFY)
+  traces: FR-004
+  blocked_by: [T060]
+
+- [X] T025 Extend config schema with roundtable.task_card.max_skills_total
+  files: src/isdlc/config.schema.json (MODIFY)
+  traces: FR-004
+  blocked_by: [T060]
+
+- [X] T026 Extend CJS config bridge
+  files: src/core/bridge/config.cjs (MODIFY)
+  traces: FR-004
+  blocked_by: [T024]
+
+- [X] T027 Extend manifest schema with bindings.sub_tasks additive field
+  files: src/isdlc/config/external-skills-manifest.schema.json (MODIFY)
+  traces: FR-004, AC-004-03
+  blocked_by: [T060]
+
+- [X] T028 Update manifest loader for additive field tolerance
+  files: src/core/skills/manifest-loader.js (MODIFY)
+  traces: FR-004
+  blocked_by: [T027]
+
+### Tier 2: Core modules (depend on schemas + definitions)
+
+- [X] T016 Implement definition loader
+  files: src/core/roundtable/definition-loader.js (CREATE)
+  traces: FR-002, AC-002-01, AC-002-03
+  blocked_by: [T005, T006]
+
+- [X] T017 Implement state machine runtime
+  files: src/core/roundtable/state-machine.js (CREATE)
+  traces: FR-002, AC-002-01, AC-002-02
+  blocked_by: [T005, T006, T016]
+
+- [X] T018 Implement state card composer
+  files: src/core/roundtable/state-card-composer.js (CREATE)
+  traces: FR-001, AC-001-01
+  blocked_by: [T009, T014]
+
+- [X] T019 Implement task card composer
+  files: src/core/roundtable/task-card-composer.js (CREATE)
+  traces: FR-001, AC-001-02, FR-004, AC-004-01, AC-004-02, AC-004-03
+  blocked_by: [T010, T015]
+
+- [X] T020 Implement rolling state store
+  files: src/core/roundtable/rolling-state.js (CREATE)
+  traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04
+  blocked_by: [T008]
+
+- [X] T021 Implement trailer parser
+  files: src/core/roundtable/trailer-parser.js (CREATE)
+  traces: FR-003, AC-003-01, AC-003-03
+  blocked_by: [T007]
+
+- [X] T022 Implement per-sub-task marker extractors
+  files: src/core/roundtable/markers/scope-framing.markers.js (CREATE), src/core/roundtable/markers/codebase-scan.markers.js (CREATE), src/core/roundtable/markers/blast-radius.markers.js (CREATE), src/core/roundtable/markers/options-research.markers.js (CREATE), src/core/roundtable/markers/dependency-check.markers.js (CREATE), src/core/roundtable/markers/tracing.markers.js (CREATE)
+  traces: FR-003, AC-003-02
+  blocked_by: [T060]
+
+- [X] T023 Implement markers index and dispatch
+  files: src/core/roundtable/markers/index.js (CREATE)
+  traces: FR-003
+  blocked_by: [T022]
+
+### Tier 3: Handler restructure (depends on core modules)
+
+- [X] T029 Restructure analyze handler step 7
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-005, AC-005-01, FR-006, AC-006-02
+  blocked_by: [T017, T018, T019, T020, T021, T023]
+
+- [X] T030 Restructure bug-gather handler step 6.5d
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-005, FR-006, AC-006-02
+  blocked_by: [T017, T018, T019, T020, T021, T023, T029]
+
+- [X] T031 Add fail-open fallback path for definition loader failure
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-002, AC-002-03, NFR-001
+  blocked_by: [T029]
+
+- [X] T032 Add external_delegation field support in state machine
+  files: src/core/roundtable/state-machine.js (MODIFY)
+  traces: FR-002
+  blocked_by: [T017]
+
+- [X] T033 Wire tracing-orchestrator dispatch via external_delegation
+  files: src/isdlc/config/roundtable/bug-gather.json (MODIFY), src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-002, FR-006
+  blocked_by: [T032, T030]
+
+### Tier 3: Provider wiring (parallel with handler restructure)
+
+- [X] T045 Wire composed card delivery through Claude runtime
+  files: src/providers/claude/runtime.js (MODIFY)
+  traces: FR-005, AC-005-01
+  blocked_by: [T029]
+
+- [X] T046 Wire composed card delivery through Codex runtime
+  files: src/providers/codex/runtime.js (MODIFY)
+  traces: FR-005, AC-005-02
+  blocked_by: [T029]
+
+- [X] T047 Cross-provider parity tests
+  files: tests/parity/roundtable-parity.test.js (CREATE)
+  traces: FR-005, AC-005-03, NFR-002
+  blocked_by: [T045, T046]
+
+### Tier 4: Audit-driven migration (depends on BOTH mechanism stable AND audit done)
+
+- [X] T036 Migrate bucket-2 rules to compliance engine
+  files: src/core/compliance/engine.cjs (MODIFY)
+  traces: FR-007, AC-007-01
+  blocked_by: [T034, T035, T029]
+
+- [X] T037 Migrate bucket-3 content to state and task card templates
+  files: src/isdlc/config/roundtable/state-cards/ (MODIFY), src/isdlc/config/roundtable/task-cards/ (MODIFY)
+  traces: FR-007, AC-007-01
+  blocked_by: [T034, T035, T029]
+
+- [X] T038 Delete bucket-1 and bucket-5 content from protocol files
+  files: src/claude/agents/roundtable-analyst.md (MODIFY), src/claude/agents/bug-roundtable-analyst.md (MODIFY)
+  traces: FR-007, AC-007-01
+  blocked_by: [T034, T035, T036, T037, T042]
+
+### Tier 4: Parallel-run and migration (depends on handler restructure)
+
+- [X] T039 Implement parallel-run comparison harness
+  files: tests/parallel-run/harness.js (CREATE)
+  traces: FR-008, AC-008-01
+  blocked_by: [T029]
+
+- [X] T040 Phase-1 migration: introduce mechanism alongside prose protocol
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-008
+  blocked_by: [T029, T030, T031]
+
+- [X] T041 Run analyze parallel sessions and log divergences
+  files: tests/parallel-run/analyze-comparison.test.js (CREATE)
+  traces: FR-008, AC-008-01
+  blocked_by: [T039, T040]
+
+- [X] T042 Cut over analyze when outputs converge
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-008
+  blocked_by: [T041]
+
+- [X] T043 Run bug-gather parallel sessions
+  files: tests/parallel-run/bug-gather-comparison.test.js (CREATE)
+  traces: FR-008, AC-008-01
+  blocked_by: [T039, T042]
+
+- [X] T044 Cut over bug-gather when outputs converge
+  files: src/claude/commands/isdlc.md (MODIFY)
+  traces: FR-008
+  blocked_by: [T043]
+
+### Tier 5: Regression and traceability
+
+- [X] T056 Build workflow regression tests
+  files: tests/regression/build-workflow-unchanged.test.js (CREATE)
+  traces: FR-006, AC-006-01
+
+- [X] T057 Verify phase-loop injection unchanged
+  files: tests/regression/phase-loop-injection.test.js (CREATE)
+  traces: FR-006, AC-006-01
+
+- [X] T058 Author audit traceability log
+  files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/audit-traceability.md (CREATE)
+  traces: FR-007, NFR-005
+  blocked_by: [T034, T035, T036, T037, T038]
+
+- [X] T059 Scripted verification of cut-to-mechanism traceability
+  files: tests/audit/cut-mechanism-traceability.test.js (CREATE)
+  traces: FR-007, NFR-005
+  blocked_by: [T058]
+
+## Phase 16: Quality Loop -- PENDING
+
+- [ ] T048 Execute unit test suite for all new core modules
+  traces: FR-001, FR-002, FR-003, FR-004
+  blocked_by: [T016, T017, T018, T019, T020, T021, T022, T023]
+
+- [ ] T049 Execute integration tests on analyze and bug-gather workflows
+  traces: FR-005, FR-006
+  blocked_by: [T029, T030]
+
+- [ ] T050 Execute performance tests for 200ms budget
+  traces: NFR-003
+  blocked_by: [T029]
+
+- [ ] T051 Execute cross-provider parity tests
+  traces: NFR-002
+  blocked_by: [T047]
+
+- [ ] T052 Execute prompt verification tests for updated roundtable protocols
+  traces: FR-007
+  blocked_by: [T038]
+
+## Phase 08: Code Review -- PENDING
+
+- [ ] T053 Code review all new core modules
+  traces: FR-001, FR-002, FR-003, FR-004, FR-005
+  blocked_by: [T048, T049, T050, T051]
+
+- [ ] T054 Constitutional compliance check
+  traces: Articles I, II, III, V, VI, VII, VIII, IX, X, XIII
+  blocked_by: [T053]
+
+- [ ] T055 Review specification fidelity of audit deletions
+  traces: NFR-005
+  blocked_by: [T052, T058, T059]
 
 ## Dependency Graph
 
-Critical path (longest chain):
-T001 -> T004 -> T007 -> T008 -> T009 -> T010 -> T011 -> T012 -> T013 -> T014 -> T015 -> T016 -> T019 -> T029 -> T030 -> T031 -> T033 -> T034 -> T035
+Critical path: T034/T035 -> T060 [decision gate] -> T005/T006 -> T016 -> T017 -> T029 -> T039/T040 -> T041 -> T042 -> T036/T037 -> T038 -> T052 -> T055
 
-Length: 19 tasks.
-
-Parallel opportunities:
-- Phase 05 test design tasks (T002-T006) can run in parallel after T001 creates test-strategy.md
-- Unit tests (T020-T024) can run in parallel once their implementation dependencies complete
-- Wiring and cleanup tasks (T025, T026, T027, T028) can run in parallel with unit tests
-- Parity verification (T032) runs in parallel with throughput measurement (T033) after T030
-
-Commit order within Phase 06 matches the fix-strategy commit table:
-T007 -> T008 -> T009 -> T010 -> T011 -> T012 -> T013 -> T014 -> T015 -> T016 -> T017 -> T018 -> T019
-
-Constants dedup (T018) sits late in the chain because it depends on both T016 and T017 having updated their respective call sites.
-
-## Traceability Matrix
-
-| FR | AC count | Phase 05 Tasks | Phase 06 Tasks | Phase 16 Tasks | Phase 08 Tasks |
-|---|---|---|---|---|---|
-| FR-001 | 3 | T001 | T012, T020, T025, T026, T028 | T029, T030 | T034, T035 |
-| FR-002 | 4 | T002 | T013, T020, T025, T026 | T029, T030 | T034, T035 |
-| FR-003 | 3 | T003 | T010, T021, T025, T026 | T029, T030 | T034, T035 |
-| FR-004 | 3 | T003 | T011, T021, T025, T026 | T029 | T034, T035 |
-| FR-005 | 4 | T004 | T007, T008, T009, T025, T026, T027, T028 | T029, T030, T032 | T034, T035 |
-| FR-006 | 4 | T005 | T016, T017, T019, T022, T023, T025, T026, T028 | T029, T031, T033 | T034, T035 |
-| FR-007 | 3 | T006 | T014, T019, T024, T025, T026 | T029, T031, T033 | T034, T035 |
-| FR-008 | 3 | T005 | T015, T017, T018, T023, T025, T026 | T029 | T034, T035 |
-
-All 8 FRs and 27 ACs are traced to at least one task in every build phase. No orphan requirements.
-
-## Assumptions and Inferences
-
-- ASM-001: Real chunks for calibration come from `lib/embedding/chunker` output already available in the CLI hot path at `bin/isdlc-embedding.js:536`. No new chunker invocation needed; calibrator subsamples existing chunks.
-- ASM-002: The upstream ONNX Runtime `SimplifiedLayerNormFusion` bug is either fixed in pinned versions or detectable by the cosine parity test. If parity fails, commits 1-2 from the fix strategy are reverted but commits 3-7 ship (calibrator + workload-aware parallelism still net-positive).
-- ASM-003: Differential refresh does not call `calibratePerWorkerMemory()` today. This fix preserves that. Differential paths will still benefit from workload-aware parallelism via FR-006.
-- ASM-004: No new runtime dependencies. Pinned fixture corpus is real code chunks copied from the project itself.
-- ASM-005: Article II (test-first) covered by commit order — parity test lands first (commit 1), default flip second (commit 2). Article X (fail-safe defaults) covered by keeping `"disabled"` as a user escape hatch. Article XII (cross-platform) covered by scoping the default flip to the CoreML path; CPU and CUDA paths unchanged.
-- INF-001: Real per-worker cost with `graphOptimizationLevel: "all"` likely drops from ~7 GB to ~3-4 GB. If confirmed, `autoParallelism` picks 2-3 workers on a 24 GB Mac, unlocking NFR-002's ≥3× throughput target. If the real cost stays above ~5 GB/worker even after the flip, auto-parallelism correctly falls back to 1-2 workers and NFR-002 is not met on 24 GB hardware alone — that outcome indicates the hardware is the constraint, not the calibrator.
-- INF-002: The 500 ms sampling cadence was inherited from an early GH-239 PR and was never tuned against real steady-state timing. 200 ms is chosen empirically to give ~100-150 samples over a 20-30 s run, enough to capture multiple batch-memory peaks.
+Key change from v1: audit (T034/T035) and scope calibration (T060) are now tier 0 — they gate all downstream work. The decision gate at T060 can scale the entire build up or down based on what the audit reveals.

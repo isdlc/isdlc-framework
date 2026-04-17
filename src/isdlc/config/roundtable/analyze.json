@@ -1,0 +1,334 @@
+{
+  "$schema": "../../../core/roundtable/schemas/workflow.schema.json",
+  "version": "1.0.0",
+  "workflow_type": "analyze",
+  "description": "Analyze workflow state graph — feature/change analysis roundtable",
+  "inherits": "core.json",
+  "completion_signal": "ROUNDTABLE_COMPLETE",
+
+  "states": {
+    "IDLE": {
+      "description": "Analysis session start — no conversation yet",
+      "entry_conditions": ["analysis_session_starts"],
+      "presenter": null,
+      "template": null,
+      "response": null,
+      "transitions": [
+        { "condition": "coverage_complete", "target": "PRESENTING_REQUIREMENTS" },
+        { "condition": "trivial_tier", "target": "TRIVIAL_SHOW" },
+        { "condition": "early_exit", "target": "FINALIZING" }
+      ],
+      "next_default": "CONVERSATION"
+    },
+
+    "CONVERSATION": {
+      "description": "Interactive roundtable conversation — personas gather requirements through dialogue",
+      "entry_conditions": ["session_started"],
+      "presenter": "Maya",
+      "template": null,
+      "response": null,
+      "sub_tasks": {
+        "execution_order": "dynamic",
+        "tasks": [
+          {
+            "id": "SCOPE_FRAMING",
+            "description": "Frame the scope of the change from ticket/user input",
+            "triggers": ["session_start", "first_exchange"],
+            "skill_ids": [],
+            "preferred_tools": ["semantic_search"],
+            "expected_output": {
+              "shape": "scope_statement",
+              "fields": ["problem_statement", "affected_area", "initial_scope_assessment"]
+            },
+            "completion_marker": "scope_framed"
+          },
+          {
+            "id": "CODEBASE_SCAN",
+            "description": "Scan codebase for affected files, modules, symbols",
+            "triggers": ["after_first_user_reply"],
+            "skill_ids": ["QS-002-keyword-search", "IA-001-impact-scanner"],
+            "preferred_tools": ["semantic_search", "code_index"],
+            "expected_output": {
+              "shape": "scan_result",
+              "fields": ["files_affected", "modules_touched", "symbol_refs"]
+            },
+            "completion_marker": "scan_complete"
+          },
+          {
+            "id": "BLAST_RADIUS",
+            "description": "Assess direct changes and transitive impact",
+            "triggers": ["scan_complete"],
+            "skill_ids": ["IA-001-impact-scanner"],
+            "preferred_tools": ["code_index", "semantic_search"],
+            "expected_output": {
+              "shape": "blast_radius",
+              "fields": ["direct_changes", "transitive_impact", "risk_areas"]
+            },
+            "completion_marker": "blast_radius_assessed"
+          },
+          {
+            "id": "OPTIONS_RESEARCH",
+            "description": "Evaluate architecture/design options when multiple approaches exist",
+            "triggers": ["scope_framed", "blast_radius_assessed"],
+            "skill_ids": [],
+            "preferred_tools": ["semantic_search", "code_index"],
+            "expected_output": {
+              "shape": "options_evaluation",
+              "fields": ["options_evaluated", "selected_with_rationale"]
+            },
+            "completion_marker": "options_researched"
+          },
+          {
+            "id": "DEPENDENCY_CHECK",
+            "description": "Check for dependency conflicts and version constraints",
+            "triggers": ["scan_complete"],
+            "skill_ids": [],
+            "preferred_tools": ["code_index", "grep"],
+            "expected_output": {
+              "shape": "dependency_report",
+              "fields": ["dependencies_checked", "conflicts_found", "version_constraints"]
+            },
+            "completion_marker": "dependencies_checked"
+          }
+        ]
+      },
+      "exit_markers": ["coverage_complete", "participation_gate_satisfied"],
+      "transitions": [
+        {
+          "condition": "coverage_complete AND participation_gate_satisfied AND tier != trivial",
+          "target": "PRESENTING_REQUIREMENTS"
+        },
+        {
+          "condition": "trivial_tier",
+          "target": "TRIVIAL_SHOW"
+        },
+        {
+          "condition": "early_exit_signal",
+          "target": "FINALIZING"
+        }
+      ]
+    },
+
+    "PRESENTING_REQUIREMENTS": {
+      "description": "Maya presents requirements summary for Accept/Amend",
+      "entry_conditions": [
+        "coverage_complete_on_requirements_topics",
+        "participation_gate_satisfied"
+      ],
+      "presenter": "Maya",
+      "template_ref": "requirements.template.json",
+      "sections": [
+        "functional_requirements",
+        "assumptions_and_inferences",
+        "non_functional_requirements",
+        "out_of_scope",
+        "prioritization"
+      ],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept AND tier IN [standard, epic]", "target": "PRESENTING_ARCHITECTURE" },
+        { "condition": "accept AND tier == light", "target": "PRESENTING_DESIGN" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_ARCHITECTURE": {
+      "description": "Alex presents architecture summary for Accept/Amend",
+      "entry_conditions": ["PRESENTING_REQUIREMENTS_accepted", "tier IN [standard, epic]"],
+      "presenter": "Alex",
+      "template_ref": "architecture.template.json",
+      "sections": [
+        "architecture_options",
+        "selected_architecture",
+        "technology_decisions",
+        "integration_architecture",
+        "assumptions_and_inferences"
+      ],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "PRESENTING_DESIGN" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_DESIGN": {
+      "description": "Jordan presents design summary for Accept/Amend",
+      "entry_conditions": [
+        "PRESENTING_ARCHITECTURE_accepted OR PRESENTING_REQUIREMENTS_accepted_light_tier"
+      ],
+      "presenter": "Jordan",
+      "template_ref": "design.template.json",
+      "sections": [
+        "module_overview",
+        "module_design",
+        "changes_to_existing",
+        "wiring_summary",
+        "assumptions_and_inferences"
+      ],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "PRESENTING_TASKS" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_TASKS": {
+      "description": "Lead presents tasks as traceability table for Accept/Amend",
+      "entry_conditions": [
+        "PRESENTING_DESIGN_accepted",
+        "task_coverage_validation_passed"
+      ],
+      "presenter": "Lead",
+      "template_ref": "traceability.template.json",
+      "written_template_ref": "tasks.template.json",
+      "sections": [
+        "traceability_table",
+        "total_phase_breakdown",
+        "coverage_summary",
+        "orphan_tasks",
+        "assumptions_and_inferences"
+      ],
+      "rendering_mandate": "MUST render as 4-column traceability table. NEVER bullets. NEVER prose-only.",
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "FINALIZING" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "AMENDING": {
+      "description": "User chose Amend — re-engage all personas, restart from top",
+      "entry_conditions": ["user_chose_amend_from_any_presenting_state"],
+      "presenter": "all_active_primary_personas",
+      "template": null,
+      "response": "amendment_conversation_reaches_resolution",
+      "actions": [
+        "re_engage_all_active_personas",
+        "clear_accepted_domains",
+        "increment_amendment_cycles"
+      ],
+      "transitions": [
+        { "condition": "resolution_reached", "target": "PRESENTING_REQUIREMENTS" }
+      ]
+    },
+
+    "TRIVIAL_SHOW": {
+      "description": "Trivial tier — brief mention, no Accept/Amend, auto-transition",
+      "entry_conditions": ["tier == trivial"],
+      "presenter": "Lead",
+      "template": null,
+      "response": null,
+      "auto_transition": true,
+      "transitions": [
+        { "condition": "auto", "target": "FINALIZING" }
+      ]
+    },
+
+    "FINALIZING": {
+      "description": "Cross-check, batch write artifacts, update meta.json, emit completion signal",
+      "entry_conditions": [
+        "PRESENTING_TASKS_accepted",
+        "OR TRIVIAL_SHOW_auto_transition",
+        "OR early_exit_confirmed"
+      ],
+      "presenter": "Lead",
+      "template_ref": "tasks.template.json",
+      "actions": [
+        "cross_check_in_memory",
+        "parallel_batch_write",
+        "update_meta_json",
+        "emit_completion_signal"
+      ],
+      "artifact_list": [
+        "quick-scan.md",
+        "requirements-spec.md",
+        "user-stories.json",
+        "traceability-matrix.csv",
+        "impact-analysis.md",
+        "architecture-overview.md",
+        "module-design.md",
+        "interface-spec.md",
+        "error-taxonomy.md",
+        "data-flow.md",
+        "design-summary.md",
+        "tasks.md"
+      ],
+      "batch_write_contract": {
+        "max_responses": 2,
+        "batch_a": [
+          "quick-scan.md", "requirements-spec.md", "user-stories.json",
+          "traceability-matrix.csv", "impact-analysis.md", "architecture-overview.md"
+        ],
+        "batch_b": [
+          "module-design.md", "interface-spec.md", "error-taxonomy.md",
+          "data-flow.md", "design-summary.md", "tasks.md"
+        ]
+      },
+      "transitions": [
+        { "condition": "batch_write_complete", "target": "COMPLETE" }
+      ]
+    },
+
+    "COMPLETE": {
+      "description": "Terminal state — emit ROUNDTABLE_COMPLETE signal",
+      "entry_conditions": ["finalization_batch_complete"],
+      "presenter": "Lead",
+      "template": null,
+      "response": null,
+      "terminal": true,
+      "emit": "ROUNDTABLE_COMPLETE"
+    }
+  },
+
+  "tier_rules": {
+    "standard": {
+      "domains_presented": ["requirements", "architecture", "design", "tasks"],
+      "accept_amend": true,
+      "confirmation_states": [
+        "PRESENTING_REQUIREMENTS",
+        "PRESENTING_ARCHITECTURE",
+        "PRESENTING_DESIGN",
+        "PRESENTING_TASKS"
+      ]
+    },
+    "epic": {
+      "domains_presented": ["requirements", "architecture", "design", "tasks"],
+      "accept_amend": true,
+      "confirmation_states": [
+        "PRESENTING_REQUIREMENTS",
+        "PRESENTING_ARCHITECTURE",
+        "PRESENTING_DESIGN",
+        "PRESENTING_TASKS"
+      ]
+    },
+    "light": {
+      "domains_presented": ["requirements", "design", "tasks"],
+      "accept_amend": true,
+      "skip_states": ["PRESENTING_ARCHITECTURE"],
+      "bypass": {
+        "from": "PRESENTING_REQUIREMENTS",
+        "to": "PRESENTING_DESIGN"
+      },
+      "confirmation_states": [
+        "PRESENTING_REQUIREMENTS",
+        "PRESENTING_DESIGN",
+        "PRESENTING_TASKS"
+      ],
+      "task_generation_note": "Tasks generated from requirements + impact analysis only (no architecture/design artifacts)"
+    },
+    "trivial": {
+      "domains_presented": [],
+      "accept_amend": false,
+      "confirmation_states": ["TRIVIAL_SHOW"],
+      "note": "Brief mention only, auto-transitions to FINALIZING"
+    }
+  },
+
+  "scope_recommendation": {
+    "timing": "before_confirmation_sequence",
+    "presentation": "conversational",
+    "factors": ["files_affected", "number_of_FRs", "architectural_complexity", "risk"],
+    "user_can_override": true,
+    "meta_json_field": "recommended_scope"
+  }
+}

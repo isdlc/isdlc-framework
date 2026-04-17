@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "OPTIONS_RESEARCH",
+  "version": "1.0.0",
+  "applies_to": ["analyze"],
+
+  "description": "Evaluate architecture/design options when multiple approaches exist",
+
+  "skills": [],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "semantic_search", "rationale": "Research existing patterns and approaches in codebase" },
+    { "rank": 2, "tool": "code_index", "rationale": "Understand module structure for option evaluation" }
+  ],
+
+  "expected_output": {
+    "shape": "options_evaluation",
+    "fields": {
+      "options_evaluated": { "type": "array", "required": true, "description": "List of options with pros/cons" },
+      "selected_with_rationale": { "type": "object", "required": true, "description": "Selected option and reasoning" }
+    }
+  },
+
+  "completion_marker": "options_researched",
+  "marker_signals": [
+    "multiple options discussed",
+    "tradeoffs compared",
+    "recommendation made"
+  ],
+
+  "constraints": {
+    "max_lines": 30,
+    "depends_on": ["scope_framed", "blast_radius_assessed"],
+    "conditional": "Only fires when multiple viable approaches exist"
+  }
+}

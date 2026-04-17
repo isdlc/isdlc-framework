@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_FIX_STRATEGY",
+  "version": "1.0.0",
+  "applies_to": ["bug_gather"],
+
+  "presenter": {
+    "persona": "Jordan",
+    "role": "System Designer"
+  },
+
+  "template_ref": "fix-strategy.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "approaches",
+    "recommended_approach",
+    "regression_risk"
+  ],
+
+  "all_sections": [
+    "approaches",
+    "recommended_approach",
+    "regression_risk",
+    "test_gaps"
+  ],
+
+  "presentation_guidance": {
+    "approaches": "At least 2, each with pros/cons/regression risk/files affected",
+    "recommended_approach": "Selected approach with rationale",
+    "regression_risk": "Assessment for the recommendation",
+    "test_gaps": "Gaps in the affected area's test coverage"
+  },
+
+  "content_coverage": [
+    "at_least_2_fix_approaches",
+    "pros_cons_per_approach",
+    "regression_risk_per_approach",
+    "recommended_approach_with_rationale",
+    "test_gap_identification"
+  ],
+
+  "accept_amend_prompt": "**Accept** this fix strategy or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "PRESENTING_TASKS",
+    "amend": "AMENDING"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "isdlc-project-config",
+  "title": "iSDLC Project Configuration",
+  "description": "Schema for .isdlc/config.json — the unified user project config. REQ-GH-231 FR-001, REQ-GH-253 FR-004.",
+  "type": "object",
+  "properties": {
+    "cache": {
+      "type": "object",
+      "description": "Token cache budget and section priorities",
+      "properties": {
+        "budget_tokens": { "type": "integer", "minimum": 0, "default": 100000 },
+        "section_priorities": { "type": "object", "additionalProperties": { "type": "integer" } }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "show_subtasks_in_ui": { "type": "boolean", "default": true }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "default": { "type": "string", "enum": ["claude", "codex"], "default": "claude" }
+      }
+    },
+    "roundtable": {
+      "type": "object",
+      "description": "Roundtable conversation and task card configuration",
+      "properties": {
+        "verbosity": { "type": "string", "enum": ["bulleted", "prose", "minimal"], "default": "bulleted" },
+        "default_personas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Default persona agent names to include in roundtable sessions"
+        },
+        "disabled_personas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Persona agent names to exclude from roundtable sessions"
+        },
+        "task_card": {
+          "type": "object",
+          "description": "Task card composition settings for background sub-tasks",
+          "properties": {
+            "max_skills_total": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 8,
+              "description": "Maximum total skills (shipped + project + user) included in each task card"
+            }
+          }
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "description": "Search configuration overrides"
+    },
+    "embeddings": {
+      "type": "object",
+      "description": "Embedding pipeline configuration",
+      "properties": {
+        "server": {
+          "type": "object",
+          "properties": {
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 7777 },
+            "host": { "type": "string", "default": "localhost" },
+            "auto_start": { "type": "boolean", "default": true },
+            "startup_timeout_ms": { "type": "integer", "minimum": 0, "default": 30000 }
+          }
+        },
+        "provider": { "type": "string", "default": "jina-code" },
+        "model": { "type": "string" },
+        "api_key_env": { "type": ["string", "null"], "default": null },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "path": { "type": "string" },
+              "tier": { "type": "string" }
+            },
+            "required": ["type", "path"]
+          }
+        },
+        "parallelism": { "oneOf": [{ "type": "string", "const": "auto" }, { "type": "integer", "minimum": 1 }], "default": "auto" },
+        "device": { "type": "string", "default": "auto" },
+        "batch_size": { "type": "integer", "minimum": 1, "default": 32 },
+        "dtype": { "type": "string", "default": "auto" },
+        "session_options": { "type": "object" },
+        "max_memory_gb": { "type": ["number", "null"], "default": null }
+      }
+    },
+    "atdd": {
+      "type": "object",
+      "description": "ATDD mode configuration (REQ-GH-216)",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "require_gwt": { "type": "boolean", "default": true },
+        "track_red_green": { "type": "boolean", "default": true },
+        "enforce_priority_order": { "type": "boolean", "default": true }
+      }
+    },
+    "workflows": {
+      "type": "object",
+      "description": "Workflow sizing and performance budgets",
+      "properties": {
+        "sizing_thresholds": {
+          "type": "object",
+          "properties": {
+            "light_max_files": { "type": "integer", "minimum": 1 },
+            "epic_min_files": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "performance_budgets": { "type": "object" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

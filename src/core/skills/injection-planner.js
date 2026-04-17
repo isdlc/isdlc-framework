@@ -69,19 +69,25 @@ function resolveBuiltInSkills(manifest, agent) {
  * Resolve external skills matching the given phase and agent.
  *
  * Filters the external manifest by:
- * 1. Phase must be in the binding's phases array
- * 2. Agent must be in the binding's agents array
+ * 1. Phase must be in the binding's phases array (or 'all')
+ * 2. Agent must be in the binding's agents array (or 'all')
  * 3. injection_mode must be 'always'
+ * 4. If subTask is provided, bindings.sub_tasks must include it (or be absent for backward compat)
  *
  * Applies content length override rules for delivery type.
+ *
+ * REQ-GH-253 FR-004, AC-004-03: bindings.sub_tasks is an additive optional field.
+ * Skills without sub_tasks bindings are included when subTask filtering is active
+ * (backward compatibility — absence means "all sub-tasks").
  *
  * @param {Object} externalManifest - Parsed external-skills-manifest.json
  * @param {string} phase - Phase key
  * @param {string} agent - Agent name
  * @param {Object} [contentLengthOverrides] - Optional map of skill name -> content length
+ * @param {string} [subTask] - Optional sub-task type to filter by (e.g., 'codebase-scan')
  * @returns {Array<Object>} Array of external skill entries
  */
-function resolveExternalSkills(externalManifest, phase, agent, contentLengthOverrides) {
+function resolveExternalSkills(externalManifest, phase, agent, contentLengthOverrides, subTask) {
   if (!externalManifest || !Array.isArray(externalManifest.skills)) {
     return [];
   }
@@ -92,10 +98,14 @@ function resolveExternalSkills(externalManifest, phase, agent, contentLengthOver
     .filter(skill => {
       if (!skill.bindings) return false;
       const b = skill.bindings;
-      const phaseMatch = Array.isArray(b.phases) && b.phases.includes(phase);
-      const agentMatch = Array.isArray(b.agents) && b.agents.includes(agent);
+      const phaseMatch = Array.isArray(b.phases) && (b.phases.includes(phase) || b.phases.includes('all'));
+      const agentMatch = Array.isArray(b.agents) && (b.agents.includes(agent) || b.agents.includes('all'));
       const modeMatch = b.injection_mode === 'always';
-      return phaseMatch && agentMatch && modeMatch;
+      // REQ-GH-253 FR-004: sub_task filtering (additive, backward-compatible)
+      // If subTask is specified, match against bindings.sub_tasks if present;
+      // skills without sub_tasks are included (absence = all sub-tasks).
+      const subTaskMatch = !subTask || !Array.isArray(b.sub_tasks) || b.sub_tasks.includes(subTask);
+      return phaseMatch && agentMatch && modeMatch && subTaskMatch;
     })
     .map(skill => {
       let deliveryType = (skill.bindings && skill.bindings.delivery_type) || 'context';
@@ -127,6 +137,7 @@ function resolveExternalSkills(externalManifest, phase, agent, contentLengthOver
  * @param {string} [options.externalManifestPath] - Override external manifest path
  * @param {string} [options.projectRoot] - Project root for path resolution
  * @param {Object} [options.contentLengthOverrides] - Map of skill name -> content length
+ * @param {string} [options.subTask] - Optional sub-task type for filtering (REQ-GH-253 FR-004)
  * @returns {{ builtIn: Array, external: Array, merged: Array }} Injection plan
  */
 export function computeInjectionPlan(workflow, phase, agent, options = {}) {
@@ -134,7 +145,8 @@ export function computeInjectionPlan(workflow, phase, agent, options = {}) {
     manifestPath,
     externalManifestPath,
     projectRoot,
-    contentLengthOverrides
+    contentLengthOverrides,
+    subTask
   } = options;
 
   // Resolve manifest paths
@@ -148,7 +160,7 @@ export function computeInjectionPlan(workflow, phase, agent, options = {}) {
 
   // Resolve skills
   const builtIn = resolveBuiltInSkills(manifest, agent);
-  const external = resolveExternalSkills(externalManifest, phase, agent, contentLengthOverrides);
+  const external = resolveExternalSkills(externalManifest, phase, agent, contentLengthOverrides, subTask);
 
   // FR-004 AC-004-01: Built-in first, then external
   const merged = [...builtIn, ...external];

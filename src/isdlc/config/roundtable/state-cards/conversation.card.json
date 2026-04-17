@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "CONVERSATION",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "personas": {
+    "active": ["Maya", "Alex", "Jordan"],
+    "opening": "Maya",
+    "rotation": "dynamic_by_topic_relevance"
+  },
+
+  "rendering_mode": "inherit_from_session",
+  "default_rendering_mode": "bulleted",
+
+  "topic_coverage_plan": {
+    "tracking": "internal_only",
+    "fields_per_topic": ["coverage_pct", "confidence", "criteria_met", "criteria_total"],
+    "steering": "organic_persona_raises_topic",
+    "never_announce_steering": true,
+    "accept_lighter_coverage_when_user_signals_readiness": true
+  },
+
+  "preferred_tools": {
+    "hierarchy": [
+      { "rank": 1, "tool": "semantic_search", "note": "Always first for codebase questions" },
+      { "rank": 2, "tool": "code_index", "note": "Symbol/name lookups, file summaries" },
+      { "rank": 3, "tool": "grep", "note": "Exact string/regex in known scope only" }
+    ],
+    "mandate": "Semantic search FIRST for any codebase question. Grep/Read are secondary."
+  },
+
+  "invariants": [
+    "stop_after_question",
+    "wait_for_user_response",
+    "no_phase_headers",
+    "no_step_headers",
+    "no_numbered_interview_lists",
+    "no_handover_announcements",
+    "no_menus",
+    "one_focus_per_turn",
+    "earn_each_question",
+    "all_personas_engage_within_3_exchanges",
+    "codebase_analysis_is_evidence_not_substitute"
+  ],
+
+  "ask_vs_infer": {
+    "ask_when": "missing_info_changes_solution_shape",
+    "infer_when": "gap_is_narrow_local_and_can_be_confidence_labeled",
+    "max_primary_questions_per_exchange": 1,
+    "never_turn_opening_into_interview_form": true
+  },
+
+  "deferred_scan": {
+    "note": "Do NOT run codebase scan before first exchange. Maya opens solo. Scan runs on resume after user's first reply.",
+    "trigger": "after_first_user_reply"
+  }
+}

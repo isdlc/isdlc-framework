@@ -141,6 +141,52 @@ describe('Claude executeTask (REQ-0134 FR-002)', () => {
     assert.strictEqual(result.status, 'delegated');
     assert.ok(result.output.prompt !== undefined);
   });
+
+  // CRT-34: composedCard is injected into prompt (REQ-GH-253 T045)
+  it('CRT-34: composedCard is appended to prompt when present (REQ-GH-253)', async () => {
+    const result = await runtime.executeTask('06-implementation', '05-software-developer', {
+      instructions: 'Build the widget',
+      composedCard: '## Roundtable State Card\nYou are in CONVERSATION state.',
+      skill_context: 'code-implementation'
+    });
+    const prompt = result.output.prompt;
+    assert.ok(prompt.includes('Roundtable State Card'), 'Prompt should include composedCard text');
+    assert.ok(prompt.includes('CONVERSATION state'), 'Prompt should include card content');
+  });
+
+  // CRT-35: composedCard appears after instructions and before skills
+  it('CRT-35: composedCard appears after instructions, before skills (REQ-GH-253)', async () => {
+    const result = await runtime.executeTask('06-implementation', '05-software-developer', {
+      instructions: 'INSTR_MARKER',
+      composedCard: 'CARD_MARKER',
+      skill_context: 'SKILL_MARKER'
+    });
+    const prompt = result.output.prompt;
+    const instrIdx = prompt.indexOf('INSTR_MARKER');
+    const cardIdx = prompt.indexOf('CARD_MARKER');
+    const skillIdx = prompt.indexOf('SKILL_MARKER');
+    assert.ok(instrIdx < cardIdx, 'composedCard should appear after instructions');
+    assert.ok(cardIdx < skillIdx, 'composedCard should appear before skills');
+  });
+
+  // CRT-36: prompt unchanged when composedCard is absent
+  it('CRT-36: prompt unchanged when composedCard is not provided (REQ-GH-253)', async () => {
+    const result = await runtime.executeTask('06-implementation', '05-software-developer', {
+      instructions: 'Build it',
+      skill_context: 'code-implementation'
+    });
+    const prompt = result.output.prompt;
+    assert.ok(!prompt.includes('Roundtable State Card'), 'Should not inject card text');
+  });
+
+  // CRT-37: composedCard works with no other optional fields
+  it('CRT-37: composedCard works when instructions and skills are absent (REQ-GH-253)', async () => {
+    const result = await runtime.executeTask('06-implementation', '05-software-developer', {
+      composedCard: 'STANDALONE_CARD'
+    });
+    const prompt = result.output.prompt;
+    assert.ok(prompt.includes('STANDALONE_CARD'), 'Should include standalone card');
+  });
 });
 
 // ---------------------------------------------------------------------------

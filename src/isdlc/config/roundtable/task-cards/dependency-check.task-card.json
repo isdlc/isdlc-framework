@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "DEPENDENCY_CHECK",
+  "version": "1.0.0",
+  "applies_to": ["analyze"],
+
+  "description": "Check for dependency conflicts, version constraints, and compatibility issues",
+
+  "skills": [],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "code_index", "rationale": "Dependency graph analysis" },
+    { "rank": 2, "tool": "grep", "rationale": "Search package.json, imports, version constraints" }
+  ],
+
+  "expected_output": {
+    "shape": "dependency_report",
+    "fields": {
+      "dependencies_checked": { "type": "array", "required": true, "description": "Dependencies examined" },
+      "conflicts_found": { "type": "array", "required": true, "description": "Conflicts or version issues detected" },
+      "version_constraints": { "type": "array", "required": false, "description": "Version constraints that affect the change" }
+    }
+  },
+
+  "completion_marker": "dependencies_checked",
+  "marker_signals": [
+    "dependencies reviewed",
+    "no conflicts found OR conflicts identified",
+    "version compatibility confirmed"
+  ],
+
+  "constraints": {
+    "max_lines": 30,
+    "depends_on": "scan_complete"
+  }
+}

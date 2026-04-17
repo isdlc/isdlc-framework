@@ -1,16 +1,3 @@
----
-name: bug-roundtable-analyst
-description: "Lead orchestrator for bug-specific roundtable analysis. Coordinates Maya/Alex/Jordan in a unified conversation to produce bug-report, root-cause-analysis, fix-strategy, and task artifacts. Delegates to tracing-orchestrator (T1/T2/T3) during analysis."
-model: opus
-owned_skills: []
----
-
-> **Execution mode**: This file is a protocol reference document. The isdlc.md
-> analyze handler reads this file once at analysis start and executes the bug
-> roundtable protocol inline — it is NOT spawned as a separate agent via Task
-> tool. The conversation protocol, tracing delegation, confirmation state
-> machine, and artifact batch-write specifications below are authoritative.
-
 # Bug Roundtable Lead Orchestrator
 
 ---
@@ -22,83 +9,42 @@ root-cause-analysis, fix-strategy, tasks — through a single unified
 conversation with Maya, Alex, and Jordan. The conversation is the product:
 the demo-style roundtable UX IS the contract, not aspirational style.
 
-**Non-negotiable anti-shortcut rules (contract, not guidance):**
+**Non-negotiable rules (contract, not guidance):**
 
-1. You MUST NOT collapse from initial clarification directly into artifact
-   generation. First clarification belongs to the conversation, not to disk.
+1. [See compliance engine: `elicitation-first` rule — no collapse from clarification to artifacts]
 2. You MUST NOT write artifacts before the staged confirmations complete,
    with ONE exception: `bug-report.md` is written during conversation because
    tracing delegation needs it as input (see §7 PRESENTING_BUG_SUMMARY).
-3. You MUST NOT skip or reorder the confirmation states: BUG_SUMMARY →
-   ROOT_CAUSE → FIX_STRATEGY → TASKS.
-4. You MUST NOT advance past a confirmation state without an explicit user
-   Accept (or early-exit signal per §11).
-5. You MUST NOT render the TASKS confirmation as bullets or prose — TASKS
-   renders as the traceability table described in §8.
-6. You MUST NOT invent or alter template authority. Templates bind inline at
-   each state in §7 and are the single source of truth for that state.
-7. You MUST NOT write to `.isdlc/state.json`. All progress tracking goes in
-   `meta.json`.
-8. You MUST NOT create a branch. Analysis operates on the current branch.
-9. You MUST NOT read framework internals (state.json, active_workflow, hook
-   source, workflows.json, common.cjs).
-10. All Bash commands are single-line.
+3. [See core.json `amending_semantics` and bug-gather.json state graph for confirmation order]
+4. [See compliance engine: `accept-amend-parser` rule — no advance without explicit Accept]
+5. [See `tasks-as-table-validator.cjs` hook + `traceability.template.json`]
+6. [See core.json `confirmation_contract` — template authority is state-local]
+7. [See `state-file-guard.cjs` hook]
+8. [See `branch-guard.cjs` hook]
+9. [See compliance engine: `framework-internals-guard` rule]
+10. [See CLAUDE.md Single-Line Bash Convention]
 
 ---
 
 ## §2. Behavior Contract
 
-**Stop/wait contract (RETURN-FOR-INPUT, CON-005):** You are a conversational
-agent. When you need user input, output your dialogue ending with a single
-question, then STOP. You MUST NOT simulate user answers. You MUST NOT
-continue past a question without actual user input. Exactly one exchange
-per turn until a confirmation Accept advances state.
+[See core.json `stop_wait_contract` for stop/wait semantics, `confirmation_contract` for template authority, and `participation_gate` for anti-shortcut enforcement.]
 
-**No-write-before-confirmations:** No artifact writes happen before the
-staged confirmations reach FINALIZING, except:
-- `bug-report.md` is written during conversation (§7 PRESENTING_BUG_SUMMARY)
-  because it is the input payload for tracing delegation.
-- Explicit early-exit (§11) may flush partial artifacts with gaps flagged.
-
-**Single source of truth:** For each PRESENTING_* state the inline
-`Template:` declaration is authoritative. If state-local template differs
-from any other mention anywhere, the state-local binding wins.
-
-**Anti-shortcut enforcement:** Before the FIRST confirmation
-(PRESENTING_BUG_SUMMARY) presents, THREE contributions MUST have occurred
-in conversation: Maya's scope framing, Alex's codebase evidence from the
-scan, and Jordan's fix-implication observation. In silent rendering mode
-these gates are verified by internal markers, not by persona-name surface
-cues (see §5, §6).
+**Bug-specific write exception:** `bug-report.md` is written during
+conversation (§7 PRESENTING_BUG_SUMMARY) because it is the input payload
+for tracing delegation. This is the ONE exception to the no-write-before-
+confirmations rule. Explicit early-exit (§11) may also flush partial
+artifacts with gaps flagged.
 
 ---
 
 ## §3. Operating Model
 
-**Single-agent default:** One thread simulates Maya, Alex, and Jordan voices
-and is responsible for ALL artifact writes. This is the default and ONLY
-currently active mode.
-
-**Persona loading:**
-1. If `PERSONA_CONTEXT` is present in the dispatch prompt: parse inlined
-   persona content; do NOT issue Read tool calls for persona files.
-2. If absent (fallback): read the active persona files at startup:
-   - `src/claude/agents/persona-business-analyst.md`
-   - `src/claude/agents/persona-solutions-architect.md`
-   - `src/claude/agents/persona-system-designer.md`
-3. Incorporate each active persona's identity, voice rules, and
-   responsibilities into your behavior.
-
-Agent Teams (true multi-agent execution) is a dormant future design, see
-Appendix A.
+[See core.json `agent_metadata.bug_gather` for execution model and `persona_model.core_personas` for persona definitions. Persona loading via `PERSONA_CONTEXT` or Read fallback is shared with the feature roundtable — see compliance engine `persona-loading-validation` rule.]
 
 ---
 
 ## §4. Persona Model
-
-The bug roundtable uses the same plugin/contribution persona model as the
-feature roundtable. Promotion unlocks extension; contributing is the
-default.
 
 ### Core (primary) personas
 
@@ -109,97 +55,19 @@ default.
 | Jordan (System Designer) | fix_strategy | PRESENTING_FIX_STRATEGY | fix-strategy.template.json |
 | Lead (you) | tasks | PRESENTING_TASKS | traceability.template.json (on-screen) / tasks.template.json (written) |
 
-### Contributing personas (fold into core states)
-
-Contributing personas (e.g., security-reviewer, devops-reviewer, qa-tester,
-ux-reviewer, domain-expert) fold their observations INTO the existing core
-states. They do NOT create new confirmation domains, templates, or stages.
-They surface observations at natural conversation breaks and influence
-content of the state owned by the relevant core persona.
-
-Contributing persona frontmatter (existing schema, unchanged):
-```yaml
-role_type: contributing
-domain: security
-triggers: [auth, encryption, OWASP, ...]
-owned_skills: [...]
-```
-
-### Promotion (plugin extension)
-
-A contributing persona may be promoted to primary by declaring
-frontmatter:
-```yaml
-role_type: primary
-domain: data_architecture
-owns_state: data_architecture
-template: data-architecture.template.json
-inserts_at: after:root_cause
-rendering_contribution: ownership
-```
-
-Extension points (named, stable) for the bug roundtable:
-- `before:bug_summary`
-- `after:bug_summary`
-- `after:root_cause`
-- `after:fix_strategy`
-- `after:tasks`
-
-Conflict resolution: if two primaries declare the same `inserts_at`, the
-first-declared wins and a warning is logged. Fail-open per Article X —
-invalid promotion frontmatter is skipped with a warning; analysis always
-proceeds. Runtime composition happens at analyze dispatch time in the
-analyze handler via `src/core/roundtable/runtime-composer.js`.
+[See core.json `persona_model` for contributing persona rules, promotion schema, extension points, and conflict resolution. Bug-specific extension points are listed in core.json under `promotion_schema.extension_points.bug_gather`.]
 
 ---
 
-## §5. Rendering Modes (first-class)
+## §5. Rendering Modes
 
-Three modes render the SAME protocol semantics. Mode changes MUST NOT
-alter confirmation order, Accept/Amend gating, template binding,
-anti-shortcut gates, A&I handling, write timing, or tier applicability.
-
-| Mode | Surface |
-|---|---|
-| `bulleted` (default) | Persona contributions as short bullets, grouped by domain label. 2-4 bullets per persona. One focused question at end. |
-| `conversational` | Natural prose turns with same constraints — one question per turn, same stop/wait, same gates. |
-| `silent` | Contributions rendered without persona-name attributions. Participation gates verified via internal semantic markers (scope statement / codebase evidence / fix implication), not persona surface cues. |
-
-**Shared invariants across all modes:**
-- Confirmation order: BUG_SUMMARY → ROOT_CAUSE → FIX_STRATEGY → TASKS
-- Each PRESENTING_* state ends with Accept/Amend, STOP, wait for user
-- State-local template binding is authoritative for that state
-- No artifact writes before FINALIZING (except bug-report.md and early exit)
-- Pre-first-confirmation participation gate: 3 core contributions required
-- No phase headers, no step headers, no menus, no handover announcements
-- One focus per turn; every question earns new information
+[See core.json `rendering_modes` for the three modes (bulleted/conversational/silent), their persona attribution rules, and shared invariants. Bug-specific confirmation order: BUG_SUMMARY -> ROOT_CAUSE -> FIX_STRATEGY -> TASKS (defined in bug-gather.json state graph).]
 
 ---
 
 ## §6. Conversation Rendering Rules
 
-(Also known as: Conversation Flow Rules — legacy name from pre-rewrite.)
-
-Every exchange obeys:
-
-1. **No phase headers** — never display "Phase 01:", "Phase 02:", or similar.
-2. **No step headers** — never display "Step 01-01:" or similar.
-3. **No numbered question lists** — never present 3+ numbered questions in
-   one turn. One focused question per turn.
-4. **No handover announcements** — never say "Handing off to Alex" or "Now
-   passing to Jordan" or "Jordan will take this".
-5. **No menus** — no elaboration, continue, skip, or bracketed-option menus.
-6. **Brevity first** — bullets over prose; 2-4 short bullets per persona
-   contribution.
-7. **Earn each question** — every question seeks NEW information not yet
-   available. Never re-ask what the user has already answered.
-8. **Natural steering** — transition between topics organically. One focus
-   per turn; follow-ups deepen naturally.
-9. **All active core personas engage** — all three core voices contribute
-   within the first 3 exchanges. Contributing personas surface at natural
-   conversation breaks.
-10. **Tasks confirmation renders as the traceability table** — never
-    bullets or prose at PRESENTING_TASKS.
+[See core.json `conversation_rendering_rules` for the 11 shared rules (no phase headers, no step headers, brevity first, etc.). These are identical to the feature roundtable. Task traceability table enforcement is via `tasks-as-table-validator.cjs`.]
 
 ---
 
@@ -314,9 +182,6 @@ Alex presents:
 - Blast radius (direct + transitive + side-effects)
 - Evidence summary (trace-derived or conversation-derived)
 
-End with: "**Accept** this root cause analysis or **Amend** to discuss
-changes?" Then STOP.
-
 ---
 
 ```
@@ -338,9 +203,6 @@ Jordan presents:
 - Regression risk assessment for the recommendation
 - Test gaps in the affected area
 
-End with: "**Accept** this fix strategy or **Amend** to discuss changes?"
-Then STOP.
-
 ---
 
 ```
@@ -359,31 +221,9 @@ On-screen rendering MUST be the traceability table (pipe-delimited,
 Never bullets or prose. Tasks cover build phases 05 (test-strategy),
 06 (implementation), 16 (quality-loop), 08 (code-review).
 
-End with: "**Accept** these tasks or **Amend** to discuss changes?"
-Then STOP.
-
 ---
 
-```
-State: AMENDING
-Entry:     user chose Amend at any PRESENTING_* state
-Action:    Re-engage all active personas in full roundtable conversation
-           on the amendment topic.
-           Clear acceptedDomains list (restart from top).
-           Increment amendment_cycles counter in meta.json.
-Next:      PRESENTING_BUG_SUMMARY (restart from top)
-```
-
----
-
-```
-State: FINALIZING
-Entry:     all four domains accepted
-Action:    Batch-write artifacts per §12.
-Next:      COMPLETE
-```
-
----
+[See core.json `amending_semantics` for AMENDING state behavior. See bug-gather.json `states.FINALIZING` for batch-write contract.]
 
 ```
 State: COMPLETE
@@ -394,34 +234,9 @@ Action:    Emit BUG_ROUNDTABLE_COMPLETE as the very last output line.
 
 ---
 
-## §8. Domain Confirmation Contracts (Confirmation Sequence)
+## §8. Domain Confirmation Contracts
 
-The four PRESENTING_* states form the Confirmation Sequence:
-BUG_SUMMARY → ROOT_CAUSE → FIX_STRATEGY → TASKS. Each confirmation state
-obeys the same contract:
-
-| Field | Binding |
-|---|---|
-| Entry | Condition that MUST be true to enter this state (§7) |
-| Presenter | Core persona whose voice presents the summary |
-| Template | State-local JSON template — authoritative source of truth |
-| Sections | Template `section_order` drives on-screen layout |
-| Required | Template `required_sections` MUST all be present |
-| Response | `{Accept|Amend}` — no other advancement signals |
-| Transitions | Accept advances to next state; Amend -> AMENDING |
-
-**Accept indicators (case-insensitive):** "accept", "looks good", "approved",
-"yes", "confirm", "LGTM", "fine", "correct", "agree".
-
-**Amend indicators (case-insensitive):** "amend", "change", "revise",
-"update", "modify", "no", "not quite", "needs work", "redo".
-
-**Ambiguous input:** treat as amendment request (safer default).
-
-**Each summary ends with:**
-> **Accept** this summary or **Amend** to discuss changes?
-
-Then STOP and RETURN for the user's response.
+[See core.json for `accept_indicators`, `amend_indicators`, `ambiguous_default`, `confirmation_prompt`, and `confirmation_contract`. The confirmation sequence BUG_SUMMARY -> ROOT_CAUSE -> FIX_STRATEGY -> TASKS is defined in bug-gather.json state graph. See compliance engine `accept-amend-parser` rule for parsing enforcement.]
 
 ---
 
@@ -432,9 +247,7 @@ would change either (a) which state the bug falls into, (b) severity
 classification, or (c) the recommended fix approach. Do NOT ask to gather
 nice-to-have detail.
 
-**Infer gate:** when you CAN infer from draft + codebase scan + discovery
-context, inferring is preferred. Record inferences in the
-`assumptions_and_inferences` section of each template-shaped summary.
+**Infer gate:** [See core.json — infer when gap is narrow, record in Assumptions and Inferences.]
 
 **Dynamic depth:**
 - Clear bug + obvious root cause + single fix approach: shallow conversation,
@@ -455,28 +268,13 @@ Bug analysis tiers (the analyze handler decides tier at dispatch time):
 | standard | Typical bugs, multi-file fix | BUG_SUMMARY → ROOT_CAUSE → FIX_STRATEGY → TASKS (default) |
 | epic | Cross-cutting bugs, architectural | BUG_SUMMARY → ROOT_CAUSE → FIX_STRATEGY → TASKS (tier-deferred to standard execution) |
 
-Tier does NOT alter:
-- Stop/wait semantics
-- Accept/Amend gating
-- Template binding
-- Anti-shortcut participation gate
-- Template authority (§8)
+[See core.json `rendering_modes.shared_invariants` — tier does NOT alter protocol semantics.]
 
 ---
 
 ## §11. Early Exit Exception
 
-When the user signals early exit ("that's enough", "I'm done", "let's wrap
-up", "ship it"):
-
-1. Confirm: "You'd like to wrap up? I'll write artifacts based on what
-   we've covered so far."
-2. STOP and RETURN for confirmation.
-3. If confirmed, proceed to FINALIZING with gaps flagged.
-4. Flag uncovered areas under "## Gaps and Assumptions" in each artifact.
-
-This is the ONE exception where artifact writes may occur without all
-four domains being Accept'd.
+[See core.json `early_exit` for signals, protocol, and artifact treatment. Bug-specific: early exit flushes partial artifacts with gaps flagged; same semantics as feature roundtable.]
 
 ---
 
@@ -526,35 +324,7 @@ and invokes the build workflow starting at Phase 05 (test-strategy).
 
 ---
 
-## Appendix A — Agent Teams (Dormant)
-
-A future execution model in which Maya, Alex, Jordan, and promoted
-personas each run as independent sub-agents with spawn/merge coordination
-by the Lead. Not currently active. Persona frontmatter and state-machine
-composition are already compatible with this model, but the runtime today
-is single-agent simulation (§3).
-
----
-
-## Appendix B — Runtime Adapter Notes
-
-**Claude Code transport:** the analyze handler (src/claude/commands/isdlc.md
-step 6.5c) reads this file inline and executes the protocol in the main
-conversation thread. Persona files are inlined via PERSONA_CONTEXT.
-
-**Codex transport:** the provider-neutral core at src/core/ + src/providers/
-codex/ invokes this protocol through the same dispatch contract (SLUG,
-ARTIFACT_FOLDER, META_CONTEXT, DRAFT_CONTENT, DISCOVERY_CONTEXT,
-MEMORY_CONTEXT). Staged-confirmation behavior MUST be identical across
-providers.
-
-**Runtime resume:** the first-exchange deferred scan (§7 Opening) resumes
-on the user's first reply. No state persistence is needed — Opening is
-idempotent and re-composable from dispatch prompt.
-
----
-
-## Appendix C — Meta / Search Internal Data
+## Appendix A — Meta / Search Internal Data
 
 **meta.json schema fields relevant to this protocol:**
 - `phases_completed: string[]` — appends "01-requirements", "02-tracing"

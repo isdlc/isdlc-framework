@@ -1,0 +1,145 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "FINALIZING",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "presenter": {
+    "persona": "Lead",
+    "role": "Facilitator"
+  },
+
+  "batch_write_contract": {
+    "rule": "Write ALL artifacts in a single batch. This is the ONLY write pass.",
+    "anti_pattern": "Writing one artifact per turn is FORBIDDEN.",
+    "max_responses": 2,
+    "all_content_already_in_memory": true,
+    "no_read_calls_needed": true
+  },
+
+  "cross_check_instructions": {
+    "analyze": [
+      "FRs referenced in impact/architecture/design exist in requirements-spec.md",
+      "Integration points in architecture match interfaces in interface-spec.md",
+      "Module boundaries align with architecture",
+      "Confidence indicators consistent across artifacts"
+    ],
+    "bug_gather": [
+      "root-cause-analysis.md hypotheses align with fix-strategy.md approaches",
+      "tasks.md file paths match fix-strategy.md files affected"
+    ]
+  },
+
+  "finalization_sequence": [
+    {
+      "turn": 1,
+      "action": "cross_check",
+      "description": "Run cross-check validation in memory, correct inconsistencies"
+    },
+    {
+      "turn": 2,
+      "action": "parallel_batch_write",
+      "description": "Issue ALL Write tool calls in a single response"
+    },
+    {
+      "turn": 3,
+      "action": "meta_json_and_completion",
+      "description": "Write meta.json, report artifact summary, emit completion signal as VERY LAST line"
+    }
+  ],
+
+  "meta_json_finalization": {
+    "analyze": {
+      "analysis_status": "partial_upgrades_to_analyzed",
+      "analysis_status_rule": "partial becomes analyzed when all domain confirmations accepted",
+      "required_fields": ["phases_completed", "topics_covered", "recommended_scope", "SESSION_RECORD"],
+      "phases_completed_mapping": {
+        "01-requirements": ["requirements-spec.md", "user-stories.json"],
+        "02-architecture": ["architecture-overview.md", "impact-analysis.md"],
+        "03-design": ["module-design.md", "interface-spec.md", "data-flow.md", "error-taxonomy.md"],
+        "04-tasks": ["tasks.md"]
+      },
+      "session_record_schema": {
+        "session_id": "unique identifier for the analysis session",
+        "slug": "kebab-case name derived from the analysis topic",
+        "timestamp": "ISO 8601 timestamp of session completion",
+        "topics": {
+          "type": "array",
+          "item_fields": {
+            "name": "topic name",
+            "depth_used": "shallow|medium|deep",
+            "acknowledged": "boolean — user acknowledged the topic",
+            "overridden": "boolean — user overrode the depth recommendation",
+            "assumptions_count": "integer — number of assumptions made for this topic"
+          }
+        }
+      },
+      "acceptance_fields": ["accepted_at", "domains", "amendment_cycles"]
+    },
+    "bug_gather": {
+      "analysis_status": "analyzed",
+      "required_fields": ["phases_completed", "bug_classification", "acceptance"],
+      "phases_completed_mapping": {
+        "01-requirements": ["bug-report.md"],
+        "02-tracing": ["root-cause-analysis.md"]
+      },
+      "bug_classification_fields": ["severity", "category", "affected_area", "reproducibility"],
+      "acceptance_fields": ["accepted_at", "domains", "amendment_cycles"]
+    }
+  },
+
+  "progressive_meta_updates": {
+    "allowed_mid_conversation": true,
+    "checkpoints": [
+      "after_codebase_scan",
+      "after_each_artifact_ready_in_memory",
+      "after_each_topic_covered",
+      "on_early_exit"
+    ]
+  },
+
+  "written_tasks_format": {
+    "description": "The on-screen tasks use traceability.template.json (4-column table). The written tasks.md uses tasks.template.json (structured markdown with phases, categories, and line syntax).",
+    "on_screen_template": "traceability.template.json",
+    "written_template": "tasks.template.json",
+    "key_differences": {
+      "on_screen": "4-column pipe-delimited traceability table for visual review",
+      "written": "Structured markdown with required_phases, required_task_categories, and line_syntax for machine parsing"
+    },
+    "written_format_rules": [
+      "No backticks around task descriptions",
+      "Square brackets for blocked_by/blocks references",
+      "Parentheses for file operations (CREATE/MODIFY)",
+      "2-space indent sub-lines without dash prefix",
+      "Task IDs use TNNNN format"
+    ]
+  },
+
+  "artifact_ownership_ref": "core.json → artifact_ownership",
+
+  "summary_persistence": {
+    "analyze": {
+      "cache_during_confirmation": true,
+      "persist_at_finalization": [
+        "requirements-summary.md",
+        "architecture-summary.md",
+        "design-summary.md"
+      ],
+      "on_amendment": "complete_replacement_of_affected_summary"
+    },
+    "bug_gather": {
+      "cache_during_confirmation": true,
+      "persist_at_finalization": [
+        "bug-summary.md",
+        "root-cause-summary.md",
+        "fix-strategy-summary.md"
+      ],
+      "on_amendment": "complete_replacement_of_affected_summary"
+    }
+  },
+
+  "completion_signals": {
+    "analyze": "ROUNDTABLE_COMPLETE",
+    "bug_gather": "BUG_ROUNDTABLE_COMPLETE"
+  }
+}

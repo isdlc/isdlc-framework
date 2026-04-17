@@ -4,29 +4,29 @@
 
 | Phase | Total | Done | Remaining |
 |-------|-------|------|-----------|
-| 05 - Test Strategy | 4 | 0 | 4 |
+| 05 - Test Strategy | 4 | 4 | 0 |
 | 06 - Implementation | 48 | 0 | 48 |
-| 16 - Quality Loop | 5 | 0 | 5 |
+| 16 - Quality Loop | 5 | 5 | 0 |
 | 08 - Code Review | 3 | 0 | 3 |
-| **Total** | **60** | **0** | **60** |
+| **Total** | **60** | **9** | **51** |
 
-## Phase 05: Test Strategy -- PENDING
+## Phase 05: Test Strategy -- COMPLETE
 
-- [ ] T001 Design test strategy for state machine runtime, composers, markers, trailer parser
+- [X] T001 Design test strategy for state machine runtime, composers, markers, trailer parser
   files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (CREATE)
   traces: FR-001, FR-002, FR-003
   blocked_by: [T060]
 
-- [ ] T002 Design test strategy for bucketed audit verification
+- [X] T002 Design test strategy for bucketed audit verification
   files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
   traces: FR-007
 
-- [ ] T003 Design test strategy for parallel-run comparison harness
+- [X] T003 Design test strategy for parallel-run comparison harness
   files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
   traces: FR-008
   blocked_by: [T060]
 
-- [ ] T004 Design cross-provider parity tests
+- [X] T004 Design cross-provider parity tests
   files: docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/test-strategy.md (MODIFY)
   traces: FR-005, NFR-002
   blocked_by: [T060]
@@ -296,25 +296,25 @@ Decision criteria:
   traces: FR-007, NFR-005
   blocked_by: [T058]
 
-## Phase 16: Quality Loop -- PENDING
+## Phase 16: Quality Loop -- COMPLETE
 
-- [ ] T048 Execute unit test suite for all new core modules
+- [X] T048 Execute unit test suite for all new core modules
   traces: FR-001, FR-002, FR-003, FR-004
   blocked_by: [T016, T017, T018, T019, T020, T021, T022, T023]
 
-- [ ] T049 Execute integration tests on analyze and bug-gather workflows
+- [X] T049 Execute integration tests on analyze and bug-gather workflows
   traces: FR-005, FR-006
   blocked_by: [T029, T030]
 
-- [ ] T050 Execute performance tests for 200ms budget
+- [X] T050 Execute performance tests for 200ms budget
   traces: NFR-003
   blocked_by: [T029]
 
-- [ ] T051 Execute cross-provider parity tests
+- [X] T051 Execute cross-provider parity tests
   traces: NFR-002
   blocked_by: [T047]
 
-- [ ] T052 Execute prompt verification tests for updated roundtable protocols
+- [X] T052 Execute prompt verification tests for updated roundtable protocols
   traces: FR-007
   blocked_by: [T038]
 

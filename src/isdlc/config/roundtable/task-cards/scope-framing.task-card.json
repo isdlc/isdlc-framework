@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "SCOPE_FRAMING",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "description": "Frame the scope of the change or bug from ticket/user input",
+
+  "skills": [],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "semantic_search", "rationale": "Understand problem domain from codebase context" }
+  ],
+
+  "expected_output": {
+    "shape": "scope_statement",
+    "fields": {
+      "problem_statement": { "type": "string", "required": true },
+      "affected_area": { "type": "string", "required": true },
+      "initial_scope_assessment": { "type": "string", "required": true },
+      "stakeholders_identified": { "type": "array", "required": false }
+    }
+  },
+
+  "completion_marker": "scope_framed",
+  "marker_signals": [
+    "problem statement articulated",
+    "affected area identified",
+    "scope assessment made"
+  ],
+
+  "constraints": {
+    "max_lines": 30,
+    "timing": "first_exchange"
+  }
+}

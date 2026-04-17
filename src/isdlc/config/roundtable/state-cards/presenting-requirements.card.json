@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_REQUIREMENTS",
+  "version": "1.0.0",
+  "applies_to": ["analyze"],
+
+  "presenter": {
+    "persona": "Maya",
+    "role": "Business Analyst"
+  },
+
+  "template_ref": "requirements.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "functional_requirements",
+    "assumptions_and_inferences",
+    "non_functional_requirements",
+    "out_of_scope",
+    "prioritization"
+  ],
+
+  "content_coverage": [
+    "problem_statement_and_stakeholders",
+    "FRs_with_IDs_titles_MoSCoW_priorities",
+    "key_ACs_for_critical_FRs",
+    "references_to_requirements_spec_and_user_stories",
+    "confidence_levels_per_major_requirement_area"
+  ],
+
+  "accept_amend_prompt": "**Accept** this summary or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept_standard_epic": "PRESENTING_ARCHITECTURE",
+    "accept_light": "PRESENTING_DESIGN",
+    "amend": "AMENDING"
+  }
+}

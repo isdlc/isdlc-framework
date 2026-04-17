@@ -25,6 +25,23 @@ const ATDD_DEFAULTS = Object.freeze({
   enforce_priority_order: true,
 });
 
+/**
+ * Valid migration_mode values for roundtable parallel-run toggle.
+ * REQ-GH-253 T040.
+ */
+const VALID_MIGRATION_MODES = ['parallel', 'mechanism', 'prose'];
+
+/**
+ * Roundtable config defaults. Used by getRoundtableConfig() for fail-open behavior.
+ * REQ-GH-253 FR-004 (max_skills_total budget), T040 (migration_mode).
+ */
+const ROUNDTABLE_DEFAULTS = Object.freeze({
+  migration_mode: 'mechanism',
+  task_card: Object.freeze({
+    max_skills_total: 8,
+  }),
+});
+
 // Cache maps (same mtime-based strategy as ESM service)
 const _frameworkCache = new Map();
 const _projectCache = new Map();
@@ -51,7 +68,7 @@ function getDefaults() {
       cache: { budget_tokens: 100000, section_priorities: {} },
       ui: { show_subtasks_in_ui: true },
       provider: { default: 'claude' },
-      roundtable: { verbosity: 'bulleted', default_personas: [], disabled_personas: [] },
+      roundtable: { verbosity: 'bulleted', default_personas: [], disabled_personas: [], migration_mode: 'mechanism', task_card: { max_skills_total: 8 } },
       search: {},
       workflows: { sizing_thresholds: {}, performance_budgets: {} },
     };
@@ -183,6 +200,54 @@ function getAtdd(projectRoot) {
   }
 }
 
+/**
+ * Return the fully-resolved roundtable config object, merging user overrides
+ * with defaults. Nested fail-open: invalid field types fall back to their
+ * defaults, while valid overrides are retained.
+ *
+ * REQ-GH-253 FR-004, AC-004-01 (Article X fail-safe), T040 (migration_mode).
+ *
+ * @param {string} [projectRoot] - Optional project root; auto-detected if omitted
+ * @returns {{ migration_mode: string, task_card: { max_skills_total: number } }}
+ */
+function getRoundtableConfig(projectRoot) {
+  try {
+    const root = projectRoot || autoDetectProjectRoot();
+    if (!root) return { migration_mode: ROUNDTABLE_DEFAULTS.migration_mode, task_card: { ...ROUNDTABLE_DEFAULTS.task_card } };
+
+    const full = readProjectConfig(root);
+    const section = (full && typeof full.roundtable === 'object' && full.roundtable !== null && !Array.isArray(full.roundtable))
+      ? full.roundtable
+      : {};
+
+    // T040: migration_mode — validate against allowed values, fail-open to default
+    const migrationMode = (typeof section.migration_mode === 'string' &&
+      VALID_MIGRATION_MODES.includes(section.migration_mode))
+      ? section.migration_mode
+      : ROUNDTABLE_DEFAULTS.migration_mode;
+
+    const taskCard = (section.task_card && typeof section.task_card === 'object' && !Array.isArray(section.task_card))
+      ? section.task_card
+      : {};
+
+    const maxSkills = (typeof taskCard.max_skills_total === 'number' &&
+      Number.isInteger(taskCard.max_skills_total) &&
+      taskCard.max_skills_total >= 1 &&
+      taskCard.max_skills_total <= 50)
+      ? taskCard.max_skills_total
+      : ROUNDTABLE_DEFAULTS.task_card.max_skills_total;
+
+    return {
+      migration_mode: migrationMode,
+      task_card: {
+        max_skills_total: maxSkills,
+      },
+    };
+  } catch {
+    return { migration_mode: ROUNDTABLE_DEFAULTS.migration_mode, task_card: { ...ROUNDTABLE_DEFAULTS.task_card } };
+  }
+}
+
 function loadSchema(schemaId) {
   const filePath = path.join(frameworkConfigDir(), 'schemas', `${schemaId}.schema.json`);
   return readCachedJson(filePath, _frameworkCache);
@@ -205,5 +270,7 @@ module.exports = {
   getConfigPath,
   clearConfigCache,
   getAtdd,
+  getRoundtableConfig,
   ATDD_DEFAULTS,
+  ROUNDTABLE_DEFAULTS,
 };

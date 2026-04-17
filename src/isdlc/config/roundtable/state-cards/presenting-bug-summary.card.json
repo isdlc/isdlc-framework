@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_BUG_SUMMARY",
+  "version": "1.0.0",
+  "applies_to": ["bug_gather"],
+
+  "presenter": {
+    "persona": "Maya",
+    "role": "Business Analyst"
+  },
+
+  "template_ref": "bug-summary.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "severity",
+    "reproduction_steps",
+    "affected_area"
+  ],
+
+  "all_sections": [
+    "severity",
+    "reproduction_steps",
+    "affected_users",
+    "symptoms",
+    "affected_area"
+  ],
+
+  "pre_presentation_action": {
+    "action": "write_bug_report",
+    "file": "bug-report.md",
+    "exception_note": "One exception to no-write-before-confirmations — tracing-orchestrator needs bug-report.md as input"
+  },
+
+  "content_coverage": [
+    "severity_assessment",
+    "clear_reproduction_steps",
+    "affected_user_groups",
+    "observable_symptoms",
+    "identified_affected_area"
+  ],
+
+  "accept_amend_prompt": "**Accept** this bug summary or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "delegate_tracing_then_PRESENTING_ROOT_CAUSE",
+    "amend": "AMENDING"
+  }
+}

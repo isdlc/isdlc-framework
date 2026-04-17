@@ -35,5 +35,7 @@
       "tasks"
     ],
     "amendment_cycles": 2
-  }
+  },
+  "build_started_at": "2026-04-16T19:13:17.474Z",
+  "workflow_type": "build"
 }

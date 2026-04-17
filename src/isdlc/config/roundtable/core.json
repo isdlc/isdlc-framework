@@ -1,0 +1,337 @@
+{
+  "$schema": "../../../core/roundtable/schemas/core.schema.json",
+  "version": "1.0.0",
+  "description": "Shared invariants across analyze and bug-gather roundtables",
+
+  "rendering_modes": {
+    "bulleted": {
+      "description": "Domain labels, no cross-talk, grouped by domain",
+      "persona_attribution": "domain_label",
+      "cross_talk": false,
+      "invariants": [
+        "section_order_locked",
+        "accept_amend_gating",
+        "template_binding",
+        "anti_shortcut_participation_gate",
+        "no_writes_before_finalization",
+        "no_phase_headers"
+      ]
+    },
+    "conversational": {
+      "description": "Persona name attribution, cross-talk allowed between personas",
+      "persona_attribution": "persona_name",
+      "cross_talk": true,
+      "invariants": [
+        "section_order_locked",
+        "accept_amend_gating",
+        "template_binding",
+        "anti_shortcut_participation_gate",
+        "no_writes_before_finalization",
+        "no_phase_headers"
+      ]
+    },
+    "silent": {
+      "description": "No names, no labels, unified narrative voice",
+      "persona_attribution": "none",
+      "cross_talk": false,
+      "invariants": [
+        "section_order_locked",
+        "accept_amend_gating",
+        "template_binding",
+        "anti_shortcut_participation_gate",
+        "no_writes_before_finalization",
+        "no_phase_headers"
+      ]
+    },
+    "shared_invariants": [
+      "rendering_mode_never_changes_protocol_semantics",
+      "confirmation_order_locked_by_state_machine",
+      "accept_amend_gating_always_active",
+      "template_binding_is_state_local",
+      "participation_gate_required",
+      "tasks_always_traceability_table"
+    ]
+  },
+
+  "persona_model": {
+    "core_personas": [
+      {
+        "name": "Maya",
+        "role": "Business Analyst",
+        "domain": "requirements",
+        "owns_states": {
+          "analyze": "PRESENTING_REQUIREMENTS",
+          "bug_gather": "PRESENTING_BUG_SUMMARY"
+        }
+      },
+      {
+        "name": "Alex",
+        "role": "Solutions Architect",
+        "domain": "architecture",
+        "owns_states": {
+          "analyze": "PRESENTING_ARCHITECTURE",
+          "bug_gather": "PRESENTING_ROOT_CAUSE"
+        }
+      },
+      {
+        "name": "Jordan",
+        "role": "System Designer",
+        "domain": "design",
+        "owns_states": {
+          "analyze": "PRESENTING_DESIGN",
+          "bug_gather": "PRESENTING_FIX_STRATEGY"
+        }
+      }
+    ],
+    "lead": {
+      "name": "Lead",
+      "role": "Facilitator",
+      "domain": "tasks",
+      "owns_states": {
+        "analyze": "PRESENTING_TASKS",
+        "bug_gather": "PRESENTING_TASKS"
+      }
+    },
+    "contributing_persona_schema": {
+      "role_type": "contributing",
+      "behavior": [
+        "add_observations_to_existing_confirmations",
+        "fold_into_core_states",
+        "never_create_new_templates",
+        "never_own_new_states",
+        "domain_label_rendering_follows_active_mode"
+      ],
+      "required_frontmatter": ["name", "description", "role_type"]
+    },
+    "promotion_schema": {
+      "role_type": "primary",
+      "required_fields": ["owns_state", "template", "inserts_at", "rendering_contribution"],
+      "validation": {
+        "owns_state_regex": "^[A-Z_]+$",
+        "template_suffix": ".template.json",
+        "inserts_at_format": "before:<state>|after:<state>"
+      },
+      "conflict_resolution": "first_declared_wins",
+      "extension_points": {
+        "analyze": [
+          "before:PRESENTING_REQUIREMENTS",
+          "after:PRESENTING_REQUIREMENTS",
+          "before:PRESENTING_ARCHITECTURE",
+          "after:PRESENTING_ARCHITECTURE",
+          "before:PRESENTING_DESIGN",
+          "after:PRESENTING_DESIGN",
+          "before:PRESENTING_TASKS",
+          "after:PRESENTING_TASKS"
+        ],
+        "bug_gather": [
+          "before:PRESENTING_BUG_SUMMARY",
+          "after:PRESENTING_BUG_SUMMARY",
+          "before:PRESENTING_ROOT_CAUSE",
+          "after:PRESENTING_ROOT_CAUSE",
+          "before:PRESENTING_FIX_STRATEGY",
+          "after:PRESENTING_FIX_STRATEGY",
+          "before:PRESENTING_TASKS",
+          "after:PRESENTING_TASKS"
+        ]
+      }
+    },
+    "shared_invariants": [
+      "persona_additions_change_perspective_not_protocol",
+      "confirmation_order_unchanged_by_new_personas",
+      "accept_amend_semantics_unchanged",
+      "template_binding_unchanged",
+      "artifact_write_timing_unchanged",
+      "ask_vs_infer_rules_unchanged"
+    ]
+  },
+
+  "amending_semantics": {
+    "trigger": "user_chooses_amend_from_any_presenting_state",
+    "actions": [
+      "re_engage_all_active_primary_personas",
+      "clear_accepted_domains",
+      "increment_amendment_cycles"
+    ],
+    "restart_target": {
+      "analyze": "PRESENTING_REQUIREMENTS",
+      "bug_gather": "PRESENTING_BUG_SUMMARY"
+    },
+    "rationale": "Amendment may have ripple effects across domains; restart ensures cross-domain consistency"
+  },
+
+  "participation_gate": {
+    "required_contributions_before_first_confirmation": 3,
+    "required_voices": [
+      { "persona": "Maya", "marker": "scope_framing", "description": "Maya scope contribution" },
+      { "persona": "Alex", "marker": "codebase_evidence", "description": "Alex codebase evidence" },
+      { "persona": "Jordan", "marker": "design_implication", "description": "Jordan design/fix implication" }
+    ],
+    "enforcement": "participation-gate-enforcer.cjs",
+    "silent_mode_note": "Uses semantic markers, not persona names — works in silent mode"
+  },
+
+  "early_exit": {
+    "signals": ["that's enough", "I'm done", "let's stop", "let's wrap up", "ship it"],
+    "protocol": [
+      "confirm_with_user",
+      "stop_and_return_for_confirmation",
+      "on_confirm_proceed_to_FINALIZING_with_gaps_flagged",
+      "flag_uncovered_areas_under_Gaps_and_Assumptions",
+      "on_continue_return_to_conversation"
+    ],
+    "artifact_treatment": "write_with_gaps_flagged",
+    "confidence_adjustment": "Low_for_uncovered_areas"
+  },
+
+  "accept_indicators": [
+    "accept", "looks good", "approved", "yes", "confirm",
+    "LGTM", "fine", "correct", "agree"
+  ],
+
+  "amend_indicators": [
+    "amend", "change", "revise", "update", "modify",
+    "no", "not quite", "needs work", "redo"
+  ],
+
+  "ambiguous_default": "amend",
+  "ambiguous_rationale": "Safer default — preserves user's ability to clarify through amendment conversation",
+
+  "confirmation_prompt": "**Accept** this summary or **Amend** to discuss changes?",
+  "confirmation_contract": {
+    "end_each_summary_with": "Accept/Amend prompt",
+    "then": "STOP and RETURN for user response"
+  },
+
+  "conversation_rendering_rules": [
+    { "id": 1, "rule": "no_phase_headers" },
+    { "id": 2, "rule": "no_step_headers" },
+    { "id": 3, "rule": "no_numbered_interview_lists" },
+    { "id": 4, "rule": "no_handover_announcements" },
+    { "id": 5, "rule": "no_menus" },
+    { "id": 6, "rule": "brevity_first_bullets" },
+    { "id": 7, "rule": "one_focus_per_turn" },
+    { "id": 8, "rule": "natural_steering" },
+    { "id": 9, "rule": "all_personas_engage_within_3_exchanges" },
+    { "id": 10, "rule": "no_repetition" },
+    { "id": 11, "rule": "earn_each_question" }
+  ],
+
+  "stop_wait_contract": {
+    "description": "Output question, STOP, wait for user. Do NOT simulate answer. Do NOT answer own question.",
+    "exchange_definition": "One user message + one roundtable response = one exchange",
+    "one_exchange_per_turn": true,
+    "end_turn_after_question": true
+  },
+
+  "agent_metadata": {
+    "analyze": {
+      "name": "roundtable-analyst",
+      "description": "Interactive feature/change analysis roundtable with three domain personas",
+      "model": "opus",
+      "execution_mode": "inline_protocol_reference",
+      "note": "This file is NOT spawned as a separate agent — the analyze handler reads it inline"
+    },
+    "bug_gather": {
+      "name": "bug-roundtable-analyst",
+      "description": "Interactive bug analysis roundtable with three domain personas",
+      "model": "opus",
+      "execution_mode": "inline_protocol_reference",
+      "note": "This file is NOT spawned as a separate agent — the bug-gather handler reads it inline"
+    }
+  },
+
+  "artifact_ownership": {
+    "analyze": {
+      "requirements": {
+        "owner": "Maya",
+        "domain": "requirements",
+        "artifacts": [
+          "requirements-spec.md",
+          "user-stories.json"
+        ]
+      },
+      "architecture": {
+        "owner": "Alex",
+        "domain": "architecture",
+        "artifacts": [
+          "architecture-overview.md",
+          "impact-analysis.md",
+          "traceability-matrix.csv"
+        ]
+      },
+      "design": {
+        "owner": "Jordan",
+        "domain": "design",
+        "artifacts": [
+          "module-design.md",
+          "interface-spec.md",
+          "error-taxonomy.md",
+          "data-flow.md",
+          "design-summary.md"
+        ]
+      },
+      "tasks": {
+        "owner": "Lead",
+        "domain": "tasks",
+        "artifacts": [
+          "tasks.md"
+        ]
+      },
+      "shared": {
+        "owner": "Lead",
+        "domain": "cross-cutting",
+        "artifacts": [
+          "quick-scan.md",
+          "meta.json"
+        ]
+      }
+    },
+    "bug_gather": {
+      "bug_summary": {
+        "owner": "Maya",
+        "domain": "bug_framing",
+        "artifacts": [
+          "bug-report.md",
+          "bug-summary.md"
+        ]
+      },
+      "root_cause": {
+        "owner": "Alex",
+        "domain": "root_cause",
+        "artifacts": [
+          "root-cause-analysis.md",
+          "root-cause-summary.md"
+        ]
+      },
+      "fix_strategy": {
+        "owner": "Jordan",
+        "domain": "fix_strategy",
+        "artifacts": [
+          "fix-strategy.md",
+          "fix-strategy-summary.md"
+        ]
+      },
+      "tasks": {
+        "owner": "Lead",
+        "domain": "tasks",
+        "artifacts": [
+          "tasks.md"
+        ]
+      },
+      "shared": {
+        "owner": "Lead",
+        "domain": "cross-cutting",
+        "artifacts": [
+          "meta.json"
+        ]
+      }
+    }
+  },
+
+  "assumptions_and_inferences_placement": {
+    "rule": "always_last_section",
+    "description": "The 'Assumptions and Inferences' section MUST appear as the last section in every domain confirmation. This is enforced by template section_order where it appears at the end of the list.",
+    "applies_to_all_confirmations": true,
+    "template_enforcement": "section_order in each .template.json has it as the last entry"
+  }
+}

@@ -72,6 +72,10 @@ function buildPrompt(phase, agent, context = {}) {
   if (context.instructions) {
     sections.push(`\nInstructions:\n${context.instructions}`);
   }
+  // REQ-GH-253 T045: Inject composed roundtable card after instructions, before skills
+  if (context.composedCard) {
+    sections.push(`\n${context.composedCard}`);
+  }
   if (context.skill_context) {
     sections.push(`Skills: ${context.skill_context}`);
   }

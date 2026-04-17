@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-task-card",
+  "title": "Roundtable Task Card Template",
+  "description": "Validates task card templates used to compose the inner affordance card for an active background sub-task. Required fields: sub_task_id, skills, preferred_tools, expected_output_shape, completion_marker. Optional max_skills_override. Max ~30 lines. Traces: FR-001, AC-001-02, FR-004, AC-004-01.",
+  "type": "object",
+  "properties": {
+    "sub_task_id": {
+      "type": "string",
+      "description": "Unique identifier for this sub-task (e.g., scope-framing, codebase-scan, blast-radius, options-research, dependency-check, tracing)",
+      "minLength": 1
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Skill identifier from the manifest (e.g., /code-implementation, /api-implementation)"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["shipped", "project", "user"],
+            "description": "Skill source: shipped (framework), project (.claude/skills/), or user (~/.claude/skills/)"
+          },
+          "delivery_type": {
+            "type": "string",
+            "enum": ["context", "instruction", "reference"],
+            "description": "How the skill is injected: context (full content), instruction (key rules), reference (pointer only)"
+          }
+        },
+        "required": ["id", "source", "delivery_type"],
+        "additionalProperties": true
+      },
+      "description": "Skills applicable to this sub-task, queried from manifest and filtered by budget"
+    },
+    "preferred_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["primary", "secondary", "fallback"],
+            "description": "Tool priority level"
+          }
+        },
+        "required": ["name"],
+        "additionalProperties": true
+      },
+      "description": "Preferred tools for this sub-task"
+    },
+    "expected_output_shape": {
+      "type": "object",
+      "description": "Schema or description of the expected output structure from this sub-task",
+      "additionalProperties": true
+    },
+    "completion_marker": {
+      "type": "string",
+      "description": "Signal phrase or pattern that indicates this sub-task is complete (parsed by marker extractors)",
+      "minLength": 1
+    },
+    "max_skills_override": {
+      "type": "integer",
+      "description": "Optional override of max_skills_total budget for this sub-task. When set, takes precedence over the global config value.",
+      "minimum": 0
+    },
+    "max_total_lines": {
+      "type": "integer",
+      "description": "Hint for maximum total lines in the composed task card output (default ~30 per module-design.md)",
+      "minimum": 1,
+      "default": 30
+    }
+  },
+  "required": [
+    "sub_task_id",
+    "skills",
+    "preferred_tools",
+    "expected_output_shape",
+    "completion_marker"
+  ],
+  "additionalProperties": true
+}

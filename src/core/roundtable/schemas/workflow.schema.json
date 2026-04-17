@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-workflow",
+  "title": "Roundtable Workflow Definition",
+  "description": "Validates workflow-specific definition structure for roundtable state machines. Contains states with entry/exit markers, sub-task graphs per state, confirmation state sequences, templates per state, completion signal, tier-specific rules, external_delegation optional field on transitions, and artifact sets. Traces: FR-002.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Schema version for migration support",
+      "minimum": 1,
+      "default": 1
+    },
+    "workflow_type": {
+      "type": "string",
+      "enum": ["analyze", "bug-gather"],
+      "description": "The workflow type this definition applies to"
+    },
+    "entry_state": {
+      "type": "string",
+      "description": "The initial state when the roundtable starts (e.g., CONVERSATION)"
+    },
+    "states": {
+      "type": "object",
+      "description": "State graph keyed by state name",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of this state"
+          },
+          "entry_markers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Markers/signals that indicate entry into this state"
+          },
+          "exit_markers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Markers/signals that indicate this state is complete"
+          },
+          "is_confirmation": {
+            "type": "boolean",
+            "description": "Whether this is a confirmation state requiring user Accept/Amend",
+            "default": false
+          },
+          "template": {
+            "type": "string",
+            "description": "Reference to state card template file (relative to state-cards/)",
+            "examples": ["conversation.json", "presenting-requirements.json"]
+          },
+          "sub_tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Sub-task identifier"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "What this sub-task accomplishes"
+                },
+                "entry_trigger": {
+                  "type": "string",
+                  "description": "Condition that activates this sub-task within the state"
+                },
+                "completion_marker": {
+                  "type": "string",
+                  "description": "Signal that this sub-task is complete"
+                },
+                "task_card_template": {
+                  "type": "string",
+                  "description": "Reference to task card template file (relative to task-cards/)"
+                },
+                "max_skills_override": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Override max_skills_total budget for this sub-task"
+                },
+                "depends_on": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Sub-task IDs that must complete before this one activates"
+                }
+              },
+              "required": ["id", "completion_marker"],
+              "additionalProperties": true
+            },
+            "description": "Sub-task graph for background tasks within this state"
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "condition": {
+                  "type": "string",
+                  "description": "Condition expression for this transition"
+                },
+                "next": {
+                  "type": "string",
+                  "description": "Default next state"
+                },
+                "next_on_accept": {
+                  "type": "string",
+                  "description": "Next state when user accepts confirmation"
+                },
+                "next_on_amend": {
+                  "type": "string",
+                  "description": "Next state when user requests amendment"
+                },
+                "external_delegation": {
+                  "type": "object",
+                  "description": "Optional external delegation between states (e.g., tracing-orchestrator dispatch)",
+                  "properties": {
+                    "agent": {
+                      "type": "string",
+                      "description": "Agent name to delegate to"
+                    },
+                    "input_mapping": {
+                      "type": "object",
+                      "description": "Mapping of rolling state fields to agent input parameters",
+                      "additionalProperties": { "type": "string" }
+                    },
+                    "timeout_ms": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Timeout for external delegation in milliseconds"
+                    },
+                    "fail_open": {
+                      "type": "boolean",
+                      "description": "Whether to continue on delegation failure (Article X fail-safe)",
+                      "default": true
+                    }
+                  },
+                  "required": ["agent"],
+                  "additionalProperties": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "description": "Transition rules evaluated in order"
+          }
+        },
+        "required": ["transitions"],
+        "additionalProperties": true
+      }
+    },
+    "confirmation_sequence": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered list of confirmation state names (e.g., PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE, PRESENTING_DESIGN, PRESENTING_TASKS for analyze)"
+    },
+    "completion_signal": {
+      "type": "string",
+      "description": "Signal that indicates the entire roundtable is complete (e.g., COMPLETE)"
+    },
+    "tier_rules": {
+      "type": "object",
+      "description": "Tier-specific overrides for this workflow (keyed by tier name)",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "skip_states": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "States to skip for this tier in this workflow"
+          },
+          "fold_states": {
+            "type": "object",
+            "description": "States to fold together (key: source, value: target)",
+            "additionalProperties": { "type": "string" }
+          },
+          "entry_state_override": {
+            "type": "string",
+            "description": "Override entry state for this tier"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "artifact_sets": {
+      "type": "object",
+      "description": "Artifact definitions produced at each state or at finalization",
+      "properties": {
+        "per_state": {
+          "type": "object",
+          "description": "Artifacts keyed by state name",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "Artifact filename" },
+                "template": { "type": "string", "description": "Template reference" },
+                "required": { "type": "boolean", "description": "Whether this artifact is mandatory" }
+              },
+              "required": ["name"],
+              "additionalProperties": true
+            }
+          }
+        },
+        "finalization": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Artifact filename" },
+              "template": { "type": "string", "description": "Template reference" },
+              "required": { "type": "boolean", "description": "Whether this artifact is mandatory" }
+            },
+            "required": ["name"],
+            "additionalProperties": true
+          },
+          "description": "Artifacts produced during batch-write finalization"
+        }
+      },
+      "additionalProperties": true
+    },
+    "templates": {
+      "type": "object",
+      "description": "Template references keyed by state name, pointing to state card templates",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "version",
+    "workflow_type",
+    "entry_state",
+    "states",
+    "confirmation_sequence",
+    "completion_signal"
+  ],
+  "additionalProperties": true
+}

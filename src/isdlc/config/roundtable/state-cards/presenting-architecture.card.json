@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_ARCHITECTURE",
+  "version": "1.0.0",
+  "applies_to": ["analyze"],
+
+  "presenter": {
+    "persona": "Alex",
+    "role": "Solutions Architect"
+  },
+
+  "template_ref": "architecture.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "architecture_options",
+    "selected_architecture",
+    "technology_decisions",
+    "integration_architecture",
+    "assumptions_and_inferences"
+  ],
+
+  "content_coverage": [
+    "architecture_decisions_with_rationale",
+    "technology_tradeoffs_evaluated",
+    "integration_points_with_existing_components",
+    "reference_to_architecture_overview",
+    "risk_assessment"
+  ],
+
+  "accept_amend_prompt": "**Accept** this summary or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "PRESENTING_DESIGN",
+    "amend": "AMENDING"
+  }
+}

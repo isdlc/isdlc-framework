@@ -672,21 +672,114 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      4. If `result.warnings` is non-empty, log each warning to stderr (non-blocking -- roundtable proceeds regardless)
      5. If `result.conflicts` is non-empty, the first-declared persona wins per AC-005-05; losers are already recorded in warnings
 
+   STATE-MACHINE-DRIVEN COMPOSITION (REQ-GH-253, FR-001, FR-002, FR-003):
+     This section adds a state-machine-driven affordance composition layer that WRAPS the existing bug roundtable conversation protocol below. The state machine does not replace the protocol -- it composes structured context cards that guide each turn. If any composition step fails, fall through to the prose-driven protocol unchanged (Article X, AC-002-03).
+
+     **At roundtable entry** (before Maya's opening):
+     1. Initialize the state machine by calling `initializeRoundtable('bug-gather')` via bridge (`src/core/bridge/roundtable.cjs`). This:
+        - Loads the composed definition (core.json + bug-gather.json) via definition-loader
+        - Initializes the state machine at entry state CONVERSATION
+        - Creates the initial rolling state from the definition
+     2. If `initializeRoundtable` returns null: **FAIL-OPEN** -- skip all composition steps below. Proceed directly to the PROTOCOL section and execute the bug-roundtable-analyst.md protocol as before. The rest of this STATE-MACHINE-DRIVEN COMPOSITION section does not apply.
+     3. Store the returned `{ definition, machine, rollingState }` in session scope for the duration of this roundtable.
+     4. Compose the entry state card by calling `composeForTurn(machine, rollingState)` via the same bridge. The returned `composedCard` (state card + task card for CONVERSATION state with its initial sub-task) provides structured context for Maya's opening turn: active personas, rendering mode, tools, invariants, and the active sub-task (SCOPE_FRAMING).
+     5. Use the `composedCard` as supplementary context when executing Maya's opening per the PROTOCOL below. The card content guides persona behavior, tool preference, and rendering format for this turn.
+
+     **Before each persona turn** (applies to every turn after the opening):
+     1. Call `composeForTurn(machine, rollingState)` via bridge (`src/core/bridge/roundtable.cjs`). The bridge:
+        - Gets current state from state machine (e.g., CONVERSATION, PRESENTING_BUG_SUMMARY)
+        - Composes a state card for the current state (personas, rendering mode, invariants, valid transitions, template ref, preferred tools)
+        - If a sub-task is active (e.g., CODEBASE_SCAN, SYMPTOM_ANALYSIS), composes a task card (applicable skills, preferred tools, expected output shape, completion marker)
+        - Combines state card + task card into a single composed string
+     2. If `composedCard` is null (composition failed): skip injection for this turn. Continue the conversation using only the prose protocol (fail-open).
+     3. If `composedCard` is present: use it as supplementary context for this turn. The card tells you what template to use, what tools to prefer, what invariants to follow, and what output shape to produce. It does not replace the persona's voice or the protocol flow -- it supplements.
+
+     **After each persona turn** (after LLM produces output, before next user message):
+     1. Call `processAfterTurn(machine, rollingState, llmOutput)` via bridge (`src/core/bridge/roundtable.cjs`). The bridge:
+        a. Parses trailer from end of LLM output (if present) using trailer-parser; strips trailer from user-visible output
+        b. Runs marker extraction on LLM output for the active sub-task using markers/index dispatcher
+        c. Updates rolling state with trailer + marker results (trailer wins on conflict per AC-003-03)
+        d. Evaluates state machine transitions against updated rolling state
+     2. Replace `rollingState` with the returned `updatedState` for subsequent turns.
+     3. Replace the user-visible output with the returned `cleanOutput` (trailer stripped).
+     4. If `transition` is non-null and `transition.transitioned` is true:
+        - Log the transition for observability: `"[bug-roundtable] State transition: {from} -> {to} (trigger: {trigger})"`
+        - The next `composeForTurn` call will automatically compose the card for the new state
+        - If the new state is a confirmation state (PRESENTING_BUG_SUMMARY, PRESENTING_ROOT_CAUSE, PRESENTING_FIX_STRATEGY, PRESENTING_TASKS), the state card will include the full template reference and accept/amend prompt
+     5. If `transition` is non-null and `transition.externalDelegation` is present:
+        This is the bug-gather external delegation path for tracing-orchestrator dispatch (REQ-GH-253, T033).
+        a. Read the delegation config from `transition.externalDelegation`:
+           - `agent`: the agent to dispatch (e.g., "tracing-orchestrator")
+           - `input_mapping`: parameter map with `{ARTIFACT_FOLDER}` and `{discovery_context}` placeholders resolved from session scope
+           - `timeout_ms`: delegation timeout (default 120000)
+           - `fail_open`: `{ enabled: true/false, fallback: "..." }`
+        b. Resolve placeholders in `input_mapping`: replace `{ARTIFACT_FOLDER}` with the current artifact folder path, `{discovery_context}` with discoveryContent from session cache.
+        c. Dispatch the tracing-orchestrator via Task tool with the resolved delegation payload:
+           ```
+           Execute root cause tracing for bug analysis.
+           BUG_REPORT_PATH: {resolved ARTIFACT_FOLDER}/bug-report.md
+           ARTIFACT_FOLDER: {resolved ARTIFACT_FOLDER}
+           DISCOVERY_CONTEXT: {resolved discovery context}
+           ANALYSIS_MODE: true
+
+           ANALYSIS_MODE means:
+           - Do NOT check state.json for discovery status or active_workflow
+           - Do NOT write to state.json
+           - Read the bug report from BUG_REPORT_PATH
+           - Use DISCOVERY_CONTEXT for project architecture context
+           - Launch T1 (symptom-analyzer), T2 (execution-path-tracer), T3 (root-cause-identifier) in parallel
+           - Consolidate results into trace-analysis output
+           - Return the consolidated trace analysis as your result
+           ```
+        d. On success: parse the trace analysis result and feed it into `rollingState` for the PRESENTING_ROOT_CAUSE state. Update rolling state with `{ tracing_complete: true, trace_analysis: <result> }`. Alex uses the tracing-derived findings when presenting root cause.
+        e. On failure (timeout, sub-agent error, Task tool failure) AND `fail_open.enabled` is true: log a warning internally `"[bug-roundtable] Tracing delegation failed -- fail-open, continuing with conversation-based hypotheses"`. Update rolling state with `{ tracing_complete: false, delegation_failed: true, delegation_error: <error_summary> }`. Continue to PRESENTING_ROOT_CAUSE -- Alex presents conversation-based root-cause hypotheses instead of tracing-derived ones. Analysis proceeds -- degraded but functional (Article X).
+        f. On failure AND `fail_open.enabled` is false: halt the roundtable and escalate the error to the user. This path is not expected with the current bug-gather.json definition (fail_open is always enabled).
+     6. If `transition` is null: no state change occurred. Continue in the current state.
+     7. If `processAfterTurn` fails entirely: skip state update for this turn. The rolling state remains unchanged and no transition fires (AC-003-04). Continue the conversation.
+
+     **Trailer instruction** (AC-003-01):
+     When executing the bug roundtable protocol, emit a lightweight structured trailer at the end of each turn output. The trailer is best-effort and non-binding -- marker extraction backs it up (AC-003-02). Format:
+     ```
+     ---ROUNDTABLE-TRAILER---
+     state: {current_state_name}
+     sub_task: {active_sub_task_id_or_null}
+     status: {running|complete|waiting}
+     version: 1
+     ---END-TRAILER---
+     ```
+     - `state`: the current state machine state (e.g., CONVERSATION, PRESENTING_BUG_SUMMARY)
+     - `sub_task`: the active background sub-task ID (e.g., SCOPE_FRAMING, CODEBASE_SCAN, SYMPTOM_ANALYSIS, TRACING) or "null" if none
+     - `status`: "running" if the sub-task is in progress, "complete" if just finished, "waiting" if waiting for user input
+     - The trailer is parsed and stripped from user-visible output by the handler. It is not shown to the user.
+     - If you cannot determine the sub-task status, omit the trailer entirely. The marker extractors will handle state inference from natural output.
+
+     **Confirmation state handling**:
+     - When the state machine transitions from CONVERSATION to PRESENTING_BUG_SUMMARY, the state card composed by `composeForTurn` includes the full template reference, required sections, presenter, and accept/amend prompt.
+     - Accept/Amend user responses update the rolling state (via trailer or marker extraction), which causes `evaluateTransitions` to fire the next transition (accept -> next confirmation state, amend -> AMENDING state).
+     - On Accept of PRESENTING_BUG_SUMMARY: the transition carries `external_delegation` for tracing-orchestrator (handled by step 5 above). After delegation completes (or fails open), the machine advances to PRESENTING_ROOT_CAUSE.
+     - Confirmation sequence: PRESENTING_BUG_SUMMARY -> (tracing delegation) -> PRESENTING_ROOT_CAUSE -> PRESENTING_FIX_STRATEGY -> PRESENTING_TASKS -> FINALIZING -> COMPLETE.
+     - AMENDING state transitions back to PRESENTING_BUG_SUMMARY per the amending semantics in the definition. The rolling state's accepted domains are cleared.
+     - The state machine tracks these transitions but the existing bug-roundtable-analyst.md confirmation protocol still drives the actual presentation. The state machine ensures the composition layer stays in sync.
+
    PROTOCOL (from bug-roundtable-analyst.md):
      1. Follow Section 2.1 Opening:
         - Open as Maya from draft content with structured bug summary
         - Ask a single clarifying question
         - STOP and wait for user reply (natural conversation turn)
+        - (If state machine initialized: use the entry composedCard as supplementary context for this turn)
      2. On user's first reply, follow Section 2.1 "On resume":
         - Run codebase scan (Alex's deferred task)
         - Compose response with Maya continuing + Alex contributing scan evidence
+        - (If state machine initialized: call processAfterTurn after producing output, then composeForTurn before next turn)
      3. For each subsequent exchange, follow Sections 2.2-2.3:
         - Conversation flow rules, persona contribution batching, natural steering
         - All 3 personas contribute within first 3 exchanges
+        - (If state machine initialized: the per-turn compose/process cycle runs alongside these protocol steps)
      4. When sufficient understanding is reached, follow Section 2.4:
         - Write bug-report.md to artifact folder (ONLY pre-confirmation artifact)
      5. Follow Section 2.5 Tracing Delegation:
-        - Spawn tracing-orchestrator via Task tool with BUG_REPORT_PATH, DISCOVERY_CONTEXT, ANALYSIS_MODE: true
+        - If state machine initialized: tracing delegation is handled by the external_delegation transition on PRESENTING_BUG_SUMMARY Accept (see STATE-MACHINE-DRIVEN COMPOSITION step 5 above). Do NOT also spawn tracing-orchestrator manually -- the state machine drives it.
+        - If state machine NOT initialized (fail-open): spawn tracing-orchestrator via Task tool with BUG_REPORT_PATH, DISCOVERY_CONTEXT, ANALYSIS_MODE: true per bug-roundtable-analyst.md Section 2.5.
         - On return: Alex presents root cause findings
         - On failure: fail-open, Alex presents conversation-based hypotheses
      6. Follow Section 2.6 Fix Strategy:
@@ -694,6 +787,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      7. When ready, enter confirmation sequence (Section 2.7):
         - Sequential: PRESENTING_BUG_SUMMARY -> PRESENTING_ROOT_CAUSE -> PRESENTING_FIX_STRATEGY -> PRESENTING_TASKS
         - Each domain: present summary, wait for Accept/Amend
+        - (If state machine initialized: state transitions track confirmation progression automatically)
      8. On final Accept, execute artifact batch write (Section 4):
         - Write root-cause-analysis.md, fix-strategy.md, tasks.md to artifact folder
         - Update meta.json with phases_completed, acceptance record
@@ -753,21 +847,85 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      4. If `result.warnings` is non-empty, log each warning to stderr (non-blocking -- roundtable proceeds regardless)
      5. If `result.conflicts` is non-empty, the first-declared persona wins per AC-005-05; losers are already recorded in warnings
 
+   STATE-MACHINE-DRIVEN COMPOSITION (REQ-GH-253, FR-001, FR-002, FR-003):
+     This section adds a state-machine-driven affordance composition layer that WRAPS the existing roundtable conversation protocol below. The state machine does not replace the protocol -- it composes structured context cards that guide each turn. If any composition step fails, fall through to the prose-driven protocol unchanged (Article X, AC-002-03).
+
+     **At roundtable entry** (before Maya's opening):
+     1. Initialize the state machine by calling `initializeRoundtable('analyze')` via bridge (`src/core/bridge/roundtable.cjs`). This:
+        - Loads the composed definition (core.json + analyze.json) via definition-loader
+        - Initializes the state machine at entry state CONVERSATION
+        - Creates the initial rolling state from the definition
+     2. If `initializeRoundtable` returns null: **FAIL-OPEN** -- skip all composition steps below. Proceed directly to the PROTOCOL section and execute the roundtable-analyst.md protocol as before. The rest of this STATE-MACHINE-DRIVEN COMPOSITION section does not apply.
+     3. Store the returned `{ definition, machine, rollingState }` in session scope for the duration of this roundtable.
+     4. Compose the entry state card by calling `composeForTurn(machine, rollingState)` via the same bridge. The returned `composedCard` (state card + task card for CONVERSATION state with its initial sub-task) provides structured context for Maya's opening turn: active personas, rendering mode, tools, invariants, and the active sub-task (SCOPE_FRAMING).
+     5. Use the `composedCard` as supplementary context when executing Maya's opening per the PROTOCOL below. The card content guides persona behavior, tool preference, and rendering format for this turn.
+
+     **Before each persona turn** (applies to every turn after the opening):
+     1. Call `composeForTurn(machine, rollingState)` via bridge (`src/core/bridge/roundtable.cjs`). The bridge:
+        - Gets current state from state machine (e.g., CONVERSATION, PRESENTING_REQUIREMENTS)
+        - Composes a state card for the current state (personas, rendering mode, invariants, valid transitions, template ref, preferred tools)
+        - If a sub-task is active (e.g., CODEBASE_SCAN), composes a task card (applicable skills, preferred tools, expected output shape, completion marker)
+        - Combines state card + task card into a single composed string
+     2. If `composedCard` is null (composition failed): skip injection for this turn. Continue the conversation using only the prose protocol (fail-open).
+     3. If `composedCard` is present: use it as supplementary context for this turn. The card tells you what template to use, what tools to prefer, what invariants to follow, and what output shape to produce. It does not replace the persona's voice or the protocol flow -- it supplements.
+
+     **After each persona turn** (after LLM produces output, before next user message):
+     1. Call `processAfterTurn(machine, rollingState, llmOutput)` via bridge (`src/core/bridge/roundtable.cjs`). The bridge:
+        a. Parses trailer from end of LLM output (if present) using trailer-parser; strips trailer from user-visible output
+        b. Runs marker extraction on LLM output for the active sub-task using markers/index dispatcher
+        c. Updates rolling state with trailer + marker results (trailer wins on conflict per AC-003-03)
+        d. Evaluates state machine transitions against updated rolling state
+     2. Replace `rollingState` with the returned `updatedState` for subsequent turns.
+     3. Replace the user-visible output with the returned `cleanOutput` (trailer stripped).
+     4. If `transition` is non-null and `transition.transitioned` is true:
+        - Log the transition for observability: `"[roundtable] State transition: {from} -> {to} (trigger: {trigger})"`
+        - The next `composeForTurn` call will automatically compose the card for the new state
+        - If the new state is a confirmation state (PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE, etc.), the state card will include the full template reference and accept/amend prompt
+     5. If `transition` is non-null and `transition.externalDelegation` is present: this is the bug-gather external delegation path (not applicable to analyze -- handled by T033).
+     6. If `transition` is null: no state change occurred. Continue in the current state.
+     7. If `processAfterTurn` fails entirely: skip state update for this turn. The rolling state remains unchanged and no transition fires (AC-003-04). Continue the conversation.
+
+     **Trailer instruction** (AC-003-01):
+     When executing the roundtable protocol, emit a lightweight structured trailer at the end of each turn output. The trailer is best-effort and non-binding -- marker extraction backs it up (AC-003-02). Format:
+     ```
+     ---ROUNDTABLE-TRAILER---
+     state: {current_state_name}
+     sub_task: {active_sub_task_id_or_null}
+     status: {running|complete|waiting}
+     version: 1
+     ---END-TRAILER---
+     ```
+     - `state`: the current state machine state (e.g., CONVERSATION, PRESENTING_REQUIREMENTS)
+     - `sub_task`: the active background sub-task ID (e.g., SCOPE_FRAMING, CODEBASE_SCAN) or "null" if none
+     - `status`: "running" if the sub-task is in progress, "complete" if just finished, "waiting" if waiting for user input
+     - The trailer is parsed and stripped from user-visible output by the handler. It is not shown to the user.
+     - If you cannot determine the sub-task status, omit the trailer entirely. The marker extractors will handle state inference from natural output.
+
+     **Confirmation state handling**:
+     - When the state machine transitions from CONVERSATION to PRESENTING_REQUIREMENTS (or directly to PRESENTING_DESIGN for light tier), the state card composed by `composeForTurn` includes the full template reference, required sections, presenter, and accept/amend prompt.
+     - Accept/Amend user responses update the rolling state (via trailer or marker extraction), which causes `evaluateTransitions` to fire the next transition (accept -> next confirmation state, amend -> AMENDING state).
+     - AMENDING state transitions back to PRESENTING_REQUIREMENTS per the amending semantics in the definition. The rolling state's accepted domains are cleared.
+     - The state machine tracks these transitions but the existing roundtable-analyst.md confirmation protocol still drives the actual presentation. The state machine ensures the composition layer stays in sync.
+
    PROTOCOL (from roundtable-analyst.md):
      1. Follow Section 2.1 Opening:
         - Open as Maya from draft content
         - Ask a single opening question
         - STOP and wait for user reply (natural conversation turn -- no Task resume)
+        - (If state machine initialized: use the entry composedCard as supplementary context for this turn)
      2. On user's first reply, follow Section 2.1 "On resume":
         - Run codebase scan (Alex's deferred task)
         - Compose response with Maya continuing + Alex contributing scan evidence
+        - (If state machine initialized: call processAfterTurn after producing output, then composeForTurn before next turn)
      3. For each subsequent exchange, follow Sections 2.2-2.5:
         - Conversation flow rules, persona contribution batching, natural steering
         - Topic coverage tracking (Section 3)
         - Depth adaptation (Section 4)
+        - (If state machine initialized: the per-turn compose/process cycle runs alongside these protocol steps)
      4. When coverage is complete, enter confirmation sequence (Section 2.5):
         - Sequential: PRESENTING_REQUIREMENTS -> PRESENTING_ARCHITECTURE -> PRESENTING_DESIGN
         - Each domain: present summary, wait for Accept/Amend
+        - (If state machine initialized: state transitions track confirmation progression automatically)
      5. On final Accept, execute artifact batch write (Section 5.5):
         - Write all artifacts to docs/requirements/{slug}/
         - Update meta.json with phases_completed, topics_covered, acceptance record

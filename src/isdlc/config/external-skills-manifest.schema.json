@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "isdlc-external-skills-manifest",
+  "title": "iSDLC External Skills Manifest",
+  "description": "Schema for external-skills-manifest.json. REQ-0022 FR-001, REQ-GH-253 FR-004 (bindings.sub_tasks additive field).",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Unique skill name identifier" },
+          "file": { "type": "string", "description": "Relative path to the SKILL.md file" },
+          "skill_id": { "type": "string", "description": "Structured skill ID (e.g., PROJ-001)" },
+          "description": { "type": "string" },
+          "sourcePhase": { "type": "string", "description": "Discovery phase that generated this skill" },
+          "source": { "type": "string", "enum": ["discover", "user", "project"], "description": "Origin of the skill" },
+          "added_at": { "type": "string", "format": "date-time" },
+          "bindings": {
+            "type": "object",
+            "description": "Binding configuration for when and how the skill is injected",
+            "properties": {
+              "phases": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Workflow phases where this skill applies (or ['all'])"
+              },
+              "agents": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Agent names where this skill applies (or ['all'])"
+              },
+              "sub_tasks": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Background sub-task types this skill is relevant for (e.g., 'codebase-scan', 'blast-radius'). REQ-GH-253 FR-004, AC-004-03. Additive field — manifests without this field remain valid."
+              },
+              "injection_mode": {
+                "type": "string",
+                "enum": ["always", "on-demand"],
+                "default": "always",
+                "description": "When to inject: always (every matching delegation) or on-demand (only when referenced)"
+              },
+              "delivery_type": {
+                "type": "string",
+                "enum": ["context", "instruction", "reference"],
+                "default": "context",
+                "description": "How the skill content is delivered to the agent"
+              },
+              "tool_preferences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "intercept_tool": { "type": "string" },
+                    "preferred_tool": { "type": "string" },
+                    "operation": { "type": "string" }
+                  }
+                },
+                "description": "Tool routing preferences declared by this skill (REQ-GH-214)"
+              }
+            }
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "tool_preferences_schema": {
+      "type": "object",
+      "description": "Documentation schema for tool preference bindings"
+    }
+  },
+  "required": ["skills"]
+}

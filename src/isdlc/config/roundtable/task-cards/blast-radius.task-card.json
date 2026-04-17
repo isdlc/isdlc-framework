@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "BLAST_RADIUS",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "description": "Assess direct changes and transitive impact of the proposed change or fix",
+
+  "skills": [
+    { "id": "IA-001-impact-scanner", "delivery_type": "instruction" }
+  ],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "code_index", "rationale": "Dependency graph and cross-references" },
+    { "rank": 2, "tool": "semantic_search", "rationale": "Find related modules by concept" }
+  ],
+
+  "expected_output": {
+    "shape": "blast_radius",
+    "fields": {
+      "direct_changes": { "type": "array", "required": true, "description": "Files/modules directly modified" },
+      "transitive_impact": { "type": "array", "required": true, "description": "Files/modules affected by ripple effects" },
+      "risk_areas": { "type": "array", "required": false, "description": "High-risk areas needing extra attention" }
+    }
+  },
+
+  "completion_marker": "blast_radius_assessed",
+  "marker_signals": [
+    "direct changes enumerated",
+    "transitive impact identified",
+    "risk assessment mentioned"
+  ],
+
+  "constraints": {
+    "max_lines": 30,
+    "depends_on": "scan_complete"
+  }
+}

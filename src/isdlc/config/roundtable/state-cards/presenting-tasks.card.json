@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_TASKS",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "presenter": {
+    "persona": "Lead",
+    "role": "Facilitator",
+    "facilitated_by": "Maya"
+  },
+
+  "template_ref": "traceability.template.json",
+  "template_authority": "state_local_inline",
+
+  "rendering_mandate": {
+    "format": "4_column_traceability_table",
+    "columns": ["FR", "Requirement", "Design / Blast Radius", "Related Tasks"],
+    "style": "pipe_delimited",
+    "bans": ["bullets", "prose_only", "different_table_shape"]
+  },
+
+  "required_sections": [
+    "traceability_table",
+    "assumptions_and_inferences"
+  ],
+
+  "post_table_sections": [
+    "assumptions_and_inferences"
+  ],
+
+  "accept_amend_prompt": "**Accept** these tasks or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "FINALIZING",
+    "amend": "AMENDING"
+  }
+}

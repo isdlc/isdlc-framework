@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "CODEBASE_SCAN",
+  "version": "1.0.0",
+  "applies_to": ["analyze", "bug_gather"],
+
+  "description": "Scan codebase for affected files, modules, symbols, and related tests",
+
+  "skills": [
+    { "id": "QS-002-keyword-search", "delivery_type": "context" },
+    { "id": "IA-001-impact-scanner", "delivery_type": "instruction" }
+  ],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "semantic_search", "rationale": "Semantic understanding of affected areas" },
+    { "rank": 2, "tool": "code_index", "rationale": "Symbol lookups, file summaries, advanced search" },
+    { "rank": 3, "tool": "grep", "rationale": "Exact string/regex fallback in known scope" }
+  ],
+
+  "expected_output": {
+    "shape": "scan_result",
+    "fields": {
+      "files_affected": { "type": "array", "required": true },
+      "modules_touched": { "type": "array", "required": true },
+      "symbol_refs": { "type": "array", "required": false },
+      "related_tests": { "type": "array", "required": false }
+    }
+  },
+
+  "completion_marker": "scan_complete",
+  "marker_signals": [
+    "files identified",
+    "modules listed",
+    "scan results referenced in persona contribution"
+  ],
+
+  "constraints": {
+    "max_lines": 30,
+    "timing": "after_first_user_reply",
+    "visibility": "internal_only_never_rendered_to_user"
+  }
+}

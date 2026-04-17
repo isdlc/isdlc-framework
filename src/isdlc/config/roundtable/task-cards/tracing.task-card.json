@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/task-card.schema.json",
+  "sub_task": "TRACING",
+  "version": "1.0.0",
+  "applies_to": ["bug_gather"],
+
+  "description": "External tracing delegation — spawns tracing-orchestrator to analyze root cause via T1/T2/T3 sub-agents",
+
+  "skills": [],
+
+  "preferred_tools": [
+    { "rank": 1, "tool": "semantic_search", "rationale": "Trace code paths by concept" },
+    { "rank": 2, "tool": "code_index", "rationale": "Follow call chains and symbol references" }
+  ],
+
+  "expected_output": {
+    "shape": "trace_analysis",
+    "fields": {
+      "hypotheses_ranked": { "type": "array", "required": true, "description": "Root cause hypotheses ranked by likelihood" },
+      "affected_code_paths": { "type": "array", "required": true, "description": "Code paths involved in the bug" },
+      "execution_traces": { "type": "array", "required": false, "description": "Execution flow from entry to failure" }
+    }
+  },
+
+  "completion_marker": "tracing_complete",
+  "marker_signals": [
+    "trace analysis returned",
+    "hypotheses ranked",
+    "code paths identified"
+  ],
+
+  "external_delegation": {
+    "agent": "tracing-orchestrator",
+    "trigger": "bug_summary_accepted",
+    "fail_open": true,
+    "fail_open_fallback": "Alex presents conversation-based root-cause hypotheses"
+  },
+
+  "constraints": {
+    "max_lines": 30,
+    "timing": "after_PRESENTING_BUG_SUMMARY_accept",
+    "external": true
+  }
+}

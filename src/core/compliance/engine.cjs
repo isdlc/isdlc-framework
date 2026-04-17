@@ -226,6 +226,22 @@ function _executeCheck(rule, response, roundtableState) {
             return _checkStateMatch(check, response);
         case 'template-section-order':
             return _checkTemplateSectionOrder(check, response, roundtableState);
+        case 'schema-fields':
+            return _checkSchemaFields(check, response);
+        case 'accept-amend-parser':
+            return _checkAcceptAmendParsing(check, response, roundtableState);
+        case 'confirmation-state-tracking':
+            return _checkConfirmationStateTracking(check, response, roundtableState);
+        case 'confidence-indicator':
+            return _checkConfidenceIndicator(check, response);
+        case 'framework-internals-guard':
+            return _checkFrameworkInternalsGuard(check, response);
+        case 'contributing-persona-rules':
+            return _checkContributingPersonaRules(check, response, roundtableState);
+        case 'persona-loading-validation':
+            return _checkPersonaLoadingValidation(check, response);
+        case 'dispatch-payload-fields':
+            return _checkDispatchPayloadFields(check, response);
         default:
             return false;
     }
@@ -518,6 +534,384 @@ function _resolveTemplatesDir() {
     } catch (e) {
         return null;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Schema fields check (meta.json, inference log, coverage tracker, SESSION_RECORD, phases_completed, artifact thresholds)
+// ---------------------------------------------------------------------------
+
+/**
+ * Schema-fields check: validates that a JSON block in the response contains
+ * all required fields. Used for meta.json finalization, inference logs,
+ * coverage trackers, SESSION_RECORD, and phases_completed population.
+ *
+ * check.detect: which schema to validate against
+ * check.required_fields: array of field names that must appear
+ * check.json_block_pattern: optional regex to locate the JSON block
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @returns {boolean} true if violation (missing fields)
+ */
+function _checkSchemaFields(check, response) {
+    if (!check.detect || !check.required_fields) return false;
+
+    const requiredFields = check.required_fields;
+    if (!Array.isArray(requiredFields) || requiredFields.length === 0) return false;
+
+    // Try to find a JSON block in the response
+    const jsonBlockPattern = check.json_block_pattern
+        ? new RegExp(check.json_block_pattern, 's')
+        : /```(?:json)?\s*\n([\s\S]*?)```/;
+
+    const match = jsonBlockPattern.exec(response);
+    if (!match) {
+        // No JSON block found — if this check requires one, it's a violation
+        // But fail-open if the response doesn't contain the relevant schema at all
+        // Check if the response contains any of the required fields as text keys
+        const hasAnyField = requiredFields.some(f => response.includes(`"${f}"`));
+        if (!hasAnyField) return false; // Not relevant to this response
+        // Has some fields but not in a parseable block — still check as text
+        const missingFields = requiredFields.filter(f => !response.includes(`"${f}"`));
+        return missingFields.length > 0;
+    }
+
+    let parsed;
+    try {
+        parsed = JSON.parse(match[1] || match[0]);
+    } catch (e) {
+        // Can't parse JSON — check as text fallback
+        const content = match[1] || match[0];
+        const missingFields = requiredFields.filter(f => !content.includes(`"${f}"`));
+        return missingFields.length > 0;
+    }
+
+    // Deep check: required fields must exist in the parsed object (can be nested)
+    const missingFields = requiredFields.filter(f => !_hasFieldDeep(parsed, f));
+    return missingFields.length > 0;
+}
+
+/**
+ * Recursively check if a field name exists anywhere in an object.
+ * @param {Object} obj
+ * @param {string} field
+ * @returns {boolean}
+ */
+function _hasFieldDeep(obj, field) {
+    if (!obj || typeof obj !== 'object') return false;
+    if (field in obj) return true;
+    for (const val of Object.values(obj)) {
+        if (typeof val === 'object' && val !== null && _hasFieldDeep(val, field)) return true;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Accept/Amend parsing check
+// ---------------------------------------------------------------------------
+
+/**
+ * Accept/Amend parser check: validates that the user response to an
+ * Accept/Amend prompt is correctly classified. Detects ambiguous
+ * responses that should default to Amend per core.json rules.
+ *
+ * This check fires during PRESENTING_* states and verifies the response
+ * handling follows the accept_indicators / amend_indicators from core.json.
+ *
+ * check.accept_indicators: word list for accept classification
+ * check.amend_indicators: word list for amend classification
+ * check.ambiguous_default: default classification for ambiguous input
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @param {Object|null} roundtableState
+ * @returns {boolean} true if violation
+ */
+function _checkAcceptAmendParsing(check, response, roundtableState) {
+    if (!roundtableState || !roundtableState.confirmation_state) return false;
+    if (!roundtableState.confirmation_state.startsWith('PRESENTING_')) return false;
+
+    const acceptIndicators = check.accept_indicators || [];
+    const amendIndicators = check.amend_indicators || [];
+
+    // Look for the assistant responding with both accept AND amend actions in the same response
+    const responseLower = response.toLowerCase();
+
+    const hasAcceptAction = responseLower.includes('proceeding with accept') ||
+        responseLower.includes('accepted, moving to') ||
+        responseLower.includes('moving to presenting_');
+
+    const hasAmendAction = responseLower.includes('entering amending state') ||
+        responseLower.includes('returning to amending') ||
+        responseLower.includes('re-engaging all personas');
+
+    // Violation: response processes both accept AND amend simultaneously
+    if (hasAcceptAction && hasAmendAction) return true;
+
+    // Check that the response includes the Accept/Amend prompt when in a PRESENTING state
+    const hasPrompt = responseLower.includes('accept') && responseLower.includes('amend');
+    if (!hasPrompt) {
+        // Presenting state without an Accept/Amend prompt is a violation
+        // But only if the response is a summary/confirmation (has headings or bullets)
+        const hasSummaryContent = /^#{2,3}\s+/m.test(response) || /^\s*[-*]\s+/m.test(response);
+        if (hasSummaryContent && response.length > 200) return true;
+    }
+
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Confirmation state tracking check
+// ---------------------------------------------------------------------------
+
+/**
+ * Confirmation state tracking check: validates that the roundtable state
+ * maintains required tracking fields during the confirmation sequence.
+ *
+ * check.required_tracking_fields: fields that must be present
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @param {Object|null} roundtableState
+ * @returns {boolean} true if violation
+ */
+function _checkConfirmationStateTracking(check, response, roundtableState) {
+    if (!roundtableState) return false;
+
+    const requiredFields = check.required_tracking_fields || [
+        'confirmation_state', 'accepted_domains', 'applicable_domains',
+        'summary_cache', 'amendment_cycles'
+    ];
+
+    // Only check when in an active confirmation flow
+    if (!roundtableState.confirmation_state) return false;
+    if (roundtableState.confirmation_state === 'IDLE' || roundtableState.confirmation_state === 'COMPLETE') return false;
+
+    const missingFields = requiredFields.filter(f => !(f in roundtableState));
+    return missingFields.length > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Confidence indicator check
+// ---------------------------------------------------------------------------
+
+/**
+ * Confidence indicator check: validates that requirements-spec.md content
+ * includes properly formatted confidence indicators (High|Medium|Low).
+ *
+ * check.format_pattern: regex for valid confidence format
+ * check.require_in_states: states where confidence must appear
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @returns {boolean} true if violation
+ */
+function _checkConfidenceIndicator(check, response) {
+    const pattern = check.format_pattern || '\\*\\*Confidence\\*\\*:\\s*(High|Medium|Low)';
+    const requireInStates = check.require_in_states || ['PRESENTING_REQUIREMENTS'];
+
+    // Only check if response appears to be a requirements confirmation
+    // (contains typical section markers)
+    const isRequirementsContent = /functional.?requirements/i.test(response) &&
+        /assumptions.?and.?inferences/i.test(response);
+
+    if (!isRequirementsContent) return false;
+
+    let confidenceRegex;
+    try {
+        confidenceRegex = new RegExp(pattern, 'i');
+    } catch (e) {
+        return false; // fail-open on invalid regex
+    }
+
+    // If the response has requirement sections, check for confidence indicators
+    const hasConfidence = confidenceRegex.test(response);
+    if (!hasConfidence) return true; // violation: missing confidence indicator
+
+    // Validate format: must be exactly High, Medium, or Low
+    const allConfidenceMatches = response.match(new RegExp(pattern, 'gi')) || [];
+    for (const match of allConfidenceMatches) {
+        const level = match.replace(/.*:\s*/, '').trim();
+        if (!['High', 'Medium', 'Low'].includes(level)) return true; // Invalid confidence level
+    }
+
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Framework internals guard check
+// ---------------------------------------------------------------------------
+
+/**
+ * Framework internals guard: detects when the response references or reads
+ * framework-internal files that should be off-limits during analysis.
+ *
+ * check.blocked_paths: array of path patterns that must not be referenced
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @returns {boolean} true if violation
+ */
+function _checkFrameworkInternalsGuard(check, response) {
+    const blockedPaths = check.blocked_paths || [
+        'state.json',
+        'active_workflow',
+        'hooks/',
+        'workflows.json',
+        'common.cjs'
+    ];
+
+    // Check if the response indicates reading/accessing blocked paths
+    const readIndicators = [
+        'Read tool.*' ,
+        'reading.*file',
+        'contents of',
+        'file_path.*'
+    ];
+
+    for (const blockedPath of blockedPaths) {
+        for (const indicator of readIndicators) {
+            const pattern = new RegExp(`${indicator}.*${_escapeRegex(blockedPath)}`, 'i');
+            if (pattern.test(response)) return true;
+        }
+        // Also check for direct file path references in tool calls
+        const directRef = new RegExp(`"file_path"\\s*:\\s*"[^"]*${_escapeRegex(blockedPath)}"`, 'i');
+        if (directRef.test(response)) return true;
+    }
+
+    return false;
+}
+
+/**
+ * Escape special regex characters in a string.
+ * @param {string} str
+ * @returns {string}
+ */
+function _escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ---------------------------------------------------------------------------
+// Contributing persona rules check
+// ---------------------------------------------------------------------------
+
+/**
+ * Contributing persona rules check: ensures that contributing personas
+ * do not create new templates, own new states, or break protocol invariants.
+ *
+ * check.forbidden_patterns: patterns indicating rule violations
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @param {Object|null} roundtableState
+ * @returns {boolean} true if violation
+ */
+function _checkContributingPersonaRules(check, response, roundtableState) {
+    const forbiddenPatterns = check.forbidden_patterns || [
+        'new.*template.*for.*persona',
+        'creating.*state.*for.*contributing',
+        'contributing.*persona.*owns.*state',
+        'adding.*confirmation.*stage.*for'
+    ];
+
+    const responseLower = response.toLowerCase();
+
+    for (const pattern of forbiddenPatterns) {
+        try {
+            if (new RegExp(pattern, 'i').test(responseLower)) return true;
+        } catch (e) {
+            // Invalid pattern — skip
+        }
+    }
+
+    // Check if a contributing persona is being treated as a primary
+    // (i.e., has its own Accept/Amend prompt in a non-core state)
+    if (roundtableState && roundtableState.active_contributing_personas) {
+        const contributingNames = roundtableState.active_contributing_personas;
+        for (const name of contributingNames) {
+            const ownedStatePattern = new RegExp(
+                `\\*\\*${_escapeRegex(name)}\\*\\*[\\s\\S]*?(?:accept|amend)\\s*\\?`,
+                'i'
+            );
+            if (ownedStatePattern.test(response)) return true;
+        }
+    }
+
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Persona loading validation check
+// ---------------------------------------------------------------------------
+
+/**
+ * Persona loading validation: verifies that the response demonstrates correct
+ * persona loading behavior (checking PERSONA_CONTEXT, splitting on delimiters,
+ * falling back to Read tool).
+ *
+ * check.required_personas: personas that must be loaded
+ * check.loading_indicators: signals that persona loading occurred
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @returns {boolean} true if violation
+ */
+function _checkPersonaLoadingValidation(check, response) {
+    const requiredPersonas = check.required_personas || ['Maya', 'Alex', 'Jordan'];
+    const loadingIndicators = check.loading_indicators || [
+        'PERSONA_CONTEXT',
+        'persona-maya',
+        'persona-alex',
+        'persona-jordan',
+        'persona loaded',
+        'loading persona'
+    ];
+
+    // Only check when response is early in the session (mentions persona loading)
+    const isPersonaLoadingContext = loadingIndicators.some(ind =>
+        response.toLowerCase().includes(ind.toLowerCase())
+    );
+
+    if (!isPersonaLoadingContext) return false; // Not a persona loading response
+
+    // If loading is happening, verify all required personas are mentioned
+    const responseLower = response.toLowerCase();
+    const missingPersonas = requiredPersonas.filter(p =>
+        !responseLower.includes(p.toLowerCase())
+    );
+
+    return missingPersonas.length > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Dispatch payload fields check
+// ---------------------------------------------------------------------------
+
+/**
+ * Dispatch payload fields check: validates that delegation payloads
+ * include all required context fields for bug-gather or analyze workflows.
+ *
+ * check.required_context_fields: fields expected in the dispatch payload
+ * check.detect: which payload type to check
+ *
+ * @param {Object} check - Rule check definition
+ * @param {string} response - Response text
+ * @returns {boolean} true if violation
+ */
+function _checkDispatchPayloadFields(check, response) {
+    const requiredFields = check.required_context_fields || [];
+    if (requiredFields.length === 0) return false;
+
+    // Only check if the response contains a delegation/dispatch payload
+    const isDelegation = response.includes('delegation') ||
+        response.includes('dispatch') ||
+        response.includes('ANALYSIS_MODE') ||
+        response.includes('BUG_REPORT_PATH');
+
+    if (!isDelegation) return false;
+
+    const missingFields = requiredFields.filter(f => !response.includes(f));
+    return missingFields.length > 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,355 @@
+{
+  "$schema": "../../../core/roundtable/schemas/workflow.schema.json",
+  "version": "1.0.0",
+  "workflow_type": "bug_gather",
+  "description": "Bug-gather workflow state graph — bug analysis roundtable",
+  "inherits": "core.json",
+  "completion_signal": "BUG_ROUNDTABLE_COMPLETE",
+
+  "states": {
+    "IDLE": {
+      "description": "Bug analysis session start",
+      "entry_conditions": ["bug_analysis_session_starts"],
+      "presenter": null,
+      "template": null,
+      "response": null,
+      "transitions": [
+        { "condition": "participation_gate_satisfied AND bug_understanding_reached", "target": "PRESENTING_BUG_SUMMARY" }
+      ],
+      "next_default": "CONVERSATION"
+    },
+
+    "CONVERSATION": {
+      "description": "Interactive bug roundtable conversation — personas gather bug context through dialogue",
+      "entry_conditions": ["session_started"],
+      "presenter": "Maya",
+      "template": null,
+      "response": null,
+      "opening": {
+        "procedure": [
+          "parse_dispatch_prompt",
+          "load_personas",
+          "defer_codebase_scan",
+          "open_as_maya_with_structured_bug_framing"
+        ],
+        "maya_opening_structure": {
+          "whats_broken": "1-2 sentences describing the bug",
+          "where_it_lives": "Affected area from the description",
+          "severity": "Initial assessment (critical/high/medium/low)",
+          "reproduction": "Steps if available from the ticket",
+          "question": "ONE focused clarifying question"
+        },
+        "deferred_scan_note": "Do NOT scan before the first exchange. Maya carries first exchange solo from draft knowledge. Scan runs on resume after user's first reply."
+      },
+      "sub_tasks": {
+        "execution_order": "dynamic",
+        "tasks": [
+          {
+            "id": "SCOPE_FRAMING",
+            "description": "Frame bug scope from ticket/user input",
+            "triggers": ["session_start", "first_exchange"],
+            "skill_ids": [],
+            "preferred_tools": ["semantic_search"],
+            "expected_output": {
+              "shape": "scope_statement",
+              "fields": ["bug_description", "affected_area", "severity_assessment", "reproduction_steps"]
+            },
+            "completion_marker": "scope_framed"
+          },
+          {
+            "id": "CODEBASE_SCAN",
+            "description": "Scan codebase for affected files, modules, related tests",
+            "triggers": ["after_first_user_reply"],
+            "skill_ids": ["QS-002-keyword-search", "IA-001-impact-scanner"],
+            "preferred_tools": ["semantic_search", "code_index"],
+            "expected_output": {
+              "shape": "scan_result",
+              "fields": ["files_affected", "modules_touched", "symbol_refs", "related_tests"]
+            },
+            "completion_marker": "scan_complete"
+          },
+          {
+            "id": "TRACING",
+            "description": "External tracing delegation — runs after BUG_SUMMARY Accept",
+            "triggers": ["bug_summary_accepted"],
+            "skill_ids": [],
+            "preferred_tools": ["semantic_search", "code_index"],
+            "expected_output": {
+              "shape": "trace_analysis",
+              "fields": ["hypotheses_ranked", "affected_code_paths", "execution_traces"]
+            },
+            "completion_marker": "tracing_complete",
+            "external": true,
+            "external_agent": "tracing-orchestrator"
+          },
+          {
+            "id": "SYMPTOM_ANALYSIS",
+            "description": "Analyze symptoms, categorize bug type, assess severity",
+            "triggers": ["scope_framed", "scan_complete"],
+            "skill_ids": [],
+            "preferred_tools": ["semantic_search", "code_index"],
+            "expected_output": {
+              "shape": "symptom_report",
+              "fields": ["symptom_category", "severity_confirmed", "affected_code_paths"]
+            },
+            "completion_marker": "symptoms_analyzed"
+          }
+        ]
+      },
+      "exit_markers": ["participation_gate_satisfied", "bug_understanding_reached"],
+      "transitions": [
+        {
+          "condition": "participation_gate_satisfied AND bug_understanding_reached",
+          "target": "PRESENTING_BUG_SUMMARY"
+        },
+        {
+          "condition": "early_exit_signal",
+          "target": "FINALIZING"
+        }
+      ]
+    },
+
+    "PRESENTING_BUG_SUMMARY": {
+      "description": "Maya presents bug summary for Accept/Amend. Writes bug-report.md BEFORE presenting (tracing needs it).",
+      "entry_conditions": [
+        "symptoms_understood",
+        "affected_area_identified",
+        "severity_assessed",
+        "participation_gate_satisfied"
+      ],
+      "presenter": "Maya",
+      "template_ref": "bug-summary.template.json",
+      "sections": [
+        "severity",
+        "reproduction_steps",
+        "affected_users",
+        "symptoms",
+        "affected_area"
+      ],
+      "pre_presentation_action": {
+        "action": "write_bug_report",
+        "file": "bug-report.md",
+        "rationale": "Tracing-orchestrator needs bug-report.md as input. Writing before tracing is deliberate and scoped to this state.",
+        "exception": "One exception to no-write-before-confirmations rule"
+      },
+      "response": "accept_or_amend",
+      "transitions": [
+        {
+          "condition": "accept",
+          "target": "PRESENTING_ROOT_CAUSE",
+          "external_delegation": {
+            "agent": "tracing-orchestrator",
+            "input_mapping": {
+              "BUG_REPORT_PATH": "{ARTIFACT_FOLDER}/bug-report.md",
+              "ARTIFACT_FOLDER": "{ARTIFACT_FOLDER}",
+              "DISCOVERY_CONTEXT": "{discovery_context}",
+              "ANALYSIS_MODE": true
+            },
+            "analysis_mode_instructions": [
+              "Do NOT check state.json for discovery status or active_workflow",
+              "Do NOT write to state.json",
+              "Read the bug report from BUG_REPORT_PATH",
+              "Use DISCOVERY_CONTEXT for project architecture context",
+              "Launch T1 (symptom-analyzer), T2 (execution-path-tracer), T3 (root-cause-identifier) in parallel",
+              "Consolidate results into trace-analysis output",
+              "Return the consolidated trace analysis as your result"
+            ],
+            "timeout_ms": 120000,
+            "fail_open": {
+              "enabled": true,
+              "fallback": "Alex presents conversation-based root-cause hypotheses instead of tracing-derived ones",
+              "rationale": "Article X fail-safe — degraded but functional"
+            }
+          }
+        },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_ROOT_CAUSE": {
+      "description": "Alex presents root cause analysis for Accept/Amend",
+      "entry_conditions": [
+        "tracing_complete OR tracing_failed_open"
+      ],
+      "presenter": "Alex",
+      "template_ref": "root-cause.template.json",
+      "sections": [
+        "hypotheses",
+        "affected_code_paths",
+        "blast_radius",
+        "evidence"
+      ],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "PRESENTING_FIX_STRATEGY" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_FIX_STRATEGY": {
+      "description": "Jordan presents fix strategy for Accept/Amend",
+      "entry_conditions": [
+        "PRESENTING_ROOT_CAUSE_accepted",
+        "at_least_2_fix_approaches_evaluated"
+      ],
+      "presenter": "Jordan",
+      "template_ref": "fix-strategy.template.json",
+      "sections": [
+        "approaches",
+        "recommended_approach",
+        "regression_risk",
+        "test_gaps"
+      ],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "PRESENTING_TASKS" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "PRESENTING_TASKS": {
+      "description": "Lead presents tasks as traceability table for Accept/Amend",
+      "entry_conditions": [
+        "PRESENTING_FIX_STRATEGY_accepted",
+        "tasks_decomposed_for_build_phases"
+      ],
+      "presenter": "Lead",
+      "template_ref": "traceability.template.json",
+      "written_template_ref": "tasks.template.json",
+      "sections": [
+        "traceability_table",
+        "total_phase_breakdown",
+        "coverage_summary",
+        "assumptions_and_inferences"
+      ],
+      "rendering_mandate": "MUST render as 4-column traceability table. NEVER bullets. NEVER prose-only.",
+      "build_phases_covered": ["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"],
+      "response": "accept_or_amend",
+      "transitions": [
+        { "condition": "accept", "target": "FINALIZING" },
+        { "condition": "amend", "target": "AMENDING" }
+      ]
+    },
+
+    "AMENDING": {
+      "description": "User chose Amend — re-engage all personas, restart from top",
+      "entry_conditions": ["user_chose_amend_from_any_presenting_state"],
+      "presenter": "all_active_primary_personas",
+      "template": null,
+      "response": "amendment_conversation_reaches_resolution",
+      "actions": [
+        "re_engage_all_active_personas",
+        "clear_accepted_domains",
+        "increment_amendment_cycles"
+      ],
+      "transitions": [
+        { "condition": "resolution_reached", "target": "PRESENTING_BUG_SUMMARY" }
+      ]
+    },
+
+    "FINALIZING": {
+      "description": "Cross-check, batch write artifacts, update meta.json, emit completion signal",
+      "entry_conditions": [
+        "PRESENTING_TASKS_accepted",
+        "OR early_exit_confirmed"
+      ],
+      "presenter": "Lead",
+      "template_ref": "tasks.template.json",
+      "actions": [
+        "cross_check_in_memory",
+        "parallel_batch_write",
+        "update_meta_json",
+        "emit_completion_signal"
+      ],
+      "cross_check": {
+        "rules": [
+          "root-cause-analysis.md hypotheses align with fix-strategy.md approaches",
+          "tasks.md file paths match fix-strategy.md files affected"
+        ]
+      },
+      "artifact_list": [
+        "root-cause-analysis.md",
+        "fix-strategy.md",
+        "tasks.md",
+        "bug-summary.md",
+        "root-cause-summary.md",
+        "fix-strategy-summary.md"
+      ],
+      "artifact_exceptions": {
+        "bug-report.md": "Written during PRESENTING_BUG_SUMMARY, NOT rewritten here"
+      },
+      "meta_json_update": {
+        "phases_completed": ["01-requirements", "02-tracing"],
+        "analysis_status": "analyzed",
+        "required_fields": ["bug_classification", "acceptance"]
+      },
+      "transitions": [
+        { "condition": "batch_write_complete", "target": "COMPLETE" }
+      ]
+    },
+
+    "COMPLETE": {
+      "description": "Terminal state — emit BUG_ROUNDTABLE_COMPLETE signal",
+      "entry_conditions": ["finalization_batch_complete"],
+      "presenter": "Lead",
+      "template": null,
+      "response": null,
+      "terminal": true,
+      "emit": "BUG_ROUNDTABLE_COMPLETE",
+      "handler_linkage": "isdlc.md step 6.5f -> build workflow starting at Phase 05 (test-strategy)"
+    }
+  },
+
+  "tier_rules": {
+    "standard": {
+      "domains_presented": ["bug_summary", "root_cause", "fix_strategy", "tasks"],
+      "accept_amend": true,
+      "confirmation_states": [
+        "PRESENTING_BUG_SUMMARY",
+        "PRESENTING_ROOT_CAUSE",
+        "PRESENTING_FIX_STRATEGY",
+        "PRESENTING_TASKS"
+      ]
+    },
+    "epic": {
+      "domains_presented": ["bug_summary", "root_cause", "fix_strategy", "tasks"],
+      "accept_amend": true,
+      "confirmation_states": [
+        "PRESENTING_BUG_SUMMARY",
+        "PRESENTING_ROOT_CAUSE",
+        "PRESENTING_FIX_STRATEGY",
+        "PRESENTING_TASKS"
+      ],
+      "note": "Tier-deferred to standard execution for cross-cutting bugs"
+    },
+    "light": {
+      "domains_presented": ["bug_summary", "fix_strategy", "tasks"],
+      "accept_amend": true,
+      "fold": {
+        "source": "PRESENTING_ROOT_CAUSE",
+        "into": "PRESENTING_FIX_STRATEGY",
+        "rationale": "ROOT_CAUSE folds into FIX_STRATEGY for trivial single-file bugs"
+      },
+      "confirmation_states": [
+        "PRESENTING_BUG_SUMMARY",
+        "PRESENTING_FIX_STRATEGY",
+        "PRESENTING_TASKS"
+      ]
+    }
+  },
+
+  "depth_calibration": {
+    "shallow": {
+      "trigger": "clear_bug_obvious_root_cause_single_fix",
+      "exchange_range": [3, 5],
+      "note": "3-5 exchanges before PRESENTING_BUG_SUMMARY"
+    },
+    "deep": {
+      "trigger": "ambiguous_symptoms_multiple_suspects_viable_strategies",
+      "exchange_range": [5, 8],
+      "note": "5-8 exchanges before PRESENTING_BUG_SUMMARY"
+    },
+    "minimum": 3,
+    "minimum_rationale": "Participation gate minimum"
+  }
+}

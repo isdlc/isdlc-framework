@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-core",
+  "title": "Roundtable Core Definition",
+  "description": "Validates the shared core definition structure for roundtable state machines. Contains rendering modes, persona model extension points, AMENDING semantics, participation gate threshold, early-exit contract, Accept/Amend indicator lists, and tier contract. Traces: FR-002.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Schema version for migration support",
+      "minimum": 1,
+      "default": 1
+    },
+    "rendering_modes": {
+      "type": "object",
+      "description": "Available rendering modes and their configuration",
+      "properties": {
+        "available": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["bulleted", "conversational", "silent"]
+          },
+          "minItems": 1,
+          "description": "List of supported rendering modes"
+        },
+        "default": {
+          "type": "string",
+          "enum": ["bulleted", "conversational", "silent"],
+          "description": "Default rendering mode when not overridden by workflow or tier"
+        }
+      },
+      "required": ["available", "default"],
+      "additionalProperties": true
+    },
+    "persona_model": {
+      "type": "object",
+      "description": "Persona model extension points for roundtable participants",
+      "properties": {
+        "built_in": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Persona identifier (e.g., maya, alex, jordan)" },
+              "domain": { "type": "string", "description": "Domain label for grouping output" },
+              "role_type": {
+                "type": "string",
+                "enum": ["primary", "contributing"],
+                "description": "Primary personas own confirmation stages; contributing personas fold into existing confirmations"
+              }
+            },
+            "required": ["id", "domain", "role_type"],
+            "additionalProperties": true
+          },
+          "description": "Built-in personas shipped with the framework"
+        },
+        "extension_points": {
+          "type": "object",
+          "description": "How external/user personas integrate",
+          "properties": {
+            "contributing_fold_into": {
+              "type": "string",
+              "description": "Which confirmation stage contributing personas fold into"
+            },
+            "promoted_requires": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Fields required for a promoted persona (role_type, owns_state, template, inserts_at)"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "required": ["built_in"],
+      "additionalProperties": true
+    },
+    "amending_semantics": {
+      "type": "object",
+      "description": "Rules governing the AMENDING state behavior (restart-from-top on amendment)",
+      "properties": {
+        "restart_from": {
+          "type": "string",
+          "description": "State to restart from when amendment is triggered (e.g., first confirmation state)"
+        },
+        "max_cycles": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum number of amendment cycles before escalation"
+        },
+        "preserves_prior_accepts": {
+          "type": "boolean",
+          "description": "Whether previously accepted confirmations are preserved during amendment restart"
+        }
+      },
+      "required": ["restart_from", "max_cycles"],
+      "additionalProperties": true
+    },
+    "participation_gate": {
+      "type": "object",
+      "description": "Threshold and rules for persona participation before advancing to confirmation",
+      "properties": {
+        "threshold": {
+          "type": "object",
+          "description": "Minimum participation required from each persona",
+          "properties": {
+            "maya": { "type": "boolean", "description": "Requirements persona must participate" },
+            "alex": { "type": "boolean", "description": "Architecture persona must participate" },
+            "jordan": { "type": "boolean", "description": "Design persona must participate" }
+          },
+          "required": ["maya", "alex", "jordan"],
+          "additionalProperties": true
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": ["strict", "advisory"],
+          "description": "Whether gate is enforced or advisory"
+        }
+      },
+      "required": ["threshold"],
+      "additionalProperties": true
+    },
+    "early_exit_contract": {
+      "type": "object",
+      "description": "Contract for early termination of the roundtable",
+      "properties": {
+        "allowed": {
+          "type": "boolean",
+          "description": "Whether early exit is permitted"
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions under which early exit is valid"
+        },
+        "fallback_state": {
+          "type": "string",
+          "description": "State to transition to on early exit"
+        }
+      },
+      "required": ["allowed"],
+      "additionalProperties": true
+    },
+    "accept_amend_indicators": {
+      "type": "object",
+      "description": "Signal phrases and patterns that indicate Accept or Amend responses from the user",
+      "properties": {
+        "accept": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Phrases indicating user accepts the confirmation (e.g., 'yes', 'confirmed', 'looks good')"
+        },
+        "amend": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Phrases indicating user requests amendment (e.g., 'change', 'update', 'actually')"
+        }
+      },
+      "required": ["accept", "amend"],
+      "additionalProperties": true
+    },
+    "tier_contract": {
+      "type": "object",
+      "description": "Rules for tier-specific behavior (light, standard, epic intensity levels)",
+      "properties": {
+        "tiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": ["light", "standard", "epic"],
+                "description": "Tier name matching workflow intensity"
+              },
+              "skip_states": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "States to skip for this tier (e.g., light skips PRESENTING_ARCHITECTURE)"
+              },
+              "fold_states": {
+                "type": "object",
+                "description": "States to fold together for this tier (key: source state, value: target state)",
+                "additionalProperties": { "type": "string" }
+              },
+              "rendering_mode_override": {
+                "type": "string",
+                "enum": ["bulleted", "conversational", "silent"],
+                "description": "Override rendering mode for this tier"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": true
+          },
+          "description": "Tier definitions with their behavioral overrides"
+        }
+      },
+      "required": ["tiers"],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "version",
+    "rendering_modes",
+    "persona_model",
+    "amending_semantics",
+    "participation_gate",
+    "accept_amend_indicators",
+    "tier_contract"
+  ],
+  "additionalProperties": true
+}

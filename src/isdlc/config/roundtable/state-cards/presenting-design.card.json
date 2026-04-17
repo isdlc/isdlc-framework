@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_DESIGN",
+  "version": "1.0.0",
+  "applies_to": ["analyze"],
+
+  "presenter": {
+    "persona": "Jordan",
+    "role": "System Designer"
+  },
+
+  "template_ref": "design.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "module_overview",
+    "module_design",
+    "changes_to_existing",
+    "wiring_summary",
+    "assumptions_and_inferences"
+  ],
+
+  "content_coverage": [
+    "module_responsibilities_and_boundaries",
+    "data_flow_between_components",
+    "sequence_for_key_workflows",
+    "references_to_module_design_interface_spec_data_flow",
+    "assumptions_with_confidence"
+  ],
+
+  "accept_amend_prompt": "**Accept** this summary or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "PRESENTING_TASKS",
+    "amend": "AMENDING"
+  }
+}

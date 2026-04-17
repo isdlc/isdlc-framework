@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-trailer",
+  "title": "Roundtable LLM Trailer",
+  "description": "Validates the LLM trailer format emitted at the end of each LLM turn during roundtable sessions. Three required fields: state, sub_task, status. Plus version (integer, default 1). Trailer format: ---ROUNDTABLE-TRAILER--- / state: X / sub_task: Y / status: Z / version: 1 / ---END-TRAILER---. Traces: FR-003, AC-003-01.",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "string",
+      "description": "Current user-facing state name (e.g., CONVERSATION, PRESENTING_REQUIREMENTS, AMENDING, FINALIZING, COMPLETE)",
+      "minLength": 1
+    },
+    "sub_task": {
+      "type": ["string", "null"],
+      "description": "Active background sub-task ID, or null if no sub-task is active"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["running", "complete", "waiting"],
+      "description": "Current turn status: running (work in progress), complete (sub-task or state finished), waiting (awaiting user input)"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Trailer schema version for forward compatibility",
+      "minimum": 1,
+      "default": 1
+    }
+  },
+  "required": ["state", "sub_task", "status"],
+  "additionalProperties": false
+}

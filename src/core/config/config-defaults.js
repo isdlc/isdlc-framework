@@ -39,6 +39,15 @@ export const DEFAULT_PROJECT_CONFIG = {
       'persona-system-designer',
     ],
     disabled_personas: [],
+    // REQ-GH-253 T040/T042: migration mode toggle for prose/mechanism parallel-run
+    // Values: "parallel" (both paths, prose authoritative), "mechanism" (state machine primary),
+    //         "prose" (mechanism disabled, original behavior)
+    // T042: Default changed from "parallel" to "mechanism" after T041 convergence tests passed
+    migration_mode: 'mechanism',
+    // REQ-GH-253 FR-004: task card composition budget
+    task_card: {
+      max_skills_total: 8,
+    },
   },
   search: {},
   embeddings: {

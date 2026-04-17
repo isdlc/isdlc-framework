@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-state-card",
+  "title": "Roundtable State Card Template",
+  "description": "Validates state card templates used to compose the outer affordance card for a user-facing state. Required fields: state_name, personas, rendering_mode, invariants, valid_transitions, template_ref, preferred_tools. Max total lines hint for output budget. Traces: FR-001, AC-001-01.",
+  "type": "object",
+  "properties": {
+    "state_name": {
+      "type": "string",
+      "description": "Name of the user-facing state this card represents (e.g., CONVERSATION, PRESENTING_REQUIREMENTS)",
+      "minLength": 1
+    },
+    "personas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Persona identifier (e.g., maya, alex, jordan)"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Domain label for output grouping (e.g., Requirements, Architecture, Design)"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether this persona is active in the current state",
+            "default": true
+          },
+          "role": {
+            "type": "string",
+            "description": "Role description for this persona in this state"
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": true
+      },
+      "description": "Active personas for this state with their roles"
+    },
+    "rendering_mode": {
+      "type": "string",
+      "enum": ["bulleted", "conversational", "silent"],
+      "description": "Rendering mode governing LLM output format for this state"
+    },
+    "invariants": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Invariant rules that must hold throughout this state (e.g., 'Four-domain confirmation sequence is sequential, never collapsed', 'Bullets only, grouped by domain label')"
+    },
+    "valid_transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "description": "Human-readable condition for this transition (e.g., 'all personas participated', 'user accepts')"
+          },
+          "next_state": {
+            "type": "string",
+            "description": "Target state when condition is met"
+          }
+        },
+        "required": ["condition", "next_state"],
+        "additionalProperties": true
+      },
+      "description": "Valid outgoing transitions from this state"
+    },
+    "template_ref": {
+      "type": ["string", "null"],
+      "description": "Reference to the full template file for this state card (relative path from state-cards/), or null if inline"
+    },
+    "preferred_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tool name (e.g., mcp__isdlc-embedding__isdlc_embedding_semantic_search, Read, Grep)"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["primary", "secondary", "fallback"],
+            "description": "Tool priority level in the hierarchy"
+          }
+        },
+        "required": ["name", "priority"],
+        "additionalProperties": true
+      },
+      "description": "Preferred tool hierarchy for this state, ordered by priority"
+    },
+    "max_total_lines": {
+      "type": "integer",
+      "description": "Hint for maximum total lines in the composed state card output (default ~40 per module-design.md)",
+      "minimum": 1,
+      "default": 40
+    }
+  },
+  "required": [
+    "state_name",
+    "personas",
+    "rendering_mode",
+    "invariants",
+    "valid_transitions",
+    "template_ref",
+    "preferred_tools"
+  ],
+  "additionalProperties": true
+}

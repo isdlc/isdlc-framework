@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "roundtable-rolling-state",
+  "title": "Roundtable Rolling State",
+  "description": "Validates the rolling state object maintained in-memory per roundtable session. Updated by trailer + marker extractor with trailer-wins conflict resolution (AC-003-03). Not persisted; meta.json remains the persistent progress handle. Traces: FR-003, AC-003-01 through AC-003-04.",
+  "type": "object",
+  "properties": {
+    "coverage_by_topic": {
+      "type": "object",
+      "description": "Topic coverage tracking keyed by topic name, with coverage level or boolean per topic",
+      "additionalProperties": {
+        "type": ["boolean", "string", "number"],
+        "description": "Coverage status for a topic (true/false, percentage, or label)"
+      }
+    },
+    "scan_complete": {
+      "type": "boolean",
+      "description": "Whether the deferred codebase scan sub-task has completed",
+      "default": false
+    },
+    "scope_accepted": {
+      "type": "boolean",
+      "description": "Whether the user has accepted the overall scope framing",
+      "default": false
+    },
+    "current_persona_rotation": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered list of persona IDs in the current rotation (e.g., ['maya', 'alex', 'jordan'])"
+    },
+    "rendering_mode": {
+      "type": "string",
+      "enum": ["bulleted", "conversational", "silent"],
+      "description": "Current active rendering mode for LLM output formatting"
+    },
+    "amendment_cycles": {
+      "type": "integer",
+      "description": "Number of amendment cycles completed in the current session",
+      "minimum": 0,
+      "default": 0
+    },
+    "participation_markers": {
+      "type": "object",
+      "description": "Tracks which personas have participated in the current conversation phase",
+      "properties": {
+        "maya": {
+          "type": "boolean",
+          "description": "Whether Maya (requirements) has participated",
+          "default": false
+        },
+        "alex": {
+          "type": "boolean",
+          "description": "Whether Alex (architecture) has participated",
+          "default": false
+        },
+        "jordan": {
+          "type": "boolean",
+          "description": "Whether Jordan (design) has participated",
+          "default": false
+        }
+      },
+      "required": ["maya", "alex", "jordan"],
+      "additionalProperties": true
+    },
+    "sub_task_completion": {
+      "type": "object",
+      "description": "Completion status keyed by sub-task ID",
+      "additionalProperties": {
+        "type": ["boolean", "object"],
+        "description": "Completion status: true/false, or object with detailed completion info"
+      }
+    }
+  },
+  "required": [
+    "coverage_by_topic",
+    "scan_complete",
+    "scope_accepted",
+    "current_persona_rotation",
+    "rendering_mode",
+    "amendment_cycles",
+    "participation_markers",
+    "sub_task_completion"
+  ],
+  "additionalProperties": true
+}

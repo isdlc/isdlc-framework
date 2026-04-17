@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../core/roundtable/schemas/state-card.schema.json",
+  "state": "PRESENTING_ROOT_CAUSE",
+  "version": "1.0.0",
+  "applies_to": ["bug_gather"],
+
+  "presenter": {
+    "persona": "Alex",
+    "role": "Solutions Architect"
+  },
+
+  "template_ref": "root-cause.template.json",
+  "template_authority": "state_local_inline",
+
+  "required_sections": [
+    "hypotheses",
+    "affected_code_paths"
+  ],
+
+  "all_sections": [
+    "hypotheses",
+    "affected_code_paths",
+    "blast_radius",
+    "evidence"
+  ],
+
+  "presentation_guidance": {
+    "hypotheses": "Ranked by likelihood with evidence",
+    "affected_code_paths": "file:function -> file:function -> failure point",
+    "blast_radius": "Direct + transitive + side-effects",
+    "evidence": "Trace-derived or conversation-derived summary"
+  },
+
+  "content_coverage": [
+    "hypotheses_ranked_by_likelihood",
+    "affected_code_paths_with_call_chains",
+    "blast_radius_assessment",
+    "evidence_summary"
+  ],
+
+  "accept_amend_prompt": "**Accept** this root cause analysis or **Amend** to discuss changes?",
+  "post_prompt_action": "STOP_and_RETURN",
+
+  "transitions": {
+    "accept": "PRESENTING_FIX_STRATEGY",
+    "amend": "AMENDING"
+  }
+}

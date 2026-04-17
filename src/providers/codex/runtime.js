@@ -225,6 +225,11 @@ export function createRuntime(config = {}) {
         };
       }
 
+      // REQ-GH-253 T046: Inject composed roundtable card into projection bundle
+      if (context.composedCard) {
+        instructions.content = instructions.content + '\n\n' + context.composedCard;
+      }
+
       // Execute via codex exec
       try {
         const { stdout } = await execFileAsync(

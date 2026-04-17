@@ -70,6 +70,318 @@
       "corrective_guidance": "Your confirmation response does not follow the template section order. Read the template at .isdlc/config/templates/{domain}.template.json and re-emit your response with sections in EXACTLY the order specified by section_order. Do not add extra sections, do not reorder, do not rename. For the Tasks confirmation, you MUST use the 4-column traceability table format from traceability.template.json (FR | Requirement | Design / Blast Radius | Related Tasks) with narrative + ACs in the Requirement column and narrative + file paths in the Design column, then add the required Assumptions and Inferences section.",
       "severity": "block",
       "provider_scope": "both"
+    },
+    {
+      "id": "persona-loading-validation",
+      "name": "Persona Loading Validation",
+      "trigger_condition": {
+        "state": "roundtable_start",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "persona-loading-validation",
+        "required_personas": ["Maya", "Alex", "Jordan"],
+        "loading_indicators": [
+          "PERSONA_CONTEXT", "persona-maya", "persona-alex",
+          "persona-jordan", "persona loaded", "loading persona"
+        ],
+        "description": "Validates that all three core personas (Maya, Alex, Jordan) are loaded from PERSONA_CONTEXT or via Read tool fallback. Migrated from roundtable-analyst.md S3 (bucket-2)."
+      },
+      "corrective_guidance": "All three core personas (Maya, Alex, Jordan) must be loaded. Check PERSONA_CONTEXT in the dispatch prompt, split on delimiters, or fall back to reading persona files directly with the Read tool.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "contributing-persona-rules",
+      "name": "Contributing Persona Rules Enforcement",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "contributing-persona-rules",
+        "forbidden_patterns": [
+          "new.*template.*for.*persona",
+          "creating.*state.*for.*contributing",
+          "contributing.*persona.*owns.*state",
+          "adding.*confirmation.*stage.*for"
+        ],
+        "description": "Ensures contributing personas follow their rules: add observations to existing confirmations, fold into core states, never create new templates, never own new states. Migrated from roundtable-analyst.md S4.2 (bucket-2)."
+      },
+      "corrective_guidance": "Contributing personas must NOT create new templates, own new states, or add new confirmation stages. They add observations within existing core persona confirmations and fold into existing states. Domain-label rendering follows the active rendering mode.",
+      "severity": "block",
+      "provider_scope": "both"
+    },
+    {
+      "id": "confirmation-state-tracking",
+      "name": "Confirmation State Tracking Validation",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "confirmation-state-tracking",
+        "required_tracking_fields": [
+          "confirmation_state",
+          "accepted_domains",
+          "applicable_domains",
+          "summary_cache",
+          "amendment_cycles"
+        ],
+        "description": "Validates that in-memory state tracking fields are maintained during the confirmation sequence. Migrated from roundtable-analyst.md S7.2 (bucket-2)."
+      },
+      "corrective_guidance": "The roundtable state must maintain all tracking fields during the confirmation sequence: confirmation_state (current state), accepted_domains (array of accepted domain names), applicable_domains (domains applicable for this tier), summary_cache (cached summaries per domain), and amendment_cycles (count of amend cycles).",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "accept-amend-parser",
+      "name": "Accept/Amend Indicator Matching",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "accept-amend-parser",
+        "accept_indicators": [
+          "accept", "looks good", "approved", "yes", "confirm",
+          "LGTM", "fine", "correct", "agree"
+        ],
+        "amend_indicators": [
+          "amend", "change", "revise", "update", "modify",
+          "no", "not quite", "needs work", "redo"
+        ],
+        "ambiguous_default": "amend",
+        "description": "Validates correct Accept/Amend classification in PRESENTING_* states. Ensures Accept/Amend prompt is present in summary presentations and that ambiguous input defaults to Amend. Migrated from roundtable-analyst.md S7.4 and bug-roundtable-analyst.md S8 (bucket-2)."
+      },
+      "corrective_guidance": "Each domain confirmation MUST end with 'Accept this summary or Amend to discuss changes?' and then STOP. When classifying user response: match against accept indicators (accept, looks good, approved, yes, confirm, LGTM, fine, correct, agree) or amend indicators (amend, change, revise, update, modify, no, not quite, needs work, redo). Ambiguous input MUST default to Amend.",
+      "severity": "block",
+      "provider_scope": "both"
+    },
+    {
+      "id": "meta-json-acceptance-state",
+      "name": "Meta.json Acceptance State Validation",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "meta_json_acceptance",
+        "required_fields": [
+          "accepted_at",
+          "domains",
+          "amendment_cycles"
+        ],
+        "description": "Validates that meta.json acceptance state contains required fields when written during confirmation flow. Migrated from roundtable-analyst.md S8.6 (bucket-2)."
+      },
+      "corrective_guidance": "Meta.json acceptance state must include: accepted_at (ISO timestamp), domains (array of accepted domain names with timestamps), and amendment_cycles (integer count). Write these fields when updating meta.json during the acceptance flow.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "inference-log-schema",
+      "name": "Inference Log Schema Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "inference_log",
+        "required_fields": [
+          "assumption",
+          "trigger",
+          "confidence",
+          "topic",
+          "fr_ids"
+        ],
+        "description": "Validates that inference log entries contain all required fields. Migrated from roundtable-analyst.md S9.4 (bucket-2)."
+      },
+      "corrective_guidance": "Each inference log entry must include: assumption (string describing what was inferred), trigger (what prompted the inference), confidence (High/Medium/Low), topic (which analysis topic this relates to), and fr_ids (array of related functional requirement IDs).",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "coverage-tracker-schema",
+      "name": "Coverage Tracker Schema Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "coverage_tracker",
+        "required_fields": [
+          "coverage_pct",
+          "confidence",
+          "criteria_met",
+          "criteria_total"
+        ],
+        "description": "Validates that coverage tracker maintains required fields. Migrated from roundtable-analyst.md S9.5 and C.6 (bucket-2)."
+      },
+      "corrective_guidance": "Coverage tracker must maintain: coverage_pct (0-100 integer), confidence (High/Medium/Low), criteria_met (integer count of criteria satisfied), and criteria_total (total criteria count). Update after each exchange.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "meta-json-finalization-schema",
+      "name": "Meta.json Finalization Schema Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "meta_json_finalization",
+        "required_fields": [
+          "analysis_status",
+          "phases_completed",
+          "topics_covered",
+          "recommended_scope",
+          "SESSION_RECORD"
+        ],
+        "description": "Validates that meta.json finalization includes all required fields. The deriveAnalysisStatus upgrade rule (partial -> analyzed) applies. Migrated from roundtable-analyst.md S12.5 (bucket-2)."
+      },
+      "corrective_guidance": "Meta.json finalization must include: analysis_status ('partial' upgrades to 'analyzed' when all confirmations accepted), phases_completed (array of phase names with artifact mappings), topics_covered (array of topics discussed), recommended_scope (tier recommendation), and SESSION_RECORD (structured session log).",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "progressive-meta-updates",
+      "name": "Progressive Meta.json Update Checkpoints",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "progressive_meta_checkpoints",
+        "required_fields": [
+          "last_checkpoint",
+          "checkpoint_type"
+        ],
+        "json_block_pattern": "meta\\.json[\\s\\S]*?\\{([\\s\\S]*?)\\}",
+        "description": "Validates that progressive meta.json updates occur at expected checkpoints: after codebase scan, after each artifact ready, after each topic covered, on early exit. Migrated from roundtable-analyst.md S12.6 (bucket-2)."
+      },
+      "corrective_guidance": "Update meta.json progressively at these checkpoints: after_codebase_scan, after_each_artifact_ready, after_each_topic_covered, on_early_exit. Each update should record the checkpoint type.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "confidence-indicator-format",
+      "name": "Confidence Indicator Format Validation",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "confidence-indicator",
+        "format_pattern": "\\*\\*Confidence\\*\\*:\\s*(High|Medium|Low)",
+        "require_in_states": ["PRESENTING_REQUIREMENTS"],
+        "description": "Validates that requirements confirmation includes properly formatted confidence indicators (High/Medium/Low). Migrated from roundtable-analyst.md S12.7 (bucket-2)."
+      },
+      "corrective_guidance": "Requirements confirmation must include confidence indicators formatted as '**Confidence**: High|Medium|Low' for each major requirement area. Only High, Medium, or Low are valid levels.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "session-record-schema",
+      "name": "SESSION_RECORD Format Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "session_record",
+        "required_fields": [
+          "session_id",
+          "slug",
+          "timestamp",
+          "topics"
+        ],
+        "description": "Validates that SESSION_RECORD blocks contain all required fields: session_id, slug, timestamp, and topics array (each with depth_used, acknowledged, overridden, assumptions_count). Migrated from roundtable-analyst.md C.5 (bucket-2)."
+      },
+      "corrective_guidance": "SESSION_RECORD must include: session_id (unique identifier), slug (kebab-case name), timestamp (ISO 8601), topics (array where each entry has: name, depth_used, acknowledged, overridden, assumptions_count).",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "artifact-thresholds",
+      "name": "Artifact Threshold Validation",
+      "trigger_condition": {
+        "state": "confirmation_active",
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "artifact_thresholds",
+        "required_fields": [
+          "blocking_topics",
+          "minimum_criteria"
+        ],
+        "description": "Validates that artifact generation prerequisites (blocking topics and minimum criteria) are met before an artifact is generated. Migrated from roundtable-analyst.md C.2 (bucket-2)."
+      },
+      "corrective_guidance": "Before generating an artifact, verify that all blocking topics have been covered and minimum criteria thresholds are met. Do not generate artifacts with insufficient coverage.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "phases-completed-population",
+      "name": "phases_completed Population Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "schema-fields",
+        "detect": "phases_completed_population",
+        "required_fields": [
+          "phase_name",
+          "artifacts"
+        ],
+        "description": "Validates that phases_completed entries in meta.json map artifacts to the correct phases. Migrated from roundtable-analyst.md C.3 (bucket-2)."
+      },
+      "corrective_guidance": "Each phases_completed entry must include: phase_name (e.g., '01-requirements', '02-architecture') and artifacts (array of artifact filenames generated for that phase).",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "framework-internals-guard",
+      "name": "Framework Internals Read Blocking",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "framework-internals-guard",
+        "blocked_paths": [
+          "state.json",
+          "active_workflow",
+          "hooks/",
+          "workflows.json",
+          "common.cjs"
+        ],
+        "description": "Blocks the roundtable analyst from reading framework internal files during analysis. state.json writes are blocked by state-file-guard hook, but reads of framework internals have no existing enforcement. Migrated from bug-roundtable-analyst.md S1 rule 9 (bucket-2)."
+      },
+      "corrective_guidance": "During analysis, do NOT read framework internal files: state.json, active_workflow, hooks/ source files, workflows.json, or common.cjs. These are framework internals not relevant to the user's analysis. Use codebase search tools to analyze the user's project code instead.",
+      "severity": "warn",
+      "provider_scope": "both"
+    },
+    {
+      "id": "dispatch-payload-fields",
+      "name": "Dispatch Payload Field Validation",
+      "trigger_condition": {
+        "workflow": "analyze"
+      },
+      "check": {
+        "type": "dispatch-payload-fields",
+        "required_context_fields": [
+          "project_architecture",
+          "tech_stack",
+          "entry_points",
+          "test_framework"
+        ],
+        "detect": "dispatch_payload",
+        "description": "Validates that delegation/dispatch payloads include required discovery context fields. Migrated from bug-roundtable-analyst.md Appendix C (bucket-2)."
+      },
+      "corrective_guidance": "Dispatch payloads must include discovery context fields: project_architecture (from discover), tech_stack (languages/frameworks), entry_points (main files), and test_framework (testing setup). These are consumed by sub-agents for context.",
+      "severity": "warn",
+      "provider_scope": "both"
     }
   ]
 }
