@@ -4,6 +4,9 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] #258 Live workflow dashboard: wire animated flow to state.json for real-time visualization [github: GH-258]
+- [ ] #257 Fisheye/Crucible integration: push AI review summaries into team code review workflow [github: GH-257]
+- [ ] #256 SVN support: VCS abstraction layer with Git and SVN adapters [github: GH-256]
 - [ ] #255 Roundtable escape hatches: licensed persona dissent + trivial-scope sanity gate [github: GH-255]
 - [x] #253 Context-manager hooks: inject phase-specific instructions before delegation, not just block after [github: GH-253] -> [requirements](docs/requirements/REQ-GH-253-context-manager-hooks-inject-before-delegation/) **Completed**
   - State-machine-driven composition for analyze + bug-gather roundtables. Two-layer affordance model, hybrid rolling state, skills at sub-task granularity, bucketed audit + prose reduction (890→733 + 573→343). 589 tests.
