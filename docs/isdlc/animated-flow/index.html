@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>iSDLC End-to-End Workflow — Flash Animation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0e1a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: auto; overflow-y: auto; }
+
+  .top-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,14,26,0.95); border-bottom: 1px solid rgba(100,116,139,0.2);
+    padding: 12px 30px; backdrop-filter: blur(10px); }
+  .top-bar h1 { font-size: 22px; color: #93c5fd; text-shadow: 0 0 20px rgba(59,130,246,0.5); display: inline; }
+  .top-bar .subtitle { font-size: 12px; color: #64748b; margin-left: 15px; }
+
+  .controls { position: fixed; top: 10px; right: 30px; z-index: 101; display: flex; gap: 6px; align-items: center; }
+  .controls button {
+    background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #93c5fd;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px; transition: all 0.3s; }
+  .controls button:hover { background: rgba(59,130,246,0.3); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
+  .controls button.active { background: #3b82f6; color: #fff; }
+  .step-label { color: #64748b; font-size: 11px; min-width: 180px; text-align: center; }
+
+  .legend { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; gap: 14px; background: rgba(10,14,26,0.9); padding: 5px 16px;
+    border-radius: 6px; border: 1px solid rgba(100,116,139,0.15); backdrop-filter: blur(10px); }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+  .flow-container { display: flex; align-items: flex-start; gap: 0; padding: 70px 30px 60px 30px; min-height: 100vh;
+    transition: padding-bottom 0.5s ease; }
+  body.drawer-open .flow-container { padding-bottom: 300px; }
+
+  .stage {
+    min-width: 260px; max-width: 280px; flex-shrink: 0;
+    border: 1px solid rgba(100,116,139,0.2); border-radius: 12px;
+    padding: 16px 18px; position: relative;
+    background: rgba(15,23,42,0.8);
+    opacity: 0.12; transform: translateX(30px);
+    transition: opacity 0.8s ease, transform 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
+    align-self: stretch; display: flex; flex-direction: column; }
+  .stage.visible { opacity: 1; transform: translateX(0); }
+  .stage.active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 25px rgba(59,130,246,0.25), 0 0 50px rgba(59,130,246,0.1), inset 0 0 25px rgba(59,130,246,0.05); }
+  .stage.completed { border-color: #047857; opacity: 0.65; box-shadow: 0 0 10px rgba(4,120,87,0.15); }
+
+  .stage-header { text-align: center; margin-bottom: 12px; }
+  .stage-number {
+    width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; margin-bottom: 6px; transition: all 0.5s; }
+  .stage.active .stage-number { box-shadow: 0 0 12px currentColor; }
+  .stage-title { font-size: 15px; font-weight: bold; display: block; }
+
+  .stage[data-stage="discover"] .stage-number { background: rgba(194,65,12,0.3); color: #fed7aa; border: 1px solid #c2410c; }
+  .stage[data-stage="discover"] .stage-title { color: #fed7aa; }
+  .stage[data-stage="discover"].active { border-color: #c2410c; box-shadow: 0 0 25px rgba(194,65,12,0.3), 0 0 50px rgba(194,65,12,0.1); }
+
+  .stage[data-stage="embeddings"] .stage-number { background: rgba(109,40,217,0.3); color: #ddd6fe; border: 1px solid #6d28d9; }
+  .stage[data-stage="embeddings"] .stage-title { color: #ddd6fe; }
+  .stage[data-stage="embeddings"].active { border-color: #6d28d9; box-shadow: 0 0 25px rgba(109,40,217,0.3), 0 0 50px rgba(109,40,217,0.1); }
+
+  .stage[data-stage="add"] .stage-number { background: rgba(59,130,246,0.3); color: #93c5fd; border: 1px solid #3b82f6; }
+  .stage[data-stage="add"] .stage-title { color: #93c5fd; }
+
+  .stage[data-stage="test-gen"] .stage-number { background: rgba(4,120,87,0.3); color: #a7f3d0; border: 1px solid #047857; }
+  .stage[data-stage="test-gen"] .stage-title { color: #a7f3d0; }
+  .stage[data-stage="test-gen"].active { border-color: #047857; box-shadow: 0 0 25px rgba(4,120,87,0.3), 0 0 50px rgba(4,120,87,0.1); }
+
+  .stage[data-stage="analyze"] .stage-number { background: rgba(180,83,9,0.3); color: #fef3c7; border: 1px solid #b45309; }
+  .stage[data-stage="analyze"] .stage-title { color: #fef3c7; }
+  .stage[data-stage="analyze"].active { border-color: #b45309; box-shadow: 0 0 25px rgba(180,83,9,0.3), 0 0 50px rgba(180,83,9,0.1); }
+  .stage[data-stage="analyze"] { min-width: 380px; max-width: 400px; }
+
+  .stage[data-stage="build"] .stage-number { background: rgba(59,130,246,0.3); color: #93c5fd; border: 1px solid #3b82f6; }
+  .stage[data-stage="build"] .stage-title { color: #93c5fd; }
+  .stage[data-stage="build"] { min-width: 430px; max-width: 460px; }
+
+  /* Task thread marker — small left-border accent on sections that consume tasks.md */
+  .task-accent {
+    border-left: 2px solid rgba(180,83,9,0.5); padding-left: 8px; margin-top: 3px;
+  }
+  .task-note {
+    font-size: 8px; color: #b45309; margin-top: 3px; line-height: 1.3;
+  }
+
+  /* Nodes */
+  .node {
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; margin: 3px 0; display: inline-block;
+    transition: opacity 1s ease, transform 0.8s ease, box-shadow 1s ease; }
+
+  /* Node states for sequential flash animation */
+  .node.dim { opacity: 0.15; transform: scale(0.97); }
+  .node.solid { opacity: 1; transform: scale(1); }
+  .node.flashing {
+    opacity: 1; transform: scale(1);
+    animation: soft-pulse 2.4s ease-in-out infinite; }
+
+  @keyframes soft-pulse {
+    0%   { box-shadow: 0 0 4px rgba(147,197,253,0.1); filter: brightness(1); }
+    50%  { box-shadow: 0 0 14px currentColor, 0 0 25px rgba(147,197,253,0.15); filter: brightness(1.12); }
+    100% { box-shadow: 0 0 4px rgba(147,197,253,0.1); filter: brightness(1); }
+  }
+
+  /* When stage is not yet active, hide all nodes */
+  .stage:not(.visible) .node { opacity: 0; transform: scale(0.9); }
+
+  .node-agent { background: rgba(109,40,217,0.2); border: 1px solid #6d28d9; color: #ddd6fe; }
+  .node-process { background: rgba(59,130,246,0.2); border: 1px solid #3b82f6; color: #93c5fd; }
+  .node-artifact { background: rgba(4,120,87,0.2); border: 1px solid #047857; color: #a7f3d0; }
+  .node-hook { background: rgba(220,38,38,0.2); border: 1px solid #dc2626; color: #fca5a5; }
+  .node-decision { background: rgba(234,179,8,0.15); border: 1.5px solid #eab308; color: #fef08a;
+    border-radius: 3px; transform: rotate(0deg);
+    box-shadow: inset 0 0 6px rgba(234,179,8,0.1); }
+  .node-state { background: rgba(15,23,42,0.9); border: 1px solid #475569; color: #94a3b8; }
+
+  .flow-section { margin: 6px 0; }
+  .flow-section-label { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .node-row { display: flex; flex-wrap: wrap; gap: 4px; }
+  .arrow-down { text-align: center; color: #475569; font-size: 14px; margin: 2px 0;
+    opacity: 0; transition: opacity 0.3s; }
+  .stage.visible .arrow-down { opacity: 1; }
+
+  .phase-bar { display: flex; gap: 2px; margin: 6px 0; }
+  .phase-segment {
+    height: 5px; border-radius: 3px; flex: 1;
+    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
+    transition: background 0.5s, box-shadow 0.5s; }
+  .phase-segment.lit { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+  .phase-segment.done { background: #047857; box-shadow: none; }
+
+  .connector {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 40px; color: #475569; font-size: 24px;
+    opacity: 0; transition: opacity 0.5s; flex-shrink: 0; align-self: center; }
+  .connector.visible { opacity: 1; }
+  .connector.active { color: #3b82f6; text-shadow: 0 0 10px rgba(59,130,246,0.5); }
+
+  /* Frequency divider between setup and daily stages */
+  .freq-divider {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 30px; flex-shrink: 0; align-self: stretch;
+    opacity: 0; transition: opacity 0.6s;
+  }
+  .freq-divider.visible { opacity: 1; }
+  .freq-divider-line {
+    width: 1px; flex: 1; background: linear-gradient(180deg, transparent 0%, #475569 30%, #475569 70%, transparent 100%);
+  }
+  .freq-divider-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #475569; flex-shrink: 0;
+    margin: 4px 0;
+  }
+
+  /* Frequency badges on stages */
+  .freq-badge {
+    position: absolute; top: 8px; right: 10px;
+    font-size: 8px; padding: 2px 7px; border-radius: 10px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .freq-badge-setup {
+    background: rgba(100,116,139,0.15); border: 1px solid rgba(100,116,139,0.3); color: #64748b;
+  }
+  .freq-badge-daily {
+    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd;
+    animation: daily-badge-pulse 3s ease-in-out infinite;
+  }
+  @keyframes daily-badge-pulse {
+    0%   { box-shadow: none; }
+    50%  { box-shadow: 0 0 8px rgba(59,130,246,0.3); }
+    100% { box-shadow: none; }
+  }
+
+  /* Interaction mode badges */
+  .mode-badge {
+    position: absolute; top: 8px; left: 10px;
+    padding: 3px 6px; border-radius: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .mode-badge-human {
+    background: rgba(180,83,9,0.12); border: 1px solid rgba(180,83,9,0.3);
+  }
+  .mode-badge-auto {
+    background: rgba(4,120,87,0.12); border: 1px solid rgba(4,120,87,0.3);
+  }
+  .mode-icon-group { display: flex; align-items: center; gap: 2px; }
+
+  /* SVG icon styling */
+  .mode-icon-group svg { width: 18px; height: 18px; }
+  .mode-icon-group .icon-human { stroke: #fbbf24; fill: none; filter: drop-shadow(0 0 3px rgba(251,191,36,0.4)); }
+  .mode-icon-group .icon-ai { stroke: #c084fc; fill: none; filter: drop-shadow(0 0 3px rgba(192,132,252,0.4)); }
+  .mode-icon-group .icon-link { stroke: #94a3b8; fill: none; }
+  .mode-icon-group .icon-gear { stroke: #34d399; fill: none; filter: drop-shadow(0 0 4px rgba(52,211,153,0.4));
+    animation: gear-spin 8s linear infinite; transform-origin: center; }
+  .mode-icon-group .icon-bolt { stroke: #34d399; fill: rgba(52,211,153,0.2);
+    filter: drop-shadow(0 0 4px rgba(52,211,153,0.5));
+    animation: bolt-pulse 2.4s ease-in-out infinite; }
+
+  @keyframes gear-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes bolt-pulse {
+    0%   { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(52,211,153,0.3)); }
+    50%  { opacity: 1; filter: drop-shadow(0 0 6px rgba(52,211,153,0.6)); }
+    100% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(52,211,153,0.3)); }
+  }
+
+  /* Concurrency panel between analyze and build */
+  .concurrency-note {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 50px; flex-shrink: 0; align-self: center;
+    opacity: 0; transition: opacity 0.6s;
+  }
+  .concurrency-note.visible { opacity: 1; }
+  .conc-line { width: 1px; height: 20px; background: rgba(100,116,139,0.3); }
+  .conc-badge {
+    font-size: 7px; color: #64748b; text-align: center; line-height: 1.4;
+    padding: 4px 6px; border: 1px solid rgba(100,116,139,0.2); border-radius: 4px;
+    background: rgba(15,23,42,0.9); white-space: nowrap;
+  }
+
+  .stage { position: relative; }
+
+  /* Loop indicator — animated circular arrow */
+  .loop-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px; border-radius: 12px;
+    background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25);
+    margin-top: 4px;
+  }
+  .loop-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+  }
+  .loop-icon .loop-circle {
+    fill: none; stroke: #f87171; stroke-width: 2;
+    stroke-dasharray: 38; stroke-dashoffset: 38;
+    animation: loop-draw 2.4s ease-in-out infinite;
+  }
+  .loop-icon .loop-arrow-head {
+    fill: #f87171; stroke: none;
+  }
+  @keyframes loop-draw {
+    0%   { stroke-dashoffset: 38; }
+    60%  { stroke-dashoffset: 0; }
+    80%  { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 38; }
+  }
+  .loop-label {
+    font-size: 8px; color: #fca5a5; line-height: 1.2;
+  }
+
+  .detail { font-size: 10px; color: #64748b; margin-top: auto; padding-top: 8px;
+    border-top: 1px solid rgba(100,116,139,0.15); line-height: 1.4; }
+  .detail strong { color: #94a3b8; }
+
+  /* Option 1: Glowing ribbon connector */
+  .connector-bridge {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 130px; flex-shrink: 0; align-self: center;
+    opacity: 0; transition: opacity 0.6s;
+  }
+  .connector-bridge.visible { opacity: 1; }
+  .bridge-ribbon {
+    display: flex; align-items: center; position: relative;
+  }
+  .ribbon-line-in {
+    width: 22px; height: 2px;
+    background: linear-gradient(90deg, transparent, #b45309);
+  }
+  .ribbon-line-out {
+    width: 22px; height: 2px;
+    background: linear-gradient(90deg, #b45309, transparent);
+  }
+  .ribbon-node {
+    background: rgba(180,83,9,0.25); border: 1.5px solid #b45309; color: #fef3c7;
+    padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: bold;
+    white-space: nowrap; position: relative;
+    animation: ribbon-glow 2.4s ease-in-out infinite;
+  }
+  .ribbon-sub {
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    margin-top: 4px; font-size: 8px; color: #64748b; white-space: nowrap;
+    text-align: center; line-height: 1.3;
+  }
+  @keyframes ribbon-glow {
+    0%   { box-shadow: 0 0 6px rgba(180,83,9,0.1); }
+    50%  { box-shadow: 0 0 18px rgba(180,83,9,0.5), 0 0 35px rgba(180,83,9,0.15); }
+    100% { box-shadow: 0 0 6px rgba(180,83,9,0.1); }
+  }
+
+  /* Contextual sidebar — slides up from bottom */
+  .sidebar {
+    position: fixed; left: 30px; right: 30px; bottom: 0; height: 260px;
+    background: rgba(10,14,26,0.97); border-top: 1px solid rgba(100,116,139,0.2);
+    border-radius: 12px 12px 0 0;
+    backdrop-filter: blur(12px); z-index: 99;
+    transform: translateY(270px); transition: transform 0.5s ease;
+    overflow-y: auto; padding: 16px 24px 16px;
+    display: flex; gap: 30px;
+  }
+  .sidebar.open { transform: translateY(0); }
+  .sidebar-toggle {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 40px; z-index: 100;
+    background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #93c5fd;
+    padding: 6px 16px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 11px; transition: all 0.3s;
+  }
+  .sidebar.open ~ .sidebar-toggle { bottom: 268px; }
+  .sidebar-toggle:hover { background: rgba(59,130,246,0.3); }
+  .sidebar-toggle.active { background: #3b82f6; color: #fff; }
+
+  .sidebar h3 { font-size: 14px; margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid rgba(100,116,139,0.2); white-space: nowrap; }
+  .sidebar .sb-section { flex: 1; min-width: 200px; overflow-y: auto; }
+  .sidebar .sb-label { font-size: 9px; color: #475569; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 6px; }
+  .sidebar .sb-item {
+    display: flex; align-items: center; gap: 8px; padding: 4px 8px;
+    border-radius: 4px; margin-bottom: 3px; font-size: 11px;
+    opacity: 0; transform: translateX(15px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .sidebar.open .sb-item { opacity: 1; transform: translateX(0); }
+  .sidebar .sb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sidebar .sb-dot-agent { background: #6d28d9; }
+  .sidebar .sb-dot-skill { background: #047857; }
+  .sidebar .sb-dot-hook { background: #dc2626; }
+  .sidebar .sb-name { color: #e2e8f0; }
+  .sidebar .sb-meta { color: #475569; font-size: 9px; margin-left: auto; }
+  .sidebar .sb-empty { color: #475569; font-size: 11px; font-style: italic; padding: 20px 0; text-align: center; }
+  .sidebar .sb-count { font-size: 10px; color: #64748b; margin-left: 6px; }
+
+  /* stagger sidebar items */
+  .sidebar.open .sb-item:nth-child(1) { transition-delay: 0.05s; }
+  .sidebar.open .sb-item:nth-child(2) { transition-delay: 0.08s; }
+  .sidebar.open .sb-item:nth-child(3) { transition-delay: 0.11s; }
+  .sidebar.open .sb-item:nth-child(4) { transition-delay: 0.14s; }
+  .sidebar.open .sb-item:nth-child(5) { transition-delay: 0.17s; }
+  .sidebar.open .sb-item:nth-child(6) { transition-delay: 0.20s; }
+  .sidebar.open .sb-item:nth-child(7) { transition-delay: 0.23s; }
+  .sidebar.open .sb-item:nth-child(8) { transition-delay: 0.26s; }
+  .sidebar.open .sb-item:nth-child(9) { transition-delay: 0.29s; }
+  .sidebar.open .sb-item:nth-child(10) { transition-delay: 0.32s; }
+  .sidebar.open .sb-item:nth-child(11) { transition-delay: 0.35s; }
+  .sidebar.open .sb-item:nth-child(12) { transition-delay: 0.38s; }
+  .sidebar.open .sb-item:nth-child(13) { transition-delay: 0.41s; }
+  .sidebar.open .sb-item:nth-child(14) { transition-delay: 0.44s; }
+  .sidebar.open .sb-item:nth-child(15) { transition-delay: 0.47s; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>iSDLC End-to-End Workflow</h1>
+  <span class="subtitle">Intelligent Software Development Lifecycle Harness</span>
+</div>
+
+<div class="controls">
+  <button onclick="prevStep()">←</button>
+  <button onclick="autoPlay()" id="btn-play">▶ Play</button>
+  <button onclick="nextStep()">→</button>
+  <button onclick="showAll()">All</button>
+  <div class="step-label" id="step-label">Click Play to start</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(109,40,217,0.4);border:1px solid #6d28d9"></div>Agent</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(59,130,246,0.4);border:1px solid #3b82f6"></div>Process</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(4,120,87,0.4);border:1px solid #047857"></div>Artifact</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(220,38,38,0.4);border:1px solid #dc2626"></div>Hook</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(234,179,8,0.3);border:1.5px solid #eab308"></div>Decision</div>
+</div>
+
+<div class="flow-container">
+
+  <!-- 1. DISCOVER — sequential flash animation -->
+  <div class="stage" data-stage="discover" id="stage-1">
+    <div class="freq-badge freq-badge-setup">setup</div>
+    <div class="stage-header">
+      <div class="stage-number">1</div>
+      <div class="stage-title">DISCOVER</div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Entry</div>
+      <div class="node-row"><div class="node node-process" data-seq="0">/discover</div></div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Orchestrator</div>
+      <div class="node-row"><div class="node node-agent" data-seq="1">discover-orchestrator</div></div>
+    </div>
+    <div class="arrow-down">⇣ parallel fan-out</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Agents (parallel)</div>
+      <div class="node-row">
+        <div class="node node-agent" data-seq="2">arch-analyzer</div>
+        <div class="node node-agent" data-seq="2">test-evaluator</div>
+        <div class="node node-agent" data-seq="2">feature-mapper</div>
+        <div class="node node-agent" data-seq="2">constitution-gen</div>
+        <div class="node node-agent" data-seq="2">skills-researcher</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Artifacts</div>
+      <div class="node-row">
+        <div class="node node-artifact" data-seq="3">constitution.md</div>
+        <div class="node node-artifact" data-seq="3">project skills (4)</div>
+        <div class="node node-artifact" data-seq="3">characterization tests</div>
+        <div class="node node-artifact" data-seq="3">session cache</div>
+      </div>
+    </div>
+    <div class="detail"><strong>Setup</strong> — Parallel agents analyze codebase, produce constitution + skills + test scaffolds.</div>
+  </div>
+
+  <div class="connector" id="conn-1">→</div>
+
+  <!-- 2. EMBEDDINGS -->
+  <div class="stage" data-stage="embeddings" id="stage-2">
+    <div class="freq-badge freq-badge-setup">setup</div>
+    <div class="stage-header">
+      <div class="stage-number">2</div>
+      <div class="stage-title">EMBEDDINGS</div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Generate</div>
+      <div class="node-row"><div class="node node-process">isdlc-embedding generate</div></div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Pipeline</div>
+      <div class="node-row"><div class="node node-process">Tree-sitter Chunker</div></div>
+      <div class="arrow-down">↓</div>
+      <div class="node-row"><div class="node node-agent">Jina v2 Base Code</div></div>
+      <div class="arrow-down">↓ CoreML fp16</div>
+      <div class="node-row"><div class="node node-process">768-dim vectors</div></div>
+      <div class="arrow-down">↓</div>
+      <div class="node-row"><div class="node node-artifact">.emb (FAISS index)</div></div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Serve</div>
+      <div class="node-row">
+        <div class="node node-process">MCP Server :7777</div>
+        <div class="node node-artifact">semantic_search</div>
+        <div class="node node-artifact">list_modules</div>
+      </div>
+    </div>
+    <div class="detail"><strong>Search</strong> — AST-aware chunks → vectors → FAISS → MCP. Enables semantic search for all agents.</div>
+  </div>
+
+  <div class="connector" id="conn-2">→</div>
+
+  <!-- 3. TEST GENERATE -->
+  <div class="stage" data-stage="test-gen" id="stage-3">
+    <div class="freq-badge freq-badge-setup">setup</div>
+    <div class="stage-header">
+      <div class="stage-number">3</div>
+      <div class="stage-title">TEST GENERATE</div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Precondition</div>
+      <div class="node-row"><div class="node node-hook">characterization scaffolds exist?</div></div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Phase Loop (05→06→16→08)</div>
+      <div class="node-row"><div class="node node-agent">test-design-engineer</div></div>
+      <div class="arrow-down">↓</div>
+      <div class="node-row"><div class="node node-agent">software-developer</div></div>
+      <div class="arrow-down">↓ task-level dispatch</div>
+      <div class="node-row"><div class="node node-agent">quality-loop ∥</div></div>
+      <div class="arrow-down">↓</div>
+      <div class="node-row"><div class="node node-agent">qa-engineer</div></div>
+    </div>
+    <div class="phase-bar">
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Artifacts</div>
+      <div class="node-row">
+        <div class="node node-artifact">test-strategy.md</div>
+        <div class="node node-artifact">test files</div>
+        <div class="node node-artifact">quality-report.md</div>
+      </div>
+    </div>
+    <div class="detail"><strong>Phase loop</strong> — Scaffolds → test strategy → implementation → quality → review.</div>
+  </div>
+
+  <div class="freq-divider" id="conn-3">
+    <div class="freq-divider-line"></div>
+    <div class="freq-divider-dot"></div>
+    <div class="freq-divider-line"></div>
+  </div>
+
+  <!-- 4. ADD -->
+  <div class="stage" data-stage="add" id="stage-4">
+    <div class="freq-badge freq-badge-daily">daily</div>
+    <div class="stage-header">
+      <div class="stage-number">4</div>
+      <div class="stage-title">ADD</div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Input</div>
+      <div class="node-row"><div class="node node-process">add "#N" / "PROJECT-N" / "description"</div></div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Source Detection</div>
+      <div style="display:flex;gap:4px;margin-top:2px">
+        <div style="flex:1;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:4px;background:rgba(59,130,246,0.05)">
+          <div style="font-size:8px;color:#3b82f6;margin-bottom:2px">GitHub</div>
+          <div class="node node-process" style="font-size:9px">gh issue view #N</div>
+          <div style="font-size:8px;color:#475569;margin-top:2px">title, labels, body</div>
+        </div>
+        <div style="flex:1;border:1px solid rgba(109,40,217,0.3);border-radius:4px;padding:4px;background:rgba(109,40,217,0.05)">
+          <div style="font-size:8px;color:#6d28d9;margin-bottom:2px">Jira</div>
+          <div class="node node-agent" style="font-size:9px">Atlassian MCP</div>
+          <div style="font-size:8px;color:#475569;margin-top:2px">summary, type, priority</div>
+        </div>
+        <div style="flex:1;border:1px solid rgba(100,116,139,0.3);border-radius:4px;padding:4px;background:rgba(100,116,139,0.05)">
+          <div style="font-size:8px;color:#94a3b8;margin-bottom:2px">Manual</div>
+          <div class="node node-process" style="font-size:9px">reverse-lookup</div>
+          <div style="font-size:8px;color:#475569;margin-top:2px">match or create GH issue</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Folder Creation</div>
+      <div style="border:1px solid rgba(4,120,87,0.25);border-radius:4px;padding:5px 8px;background:rgba(4,120,87,0.05);font-size:9px;color:#a7f3d0;line-height:1.5">
+        <span style="color:#475569">docs/requirements/</span><br>
+        └─ <span style="color:#a7f3d0">REQ-GH-{N}-{slug}/</span><br>
+        <span style="margin-left:24px">├─ draft.md</span><br>
+        <span style="margin-left:24px">└─ meta.json</span>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Tracking</div>
+      <div class="node-row">
+        <div class="node node-artifact">BACKLOG.md [ ] entry</div>
+      </div>
+    </div>
+    <div class="detail"><strong>Inline</strong> — No workflow, no state.json, no branch. Under 5 seconds.</div>
+  </div>
+
+  <div class="connector" id="conn-4">→</div>
+
+  <!-- 5. ANALYZE -->
+  <div class="stage" data-stage="analyze" id="stage-5">
+    <div class="freq-badge freq-badge-daily">daily</div>
+    <div class="stage-header">
+      <div class="stage-number">5</div>
+      <div class="stage-title">ANALYZE — Roundtable</div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Resolve + Parallel Fetch (Group 1)</div>
+      <div style="display:flex;gap:4px;margin-top:2px">
+        <div style="flex:1;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:4px;background:rgba(59,130,246,0.05)">
+          <div class="node node-process" style="font-size:9px">resolve item</div>
+          <div class="node node-decision" style="font-size:9px">Bug / Feature?</div>
+        </div>
+        <div style="flex:1;border:1px solid rgba(100,116,139,0.2);border-radius:4px;padding:4px;background:rgba(15,23,42,0.5)">
+          <div style="font-size:8px;color:#475569;margin-bottom:2px">parallel (T=0)</div>
+          <div class="node node-process" style="font-size:8px">GH/Jira fetch</div>
+          <div class="node node-process" style="font-size:8px">memory read</div>
+          <div class="node node-process" style="font-size:8px">persona + topics</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Artifact Folder (auto-created if new)</div>
+      <div style="border:1px solid rgba(4,120,87,0.25);border-radius:4px;padding:5px 8px;background:rgba(4,120,87,0.05);font-size:9px;color:#a7f3d0;line-height:1.5">
+        <span style="color:#475569">docs/requirements/</span><br>
+        └─ <span style="color:#a7f3d0">{REQ|BUG}-GH-{N}-{slug}/</span><br>
+        <span style="margin-left:24px">├─ draft.md</span><br>
+        <span style="margin-left:24px">├─ meta.json</span><br>
+        <span style="margin-left:24px;color:#475569">├─ requirements-spec.md ←</span><br>
+        <span style="margin-left:24px;color:#475569">├─ architecture-overview.md ←</span><br>
+        <span style="margin-left:24px;color:#475569">├─ module-design.md ←</span><br>
+        <span style="margin-left:24px;color:#475569">└─ ... (written at finalization)</span>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Core Personas</div>
+      <div class="node-row">
+        <div class="node node-agent">Maya (Business Analyst)</div>
+        <div class="node node-agent">Alex (Solutions Architect)</div>
+        <div class="node node-agent">Jordan (System Designer)</div>
+      </div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Contributing Personas (optional)</div>
+      <div class="node-row">
+        <div class="node node-agent" style="opacity:0.7">Security Reviewer</div>
+        <div class="node node-agent" style="opacity:0.7">DevOps Reviewer</div>
+        <div class="node node-agent" style="opacity:0.7">QA Tester</div>
+        <div class="node node-agent" style="opacity:0.7">Domain Expert</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓ 8-10 exchanges</div>
+    <div class="flow-section">
+      <div class="flow-section-label">State Machine (GH-253)</div>
+      <div class="node-row">
+        <div class="node node-state">state card</div>
+        <div class="node node-state">task card</div>
+        <div class="node node-state">rolling state</div>
+        <div class="node node-state">trailer + markers</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Staged Confirmation (Accept/Amend)</div>
+      <div class="node-row">
+        <div class="node node-decision">Requirements ✓</div>
+        <div class="node node-decision">Architecture ✓</div>
+        <div class="node node-decision">Design ✓</div>
+        <div class="node node-decision">Tasks ✓</div>
+      </div>
+      <div class="loop-indicator" style="margin-top:3px"><svg class="loop-icon" viewBox="0 0 20 20"><path d="M10 2 A8 8 0 1 1 3 14" class="loop-circle"/><polygon points="1,12 5,14 3,17" class="loop-arrow-head"/></svg><span class="loop-label">Amend → restart from top</span></div>
+    </div>
+    <div class="arrow-down">↓ batch write</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Artifacts</div>
+      <div class="node-row">
+        <div class="node node-artifact">requirements-spec.md</div>
+        <div class="node node-artifact">user-stories.json</div>
+        <div class="node node-artifact">traceability-matrix.csv</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-artifact">impact-analysis.md</div>
+        <div class="node node-artifact">architecture-overview.md</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-artifact">module-design.md</div>
+        <div class="node node-artifact">interface-spec.md</div>
+        <div class="node node-artifact">data-flow.md</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-artifact">error-taxonomy.md</div>
+        <div class="node node-artifact">design-summary.md</div>
+        <div class="node node-artifact">quick-scan.md</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-artifact">tasks.md</div>
+        <div class="node node-artifact">architecture-diagram.excalidraw</div>
+        <div class="node node-artifact">design-diagram.excalidraw</div>
+      </div>
+    </div>
+    <div class="mode-badge mode-badge-human"><div class="mode-icon-group"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4" class="icon-human"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0" class="icon-human"/></svg><svg viewBox="0 0 24 24" stroke-width="1.5" style="width:14px;height:14px;margin:0 1px"><path d="M5 9h14" class="icon-link"/><path d="M15 5l4 4-4 4" class="icon-link" fill="none"/><path d="M19 15H5" class="icon-link"/><path d="M9 11l-4 4 4 4" class="icon-link" fill="none"/></svg><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3" class="icon-ai"/><circle cx="9" cy="10" r="1.2" class="icon-ai" fill="rgba(192,132,252,0.4)"/><circle cx="15" cy="10" r="1.2" class="icon-ai" fill="rgba(192,132,252,0.4)"/><path d="M9 15c1 1.5 5 1.5 6 0" class="icon-ai"/></svg></div></div>
+    <div class="detail"><strong>State-machine-driven</strong> — card composition per turn, skills at sub-task granularity, hybrid rolling state.</div>
+  </div>
+
+  <div class="concurrency-note" id="conc-note">
+    <div class="conc-line"></div>
+    <div class="conc-badge">can run<br>concurrently<br>on different<br>items</div>
+    <div class="conc-line"></div>
+  </div>
+
+  <div class="connector-bridge" id="conn-5">
+    <div class="bridge-ribbon">
+      <div class="ribbon-line-in"></div>
+      <div class="ribbon-node">
+        tasks.md
+        <div class="ribbon-sub">user-confirmed task plan<br>→ feeds phase 06 dispatch</div>
+      </div>
+      <div class="ribbon-line-out"></div>
+    </div>
+  </div>
+
+  <!-- 6. BUILD -->
+  <div class="stage" data-stage="build" id="stage-6">
+    <div class="freq-badge freq-badge-daily">daily</div>
+    <div class="stage-header">
+      <div class="stage-number">6</div>
+      <div class="stage-title">BUILD</div>
+    </div>
+
+    <div class="flow-section">
+      <div class="flow-section-label">Init</div>
+      <div class="node-row">
+        <div class="node node-process">create branch</div>
+        <div class="node node-process">init state.json</div>
+      </div>
+      <div class="task-accent">
+        <div style="font-size:9px;color:#fef3c7">tasks.md → docs/isdlc/ → readTaskPlan()</div>
+        <div class="task-note">parse phases, tiers, blocked_by → TaskCreate per phase</div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="flow-section">
+      <div class="flow-section-label">Phase 05 — Test Strategy</div>
+      <div class="node-row">
+        <div class="node node-agent">test-design-engineer</div>
+      </div>
+      <div class="node-row" style="margin-top:3px">
+        <div class="node node-agent" style="font-size:9px;opacity:0.6">critic</div>
+        <div class="node node-agent" style="font-size:9px;opacity:0.6">refiner</div>
+      </div>
+      <div class="loop-indicator" style="opacity:0.7"><svg class="loop-icon" viewBox="0 0 20 20"><path d="M10 2 A8 8 0 1 1 3 14" class="loop-circle"/><polygon points="1,12 5,14 3,17" class="loop-arrow-head"/></svg><span class="loop-label">debate loop (optional)</span></div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="flow-section">
+      <div class="flow-section-label">Phase 06 — Implementation</div>
+      <div class="node-row">
+        <div class="node node-agent">software-developer</div>
+        <div class="node node-agent" style="font-size:9px;opacity:0.6">reviewer</div>
+        <div class="node node-agent" style="font-size:9px;opacity:0.6">updater</div>
+      </div>
+      <div class="task-accent" style="margin-top:5px">
+        <div class="task-note" style="margin-top:0;margin-bottom:4px">assignTiers() → dependency-ordered parallel dispatch</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="flex:1;border:1px solid rgba(59,130,246,0.25);border-radius:4px;padding:5px;background:rgba(59,130,246,0.05)">
+            <div style="font-size:8px;color:#64748b;margin-bottom:4px">TIER 0</div>
+            <div class="node node-agent" style="font-size:9px">T001</div>
+            <div class="node node-agent" style="font-size:9px">T002</div>
+            <div class="node node-agent" style="font-size:9px">T003</div>
+          </div>
+          <div style="color:#475569;font-size:12px">→</div>
+          <div style="flex:1;border:1px solid rgba(59,130,246,0.25);border-radius:4px;padding:5px;background:rgba(59,130,246,0.05)">
+            <div style="font-size:8px;color:#64748b;margin-bottom:4px">TIER 1</div>
+            <div class="node node-agent" style="font-size:9px">T004</div>
+            <div class="node node-agent" style="font-size:9px">T005</div>
+          </div>
+          <div style="color:#475569;font-size:12px">→</div>
+          <div style="flex:0.6;border:1px solid rgba(59,130,246,0.25);border-radius:4px;padding:5px;background:rgba(59,130,246,0.05)">
+            <div style="font-size:8px;color:#64748b;margin-bottom:4px">TIER N</div>
+            <div class="node node-agent" style="font-size:9px">T...</div>
+          </div>
+        </div>
+        <div class="loop-indicator"><svg class="loop-icon" viewBox="0 0 20 20"><path d="M10 2 A8 8 0 1 1 3 14" class="loop-circle"/><polygon points="1,12 5,14 3,17" class="loop-arrow-head"/></svg><span class="loop-label">each task: [ ] → [X]<br>fail: retry 3× → escalate → skip</span></div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="flow-section">
+      <div class="flow-section-label">Phase 16 — Quality Loop</div>
+      <div style="display:flex;gap:8px;margin-top:3px">
+        <div style="flex:1;border:1px solid rgba(4,120,87,0.25);border-radius:4px;padding:6px;background:rgba(4,120,87,0.04)">
+          <div style="font-size:8px;color:#047857;margin-bottom:4px">TRACK A — Testing</div>
+          <div class="node node-agent" style="font-size:9px">integration-tester</div>
+          <div class="node node-process" style="font-size:9px">build + test + coverage</div>
+        </div>
+        <div style="display:flex;align-items:center;color:#475569;font-size:16px">∥</div>
+        <div style="flex:1;border:1px solid rgba(180,83,9,0.25);border-radius:4px;padding:6px;background:rgba(180,83,9,0.04)">
+          <div style="font-size:8px;color:#b45309;margin-bottom:4px">TRACK B — QA</div>
+          <div class="node node-agent" style="font-size:9px">qa-engineer</div>
+          <div class="node node-process" style="font-size:9px">SAST + audit + review</div>
+        </div>
+      </div>
+      <div class="node-row" style="margin-top:4px">
+        <div class="loop-indicator"><svg class="loop-icon" viewBox="0 0 20 20"><path d="M10 2 A8 8 0 1 1 3 14" class="loop-circle"/><polygon points="1,12 5,14 3,17" class="loop-arrow-head"/></svg><span class="loop-label">loop until both tracks pass</span></div>
+      </div>
+      <div class="task-note">tasks.md phases marked COMPLETE</div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <div class="flow-section">
+      <div class="flow-section-label">Phase 08 — Code Review</div>
+      <div class="node-row">
+        <div class="node node-agent">qa-engineer</div>
+      </div>
+      <div class="node-row" style="margin-top:3px">
+        <div class="node node-process" style="font-size:9px">logic · errors · security · constitutional</div>
+      </div>
+      <div class="loop-indicator"><svg class="loop-icon" viewBox="0 0 20 20"><path d="M10 2 A8 8 0 1 1 3 14" class="loop-circle"/><polygon points="1,12 5,14 3,17" class="loop-arrow-head"/></svg><span class="loop-label">all [ ] → [X]<br>100% coverage verified</span></div>
+    </div>
+    <div class="phase-bar" id="build-phases">
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+      <div class="phase-segment"></div>
+    </div>
+    <div class="flow-section">
+      <div class="flow-section-label">Hooks (every phase boundary)</div>
+      <div class="node-row">
+        <div class="node node-hook">tool-router</div>
+        <div class="node node-hook">branch-guard</div>
+        <div class="node node-hook">gate-blocker</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-hook">blast-radius</div>
+        <div class="node node-hook">constitution</div>
+        <div class="node node-hook">task-completion</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-hook">test-watcher</div>
+        <div class="node node-hook">state-validator</div>
+        <div class="node node-hook">phase-loop-ctrl</div>
+      </div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="flow-section">
+      <div class="flow-section-label">Finalize (config-driven checklist)</div>
+      <div class="node-row">
+        <div class="node node-process">F0001 merge branch</div>
+        <div class="node node-process">F0002 sync status</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-process">F0003 clear workflow</div>
+        <div class="node node-process">F0004 task cleanup</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-process">F0005 session cache</div>
+        <div class="node node-process">F0006 contracts</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-process">F0007 code index</div>
+        <div class="node node-process">F0008 memory embeddings</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-process">F0009 code embeddings</div>
+      </div>
+      <div class="node-row">
+        <div class="node node-artifact">BACKLOG.md [x]</div>
+        <div class="node node-artifact">GH issue closed</div>
+      </div>
+    </div>
+    <div class="mode-badge mode-badge-auto"><div class="mode-icon-group"><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" class="icon-gear"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" class="icon-gear"/></svg><svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" class="icon-bolt"/></svg></div></div>
+    <div class="detail"><strong>Phase loop</strong> — Task-level dispatch, hooks enforce at every boundary, 9-step finalize checklist.</div>
+  </div>
+
+</div>
+
+<button class="sidebar-toggle" id="sb-toggle" onclick="toggleSidebar()">◧ Agents & Skills</button>
+
+<div class="sidebar" id="sidebar">
+  <div class="sb-empty" style="flex:1">Select a stage to see its agents and skills</div>
+</div>
+
+<script>
+// Agent & Skill data per stage
+const stageData = {
+  1: {
+    title: 'DISCOVER',
+    agents: [
+      { name: 'discover-orchestrator', role: 'Lead orchestrator' },
+      { name: 'architecture-analyzer', role: 'Codebase structure' },
+      { name: 'test-evaluator', role: 'Test infrastructure' },
+      { name: 'feature-mapper', role: 'Functional features' },
+      { name: 'constitution-generator', role: 'Governance articles' },
+      { name: 'skills-researcher', role: 'Skills.sh matching' },
+      { name: 'security-auditor', role: 'Security posture' },
+      { name: 'data-model-analyzer', role: 'Data stores + schemas' },
+      { name: 'technical-debt-auditor', role: 'Debt + complexity' },
+      { name: 'ops-readiness-reviewer', role: 'Operational readiness' },
+      { name: 'performance-analyst', role: 'Performance baseline' },
+      { name: 'characterization-test-generator', role: 'Test scaffolds' },
+      { name: 'artifact-integration', role: 'AC + traceability' },
+      { name: 'atdd-bridge', role: 'ATDD checklist' },
+      { name: 'architecture-designer', role: 'New project architecture' },
+      { name: 'data-model-designer', role: 'New project data models' },
+      { name: 'product-analyst', role: 'New project PRD + MVP' },
+      { name: 'domain-researcher', role: 'Industry + compliance' },
+      { name: 'technical-scout', role: 'Feasibility + ecosystem' },
+      { name: 'solution-architect-party', role: 'Stack debate + consensus' },
+      { name: 'security-advisor', role: 'Threat + mitigation' },
+      { name: 'devops-pragmatist', role: 'Ops cost + CI/CD' },
+      { name: 'test-strategist', role: 'Test pyramid + tooling' },
+    ],
+    skills: [
+      { name: 'keyword-search', id: 'QS-002' },
+      { name: 'codebase-scan', id: 'QS-003' },
+      { name: 'dependency-analysis', id: 'QS-004' },
+      { name: 'tech-stack-detection', id: 'D-001' },
+      { name: 'test-framework-detection', id: 'D-002' },
+      { name: 'constitution-research', id: 'D-003' },
+    ],
+    hooks: [
+      { name: 'discover-menu-guard', type: 'PostToolUse' },
+      { name: 'skill-delegation-enforcer', type: 'PostToolUse' },
+      { name: 'walkthrough-tracker', type: 'PostToolUse' },
+      { name: 'tool-router', type: 'PreToolUse' },
+      { name: 'inject-session-cache', type: 'PreToolUse' },
+    ]
+  },
+  2: {
+    title: 'EMBEDDINGS',
+    agents: [
+      { name: 'embedding engine', role: 'Jina v2 Base Code' },
+      { name: 'worker pool', role: 'Parallel embedding workers' },
+      { name: 'device-detector', role: 'CoreML / GPU / CPU' },
+      { name: 'memory-calibrator', role: 'Worker count tuning' },
+    ],
+    skills: [
+      { name: 'chunker (tree-sitter)', id: 'EMB-001' },
+      { name: 'package builder', id: 'EMB-002' },
+      { name: 'store manager (FAISS)', id: 'EMB-003' },
+      { name: 'MCP server', id: 'EMB-004' },
+      { name: 'query-classifier', id: 'EMB-005' },
+    ],
+    hooks: [
+      { name: 'tool-router (semantic)', type: 'PreToolUse' },
+    ]
+  },
+  3: {
+    title: 'TEST GENERATE',
+    agents: [
+      { name: 'test-design-engineer', role: 'Phase 05 — test strategy' },
+      { name: 'software-developer', role: 'Phase 06 — implementation' },
+      { name: 'quality-loop-engineer', role: 'Phase 16 — quality' },
+      { name: 'qa-engineer', role: 'Phase 08 — code review' },
+    ],
+    skills: [
+      { name: 'test-case-design', id: 'TS-001' },
+      { name: 'test-scaffolding', id: 'TS-002' },
+      { name: 'coverage-analysis', id: 'TS-003' },
+      { name: 'ATDD tracking', id: 'TS-004' },
+    ],
+    hooks: [
+      { name: 'gate-blocker', type: 'PreToolUse' },
+      { name: 'test-watcher', type: 'PostToolUse' },
+      { name: 'phase-loop-controller', type: 'PreToolUse' },
+    ]
+  },
+  4: {
+    title: 'ADD',
+    agents: [],
+    skills: [
+      { name: 'generateSlug', id: 'UTIL' },
+      { name: 'detectSource', id: 'UTIL' },
+      { name: 'resolveItem', id: 'UTIL' },
+      { name: 'checkGhAvailability', id: 'UTIL' },
+      { name: 'searchGitHubIssues', id: 'UTIL' },
+      { name: 'createGitHubIssue', id: 'UTIL' },
+    ],
+    hooks: []
+  },
+  5: {
+    title: 'ANALYZE',
+    agents: [
+      { name: 'roundtable-analyst', role: 'Feature roundtable protocol' },
+      { name: 'bug-roundtable-analyst', role: 'Bug roundtable protocol' },
+      { name: 'persona-business-analyst', role: 'Maya — requirements' },
+      { name: 'persona-solutions-architect', role: 'Alex — architecture' },
+      { name: 'persona-system-designer', role: 'Jordan — design' },
+      { name: 'persona-security-reviewer', role: 'Contributing — security' },
+      { name: 'persona-devops-reviewer', role: 'Contributing — devops' },
+      { name: 'persona-qa-tester', role: 'Contributing — QA' },
+      { name: 'persona-domain-expert', role: 'Contributing — domain' },
+      { name: 'persona-ux-reviewer', role: 'Contributing — UX' },
+      { name: 'bug-gather-analyst', role: 'Bug roundtable protocol' },
+      { name: 'requirements-analyst', role: 'Phase 01 — requirements' },
+      { name: 'requirements-critic', role: 'Phase 01 — debate critic' },
+      { name: 'requirements-refiner', role: 'Phase 01 — debate refiner' },
+      { name: 'solution-architect', role: 'Phase 03 — architecture' },
+      { name: 'architecture-critic', role: 'Phase 03 — debate critic' },
+      { name: 'architecture-refiner', role: 'Phase 03 — debate refiner' },
+      { name: 'system-designer', role: 'Phase 04 — design' },
+      { name: 'design-critic', role: 'Phase 04 — debate critic' },
+      { name: 'design-refiner', role: 'Phase 04 — debate refiner' },
+      { name: 'quick-scan-agent', role: 'Phase 00 — codebase scan' },
+      { name: 'impact-analysis-orchestrator', role: 'Phase 02 — blast radius' },
+      { name: 'impact-analyzer', role: 'M1 — file impact' },
+      { name: 'entry-point-finder', role: 'M2 — entry points' },
+      { name: 'risk-assessor', role: 'M3 — risk scoring' },
+      { name: 'cross-validation-verifier', role: 'M4 — cross-check' },
+      { name: 'tracing-orchestrator', role: 'Bug tracing (T1/T2/T3)' },
+      { name: 'symptom-analyzer', role: 'T1 — symptom analysis' },
+      { name: 'execution-path-tracer', role: 'T2 — path tracing' },
+      { name: 'root-cause-identifier', role: 'T3 — root cause' },
+      { name: 'runtime-composer', role: 'State machine composition' },
+    ],
+    skills: [
+      { name: 'keyword-search', id: 'QS-002' },
+      { name: 'impact-scanner', id: 'IA-001' },
+      { name: 'blast-radius', id: 'IA-002' },
+      { name: 'scope-framing', id: 'AN-001' },
+      { name: 'codebase-scan', id: 'AN-002' },
+      { name: 'options-research', id: 'AN-003' },
+      { name: 'dependency-check', id: 'AN-004' },
+      { name: 'project-architecture', id: 'PROJ-001' },
+      { name: 'project-conventions', id: 'PROJ-002' },
+      { name: 'project-domain', id: 'PROJ-003' },
+      { name: 'project-test-landscape', id: 'PROJ-004' },
+      { name: 'excalidraw-diagram', id: 'EXT-001' },
+    ],
+    hooks: [
+      { name: 'tool-router', type: 'PreToolUse' },
+      { name: 'mcp-tool-router', type: 'PreToolUse' },
+      { name: 'state-file-guard', type: 'PreToolUse' },
+      { name: 'explore-readonly-enforcer', type: 'PreToolUse' },
+      { name: 'participation-gate-enforcer', type: 'PostToolUse' },
+      { name: 'conversational-compliance', type: 'PostToolUse' },
+      { name: 'tasks-as-table-validator', type: 'PostToolUse' },
+      { name: 'persona-extension-composer-validator', type: 'PostToolUse' },
+      { name: 'menu-tracker', type: 'PostToolUse' },
+      { name: 'menu-halt-enforcer', type: 'PostToolUse' },
+      { name: 'output-format-validator', type: 'PostToolUse' },
+    ]
+  },
+  6: {
+    title: 'BUILD',
+    agents: [
+      { name: 'sdlc-orchestrator', role: 'Workflow init + finalize' },
+      { name: 'test-design-engineer', role: 'Phase 05 — test strategy' },
+      { name: 'software-developer', role: 'Phase 06 — implementation' },
+      { name: 'quality-loop-engineer', role: 'Phase 16 — quality loop' },
+      { name: 'integration-tester', role: 'Phase 16 Track A — tests' },
+      { name: 'qa-engineer', role: 'Phase 08 — code review' },
+      { name: 'implementation-reviewer', role: 'Phase 06 — per-file review' },
+      { name: 'implementation-updater', role: 'Phase 06 — per-file fixes' },
+      { name: 'test-strategy-critic', role: 'Phase 05 — debate critic' },
+      { name: 'test-strategy-refiner', role: 'Phase 05 — debate refiner' },
+      { name: 'security-compliance-auditor', role: 'Phase 09 — security scan' },
+      { name: 'cicd-engineer', role: 'Phase 10 — CI/CD pipeline' },
+      { name: 'environment-builder', role: 'Phase 11 — env build + launch' },
+      { name: 'deployment-engineer-staging', role: 'Phase 12 — staging deploy' },
+      { name: 'release-manager', role: 'Phase 13 — production release' },
+      { name: 'site-reliability-engineer', role: 'Phase 14 — operations' },
+      { name: 'upgrade-engineer', role: 'Phase 15 — upgrade plan + exec' },
+      { name: 'skill-manager', role: 'External skill wiring' },
+    ],
+    skills: [
+      { name: 'test-case-design', id: 'TS-001' },
+      { name: 'TDD implementation', id: 'IM-001' },
+      { name: 'task-reader', id: 'IM-002' },
+      { name: 'task-dispatcher', id: 'IM-003' },
+      { name: 'blast-radius-coverage', id: 'IM-004' },
+      { name: 'constitutional-validation', id: 'IM-005' },
+      { name: 'project-architecture', id: 'PROJ-001' },
+      { name: 'project-conventions', id: 'PROJ-002' },
+      { name: 'project-domain', id: 'PROJ-003' },
+      { name: 'project-test-landscape', id: 'PROJ-004' },
+      { name: 'excalidraw-diagram', id: 'EXT-001' },
+    ],
+    hooks: [
+      { name: 'tool-router', type: 'PreToolUse' },
+      { name: 'branch-guard', type: 'PreToolUse' },
+      { name: 'state-file-guard', type: 'PreToolUse' },
+      { name: 'gate-blocker', type: 'PreToolUse' },
+      { name: 'phase-loop-controller', type: 'PreToolUse' },
+      { name: 'phase-sequence-guard', type: 'PreToolUse' },
+      { name: 'blast-radius-validator', type: 'PreToolUse' },
+      { name: 'constitution-validator', type: 'PreToolUse' },
+      { name: 'task-completion-gate', type: 'PostToolUse' },
+      { name: 'test-watcher', type: 'PostToolUse' },
+      { name: 'state-write-validator', type: 'PostToolUse' },
+      { name: 'atdd-completeness-validator', type: 'PostToolUse' },
+      { name: 'iteration-corridor', type: 'PreToolUse' },
+      { name: 'constitutional-iteration-validator', type: 'PreToolUse' },
+      { name: 'plan-surfacer', type: 'PreToolUse' },
+      { name: 'phase-transition-enforcer', type: 'PostToolUse' },
+      { name: 'review-reminder', type: 'PostToolUse' },
+      { name: 'traceability-enforcer', type: 'PostToolUse' },
+      { name: 'log-skill-usage', type: 'PostToolUse' },
+      { name: 'skill-validator', type: 'PostToolUse' },
+      { name: 'workflow-completion-enforcer', type: 'PostToolUse' },
+      { name: 'model-provider-router', type: 'PreToolUse' },
+      { name: 'embedding-statusline', type: 'Notification' },
+      { name: 'delegation-gate', type: 'Stop' },
+    ]
+  }
+};
+
+function renderSidebar(step) {
+  const container = document.getElementById('sidebar');
+  // Clear existing section divs (keep sidebar shell)
+  container.innerHTML = '';
+
+  if (step === 0 || !stageData[step]) {
+    container.innerHTML = '<div class="sb-empty" style="flex:1">Select a stage to see its agents and skills</div>';
+    return;
+  }
+  const d = stageData[step];
+
+  // Title column (narrow)
+  let titleHtml = `<div style="min-width:100px;flex-shrink:0"><h3 style="color:${getStageColor(step)};font-size:16px;border:none;padding:0">${d.title}</h3>`;
+  const total = d.agents.length + d.skills.length + d.hooks.length;
+  titleHtml += `<div style="color:#475569;font-size:10px;margin-top:4px">${total} components</div>`;
+  titleHtml += '</div>';
+  container.innerHTML += titleHtml;
+
+  if (d.agents.length > 0) {
+    let html = `<div class="sb-section"><div class="sb-label">Agents<span class="sb-count">(${d.agents.length})</span></div>`;
+    d.agents.forEach(a => {
+      html += `<div class="sb-item"><div class="sb-dot sb-dot-agent"></div><span class="sb-name">${a.name}</span><span class="sb-meta">${a.role}</span></div>`;
+    });
+    html += '</div>';
+    container.innerHTML += html;
+  }
+
+  if (d.skills.length > 0) {
+    let html = `<div class="sb-section"><div class="sb-label">Skills<span class="sb-count">(${d.skills.length})</span></div>`;
+    d.skills.forEach(s => {
+      html += `<div class="sb-item"><div class="sb-dot sb-dot-skill"></div><span class="sb-name">${s.name}</span><span class="sb-meta">${s.id}</span></div>`;
+    });
+    html += '</div>';
+    container.innerHTML += html;
+  }
+
+  if (d.hooks.length > 0) {
+    let html = `<div class="sb-section"><div class="sb-label">Hooks<span class="sb-count">(${d.hooks.length})</span></div>`;
+    d.hooks.forEach(h => {
+      html += `<div class="sb-item"><div class="sb-dot sb-dot-hook"></div><span class="sb-name">${h.name}</span><span class="sb-meta">${h.type}</span></div>`;
+    });
+    html += '</div>';
+    container.innerHTML += html;
+  }
+
+  if (d.agents.length === 0 && d.hooks.length === 0) {
+    container.innerHTML += '<div class="sb-section"><div class="sb-empty">Inline handler — no agent delegation</div></div>';
+  }
+}
+
+function getStageColor(step) {
+  const colors = { 1: '#fed7aa', 2: '#ddd6fe', 3: '#93c5fd', 4: '#a7f3d0', 5: '#fef3c7', 6: '#93c5fd' };
+  return colors[step] || '#e2e8f0';
+}
+
+let sidebarOpen = false;
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('open', sidebarOpen);
+  document.getElementById('sb-toggle').classList.toggle('active', sidebarOpen);
+  document.body.classList.toggle('drawer-open', sidebarOpen);
+}
+
+const stages = document.querySelectorAll('.stage');
+const connectors = document.querySelectorAll('.connector');
+let currentStep = 0;
+let autoPlaying = false;
+let flashTimeouts = [];
+
+function clearAllFlash() {
+  flashTimeouts.forEach(t => clearTimeout(t));
+  flashTimeouts = [];
+}
+
+/**
+ * Sequential flash for a stage with data-seq nodes.
+ * Each group flashes 5 times, then solidifies.
+ * Nodes above the current group are solid; nodes below are dim.
+ * Returns a Promise that resolves when the full sequence completes.
+ */
+function runSequentialFlash(stageEl) {
+  clearAllFlash();
+
+  const nodes = stageEl.querySelectorAll('.node[data-seq]');
+  if (nodes.length === 0) return Promise.resolve();
+
+  // Group by seq number
+  const groups = {};
+  nodes.forEach(n => {
+    const seq = parseInt(n.dataset.seq);
+    if (!groups[seq]) groups[seq] = [];
+    groups[seq].push(n);
+  });
+  const seqKeys = Object.keys(groups).map(Number).sort((a, b) => a - b);
+
+  // Initially: all sequenced nodes dim
+  nodes.forEach(n => { n.classList.remove('solid', 'flashing'); n.classList.add('dim'); });
+
+  return new Promise(resolve => {
+    let groupIdx = 0;
+
+    function processGroup() {
+      if (groupIdx >= seqKeys.length) { resolve(); return; }
+
+      const currentSeq = seqKeys[groupIdx];
+      const currentNodes = groups[currentSeq];
+      const PULSE_CYCLES = 3;
+
+      // Start: bring current group from dim to flashing (CSS animation handles the pulse)
+      currentNodes.forEach(n => { n.classList.remove('dim'); n.classList.add('flashing'); });
+
+      // Let the CSS soft-pulse animation run for N full cycles (2.4s each),
+      // then solidify and move to the next group
+      const pulseTime = PULSE_CYCLES * 2400 + 600;
+      const t = setTimeout(() => {
+        currentNodes.forEach(n => { n.classList.remove('flashing'); n.classList.add('solid'); });
+        groupIdx++;
+        const t2 = setTimeout(processGroup, 800);
+        flashTimeouts.push(t2);
+      }, pulseTime);
+      flashTimeouts.push(t);
+    }
+
+    processGroup();
+  });
+}
+
+function updateView() {
+  clearAllFlash();
+
+  stages.forEach((s, i) => {
+    s.classList.remove('active', 'completed', 'visible');
+
+    // Reset all nodes in this stage
+    s.querySelectorAll('.node').forEach(n => {
+      n.classList.remove('dim', 'solid', 'flashing');
+    });
+
+    if (i < currentStep - 1) {
+      // Fully completed stages: visible, completed, all nodes solid
+      s.classList.add('visible', 'completed');
+      s.querySelectorAll('.node').forEach(n => n.classList.add('solid'));
+    } else if (i === currentStep - 1 && currentStep > 0) {
+      // ACTIVE stage: visible + active border glow
+      s.classList.add('visible', 'active');
+
+      const hasSeq = s.querySelectorAll('.node[data-seq]').length > 0;
+      if (hasSeq) {
+        // Nodes with data-seq: run sequential flash
+        // Nodes WITHOUT data-seq in this stage: keep solid (stage header etc are visible via CSS)
+        runSequentialFlash(s).then(() => {
+          // Flash sequence done — if auto-playing, advance after a pause
+          if (autoPlaying && currentStep < stages.length) {
+            const t = setTimeout(() => { nextStep(); }, 1500);
+            flashTimeouts.push(t);
+          }
+        });
+      } else {
+        // No sequential flash — show all nodes immediately as solid
+        s.querySelectorAll('.node').forEach(n => n.classList.add('solid'));
+        // If auto-playing, advance after a delay
+        if (autoPlaying && currentStep < stages.length) {
+          const t = setTimeout(() => { nextStep(); }, 4500);
+          flashTimeouts.push(t);
+        }
+      }
+    }
+    // Stages after current: stay hidden (opacity 0.12 from CSS default)
+  });
+
+  document.querySelectorAll('.connector, .freq-divider').forEach((c, i) => {
+    c.classList.remove('visible', 'active');
+    if (currentStep > i + 1) c.classList.add('visible');
+    if (currentStep > 0 && i === currentStep - 2) c.classList.add('visible', 'active');
+  });
+
+  // Bridge connector (between analyze and build)
+  const bridge = document.getElementById('conn-5');
+  if (bridge) {
+    bridge.classList.remove('visible');
+    if (currentStep >= 6) bridge.classList.add('visible');
+  }
+
+  // Concurrency note (visible when both analyze and build are showing)
+  const concNote = document.getElementById('conc-note');
+  if (concNote) {
+    concNote.classList.remove('visible');
+    if (currentStep >= 6) concNote.classList.add('visible');
+  }
+
+  // Scroll active stage into view
+  if (currentStep > 0) {
+    stages[currentStep - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  const names = ['', 'DISCOVER', 'EMBEDDINGS', 'TEST GENERATE', 'ADD', 'ANALYZE', 'BUILD'];
+  document.getElementById('step-label').textContent =
+    currentStep === 0 ? 'Click Play to start' : `${currentStep}/6 — ${names[currentStep]}`;
+
+  // Update sidebar content
+  renderSidebar(currentStep);
+}
+
+function nextStep() {
+  if (currentStep < stages.length) { currentStep++; updateView(); }
+  else if (autoPlaying) { stopAutoPlay(); }
+}
+
+function prevStep() {
+  if (currentStep > 0) { currentStep--; updateView(); }
+}
+
+function showAll() {
+  stopAutoPlay();
+  clearAllFlash();
+  currentStep = stages.length;
+  stages.forEach(s => {
+    s.classList.add('visible'); s.classList.remove('active', 'completed');
+    s.querySelectorAll('.node').forEach(n => { n.classList.remove('dim', 'flashing'); n.classList.add('solid'); });
+  });
+  document.querySelectorAll('.connector, .freq-divider').forEach(c => { c.classList.add('visible'); c.classList.remove('active'); });
+  document.getElementById('step-label').textContent = 'All stages';
+}
+
+function autoPlay() {
+  if (autoPlaying) { stopAutoPlay(); return; }
+  autoPlaying = true;
+  currentStep = 0;
+  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').classList.add('active');
+  // Kick off — updateView will chain via flash-complete callbacks
+  nextStep();
+}
+
+function stopAutoPlay() {
+  autoPlaying = false;
+  clearAllFlash();
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.remove('active');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stopAutoPlay(); nextStep(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); stopAutoPlay(); prevStep(); }
+});
+
+updateView();
+</script>
+</body>
+</html>
