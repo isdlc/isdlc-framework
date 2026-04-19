@@ -2,12 +2,12 @@
 
 # iSDLC Framework
 
-<h3><em>AI Development Governance Harness — wraps existing codebases with structure, enforcement, and context management for enterprise AI-assisted software engineering.</em></h3>
+<h3><em>Intelligent Software Development Lifecycle Harness — adds structure, control, and traceability on top of Claude Code.</em></h3>
 
-### [Interactive Walkthrough](https://isdlc.github.io/isdlc-framework/) — see how iSDLC works end-to-end
+### [Click for Walkthrough](https://isdlc.github.io/isdlc-framework/) — see how iSDLC works end-to-end
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Agents](https://img.shields.io/badge/Agents-40-purple.svg)](docs/AGENTS.md)
+[![Agents](https://img.shields.io/badge/Agents-64-purple.svg)](docs/AGENTS.md)
 [![Skills](https://img.shields.io/badge/Skills-245-green.svg)](docs/DETAILED-SKILL-ALLOCATION.md)
 [![Hooks](https://img.shields.io/badge/Hooks-37-red.svg)](docs/HOOKS.md)
 [![Gates](https://img.shields.io/badge/Quality%20Gates-21-orange.svg)](docs/ARCHITECTURE.md#quality-gates)
@@ -17,19 +17,21 @@
 
 ---
 
-## The Problem
+## Claude Code is the engine. iSDLC adds structure.
 
-**AI assistants are structurally unreliable:**
-- Skip tests, drift from requirements, lose context across sessions
-- Declare work "done" prematurely, scope-creep every task
-- Prompt-based rules get forgotten as conversations grow long
+Claude Code already spawns agents, edits files, runs tests, retries on failure, and reviews its own work. These are powerful capabilities. iSDLC does not replace any of them — it adds a **structured layer on top** that gives teams control over how those capabilities are applied.
 
-**Worse on existing codebases:**
-- Don't know your architecture, conventions, or test coverage gaps
-- Reinvent patterns you already have
-- Propose changes that break established conventions
+### Think — Planning Before Action
 
-**You need constraints that run outside the LLM** — deterministic enforcement the AI can't ignore, grounded in your actual codebase.
+Claude Code's **Plan Mode** thinks tactically: "before I touch these 6 files, here's my approach." iSDLC's **Analyse** thinks strategically: three perspectives (business analysis, architecture, design) examine the whole feature through 8-10 interactive exchanges, producing durable specs that survive after the session ends.
+
+### Execute — Turning Plans Into Code
+
+Claude Code executes well — parallel agents, test retries, self-review. iSDLC adds **defined phases** (test strategy → implementation → quality loop → code review), **user-defined guardrails** (37 runtime hooks, all configurable), and **dependency-ordered task dispatch** with per-task traceability.
+
+### Persist — What Survives After the Session
+
+With Claude Code alone: modified files and git commits. With iSDLC: requirements spec, architecture decisions, design specification, task plan, test strategy, code review record, visual diagrams, and **bidirectional traceability** from requirement to code change to review.
 
 ---
 
@@ -40,7 +42,7 @@
 | **[Discovery](#knowledge-your-codebase-as-ground-truth)** | 22 agents analyze your architecture, tests, dependencies, data models, and features in parallel | Agents understand your codebase before changing a single line |
 | **[Roundtable](#what-you-experience)** | Business analyst, architect, and designer analyze requirements through structured debate | Three perspectives catch gaps a single prompt never will |
 | **[Workflows](#workflows-fixed-phase-sequences)** | Feature, fix, upgrade, and test workflows with fixed phases and adaptive sizing | AI can't skip steps, scope-creep, or declare "done" prematurely |
-| **[Quality Gates](#enforcement-28-hooks)** | 37 hooks enforce coverage, compliance, and sequencing — running outside the LLM | Deterministic enforcement the AI can't argue with or ignore |
+| **[Quality Gates](#enforcement-37-hooks)** | 37 hooks enforce coverage, compliance, and sequencing — running outside the LLM | Deterministic enforcement the AI can't argue with or ignore |
 | **[Constitution](#what-you-control)** | Governance rules generated from your actual codebase during discovery | Thresholds verified against real code, not hallucinated from training data |
 | **[Project Knowledge](docs/PROJECT-KNOWLEDGE.md)** | Codebase scanned, chunked, and embedded for semantic search | Agents find relevant patterns and conventions instead of guessing |
 | **[Impact Analysis](#workflows-fixed-phase-sequences)** | Parallel sub-agents map blast radius, entry points, and risk zones before implementation | Changes are scoped precisely — no surprise side effects |
@@ -346,14 +348,14 @@ npx isdlc
 **From source (macOS / Linux):**
 ```bash
 cd /path/to/your-project
-git clone <repo-url> isdlc-framework
+git clone https://github.com/isdlc/isdlc-framework.git isdlc-framework
 ./isdlc-framework/install.sh
 ```
 
 **From source (Windows PowerShell):**
 ```powershell
 cd C:\path\to\your-project
-git clone <repo-url> isdlc-framework
+git clone https://github.com/isdlc/isdlc-framework.git isdlc-framework
 .\isdlc-framework\install.ps1
 ```
 
