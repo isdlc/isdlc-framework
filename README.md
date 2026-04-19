@@ -6,7 +6,7 @@
 
 ### [Click for Walkthrough](https://isdlc.github.io/isdlc-framework/) — see how iSDLC works end-to-end
 
-[![Wish to contribute? Request to Join](https://img.shields.io/badge/Wish_to_contribute%3F_Request_to_Join-%2328a745?style=for-the-badge&logo=github&logoColor=white)](https://github.com/isdlc/isdlc-framework/issues/260)
+[![Wish to contribute? Request to Join](https://img.shields.io/badge/Wish_to_contribute%3F-Request_to_Join-%2328a745?style=for-the-badge&logo=github&logoColor=white&labelColor=FF6600)](https://github.com/isdlc/isdlc-framework/issues/260)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Agents](https://img.shields.io/badge/Agents-64-purple.svg)](docs/AGENTS.md)
