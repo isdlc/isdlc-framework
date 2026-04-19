@@ -4,6 +4,8 @@
 
 <h3><em>AI Development Governance Harness — wraps existing codebases with structure, enforcement, and context management for enterprise AI-assisted software engineering.</em></h3>
 
+### [Interactive Walkthrough](https://isdlc.github.io/isdlc-framework/) — see how iSDLC works end-to-end
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Agents](https://img.shields.io/badge/Agents-40-purple.svg)](docs/AGENTS.md)
 [![Skills](https://img.shields.io/badge/Skills-245-green.svg)](docs/DETAILED-SKILL-ALLOCATION.md)

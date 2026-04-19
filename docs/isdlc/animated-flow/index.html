@@ -2,11 +2,128 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1920, initial-scale=1">
-<title>iSDLC End-to-End Workflow — Flash Animation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iSDLC — Intelligent Software Development Lifecycle Harness</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0e1a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: auto; overflow-y: auto; }
+  body { background: #0a0e1a; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: hidden; overflow-y: auto; }
+
+  /* ====== PART 1: Value Proposition (vertical scroll) ====== */
+  .value-page { max-width: 1400px; margin: 0 auto; padding: 60px 120px 40px; }
+  .value-page h1 { font-size: 28px; color: #93c5fd; text-align: center; margin-bottom: 8px; text-shadow: 0 0 20px rgba(59,130,246,0.4); }
+  .value-page .subtitle { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 45px; }
+  .section-header { font-size: 20px; font-weight: bold; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(100,116,139,0.2); }
+  .section-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; line-height: 1.6; }
+  .comparison { display: flex; gap: 16px; margin-bottom: 35px; }
+  .side { flex: 1; border-radius: 12px; padding: 18px 16px; display: flex; flex-direction: column; }
+  .side-native { background: rgba(100,116,139,0.08); border: 1px solid rgba(100,116,139,0.2); }
+  .side-isdlc { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); }
+  .side-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .side-native .side-label { color: #64748b; }
+  .side-isdlc .side-label { color: #60a5fa; }
+  .label-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .label-dot-native { background: #475569; }
+  .label-dot-isdlc { background: #3b82f6; animation: dot-pulse-v 2.4s ease-in-out infinite; }
+  @keyframes dot-pulse-v { 0% { box-shadow: 0 0 3px rgba(59,130,246,0.2); } 50% { box-shadow: 0 0 10px rgba(59,130,246,0.5); } 100% { box-shadow: 0 0 3px rgba(59,130,246,0.2); } }
+  .side-title { font-size: 17px; font-weight: bold; margin-bottom: 14px; }
+  .side-native .side-title { color: #94a3b8; }
+  .side-isdlc .side-title { color: #93c5fd; }
+  .side-body { font-size: 12px; color: #94a3b8; line-height: 1.7; flex: 1; }
+  .side-body strong { color: #e2e8f0; }
+  .accent { color: #93c5fd; font-style: italic; }
+  .feat { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; padding: 6px 8px; border-radius: 6px; }
+  .feat-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .feat-text { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+  .feat-text strong { color: #e2e8f0; }
+  .side-native .feat { background: rgba(100,116,139,0.06); }
+  .side-isdlc .feat { background: rgba(59,130,246,0.06); }
+  .vs-badge { align-self: center; flex-shrink: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #475569; font-weight: bold; }
+  .philosophy { margin-top: 35px; padding: 22px; border-radius: 12px; background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.15); }
+  .philosophy h3 { font-size: 15px; color: #93c5fd; margin-bottom: 10px; }
+  .philosophy p { font-size: 11px; color: #94a3b8; line-height: 1.7; margin-bottom: 8px; }
+  .philosophy strong { color: #e2e8f0; }
+  .stack-note { margin-top: 20px; padding: 22px; border-radius: 12px; background: rgba(4,120,87,0.08); border: 1px solid rgba(4,120,87,0.25); font-size: 13px; color: #d1fae5; line-height: 1.7; }
+  .stack-note strong { color: #e2e8f0; }
+  .anim-section { }
+
+  /* ====== TRANSITION DIVIDER ====== */
+  .transition-divider {
+    text-align: center; padding: 60px 120px; max-width: 1400px; margin: 0 auto;
+  }
+  .transition-divider h2 {
+    font-size: 26px; color: #93c5fd; margin-bottom: 10px;
+    text-shadow: 0 0 15px rgba(59,130,246,0.3);
+  }
+  .transition-divider p { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+  .present-btn {
+    background: rgba(59,130,246,0.2); border: 1px solid #3b82f6; color: #93c5fd;
+    padding: 12px 32px; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    margin: 10px 0 20px; transition: all 0.3s;
+    letter-spacing: 0.5px;
+  }
+  .present-btn:hover { background: rgba(59,130,246,0.35); box-shadow: 0 0 20px rgba(59,130,246,0.3); color: #fff; }
+  .transition-line {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #3b82f6 50%, transparent 100%);
+    margin: 20px 0;
+  }
+
+  /* ====== PART 2: E2E Flow (horizontal scroll inside contained viewport) ====== */
+  .flow-viewport {
+    width: 100%; overflow-x: auto; overflow-y: visible;
+    position: relative; min-height: 800px;
+    border-top: 1px solid rgba(100,116,139,0.1);
+  }
+  .flow-viewport .stage { cursor: pointer; }
+  .flow-viewport .stage:hover { border-color: rgba(147,197,253,0.4); }
+
+
+  /* Flow top bar becomes relative inside viewport */
+  .flow-viewport .top-bar {
+    position: sticky; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,14,26,0.95); border-bottom: 1px solid rgba(100,116,139,0.2);
+    padding: 12px 30px; backdrop-filter: blur(10px);
+  }
+  .flow-viewport .top-bar h1 { font-size: 22px; color: #93c5fd; text-shadow: 0 0 20px rgba(59,130,246,0.5); display: inline; }
+  .flow-viewport .top-bar .subtitle { font-size: 12px; color: #64748b; margin-left: 15px; }
+  .flow-viewport .controls { position: absolute; top: 10px; right: 30px; z-index: 101; display: flex; gap: 5px; align-items: center; }
+  .flow-viewport .controls button { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #64748b; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 11px; transition: all 0.3s; }
+  .flow-viewport .controls button:hover { background: rgba(59,130,246,0.25); color: #93c5fd; }
+  .flow-viewport .controls button.active { background: #3b82f6; color: #fff; }
+  .flow-viewport .step-label { color: #475569; font-size: 10px; min-width: 120px; text-align: center; }
+  .flow-viewport .click-hint { color: #475569; font-size: 10px; font-style: italic; margin-left: 10px; }
+
+
+  /* Commentary panel — floats in the flow, right of active stage */
+  .commentary {
+    position: absolute; top: 70px; width: 320px;
+    background: rgba(10,14,26,0.95); border: 1px solid rgba(100,116,139,0.2);
+    border-radius: 12px; backdrop-filter: blur(12px); z-index: 80;
+    display: flex; flex-direction: column; padding: 20px 18px;
+    max-height: none; overflow-y: visible;
+    transition: left 0.6s ease, opacity 0.5s ease;
+    opacity: 0;
+  }
+  .commentary.visible { opacity: 1; }
+  .commentary-number {
+    font-size: 36px; font-weight: bold; line-height: 1;
+    transition: color 0.5s;
+  }
+  .commentary-body { flex: 1; }
+  .commentary-title {
+    font-size: 15px; font-weight: bold; margin: 6px 0 12px;
+    line-height: 1.3; transition: color 0.5s;
+  }
+  .commentary-text {
+    font-size: 11px; color: #94a3b8; line-height: 1.7;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.8s ease 0.3s, transform 0.6s ease 0.3s;
+  }
+  .commentary-text.visible { opacity: 1; transform: translateY(0); }
+  .commentary-highlight { color: #e2e8f0; font-weight: bold; }
+  .commentary-accent { font-style: italic; color: #93c5fd; }
+  .commentary-empty { color: #475569; font-size: 13px; padding-top: 20px; }
 
   .top-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     background: rgba(10,14,26,0.95); border-bottom: 1px solid rgba(100,116,139,0.2);
@@ -23,14 +140,13 @@
   .controls button.active { background: #3b82f6; color: #fff; }
   .step-label { color: #64748b; font-size: 11px; min-width: 180px; text-align: center; }
 
-  .legend { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 100;
-    display: flex; gap: 14px; background: rgba(10,14,26,0.9); padding: 5px 16px;
-    border-radius: 6px; border: 1px solid rgba(100,116,139,0.15); backdrop-filter: blur(10px); }
+  .legend { display: flex; gap: 14px; padding: 8px 0 0; opacity: 1; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #64748b; }
   .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
 
-  .flow-container { display: flex; align-items: flex-start; gap: 0; padding: 70px 30px 60px 30px; min-height: 100vh;
-    transition: padding-bottom 0.5s ease; }
+  .flow-container { display: flex; align-items: flex-start; gap: 0; padding: 70px 30px 60px 30px;
+    min-height: 100vh; padding-right: 380px;
+    transition: padding-bottom 0.5s ease; position: relative; }
   body.drawer-open .flow-container { padding-bottom: 300px; }
 
   .stage {
@@ -83,7 +199,7 @@
     border-left: 2px solid rgba(180,83,9,0.5); padding-left: 8px; margin-top: 3px;
   }
   .task-note {
-    font-size: 8px; color: #b45309; margin-top: 3px; line-height: 1.3;
+    font-size: 10px; color: #f59e0b; margin-top: 3px; line-height: 1.3;
   }
 
   /* Nodes */
@@ -107,19 +223,19 @@
   /* When stage is not yet active, hide all nodes */
   .stage:not(.visible) .node { opacity: 0; transform: scale(0.9); }
 
-  .node-agent { background: rgba(109,40,217,0.2); border: 1px solid #6d28d9; color: #ddd6fe; }
-  .node-process { background: rgba(59,130,246,0.2); border: 1px solid #3b82f6; color: #93c5fd; }
-  .node-artifact { background: rgba(4,120,87,0.2); border: 1px solid #047857; color: #a7f3d0; }
-  .node-hook { background: rgba(220,38,38,0.2); border: 1px solid #dc2626; color: #fca5a5; }
-  .node-decision { background: rgba(234,179,8,0.15); border: 1.5px solid #eab308; color: #fef08a;
+  .node-agent { background: rgba(109,40,217,0.25); border: 1px solid #7c3aed; color: #ede9fe; }
+  .node-process { background: rgba(59,130,246,0.25); border: 1px solid #60a5fa; color: #bfdbfe; }
+  .node-artifact { background: rgba(4,120,87,0.25); border: 1px solid #059669; color: #d1fae5; }
+  .node-hook { background: rgba(220,38,38,0.25); border: 1px solid #ef4444; color: #fecaca; }
+  .node-decision { background: rgba(234,179,8,0.2); border: 1.5px solid #facc15; color: #fef9c3;
     border-radius: 3px; transform: rotate(0deg);
     box-shadow: inset 0 0 6px rgba(234,179,8,0.1); }
-  .node-state { background: rgba(15,23,42,0.9); border: 1px solid #475569; color: #94a3b8; }
+  .node-state { background: rgba(15,23,42,0.9); border: 1px solid #64748b; color: #cbd5e1; }
 
   .flow-section { margin: 6px 0; }
-  .flow-section-label { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .flow-section-label { font-size: 11px; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; }
   .node-row { display: flex; flex-wrap: wrap; gap: 4px; }
-  .arrow-down { text-align: center; color: #475569; font-size: 14px; margin: 2px 0;
+  .arrow-down { text-align: center; color: #64748b; font-size: 14px; margin: 2px 0;
     opacity: 0; transition: opacity 0.3s; }
   .stage.visible .arrow-down { opacity: 1; }
 
@@ -156,14 +272,14 @@
   /* Frequency badges on stages */
   .freq-badge {
     position: absolute; top: 8px; right: 10px;
-    font-size: 8px; padding: 2px 7px; border-radius: 10px;
-    letter-spacing: 0.5px; text-transform: uppercase;
+    font-size: 10px; padding: 3px 9px; border-radius: 10px;
+    letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600;
   }
   .freq-badge-setup {
-    background: rgba(100,116,139,0.15); border: 1px solid rgba(100,116,139,0.3); color: #64748b;
+    background: rgba(100,116,139,0.2); border: 1px solid rgba(100,116,139,0.4); color: #cbd5e1;
   }
   .freq-badge-daily {
-    background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd;
+    background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #bfdbfe;
     animation: daily-badge-pulse 3s ease-in-out infinite;
   }
   @keyframes daily-badge-pulse {
@@ -216,8 +332,8 @@
   .concurrency-note.visible { opacity: 1; }
   .conc-line { width: 1px; height: 20px; background: rgba(100,116,139,0.3); }
   .conc-badge {
-    font-size: 7px; color: #64748b; text-align: center; line-height: 1.4;
-    padding: 4px 6px; border: 1px solid rgba(100,116,139,0.2); border-radius: 4px;
+    font-size: 10px; color: #cbd5e1; text-align: center; line-height: 1.4;
+    padding: 5px 8px; border: 1px solid rgba(100,116,139,0.3); border-radius: 4px;
     background: rgba(15,23,42,0.9); white-space: nowrap;
   }
 
@@ -251,9 +367,9 @@
     font-size: 8px; color: #fca5a5; line-height: 1.2;
   }
 
-  .detail { font-size: 10px; color: #64748b; margin-top: auto; padding-top: 8px;
-    border-top: 1px solid rgba(100,116,139,0.15); line-height: 1.4; }
-  .detail strong { color: #94a3b8; }
+  .detail { font-size: 12px; color: #cbd5e1; margin-top: auto; padding-top: 8px;
+    border-top: 1px solid rgba(100,116,139,0.2); line-height: 1.5; }
+  .detail strong { color: #e2e8f0; }
 
   /* Option 1: Glowing ribbon connector */
   .connector-bridge {
@@ -281,7 +397,7 @@
   }
   .ribbon-sub {
     position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-    margin-top: 4px; font-size: 8px; color: #64748b; white-space: nowrap;
+    margin-top: 4px; font-size: 10px; color: #cbd5e1; white-space: nowrap;
     text-align: center; line-height: 1.3;
   }
   @keyframes ribbon-glow {
@@ -305,8 +421,10 @@
     position: fixed; left: 50%; transform: translateX(-50%); bottom: 40px; z-index: 100;
     background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #93c5fd;
     padding: 6px 16px; border-radius: 6px; cursor: pointer;
-    font-family: inherit; font-size: 11px; transition: all 0.3s;
+    font-family: inherit; font-size: 11px; transition: all 0.3s, opacity 0.4s;
+    opacity: 0; pointer-events: none;
   }
+  .sidebar-toggle.revealed { opacity: 1; pointer-events: auto; }
   .sidebar.open ~ .sidebar-toggle { bottom: 268px; }
   .sidebar-toggle:hover { background: rgba(59,130,246,0.3); }
   .sidebar-toggle.active { background: #3b82f6; color: #fff; }
@@ -348,13 +466,210 @@
   .sidebar.open .sb-item:nth-child(13) { transition-delay: 0.41s; }
   .sidebar.open .sb-item:nth-child(14) { transition-delay: 0.44s; }
   .sidebar.open .sb-item:nth-child(15) { transition-delay: 0.47s; }
+
+  /* ====== Walkthrough Navigation ====== */
+  .wt-step { display: none; opacity: 0; transition: opacity 0.6s ease; }
+  .wt-step.wt-visible { display: block; opacity: 1; }
+  .wt-step.wt-fullpage {
+    min-height: 100vh; display: none;
+    flex-direction: column; justify-content: center;
+    padding: 60px 0;
+  }
+  .wt-step.wt-fullpage.wt-visible { display: flex; }
+  .wt-flow { display: none; }
+  .wt-flow.wt-visible { display: block; }
+  .transition-divider.wt-hidden { display: none; }
+
+  .wt-controls {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: none; align-items: center; justify-content: center; gap: 12px;
+    background: rgba(10,14,26,0.95); border-bottom: 1px solid rgba(59,130,246,0.3);
+    padding: 10px 20px; backdrop-filter: blur(12px);
+  }
+  .wt-controls.wt-visible { display: flex; }
+  .wt-controls button {
+    background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #93c5fd;
+    padding: 8px 18px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.3s;
+  }
+  .wt-controls button:hover { background: rgba(59,130,246,0.35); color: #fff; }
+  .wt-controls button:disabled { opacity: 0.3; cursor: default; }
+  .wt-controls button:disabled:hover { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .wt-progress { color: #64748b; font-size: 12px; width: 260px; text-align: center; flex-shrink: 0; }
+
+  /* ====== Responsive ====== */
+  @media (max-width: 1200px) {
+    .value-page { padding: 40px 30px 30px; }
+    .section-header { font-size: 17px; }
+    .comparison { flex-direction: column; padding: 0 16px !important; }
+    .vs-badge { display: none; }
+    .transition-divider { padding: 40px 30px; }
+    .philosophy, .stack-note { margin-left: 16px !important; margin-right: 16px !important; }
+    body > h1, body > .subtitle { padding: 0 16px; }
+  }
+
+  @media (max-width: 900px) {
+    .flow-viewport .top-bar { padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .flow-viewport .top-bar h1 { font-size: 18px; display: block; width: 100%; }
+    .flow-viewport .top-bar .subtitle { margin-left: 0; display: block; width: 100%; }
+    .flow-viewport .controls { position: static; flex-wrap: wrap; gap: 4px; width: 100%; margin-top: 8px; }
+    .flow-viewport .step-label { min-width: auto; }
+    .flow-viewport .click-hint { display: none; }
+    .legend { flex-wrap: wrap; gap: 8px; }
+    .flow-container { padding: 20px 16px 60px 16px; padding-right: 16px; }
+    .commentary {
+      position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+      width: 100%; max-height: 40vh; overflow-y: auto;
+      border-radius: 12px 12px 0 0; border: none;
+      border-top: 1px solid rgba(100,116,139,0.3);
+      margin: 0; z-index: 90;
+    }
+    .commentary.visible { opacity: 1; }
+    .stage { min-width: 240px; max-width: 260px; }
+    .stage[data-stage="analyze"] { min-width: 300px; max-width: 340px; }
+    .stage[data-stage="build"] { min-width: 340px; max-width: 380px; }
+  }
 </style>
 </head>
 <body>
+  <h1 style="text-align: center">What Does iSDLC Add to Claude Code?</h1>
+  <p class="subtitle" style="text-align: center">Claude Code is already capable. iSDLC adds <em>structure, control, and traceability</em> on top.</p>
+  <div style="text-align: center; margin-bottom: 30px"><button class="present-btn" onclick="presentMode()">Click for Walkthrough</button></div>
 
+  <!-- STEP 1: Think -->
+  <div class="wt-step" data-wt="1">
+    <div class="section-header" style="color:#fef3c7; padding-left: 30px">THINK — Planning Before Action</div>
+    <p class="section-sub" style="padding-left: 30px">Both Claude Code and iSDLC believe in thinking before acting. The difference is <strong>altitude</strong> — tactical vs strategic — and <strong>what survives</strong> after the session ends.</p>
+    <div class="comparison" id="comp-1" style="padding: 0 30px">
+      <div class="side side-native">
+        <div class="side-label"><div class="label-dot label-dot-native"></div>CLAUDE CODE — Plan Mode</div>
+        <div class="side-title">Tactical: This Edit Session</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">📋</div><div class="feat-text"><strong>One agent thinks out loud</strong> — Claude shows its approach for the edits it's about to make, in the current conversation</div></div>
+          <div class="feat"><div class="feat-icon">⏱️</div><div class="feat-text"><strong>One-turn interaction</strong> — approve or reject the plan, then Claude executes or stops</div></div>
+          <div class="feat"><div class="feat-icon">💨</div><div class="feat-text"><strong>Ephemeral</strong> — the plan lives in chat. If rejected, nothing persists. No files, no specs, no record</div></div>
+          <div class="feat"><div class="feat-icon">🔍</div><div class="feat-text"><strong>Ad-hoc codebase reads</strong> — Claude reads files as needed, no structured scan</div></div>
+          <div class="feat"><div class="feat-icon">🎯</div><div class="feat-text"><strong>Scope</strong> — "Before I touch these 6 files, here's my approach"</div></div>
+        </div>
+      </div>
+      <div class="vs-badge">→</div>
+      <div class="side side-isdlc">
+        <div class="side-label"><div class="label-dot label-dot-isdlc"></div>iSDLC — Analyse</div>
+        <div class="side-title">Strategic: The Whole Feature</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">👥</div><div class="feat-text"><strong>Three perspectives by default</strong> — Business Analysis, Architecture, and Design examine the problem together. <span class="accent">Teams can add more perspectives</span></div></div>
+          <div class="feat"><div class="feat-icon">🔄</div><div class="feat-text"><strong>Interactive conversation</strong> — 8-10 exchanges where the human drives every decision. Four-domain staged confirmation: Accept or Amend</div></div>
+          <div class="feat"><div class="feat-icon">📁</div><div class="feat-text"><strong>Durable artifacts</strong> — requirements spec, architecture overview, module design, task plan — all written to disk with traceability</div></div>
+          <div class="feat"><div class="feat-icon">🔬</div><div class="feat-text"><strong>Deep codebase analysis</strong> — semantic search, impact analysis, blast radius, dependency mapping, risk scoring</div></div>
+          <div class="feat"><div class="feat-icon">📐</div><div class="feat-text"><strong>Scope</strong> — "Before we build this, here's the spec the build will execute against"</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Execute -->
+  <div class="wt-step" data-wt="2">
+    <div class="section-header" style="color:#93c5fd; padding-left: 30px">EXECUTE — Turning Plans Into Code</div>
+    <p class="section-sub" style="padding-left: 30px">Claude Code already executes well — it spawns parallel agents, runs tests, retries on failure, and reviews its own work. iSDLC adds <strong>structured phases, user-defined guardrails, and configurable control</strong> over how all of that happens.</p>
+    <div class="comparison" id="comp-2" style="padding: 0 30px">
+      <div class="side side-native">
+        <div class="side-label"><div class="label-dot label-dot-native"></div>CLAUDE CODE — Native Execute</div>
+        <div class="side-title">Capable, Self-Directed</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">⚡</div><div class="feat-text"><strong>Capable execution</strong> — spawns parallel agents, uses agent teams, edits multiple files concurrently. Not limited to linear edits</div></div>
+          <div class="feat"><div class="feat-icon">🧪</div><div class="feat-text"><strong>Testing is Claude-directed</strong> — Claude decides when and how to test. TDD and ATDD are possible but not structurally enforced — no user control over test strategy</div></div>
+          <div class="feat"><div class="feat-icon">👀</div><div class="feat-text"><strong>Review is Claude-directed</strong> — Claude reviews its own work, but the developer has limited structured control over review criteria or coverage checks</div></div>
+          <div class="feat"><div class="feat-icon">🔄</div><div class="feat-text"><strong>Retries on failure</strong> — Claude retries when things break, but the retry strategy, escalation path, and circuit-breaker thresholds are not user-configurable</div></div>
+          <div class="feat"><div class="feat-icon">📝</div><div class="feat-text"><strong>No structured audit trail</strong> — work is captured in git history but not connected to requirements, acceptance criteria, or a traceable task plan</div></div>
+        </div>
+      </div>
+      <div class="vs-badge">→</div>
+      <div class="side side-isdlc">
+        <div class="side-label"><div class="label-dot label-dot-isdlc"></div>iSDLC — Build (adds structure)</div>
+        <div class="side-title">Structured, User-Controlled</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">🏗️</div><div class="feat-text"><strong>Defined phases</strong> — test strategy → implementation → quality loop → code review. Each phase has a dedicated specialist, clear entry/exit criteria, and gates</div></div>
+          <div class="feat"><div class="feat-icon">🧪</div><div class="feat-text"><strong>Test-first enforced</strong> — the test strategy phase runs <span class="accent">before</span> implementation begins. The quality loop iterates until tests AND automated QA both pass. The team controls the coverage thresholds</div></div>
+          <div class="feat"><div class="feat-icon">🛡️</div><div class="feat-text"><strong>User-defined guardrails</strong> — constitutional validation, blast-radius coverage, iteration corridors. 36 runtime guardrails, <span class="accent">all configurable by the team</span></div></div>
+          <div class="feat"><div class="feat-icon">🔄</div><div class="feat-text"><strong>Controlled retry + escalation</strong> — configurable retry limits per gate, circuit-breaker thresholds, and explicit escalation to human when automated retries are exhausted</div></div>
+          <div class="feat"><div class="feat-icon">⚡</div><div class="feat-text"><strong>Dependency-ordered parallel dispatch</strong> — tasks from the analysis plan are sorted into tiers and dispatched in parallel, with dependency tracking and per-task traceability</div></div>
+          <div class="feat"><div class="feat-icon">📊</div><div class="feat-text"><strong>Full traceability</strong> — every task traces to acceptance criteria. Every change traces to the task plan. Every review is recorded against defined check categories</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Persist -->
+  <div class="wt-step" data-wt="3">
+    <div class="section-header" style="color:#a7f3d0; padding-left: 30px">PERSIST — What Survives After the Session</div>
+    <p class="section-sub" style="padding-left: 30px">The real test of a development process: <strong>what exists after the developer closes the terminal?</strong></p>
+    <div class="comparison" id="comp-3" style="padding: 0 30px">
+      <div class="side side-native">
+        <div class="side-label"><div class="label-dot label-dot-native"></div>CLAUDE CODE</div>
+        <div class="side-title">Git History Only</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">📂</div><div class="feat-text"><strong>Modified files</strong> in the working tree</div></div>
+          <div class="feat"><div class="feat-icon">📜</div><div class="feat-text"><strong>Git commits</strong> — if the developer remembered to commit</div></div>
+          <div class="feat"><div class="feat-icon">💬</div><div class="feat-text"><strong>Chat history</strong> — lost when the session ends or compresses</div></div>
+          <div class="feat"><div class="feat-icon">❓</div><div class="feat-text"><strong>No connection</strong> between the change and the requirement that prompted it</div></div>
+        </div>
+      </div>
+      <div class="vs-badge">→</div>
+      <div class="side side-isdlc">
+        <div class="side-label"><div class="label-dot label-dot-isdlc"></div>iSDLC</div>
+        <div class="side-title">Complete Artifact Trail</div>
+        <div class="side-body">
+          <div class="feat"><div class="feat-icon">📋</div><div class="feat-text"><strong>Requirements spec</strong> — what was asked for, with acceptance criteria and priorities</div></div>
+          <div class="feat"><div class="feat-icon">🏛️</div><div class="feat-text"><strong>Architecture decisions</strong> — options evaluated, selected approach, rationale</div></div>
+          <div class="feat"><div class="feat-icon">📐</div><div class="feat-text"><strong>Design specification</strong> — module boundaries, interfaces, data flow</div></div>
+          <div class="feat"><div class="feat-icon">✅</div><div class="feat-text"><strong>Task plan</strong> — file-level breakdown with dependencies, traces to AC, completion status</div></div>
+          <div class="feat"><div class="feat-icon">🧪</div><div class="feat-text"><strong>Test strategy + results</strong> — what was tested, coverage, quality report</div></div>
+          <div class="feat"><div class="feat-icon">🔍</div><div class="feat-text"><strong>Code review record</strong> — per-file review against 8 check categories, constitutional compliance</div></div>
+          <div class="feat"><div class="feat-icon">📊</div><div class="feat-text"><strong>Visual diagrams</strong> — architecture and design diagrams generated alongside the specs</div></div>
+          <div class="feat"><div class="feat-icon">🔗</div><div class="feat-text"><strong>Bidirectional traceability</strong> — requirement ↔ design ↔ task ↔ test ↔ code change ↔ review</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Philosophy + Summary -->
+  <div class="wt-step wt-fullpage" data-wt="4">
+    <div class="philosophy" id="philosophy" style="margin-left: 30px; margin-right: 30px">
+      <h3>iSDLC Provides Structure to Claude Code</h3>
+      <p><strong>Claude Code is the engine.</strong> It spawns agents, edits files, runs tests, retries on failure, reviews code. These are powerful capabilities. iSDLC does not replace any of them — it <span class="accent">adds a structured layer on top</span> that gives teams control over how those capabilities are applied.</p>
+      <p><strong>For tactical work</strong> — quick fixes, exploratory changes, one-off refactors — Claude Code's native capabilities are the right tool. Plan mode, direct execution, ad-hoc testing. Fast and flexible.</p>
+      <p><strong>For structured work</strong> — features, bugs, and changes significant enough to warrant requirements, design, testing, review, and traceability — iSDLC provides the phases, the guardrails, the confirmation gates, and the audit trail that keep multi-file, multi-hour work consistent and traceable.</p>
+      <p><strong>The trivial tier is the bridge</strong> — when analyse concludes a change is small enough, <span class="accent">the build skips the full workflow</span> and executes with Claude Code's native capabilities plus a lightweight audit trail. The framework adapts to scope, not the other way around.</p>
+      <p style="margin-bottom:0"><strong>The extensibility is the differentiator</strong> — the constitution, the perspectives, the skills, the guardrails, and the finalization checklist are all <span class="accent">configuration-driven and hackable</span>. Teams shape the framework to their standards; the framework doesn't impose a one-size-fits-all process.</p>
+    </div>
+    <div class="stack-note" id="stack-note" style="margin-left: 30px; margin-right: 30px">
+      <strong>In practice, they stack:</strong> Discover sets up the project knowledge → Embeddings enable semantic search → Test Generate captures existing behaviour → Add tracks work items from GitHub or Jira → Analyse produces the spec through interactive conversation → Build executes the spec automatically. Each stage's output feeds the next. Plan mode and native execute remain available for ad-hoc work between workflow runs.
+    </div>
+  </div>
+
+</div>
+
+</body>
+
+<!-- Walkthrough controls -->
+<div class="wt-controls" id="wt-controls">
+  <button onclick="wtPrev()" id="wt-btn-prev">← Previous</button>
+  <div class="wt-progress" id="wt-progress"></div>
+  <button onclick="wtNext()" id="wt-btn-next">Next →</button>
+</div>
+
+<!-- E2E FLOW VIEWPORT -->
+<div class="flow-viewport wt-flow" id="flow-viewport">
 <div class="top-bar">
   <h1>iSDLC End-to-End Workflow</h1>
   <span class="subtitle">Intelligent Software Development Lifecycle Harness</span>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(109,40,217,0.4);border:1px solid #6d28d9"></div>Agent</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(59,130,246,0.4);border:1px solid #3b82f6"></div>Process</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(4,120,87,0.4);border:1px solid #047857"></div>Artifact</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(220,38,38,0.4);border:1px solid #dc2626"></div>Hook</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:rgba(234,179,8,0.3);border:1.5px solid #eab308"></div>Decision</div>
+  </div>
 </div>
 
 <div class="controls">
@@ -363,14 +678,7 @@
   <button onclick="nextStep()">→</button>
   <button onclick="showAll()">All</button>
   <div class="step-label" id="step-label">Click Play to start</div>
-</div>
-
-<div class="legend">
-  <div class="legend-item"><div class="legend-swatch" style="background:rgba(109,40,217,0.4);border:1px solid #6d28d9"></div>Agent</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:rgba(59,130,246,0.4);border:1px solid #3b82f6"></div>Process</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:rgba(4,120,87,0.4);border:1px solid #047857"></div>Artifact</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:rgba(220,38,38,0.4);border:1px solid #dc2626"></div>Hook</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:rgba(234,179,8,0.3);border:1.5px solid #eab308"></div>Decision</div>
+  <span class="click-hint">or click any stage</span>
 </div>
 
 <div class="flow-container">
@@ -407,12 +715,15 @@
       <div class="flow-section-label">Artifacts</div>
       <div class="node-row">
         <div class="node node-artifact" data-seq="3">constitution.md</div>
-        <div class="node node-artifact" data-seq="3">project skills (4)</div>
+        <div class="node node-artifact" data-seq="3">architecture skill</div>
+        <div class="node node-artifact" data-seq="3">conventions skill</div>
+        <div class="node node-artifact" data-seq="3">domain skill</div>
+        <div class="node node-artifact" data-seq="3">test-landscape skill</div>
         <div class="node node-artifact" data-seq="3">characterization tests</div>
         <div class="node node-artifact" data-seq="3">session cache</div>
       </div>
     </div>
-    <div class="detail"><strong>Setup</strong> — Parallel agents analyze codebase, produce constitution + skills + test scaffolds.</div>
+    <div class="detail"><strong>Setup</strong> — Parallel agents analyse codebase, produce constitution + skills + test scaffolds.</div>
   </div>
 
   <div class="connector" id="conn-1">→</div>
@@ -437,7 +748,7 @@
       <div class="arrow-down">↓ CoreML fp16</div>
       <div class="node-row"><div class="node node-process">768-dim vectors</div></div>
       <div class="arrow-down">↓</div>
-      <div class="node-row"><div class="node node-artifact">.emb (FAISS index)</div></div>
+      <div class="node-row"><div class="node node-artifact">.emb (vector index)</div></div>
     </div>
     <div class="arrow-down">↓</div>
     <div class="flow-section">
@@ -448,7 +759,7 @@
         <div class="node node-artifact">list_modules</div>
       </div>
     </div>
-    <div class="detail"><strong>Search</strong> — AST-aware chunks → vectors → FAISS → MCP. Enables semantic search for all agents.</div>
+    <div class="detail"><strong>Search</strong> — AST-aware chunks → vectors → cosine search → MCP. Enables semantic search for all agents.</div>
   </div>
 
   <div class="connector" id="conn-2">→</div>
@@ -557,7 +868,7 @@
     <div class="freq-badge freq-badge-daily">daily</div>
     <div class="stage-header">
       <div class="stage-number">5</div>
-      <div class="stage-title">ANALYZE — Roundtable</div>
+      <div class="stage-title">ANALYSE — Roundtable</div>
     </div>
     <div class="flow-section">
       <div class="flow-section-label">Resolve + Parallel Fetch (Group 1)</div>
@@ -834,6 +1145,16 @@
     <div class="detail"><strong>Phase loop</strong> — Task-level dispatch, hooks enforce at every boundary, 9-step finalize checklist.</div>
   </div>
 
+  <div class="commentary" id="commentary">
+    <div class="commentary-number" id="comm-number"></div>
+    <div class="commentary-body">
+      <div class="commentary-title" id="comm-title"></div>
+      <div class="commentary-text" id="comm-text">
+</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <button class="sidebar-toggle" id="sb-toggle" onclick="toggleSidebar()">◧ Agents & Skills</button>
@@ -844,6 +1165,59 @@
 
 <script>
 // Agent & Skill data per stage
+// Commentary content per stage
+const commentaryData = {
+  0: { number: '', title: '', text: '<div class="commentary-empty">Press Play or → to begin the walkthrough</div>' },
+  1: {
+    number: '01',
+    title: 'DISCOVER — Understand Before You Change',
+    text: `<span class="commentary-highlight">Philosophy:</span> Every project is unique. Before any development work begins, the framework deeply understands <span class="commentary-accent">what already exists</span> — the architecture, the test coverage, the domain language, the technical debt.
+    <br><br><span class="commentary-highlight">What happens:</span> Multiple analysis streams run in parallel — architecture patterns, test coverage gaps, feature mapping, security posture, data models, and operational readiness. The result is a comprehensive picture of the codebase from every angle.
+    <br><br><span class="commentary-highlight">The Constitution:</span> The most important output. It establishes <span class="commentary-accent">immutable governance rules</span> for the project — specification primacy, test-first development, security by design, fail-safe defaults. The constitution ships with 10 universal articles, but teams can <span class="commentary-accent">add domain-specific articles</span> (e.g. PCI-DSS compliance, accessibility standards) and customise thresholds. The rules are the project's law — they don't bend to expediency.
+    <br><br><span class="commentary-highlight">Project Skills:</span> Distilled knowledge about the specific codebase — architecture patterns, coding conventions, domain terminology, test landscape. Teams can also <span class="commentary-accent">add their own skills</span> — custom knowledge files that get injected into the relevant stages automatically.
+    <br><br><span class="commentary-highlight">Test Scaffolds:</span> Discover also maps existing behaviour into test scaffolds. These become the foundation for Test Generate — the code cannot be safely changed without first capturing <span class="commentary-accent">what it does today</span>.`
+  },
+  2: {
+    number: '02',
+    title: 'EMBEDDINGS — Semantic Understanding of the Code',
+    text: `<span class="commentary-highlight">Philosophy:</span> Keyword search finds text. <span class="commentary-accent">Semantic search finds meaning.</span> When the question is "how does authentication work?", the right answer is the auth module — not every file containing the word "auth".
+    <br><br><span class="commentary-highlight">Pipeline:</span> Source files are parsed into structure-aware chunks (respecting function boundaries, not arbitrary line splits), converted into mathematical vectors, indexed for fast similarity search, and served as a local search service.
+    <br><br><span class="commentary-highlight">Impact:</span> From this point forward, every stage of the workflow — analysis, design, implementation — has access to <span class="commentary-accent">meaning-based code search</span>. Conceptual questions are automatically routed to semantic search, while exact lookups continue to use traditional text search. The right knowledge surfaces at the right time.`
+  },
+  3: {
+    number: '03',
+    title: 'TEST GENERATE — Safety Net Before Change',
+    text: `<span class="commentary-highlight">Philosophy:</span> Code that cannot be tested cannot be safely changed. Before adding new features or fixing bugs, the framework generates <span class="commentary-accent">characterization tests</span> that capture what the code actually does today.
+    <br><br><span class="commentary-highlight">How:</span> The test scaffolds produced by Discover are turned into real, executable tests. A test strategy is designed first, then the tests are implemented — with multiple test files worked on in parallel for speed.
+    <br><br><span class="commentary-highlight">Why this matters:</span> When the Build stage later modifies code, these tests catch unintended regressions. The quality checks will not pass until existing behaviour is preserved. <span class="commentary-accent">Safety net first, then change.</span>`
+  },
+  4: {
+    number: '04',
+    title: 'ADD — Idea to Backlog in Under 5 Seconds',
+    text: `<span class="commentary-highlight">Philosophy:</span> Capture intent immediately, analyse later. Adding an item to the backlog should be <span class="commentary-accent">instant and frictionless</span>.
+    <br><br><span class="commentary-highlight">Source intelligence:</span> The framework accepts a GitHub issue number, a Jira ticket reference, or a plain-language description. It auto-detects the source, fetches the details, creates a structured requirements folder, and updates the backlog — all in one step.
+    <br><br><span class="commentary-highlight">Traceability:</span> Whether the input comes from GitHub, Jira, or a conversation, every item gets a tracked folder with a draft and metadata. <span class="commentary-accent">Nothing falls through the cracks.</span>`
+  },
+  5: {
+    number: '05',
+    title: 'ANALYSE — Interactive, Extensible Roundtable',
+    text: `<span class="commentary-highlight">Philosophy:</span> Analysis is not document generation — it's a <span class="commentary-accent">structured conversation</span>. By default, three perspectives — Business Analysis, Solutions Architecture, and System Design — examine every item together, ensuring requirements, architecture, and design are explored as a whole, not in silos.
+    <br><br><span class="commentary-highlight">Hackable by design:</span> The three default perspectives are just the starting point. Teams can <span class="commentary-accent">add their own perspectives</span> — a Security Reviewer, a DevOps specialist, a Domain Expert, a UX Reviewer — as contributing participants that fold into the conversation. For deeper customisation, a perspective can be <span class="commentary-accent">promoted to a primary role</span> that owns its own confirmation stage with its own templates. The roundtable adapts to the team's needs, not the other way around.
+    <br><br><span class="commentary-highlight">Human control:</span> This is where the developer drives. The framework asks questions, surfaces tradeoffs, and proposes options — but <span class="commentary-accent">the human makes every decision</span>. Each domain goes through a staged confirmation: Accept or Amend. Amend restarts from the top — no partial approvals.
+    <br><br><span class="commentary-highlight">Consistency:</span> The framework manages context at every turn — ensuring the right templates, preferred tools, and relevant project knowledge are always present. The conversation quality stays consistent regardless of session length, complexity, or how many perspectives participate.
+    <br><br><span class="commentary-highlight">Output:</span> Four key artifacts — <span class="commentary-accent">requirements spec, architecture overview, module design, and task plan</span> — matching the four domains the human just confirmed. Supporting artifacts (traceability matrix, interface specs, data flow, visual diagrams) are produced alongside them in a single batch write.`
+  },
+  6: {
+    number: '06',
+    title: 'BUILD — Automated Execution, Human-Grade Quality',
+    text: `<span class="commentary-highlight">Philosophy:</span> Once the plan is approved, <span class="commentary-accent">execution is fully automated</span>. The framework drives test strategy, implementation, quality checks, and code review without human intervention — enforced by 36 runtime guardrails.
+    <br><br><span class="commentary-highlight">Parallel execution:</span> The task plan from analysis is the execution contract. Tasks are sorted by dependency and run in parallel where possible — multiple implementation streams working simultaneously on independent pieces.
+    <br><br><span class="commentary-highlight">Quality assurance:</span> Two parallel tracks run simultaneously — one executes tests and checks coverage, the other runs security scanning, dependency auditing, and automated code review. Both must pass before advancing. Failures loop back automatically.
+    <br><br><span class="commentary-highlight">Completion:</span> A structured checklist merges the work, syncs status back to GitHub and Jira, and refreshes all indexes and caches — so the next analysis session starts with <span class="commentary-accent">up-to-date knowledge of what just changed</span>.
+    <br><br><span class="commentary-highlight">Extensible:</span> The quality checks, the finalization steps, and the guardrails are all <span class="commentary-accent">configuration-driven</span>. Teams can add custom validation rules, modify the finalization checklist, or plug in additional skills — the build pipeline adapts to the team's standards, not just the framework's defaults.`
+  }
+};
+
 const stageData = {
   1: {
     title: 'DISCOVER',
@@ -899,7 +1273,7 @@ const stageData = {
     skills: [
       { name: 'chunker (tree-sitter)', id: 'EMB-001' },
       { name: 'package builder', id: 'EMB-002' },
-      { name: 'store manager (FAISS)', id: 'EMB-003' },
+      { name: 'store manager (cosine search)', id: 'EMB-003' },
       { name: 'MCP server', id: 'EMB-004' },
       { name: 'query-classifier', id: 'EMB-005' },
     ],
@@ -941,7 +1315,7 @@ const stageData = {
     hooks: []
   },
   5: {
-    title: 'ANALYZE',
+    title: 'ANALYSE',
     agents: [
       { name: 'roundtable-analyst', role: 'Feature roundtable protocol' },
       { name: 'bug-roundtable-analyst', role: 'Bug roundtable protocol' },
@@ -1117,9 +1491,62 @@ function renderSidebar(step) {
   }
 }
 
+function renderCommentary(step) {
+  const d = commentaryData[step] || commentaryData[0];
+  const panel = document.getElementById('commentary');
+  const numEl = document.getElementById('comm-number');
+  const titleEl = document.getElementById('comm-title');
+  const textEl = document.getElementById('comm-text');
+
+  // Reset animation
+  textEl.classList.remove('visible');
+  panel.classList.remove('visible');
+
+  if (step === 0) {
+    panel.style.left = '30px';
+    setTimeout(() => {
+      textEl.innerHTML = d.text;
+      panel.classList.add('visible');
+      textEl.classList.add('visible');
+    }, 200);
+    return;
+  }
+
+  // Position right next to the active stage
+  const activeStage = stages[step - 1];
+  if (activeStage) {
+    const rect = activeStage.getBoundingClientRect();
+    const container = document.querySelector('.flow-container');
+    const containerRect = container.getBoundingClientRect();
+    const leftPos = (rect.right - containerRect.left) + 15;
+    panel.style.left = leftPos + 'px';
+  }
+
+  const color = getStageColor(step);
+  numEl.style.color = color;
+  numEl.textContent = d.number;
+  titleEl.style.color = color;
+  titleEl.textContent = d.title;
+
+  setTimeout(() => {
+    textEl.innerHTML = d.text;
+    panel.classList.add('visible');
+    textEl.classList.add('visible');
+  }, 300);
+}
+
 function getStageColor(step) {
   const colors = { 1: '#fed7aa', 2: '#ddd6fe', 3: '#93c5fd', 4: '#a7f3d0', 5: '#fef3c7', 6: '#93c5fd' };
   return colors[step] || '#e2e8f0';
+}
+
+// Show Agents & Skills button when flow viewport is visible
+const sbToggleEl = document.getElementById('sb-toggle');
+const flowVpEl = document.getElementById('flow-viewport');
+if (flowVpEl && sbToggleEl) {
+  new IntersectionObserver(([entry]) => {
+    sbToggleEl.classList.toggle('revealed', entry.isIntersecting);
+  }, { threshold: 0.05 }).observe(flowVpEl);
 }
 
 let sidebarOpen = false;
@@ -1173,20 +1600,15 @@ function runSequentialFlash(stageEl) {
 
       const currentSeq = seqKeys[groupIdx];
       const currentNodes = groups[currentSeq];
-      const PULSE_CYCLES = 3;
-
-      // Start: bring current group from dim to flashing (CSS animation handles the pulse)
+      // Fast appear: fade in, hold briefly, solidify, next group
       currentNodes.forEach(n => { n.classList.remove('dim'); n.classList.add('flashing'); });
 
-      // Let the CSS soft-pulse animation run for N full cycles (2.4s each),
-      // then solidify and move to the next group
-      const pulseTime = PULSE_CYCLES * 2400 + 600;
       const t = setTimeout(() => {
         currentNodes.forEach(n => { n.classList.remove('flashing'); n.classList.add('solid'); });
         groupIdx++;
-        const t2 = setTimeout(processGroup, 800);
+        const t2 = setTimeout(processGroup, 400);
         flashTimeouts.push(t2);
-      }, pulseTime);
+      }, 1200);
       flashTimeouts.push(t);
     }
 
@@ -1214,13 +1636,17 @@ function updateView() {
       s.classList.add('visible', 'active');
 
       const hasSeq = s.querySelectorAll('.node[data-seq]').length > 0;
-      if (hasSeq) {
+      if (wtSkipFlash) {
+        // Walkthrough sub-step: show all nodes solid, no animation
+        s.querySelectorAll('.node').forEach(n => n.classList.add('solid'));
+      } else if (hasSeq) {
         // Nodes with data-seq: run sequential flash
         // Nodes WITHOUT data-seq in this stage: keep solid (stage header etc are visible via CSS)
         runSequentialFlash(s).then(() => {
           // Flash sequence done — if auto-playing, advance after a pause
           if (autoPlaying && currentStep < stages.length) {
-            const t = setTimeout(() => { nextStep(); }, 1500);
+            // Hold after flash sequence completes so commentary can be read
+            const t = setTimeout(() => { nextStep(); }, 5000);
             flashTimeouts.push(t);
           }
         });
@@ -1229,7 +1655,8 @@ function updateView() {
         s.querySelectorAll('.node').forEach(n => n.classList.add('solid'));
         // If auto-playing, advance after a delay
         if (autoPlaying && currentStep < stages.length) {
-          const t = setTimeout(() => { nextStep(); }, 4500);
+          // Hold for commentary reading — 7s per stage
+          const t = setTimeout(() => { nextStep(); }, 7000);
           flashTimeouts.push(t);
         }
       }
@@ -1257,14 +1684,29 @@ function updateView() {
     if (currentStep >= 6) concNote.classList.add('visible');
   }
 
-  // Scroll active stage into view
+  // Scroll within the flow-viewport to keep active stage + commentary visible
   if (currentStep > 0) {
-    stages[currentStep - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    const vp = document.querySelector('.flow-viewport');
+    const panel = document.getElementById('commentary');
+    setTimeout(() => {
+      const activeStage = stages[currentStep - 1];
+      const stageLeft = activeStage.offsetLeft - 30;
+      if (panel && panel.classList.contains('visible')) {
+        const panelRight = panel.offsetLeft + panel.offsetWidth + 30;
+        const targetScroll = Math.max(0, stageLeft - 30);
+        vp.scrollTo({ left: targetScroll, behavior: 'smooth' });
+      } else {
+        vp.scrollTo({ left: Math.max(0, stageLeft - 30), behavior: 'smooth' });
+      }
+    }, 500);
   }
 
-  const names = ['', 'DISCOVER', 'EMBEDDINGS', 'TEST GENERATE', 'ADD', 'ANALYZE', 'BUILD'];
+  const names = ['', 'DISCOVER', 'EMBEDDINGS', 'TEST GENERATE', 'ADD', 'ANALYSE', 'BUILD'];
   document.getElementById('step-label').textContent =
     currentStep === 0 ? 'Click Play to start' : `${currentStep}/6 — ${names[currentStep]}`;
+
+  // Update commentary panel (skip if walkthrough is suppressing it)
+  if (!wtSuppressCommentary) renderCommentary(currentStep);
 
   // Update sidebar content
   renderSidebar(currentStep);
@@ -1308,12 +1750,184 @@ function stopAutoPlay() {
   document.getElementById('btn-play').classList.remove('active');
 }
 
+// ====== WALKTHROUGH NAVIGATION ======
+// Steps: 1-4 page sections, 5-7 Discover (card/commentary/sidebar), 8-12 remaining flow stages
+const WT_PAGE_STEPS = 4;
+const WT_DISCOVER_START = 5;
+const WT_DISCOVER_END = 7;
+const WT_TOTAL = 12;
+let wtCurrent = 0;
+let wtActive = false;
+let wtSuppressCommentary = false;
+let wtSkipFlash = false;
+
+function openSidebar() {
+  if (!sidebarOpen) { sidebarOpen = true; document.getElementById('sidebar').classList.add('open'); document.getElementById('sb-toggle').classList.add('active'); document.body.classList.add('drawer-open'); }
+}
+
+function closeSidebar() {
+  if (sidebarOpen) { sidebarOpen = false; document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-toggle').classList.remove('active'); document.body.classList.remove('drawer-open'); }
+}
+
+function startWalkthrough() {
+  wtActive = true;
+  wtCurrent = 1;
+  document.querySelector('.present-btn').style.display = 'none';
+  wtRender();
+}
+
+function presentMode() { startWalkthrough(); }
+
+function wtNext() {
+  if (wtCurrent < WT_TOTAL) { wtCurrent++; wtRender(); }
+}
+
+function wtPrev() {
+  if (wtCurrent > 1) { wtCurrent--; wtRender(); }
+}
+
+function wtGetStepName(step) {
+  const names = {
+    1: 'Think', 2: 'Execute', 3: 'Persist', 4: 'Summary',
+    5: 'Discover', 6: 'Discover — Commentary', 7: 'Discover — Agents & Skills',
+    8: 'Embeddings', 9: 'Test Generate', 10: 'Add', 11: 'Analyse', 12: 'Build'
+  };
+  return names[step] || '';
+}
+
+function wtShowFlow(flowStage, showCommentary, showSidebar) {
+  const flowVp = document.getElementById('flow-viewport');
+  flowVp.classList.add('wt-visible');
+
+  currentStep = flowStage;
+  wtSuppressCommentary = !showCommentary;
+  wtSkipFlash = showCommentary || showSidebar;
+  updateView();
+  wtSuppressCommentary = false;
+  wtSkipFlash = false;
+
+  const panel = document.getElementById('commentary');
+  if (showCommentary) {
+    renderCommentary(flowStage);
+  } else {
+    panel.classList.remove('visible');
+    panel.style.display = 'none';
+  }
+  if (showCommentary) { panel.style.display = ''; }
+
+  if (showSidebar) {
+    openSidebar();
+    renderSidebar(flowStage);
+  } else {
+    closeSidebar();
+  }
+
+  // Scroll flow-viewport into view, then horizontally to stage
+  setTimeout(() => {
+    flowVp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+      const activeStage = stages[flowStage - 1];
+      if (activeStage) {
+        const stageLeft = activeStage.offsetLeft;
+        flowVp.scrollTo({ left: Math.max(0, stageLeft - 40), behavior: 'smooth' });
+      }
+    }, 500);
+  }, 200);
+}
+
+function wtRender() {
+  if (!wtActive) return;
+  const controls = document.getElementById('wt-controls');
+  const flowVp = document.getElementById('flow-viewport');
+  const prevBtn = document.getElementById('wt-btn-prev');
+  const nextBtn = document.getElementById('wt-btn-next');
+
+  controls.classList.add('wt-visible');
+  prevBtn.disabled = (wtCurrent <= 1);
+  nextBtn.disabled = (wtCurrent >= WT_TOTAL);
+
+  document.getElementById('wt-progress').textContent = `${wtCurrent} / ${WT_TOTAL} — ${wtGetStepName(wtCurrent)}`;
+
+  // Hide all page steps
+  document.querySelectorAll('.wt-step').forEach(el => el.classList.remove('wt-visible'));
+
+  if (wtCurrent <= WT_PAGE_STEPS) {
+    // Page 1 sections
+    flowVp.classList.remove('wt-visible');
+    closeSidebar();
+    stopAutoPlay();
+
+    const currentEl = document.querySelector(`.wt-step[data-wt="${wtCurrent}"]`);
+    const isFullpage = currentEl && currentEl.classList.contains('wt-fullpage');
+
+    if (isFullpage) {
+      currentEl.classList.add('wt-visible');
+    } else {
+      for (let i = 1; i <= wtCurrent; i++) {
+        const step = document.querySelector(`.wt-step[data-wt="${i}"]`);
+        if (step && !step.classList.contains('wt-fullpage')) step.classList.add('wt-visible');
+      }
+    }
+
+    const activeStep = document.querySelector(`.wt-step[data-wt="${wtCurrent}"]`);
+    if (activeStep) {
+      setTimeout(() => activeStep.scrollIntoView({ behavior: 'smooth', block: isFullpage ? 'center' : 'start' }), 100);
+    }
+  } else if (wtCurrent >= WT_DISCOVER_START && wtCurrent <= WT_DISCOVER_END) {
+    // Discover sub-steps: 5=card, 6=+commentary, 7=+sidebar
+    const subStep = wtCurrent - WT_DISCOVER_START; // 0, 1, 2
+    wtShowFlow(1, subStep >= 1, subStep >= 2);
+  } else {
+    // Remaining flow stages: steps 8-12 → flow stages 2-6, all components at once
+    const flowStage = wtCurrent - WT_DISCOVER_END + 1; // 8→2, 9→3, 10→4, 11→5, 12→6
+    wtShowFlow(flowStage, true, true);
+  }
+}
+
 document.addEventListener('keydown', (e) => {
+  if (wtActive) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); wtNext(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); wtPrev(); }
+    return;
+  }
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stopAutoPlay(); nextStep(); }
   if (e.key === 'ArrowLeft') { e.preventDefault(); stopAutoPlay(); prevStep(); }
 });
 
+// Show legend only when flow viewport is visible
+const flowViewport = document.querySelector('.flow-viewport');
+const legendEl = document.querySelector('.legend');
+if (flowViewport && legendEl) {
+  const legendObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      legendEl.style.opacity = e.isIntersecting ? '1' : '0';
+      legendEl.style.pointerEvents = e.isIntersecting ? 'auto' : 'none';
+    });
+  }, { threshold: 0.05 });
+  legendObserver.observe(flowViewport);
+}
+
+// Click-to-focus: clicking a stage card jumps to it, opens commentary + sidebar
+stages.forEach((stage, idx) => {
+  stage.addEventListener('click', () => {
+    stopAutoPlay();
+    currentStep = idx + 1;
+    updateView();
+
+    // Auto-open sidebar if closed
+    if (!sidebarOpen) toggleSidebar();
+  });
+});
+
+// Remove controls — user interacts by clicking stages directly
+// (Play/Prev/Next buttons still work for keyboard/auto-play users)
+
 updateView();
+
+// Auto-start walkthrough if ?present is in the URL
+if (new URLSearchParams(window.location.search).has('present')) {
+  setTimeout(() => startWalkthrough(), 800);
+}
 </script>
 </body>
 </html>
