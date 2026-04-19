@@ -427,8 +427,6 @@ New projects are also supported — `/discover` switches to vision elicitation, 
 
 This framework is under active development. Contributions, feedback, and suggestions are welcome.
 
-### [Request to Join](https://github.com/isdlc/isdlc-framework/issues/260) — comment on the pinned issue to request organisation access
-
 **Licensing**: Free and open source (MIT License). You provide your own LLM access via a Claude Code subscription.
 
 ---
