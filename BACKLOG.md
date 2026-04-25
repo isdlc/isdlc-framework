@@ -4,6 +4,8 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [A] #264 iSDLC integration with knowledge management service [github: GH-264] -> [requirements](docs/requirements/REQ-GH-264-isdlc-integration-knowledge-service/)
+- [A] #263 Centralised Vector DB: carve out embedding server into separate repo [github: GH-263] -> [requirements](docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/)
 - [ ] #258 Live workflow dashboard: wire animated flow to state.json for real-time visualization [github: GH-258]
 - [ ] #257 Fisheye/Crucible integration: push AI review summaries into team code review workflow [github: GH-257]
 - [ ] #256 SVN support: VCS abstraction layer with Git and SVN adapters [github: GH-256]

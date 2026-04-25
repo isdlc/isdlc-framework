@@ -62,5 +62,23 @@
         "delivery_type": "instruction"
       }
     }
+  ],
+  "directory_skills": [
+    {
+      "name": "excalidraw-diagram",
+      "directory": "excalidraw-diagram",
+      "entry_file": "SKILL.md",
+      "skill_id": "EXT-001",
+      "description": "Create Excalidraw diagram JSON files that make visual arguments — workflows, architectures, concepts. Includes element templates, JSON schema reference, color palette, and Playwright-based rendering pipeline.",
+      "source": "user",
+      "added_at": "2026-04-17T00:00:00Z",
+      "repository": "https://github.com/coleam00/excalidraw-diagram-skill",
+      "bindings": {
+        "phases": ["03-architecture", "04-design"],
+        "agents": ["solution-architect", "system-designer"],
+        "injection_mode": "always",
+        "delivery_type": "reference"
+      }
+    }
   ]
 }

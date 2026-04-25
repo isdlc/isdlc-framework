@@ -1,0 +1,16 @@
+{
+  "source": "github",
+  "source_id": "GH-263",
+  "slug": "REQ-GH-263-centralised-vector-db-carve-out-embedding-server",
+  "item_type": "REQ",
+  "created_at": "2026-04-25T09:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["00-quick-scan", "01-requirements", "02-impact-analysis", "03-architecture", "04-design"],
+  "topics_covered": ["problem-discovery", "requirements-definition", "technical-analysis", "architecture", "specification", "security"],
+  "codebase_hash": "11c224e5",
+  "acceptance": {
+    "accepted_at": "2026-04-25T10:00:00.000Z",
+    "domains": ["requirements", "architecture", "design", "tasks"],
+    "amendment_cycles": 3
+  }
+}
