@@ -5,7 +5,6 @@
 
 ## Open
 - [ ] #265 Bug: #253 injection mechanism not delivered as designed — hook layer absent, state-machine bridge is opt-in via LLM recall [github: GH-265] -> [requirements](docs/requirements/BUG-GH-265-traceability-matrix-not-enforced-presenting-tasks/)
-- [A] #264 iSDLC integration with knowledge management service [github: GH-264] -> [requirements](docs/requirements/REQ-GH-264-isdlc-integration-knowledge-service/)
 - [A] #263 Centralised Vector DB: carve out embedding server into separate repo [github: GH-263] -> [requirements](docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/)
 - [ ] #258 Live workflow dashboard: wire animated flow to state.json for real-time visualization [github: GH-258]
 - [ ] #257 Fisheye/Crucible integration: push AI review summaries into team code review workflow [github: GH-257]
@@ -579,6 +578,10 @@ Phase 10 (Provider-Neutral Orchestration)
   - **Completed:** 2026-03-22
 
 ## Completed
+
+### 2026-04-25
+- [x] #264 iSDLC integration with knowledge management service [github: GH-264] -> [requirements](docs/requirements/REQ-GH-264-isdlc-integration-knowledge-service/) *(merged d0a35c18)*
+  - **Completed:** 2026-04-25
 
 ### 2026-04-03
 - [x] #219: Post-finalize validation hook — verify all finalization steps completed -> [requirements](docs/requirements/REQ-GH-219-post-finalize-validation-hook/) *(merged aa99008)*
