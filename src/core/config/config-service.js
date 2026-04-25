@@ -339,6 +339,51 @@ export function getRoundtableConfig(projectRoot) {
 }
 
 /**
+ * Knowledge config defaults. Exported for consumers that need an in-place
+ * fallback object (e.g., fail-open branches in hooks).
+ *
+ * REQ-GH-264 FR-002 (knowledge service integration).
+ */
+export const KNOWLEDGE_DEFAULTS = Object.freeze({
+  url: null,
+  projects: Object.freeze([]),
+});
+
+/**
+ * Return the fully-resolved knowledge config object, merging user overrides
+ * with defaults. Per-field fail-open: invalid field types fall back to their
+ * defaults, while valid overrides are retained.
+ *
+ * REQ-GH-264 FR-002, AC-002-01, AC-002-02, AC-002-03 (Article X fail-safe).
+ *
+ * @param {string} [projectRoot] - Optional project root; auto-detected if omitted
+ * @returns {{ url: string|null, projects: string[] }}
+ */
+export function getKnowledgeConfig(projectRoot) {
+  try {
+    const root = projectRoot || autoDetectProjectRoot();
+    if (!root) return { url: null, projects: [] };
+
+    const full = readProjectConfig(root);
+    const section = (full && typeof full.knowledge === 'object' && full.knowledge !== null && !Array.isArray(full.knowledge))
+      ? full.knowledge
+      : {};
+
+    const url = (typeof section.url === 'string' && section.url.length > 0)
+      ? section.url
+      : null;
+
+    const projects = (Array.isArray(section.projects))
+      ? section.projects.filter(p => typeof p === 'string')
+      : [];
+
+    return { url, projects };
+  } catch {
+    return { url: null, projects: [] };
+  }
+}
+
+/**
  * Clear all internal caches. For testing.
  */
 export function clearConfigCache() {

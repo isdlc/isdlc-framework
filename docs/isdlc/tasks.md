@@ -4,52 +4,52 @@
 
 | Phase | Total | Done | Remaining |
 |---|---|---|---|
-| 05 | 1 | 0 | 1 |
-| 06 | 7 | 0 | 7 |
-| 16 | 1 | 0 | 1 |
-| 08 | 1 | 0 | 1 |
-| **Total** | **10** | **0** | **10** |
+| 05 | 1 | 1 | 0 |
+| 06 | 7 | 7 | 0 |
+| 16 | 1 | 1 | 0 |
+| 08 | 1 | 1 | 0 |
+| **Total** | **10** | **10** | **0** |
 
-## Phase 05: Test Strategy -- PENDING
+## Phase 05: Test Strategy -- COMPLETE
 
-- [ ] T001 Define test strategy — unit tests for config changes, integration tests for MCP routing, E2E for finalize push | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007
+- [X] T001 Define test strategy — unit tests for config changes, integration tests for MCP routing, fail-open finalize push, discover skip path | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007
 
-## Phase 06: Implementation -- PENDING
+## Phase 06: Implementation -- COMPLETE
 
-- [ ] T002 Config schema — add knowledge namespace to config-service with url and projects fields, update config bridge | traces: FR-002
+- [X] T002 Config schema — add knowledge namespace to config-service with url and projects fields, update config bridge | traces: FR-002
   files: src/core/config/config-service.js (MODIFY), src/core/bridge/config.cjs (MODIFY)
 
-- [ ] T003 Install script — accept knowledge service URL, validate connectivity, configure .mcp.json, skip local embedding setup | traces: FR-001, FR-003
-  files: bin/init-project.sh (MODIFY)
+- [X] T003 Install script — accept knowledge service URL, validate connectivity, configure .mcp.json, skip local embedding setup | traces: FR-001, FR-003
+  files: bin/isdlc-setup-knowledge.js (CREATE)
   blocked_by: [T002]
 
-- [ ] T004 MCP routing — update .mcp.json template to point isdlc-embedding at remote URL when knowledge.url is configured | traces: FR-003
+- [X] T004 MCP routing — update .mcp.json template to point isdlc-embedding at remote URL when knowledge.url is configured | traces: FR-003
   files: .mcp.json (MODIFY)
   blocked_by: [T002]
 
-- [ ] T005 Finalize step — add knowledge service artifact push to finalize checklist, call add_content with artifact folder, fail-open on timeout | traces: FR-004
-  files: src/core/finalize/finalize-utils.js (MODIFY), .isdlc/config/finalize-steps.md (MODIFY)
+- [X] T005 Finalize step — add knowledge service artifact push to finalize checklist, call add_content with artifact folder, fail-open on timeout | traces: FR-004
+  files: src/core/finalize/finalize-utils.js (MODIFY)
   blocked_by: [T002]
 
-- [ ] T006 Discover orchestrator — skip D7/D8 embedding steps when knowledge.url is configured, display skip message | traces: FR-005
+- [X] T006 Discover orchestrator — skip D7/D8 embedding steps when knowledge.url is configured, display skip message | traces: FR-005
   files: src/claude/agents/discover-orchestrator.md (MODIFY)
   blocked_by: [T002]
 
-- [ ] T007 Status line — poll /metrics endpoint for connection status and staleness, show in status line, cache with 60s TTL | traces: FR-006
-  files: src/claude/hooks/ (MODIFY)
+- [X] T007 Status line — poll /metrics endpoint for connection status and staleness, show in status line, cache with 60s TTL | traces: FR-006
+  files: src/claude/hooks/embedding-statusline.cjs (MODIFY)
   blocked_by: [T002]
 
-- [ ] T008 Session cache — include knowledge service connection info in EMBEDDING_STATUS section of rebuild-cache output | traces: FR-007
+- [X] T008 Session cache — include knowledge service connection info in EMBEDDING_STATUS section of rebuild-cache output | traces: FR-007
   files: bin/rebuild-cache.js (MODIFY)
   blocked_by: [T002]
 
-## Phase 16: Quality Loop -- PENDING
+## Phase 16: Quality Loop -- COMPLETE
 
-- [ ] T009 Integration tests — verify local mode still works when no knowledge.url set, verify remote routing when configured, verify finalize push fail-open | traces: FR-001, FR-002, FR-003, FR-004
+- [X] T009 Integration tests — verify local mode still works when no knowledge.url set, verify remote routing when configured, verify finalize push fail-open | traces: FR-001, FR-002, FR-003, FR-004
 
-## Phase 08: Code Review -- PENDING
+## Phase 08: Code Review -- COMPLETE
 
-- [ ] T010 Code review — backward compatibility, fail-open behavior, config schema validation, no breaking changes to local mode | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007
+- [X] T010 Code review — backward compatibility, fail-open behavior, config schema validation, no breaking changes to local mode | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007
 
 ## Dependency Graph
 

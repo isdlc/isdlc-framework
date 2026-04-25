@@ -4,6 +4,7 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
+- [ ] #265 Bug: #253 injection mechanism not delivered as designed — hook layer absent, state-machine bridge is opt-in via LLM recall [github: GH-265] -> [requirements](docs/requirements/BUG-GH-265-traceability-matrix-not-enforced-presenting-tasks/)
 - [A] #264 iSDLC integration with knowledge management service [github: GH-264] -> [requirements](docs/requirements/REQ-GH-264-isdlc-integration-knowledge-service/)
 - [A] #263 Centralised Vector DB: carve out embedding server into separate repo [github: GH-263] -> [requirements](docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/)
 - [ ] #258 Live workflow dashboard: wire animated flow to state.json for real-time visualization [github: GH-258]

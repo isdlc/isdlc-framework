@@ -83,6 +83,10 @@ export const DEFAULT_PROJECT_CONFIG = {
     session_options: { graphOptimizationLevel: 'disabled' },
     max_memory_gb: null,    // total system memory budget (GB); null = use all available RAM
   },
+  knowledge: {
+    url: null,
+    projects: [],
+  },
   workflows: {
     sizing_thresholds: {
       light_max_files: 5,

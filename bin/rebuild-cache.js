@@ -28,6 +28,25 @@ const { rebuildSessionCache } = common;
 // Parse flags
 const verbose = process.argv.includes('--verbose') || process.argv.includes('-v');
 
+// REQ-GH-264 FR-007: Knowledge service info in session cache output
+function getKnowledgeServiceInfo() {
+    try {
+        const configPath = path.join(__dirname, '..', '.isdlc', 'config.json');
+        const fs = require('node:fs');
+        if (!fs.existsSync(configPath)) return null;
+        const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const knowledge = cfg?.knowledge;
+        if (!knowledge?.url) return null;
+        return {
+            mode: 'remote',
+            url: knowledge.url,
+            projects: Array.isArray(knowledge.projects) ? knowledge.projects.length : 0,
+        };
+    } catch {
+        return null;
+    }
+}
+
 try {
     const result = rebuildSessionCache({ verbose });
     console.log(`Session cache rebuilt successfully.`);
@@ -46,6 +65,16 @@ try {
         if (result.skipped.length > 0) {
             console.log(`  Skipped: ${result.skipped.join(', ')}`);
         }
+    }
+    // REQ-GH-264 FR-007: Knowledge service connection info (AC-007-01, AC-007-02)
+    const ksInfo = getKnowledgeServiceInfo();
+    if (ksInfo) {
+        console.log(`  Knowledge service:`);
+        console.log(`    Mode: ${ksInfo.mode}`);
+        console.log(`    URL: ${ksInfo.url}`);
+        console.log(`    Projects: ${ksInfo.projects}`);
+    } else {
+        console.log(`  Knowledge service: local (no remote configured)`);
     }
     process.exit(0);
 } catch (err) {

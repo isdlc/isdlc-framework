@@ -10,7 +10,8 @@
     },
     "isdlc-embedding": {
       "command": "node",
-      "args": ["bin/isdlc-embedding-mcp.js"]
+      "args": ["bin/isdlc-embedding-mcp.js"],
+      "_comment": "When knowledge.url is set in .isdlc/config.json, the install script replaces this entry with: { command: 'npx', args: ['-y', 'mcp-remote', '<knowledge_url>/sse'] } to route MCP calls to the remote knowledge service (REQ-GH-264 FR-003)"
     }
   }
 }

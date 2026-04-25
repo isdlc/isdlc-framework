@@ -1,0 +1,10 @@
+{
+  "source": "github",
+  "source_id": "GH-265",
+  "slug": "BUG-GH-265-traceability-matrix-not-enforced-presenting-tasks",
+  "item_type": "BUG",
+  "created_at": "2026-04-25T00:00:00Z",
+  "analysis_status": "raw",
+  "phases_completed": [],
+  "codebase_hash": "e5728bdb"
+}

@@ -32,6 +32,15 @@ const ATDD_DEFAULTS = Object.freeze({
 const VALID_MIGRATION_MODES = ['parallel', 'mechanism', 'prose'];
 
 /**
+ * Knowledge config defaults. Used by getKnowledgeConfig() for fail-open behavior.
+ * REQ-GH-264 FR-002 (knowledge service integration).
+ */
+const KNOWLEDGE_DEFAULTS = Object.freeze({
+  url: null,
+  projects: Object.freeze([]),
+});
+
+/**
  * Roundtable config defaults. Used by getRoundtableConfig() for fail-open behavior.
  * REQ-GH-253 FR-004 (max_skills_total budget), T040 (migration_mode).
  */
@@ -70,6 +79,7 @@ function getDefaults() {
       provider: { default: 'claude' },
       roundtable: { verbosity: 'bulleted', default_personas: [], disabled_personas: [], migration_mode: 'mechanism', task_card: { max_skills_total: 8 } },
       search: {},
+      knowledge: { url: null, projects: [] },
       workflows: { sizing_thresholds: {}, performance_budgets: {} },
     };
   }
@@ -248,6 +258,40 @@ function getRoundtableConfig(projectRoot) {
   }
 }
 
+/**
+ * Return the fully-resolved knowledge config object, merging user overrides
+ * with defaults. Per-field fail-open: invalid field types fall back to their
+ * defaults, while valid overrides are retained.
+ *
+ * REQ-GH-264 FR-002, AC-002-01, AC-002-02, AC-002-03 (Article X fail-safe).
+ *
+ * @param {string} [projectRoot] - Optional project root; auto-detected if omitted
+ * @returns {{ url: string|null, projects: string[] }}
+ */
+function getKnowledgeConfig(projectRoot) {
+  try {
+    const root = projectRoot || autoDetectProjectRoot();
+    if (!root) return { url: null, projects: [] };
+
+    const full = readProjectConfig(root);
+    const section = (full && typeof full.knowledge === 'object' && full.knowledge !== null && !Array.isArray(full.knowledge))
+      ? full.knowledge
+      : {};
+
+    const url = (typeof section.url === 'string' && section.url.length > 0)
+      ? section.url
+      : null;
+
+    const projects = (Array.isArray(section.projects))
+      ? section.projects.filter(p => typeof p === 'string')
+      : [];
+
+    return { url, projects };
+  } catch {
+    return { url: null, projects: [] };
+  }
+}
+
 function loadSchema(schemaId) {
   const filePath = path.join(frameworkConfigDir(), 'schemas', `${schemaId}.schema.json`);
   return readCachedJson(filePath, _frameworkCache);
@@ -271,6 +315,8 @@ module.exports = {
   clearConfigCache,
   getAtdd,
   getRoundtableConfig,
+  getKnowledgeConfig,
   ATDD_DEFAULTS,
   ROUNDTABLE_DEFAULTS,
+  KNOWLEDGE_DEFAULTS,
 };

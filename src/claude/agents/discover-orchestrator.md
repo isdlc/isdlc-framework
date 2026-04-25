@@ -2575,6 +2575,24 @@ EMBEDDING GENERATION                                  [In Progress]
 
 Generate vector embeddings for the project source code so the embedding server can provide semantic search. This step uses hardware acceleration (CoreML on Apple Silicon, CUDA on Linux) and respects the `max_memory_gb` memory cap from `.isdlc/config.json`.
 
+**Knowledge service skip gate (REQ-GH-264 FR-005, AC-005-01, AC-005-02):** Before running any local embedding checks, test whether a remote knowledge service is configured. If so, skip local embedding generation entirely — the remote service handles semantic search.
+
+**Knowledge service pre-check:**
+```bash
+node -e 'const c=JSON.parse(require("fs").readFileSync(".isdlc/config.json","utf8")); process.exit(c.knowledge && c.knowledge.url && c.knowledge.url.length > 0 ? 0 : 1)'
+```
+
+**Handling the knowledge service pre-check result:**
+
+- **Exit code 0 (knowledge.url is set):** SKIP this step entirely. Do NOT run local embedding generation, opt-in gate, or any embedding commands. Display:
+  ```
+  EMBEDDING GENERATION                                  [Skipped]
+  └─ Knowledge service configured at {url} — skipping local embedding setup.
+  ```
+  Where `{url}` is the value from the config. Continue to finalize.
+- **Exit code non-zero (no knowledge.url):** Proceed to the local embedding opt-in gate below.
+- **Fail-open clause (Article X):** If the knowledge pre-check itself fails (config missing, unreadable, malformed JSON), treat as "no knowledge service" and proceed to the local embedding gate. Do not block on a malformed config.
+
 **Opt-in gate (FR-006, AC-250-02):** Embeddings are an opt-in feature. Before invoking the generator, run this pre-check to confirm the user has explicitly configured embeddings in `.isdlc/config.json`. The check mirrors the exact `readFileSync` + `JSON.parse` + `.embeddings` presence pattern used by `src/core/config/config-service.js :: hasUserEmbeddingsConfig`, so the agent pre-check and the library guard agree on what counts as "opted in".
 
 **Pre-check (opt-in gate):**

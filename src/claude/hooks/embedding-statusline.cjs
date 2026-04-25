@@ -37,6 +37,10 @@ const { execSync } = require('node:child_process');
 // ---------------------------------------------------------------------------
 
 const STALE_THRESHOLD = 10;
+const KNOWLEDGE_CACHE_TTL_MS = 60000; // 60 seconds
+
+// Knowledge service status cache
+let _knowledgeCache = { data: null, fetchedAt: 0 };
 
 // ANSI colors
 const GREEN = '\x1b[32m';
@@ -216,6 +220,78 @@ function getEmbStatus(root) {
 }
 
 // ---------------------------------------------------------------------------
+// Knowledge service helpers (REQ-GH-264 FR-006)
+// ---------------------------------------------------------------------------
+
+/** Read knowledge config from .isdlc/config.json. */
+function getKnowledgeUrl(projectRoot) {
+  try {
+    const configPath = path.join(projectRoot, '.isdlc', 'config.json');
+    if (!fs.existsSync(configPath)) return null;
+    const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const url = cfg?.knowledge?.url;
+    return (typeof url === 'string' && url.length > 0) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Probe knowledge service /metrics endpoint with caching. Returns status object. */
+function getKnowledgeStatus(projectRoot) {
+  const url = getKnowledgeUrl(projectRoot);
+  if (!url) return null;
+
+  const now = Date.now();
+  if (_knowledgeCache.data && (now - _knowledgeCache.fetchedAt) < KNOWLEDGE_CACHE_TTL_MS) {
+    return _knowledgeCache.data;
+  }
+
+  let status = { connected: false, url, projects: 0, staleness: null };
+  try {
+    const metricsUrl = url.replace(/\/+$/, '') + '/metrics';
+    const raw = execSync(`curl -s --max-time 2 "${metricsUrl}"`, {
+      encoding: 'utf8', timeout: 3000, stdio: ['pipe', 'pipe', 'pipe']
+    });
+    // Parse Prometheus text format for project count and staleness
+    const projectMatch = raw.match(/knowledge_projects_total\s+(\d+)/);
+    const stalenessMatch = raw.match(/project_staleness_seconds\s+(\d+)/);
+    status.connected = true;
+    status.projects = projectMatch ? parseInt(projectMatch[1], 10) : 0;
+    status.staleness = stalenessMatch ? parseInt(stalenessMatch[1], 10) : null;
+  } catch {
+    status.connected = false;
+  }
+
+  _knowledgeCache = { data: status, fetchedAt: now };
+  return status;
+}
+
+/** Format knowledge service status for status line. */
+function getKnowledgeStatusStr(root) {
+  const status = getKnowledgeStatus(root);
+  if (!status) return null; // No knowledge service configured
+
+  if (!status.connected) {
+    return `${RED}ks: disconnected${RESET}`;
+  }
+
+  const parts = [`ks: connected`];
+  if (status.projects > 0) parts.push(`${status.projects} proj`);
+  if (status.staleness != null) {
+    const hours = Math.floor(status.staleness / 3600);
+    if (hours > 24) {
+      return `${YELLOW}ks: ${parts.join(', ')} (stale ${hours}h)${RESET}`;
+    }
+  }
+  return `${GREEN}${parts.join(', ')}${RESET}`;
+}
+
+// Exported for testing
+if (typeof module !== 'undefined') {
+  module.exports = { getKnowledgeUrl, getKnowledgeStatus, getKnowledgeStatusStr, _resetKnowledgeCache: () => { _knowledgeCache = { data: null, fetchedAt: 0 }; } };
+}
+
+// ---------------------------------------------------------------------------
 // Main — compose full status line
 // ---------------------------------------------------------------------------
 
@@ -278,8 +354,14 @@ function main() {
     parts.push(`${rateColor}rate: ${rateUsed}%/5h${RESET}`);
   }
 
-  // Embedding status
-  parts.push(getEmbStatus(root));
+  // Knowledge service status (REQ-GH-264 FR-006)
+  const ksStatus = getKnowledgeStatusStr(root);
+  if (ksStatus) {
+    parts.push(ksStatus);
+  } else {
+    // Only show local embedding status when no knowledge service is configured
+    parts.push(getEmbStatus(root));
+  }
 
   // Version
   if (ctx.version) parts.push(`${CYAN}v${ctx.version}${RESET}`);
