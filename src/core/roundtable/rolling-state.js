@@ -8,7 +8,40 @@
  * @module rolling-state
  * @see rolling-state.schema.json
  * Traces: FR-003, AC-003-01, AC-003-02, AC-003-03, AC-003-04
+ *         FR-005, AC-005-01, AC-005-02, AC-005-03 (accepted_payloads accumulator)
  */
+
+/**
+ * Canonical list of PRESENTING_* state names whose accepted payloads are
+ * accumulated for downstream stages. Defined once so create(), update()
+ * (defensive init), and applyAcceptedPayload() stay in sync.
+ *
+ * Traces: FR-005, AC-005-01
+ */
+const ACCEPTED_PAYLOAD_STATES = Object.freeze([
+  'PRESENTING_REQUIREMENTS',
+  'PRESENTING_ARCHITECTURE',
+  'PRESENTING_DESIGN',
+  'PRESENTING_TASKS',
+  'PRESENTING_BUG_SUMMARY',
+  'PRESENTING_ROOT_CAUSE',
+  'PRESENTING_FIX_STRATEGY'
+]);
+
+/**
+ * Build a fresh accepted_payloads object with all known PRESENTING_* keys
+ * defaulted to null. Used by create() and as the migration target for
+ * legacy state shapes encountered by update().
+ *
+ * @returns {object} Object with seven null-valued slots.
+ */
+function buildEmptyAcceptedPayloads() {
+  const slots = {};
+  for (const name of ACCEPTED_PAYLOAD_STATES) {
+    slots[name] = null;
+  }
+  return slots;
+}
 
 /**
  * Extract sub-task IDs from a state machine definition.
@@ -65,7 +98,8 @@ export function create(stateMachineDef) {
       alex: false,
       jordan: false
     },
-    sub_task_completion: subTaskCompletion
+    sub_task_completion: subTaskCompletion,
+    accepted_payloads: buildEmptyAcceptedPayloads()
   };
 }
 
@@ -82,21 +116,28 @@ export function create(stateMachineDef) {
  * Traces: FR-003, AC-003-02, AC-003-03, AC-003-04
  */
 export function update(state, updates) {
-  if (!updates) return { ...state };
+  // BUG-GH-265 T015 — defensive init for legacy session shapes (AC-005-03)
+  // Sessions started before the accepted_payloads field existed self-heal here.
+  const baseState = (state && typeof state === 'object' && !state.accepted_payloads)
+    ? { ...state, accepted_payloads: buildEmptyAcceptedPayloads() }
+    : state;
+
+  if (!updates) return { ...baseState };
 
   const { trailer, markers } = updates;
   const hasTrailer = trailer != null && typeof trailer === 'object' && Object.keys(trailer).length > 0;
   const hasMarkers = markers != null && typeof markers === 'object' && Object.keys(markers).length > 0;
 
-  // AC-003-04: both mechanisms fail -- state unchanged
-  if (!hasTrailer && !hasMarkers) return { ...state };
+  // AC-003-04: both mechanisms fail -- state unchanged (but with self-heal applied)
+  if (!hasTrailer && !hasMarkers) return { ...baseState };
 
   // Start with a deep-enough copy
   const next = {
-    ...state,
-    coverage_by_topic: { ...state.coverage_by_topic },
-    participation_markers: { ...state.participation_markers },
-    sub_task_completion: { ...state.sub_task_completion }
+    ...baseState,
+    coverage_by_topic: { ...baseState.coverage_by_topic },
+    participation_markers: { ...baseState.participation_markers },
+    sub_task_completion: { ...baseState.sub_task_completion },
+    accepted_payloads: { ...baseState.accepted_payloads }
   };
 
   // Apply markers first (lower priority)
@@ -188,4 +229,33 @@ function applyTrailerFields(state, trailer) {
  */
 export function snapshot(state) {
   return JSON.parse(JSON.stringify(state));
+}
+
+/**
+ * Capture an accepted payload for a PRESENTING_* state slot.
+ * Used by processAfterTurn on Accept transitions so later stages can quote
+ * earlier accepted content (e.g., PRESENTING_TASKS embedding accepted FRs).
+ *
+ * Defensively initializes accepted_payloads if missing (legacy state shapes).
+ * Returns a NEW state object — the input is never mutated.
+ *
+ * @param {object} state - Current rolling state
+ * @param {string} stateName - Target PRESENTING_* state name
+ * @param {*} payload - Accepted content to capture (typically a string digest)
+ * @returns {object} New rolling state with payload written; input unchanged.
+ *   Returns input unchanged if stateName is not a known PRESENTING_* state.
+ * Traces: FR-005, AC-005-02
+ */
+export function applyAcceptedPayload(state, stateName, payload) {
+  if (!state || typeof state !== 'object') return state;
+  if (!ACCEPTED_PAYLOAD_STATES.includes(stateName)) return state;
+
+  const existing = state.accepted_payloads || buildEmptyAcceptedPayloads();
+  return {
+    ...state,
+    accepted_payloads: {
+      ...existing,
+      [stateName]: payload
+    }
+  };
 }

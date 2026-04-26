@@ -705,7 +705,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      4. If `transition` is non-null and `transition.transitioned` is true:
         - Log the transition for observability: `"[bug-roundtable] State transition: {from} -> {to} (trigger: {trigger})"`
         - The next `composeForTurn` call will automatically compose the card for the new state
-        - If the new state is a confirmation state (PRESENTING_BUG_SUMMARY, PRESENTING_ROOT_CAUSE, PRESENTING_FIX_STRATEGY, PRESENTING_TASKS), the state card will include the full template reference and accept/amend prompt
+        - If the new state is a confirmation state (PRESENTING_BUG_SUMMARY, PRESENTING_ROOT_CAUSE, PRESENTING_FIX_STRATEGY, PRESENTING_TASKS), the state card will include the inlined template format spec (columns, rendering rules, content guidance), the rendering mandate, the content coverage requirements, any accepted payloads from prior PRESENTING_* stages, and the accept/amend prompt
      5. If `transition` is non-null and `transition.externalDelegation` is present:
         This is the bug-gather external delegation path for tracing-orchestrator dispatch (REQ-GH-253, T033).
         a. Read the delegation config from `transition.externalDelegation`:
@@ -754,7 +754,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      - If you cannot determine the sub-task status, omit the trailer entirely. The marker extractors will handle state inference from natural output.
 
      **Confirmation state handling**:
-     - When the state machine transitions from CONVERSATION to PRESENTING_BUG_SUMMARY, the state card composed by `composeForTurn` includes the full template reference, required sections, presenter, and accept/amend prompt.
+     - When the state machine transitions from CONVERSATION to PRESENTING_BUG_SUMMARY, the state card composed by `composeForTurn` includes the inlined template body (columns, rendering rules, content guidance, examples), the rendering mandate, the content coverage requirements, any prior accepted payloads (from rolling-state `accepted_payloads`), required sections, presenter, and accept/amend prompt.
      - Accept/Amend user responses update the rolling state (via trailer or marker extraction), which causes `evaluateTransitions` to fire the next transition (accept -> next confirmation state, amend -> AMENDING state).
      - On Accept of PRESENTING_BUG_SUMMARY: the transition carries `external_delegation` for tracing-orchestrator (handled by step 5 above). After delegation completes (or fails open), the machine advances to PRESENTING_ROOT_CAUSE.
      - Confirmation sequence: PRESENTING_BUG_SUMMARY -> (tracing delegation) -> PRESENTING_ROOT_CAUSE -> PRESENTING_FIX_STRATEGY -> PRESENTING_TASKS -> FINALIZING -> COMPLETE.
@@ -880,7 +880,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      4. If `transition` is non-null and `transition.transitioned` is true:
         - Log the transition for observability: `"[roundtable] State transition: {from} -> {to} (trigger: {trigger})"`
         - The next `composeForTurn` call will automatically compose the card for the new state
-        - If the new state is a confirmation state (PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE, etc.), the state card will include the full template reference and accept/amend prompt
+        - If the new state is a confirmation state (PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE, etc.), the state card will include the inlined template format spec (columns, rendering rules, content guidance), the rendering mandate, the content coverage requirements, any accepted payloads from prior PRESENTING_* stages, and the accept/amend prompt
      5. If `transition` is non-null and `transition.externalDelegation` is present: this is the bug-gather external delegation path (not applicable to analyze -- handled by T033).
      6. If `transition` is null: no state change occurred. Continue in the current state.
      7. If `processAfterTurn` fails entirely: skip state update for this turn. The rolling state remains unchanged and no transition fires (AC-003-04). Continue the conversation.
@@ -902,7 +902,7 @@ User: "An e-commerce platform for selling handmade crafts with payment processin
      - If you cannot determine the sub-task status, omit the trailer entirely. The marker extractors will handle state inference from natural output.
 
      **Confirmation state handling**:
-     - When the state machine transitions from CONVERSATION to PRESENTING_REQUIREMENTS (or directly to PRESENTING_DESIGN for light tier), the state card composed by `composeForTurn` includes the full template reference, required sections, presenter, and accept/amend prompt.
+     - When the state machine transitions from CONVERSATION to PRESENTING_REQUIREMENTS (or directly to PRESENTING_DESIGN for light tier), the state card composed by `composeForTurn` includes the inlined template body (columns, rendering rules, content guidance, examples), the rendering mandate, the content coverage requirements, any prior accepted payloads (from rolling-state `accepted_payloads`), required sections, presenter, and accept/amend prompt.
      - Accept/Amend user responses update the rolling state (via trailer or marker extraction), which causes `evaluateTransitions` to fire the next transition (accept -> next confirmation state, amend -> AMENDING state).
      - AMENDING state transitions back to PRESENTING_REQUIREMENTS per the amending semantics in the definition. The rolling state's accepted domains are cleared.
      - The state machine tracks these transitions but the existing roundtable-analyst.md confirmation protocol still drives the actual presentation. The state machine ensures the composition layer stays in sync.

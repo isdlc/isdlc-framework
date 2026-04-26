@@ -188,11 +188,17 @@ async function composeForTurn(machine, rollingState, context, manifestContext) {
     const activeSubTask = machine.currentSubTask();
 
     // Compose state card
+    // BUG-GH-265 T016 — propagate rollingState.accepted_payloads into context
+    // so renderCard can inline prior accepted content per FR-002.
     let stateCard = null;
     try {
       const sccMod = await getStateCardComposer();
       if (sccMod && typeof sccMod.composeStateCard === 'function') {
-        stateCard = sccMod.composeStateCard(currentState, context || {});
+        const composeContext = { ...(context || {}) };
+        if (rollingState && rollingState.accepted_payloads && !composeContext.acceptedPayloads) {
+          composeContext.acceptedPayloads = rollingState.accepted_payloads;
+        }
+        stateCard = sccMod.composeStateCard(currentState, composeContext);
       }
     } catch {
       // Skip state card composition for this turn (fail-open)
