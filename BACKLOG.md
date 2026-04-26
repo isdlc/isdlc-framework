@@ -4,7 +4,9 @@
 > BACKLOG.md is the curated working set with detailed specs. GitHub Issues are for tracking.
 
 ## Open
-- [A] #265 Bug: state-machine composers under-render at PRESENTING_* (REQ-GH-253 regression) [github: GH-265] -> [requirements](docs/requirements/BUG-GH-265-traceability-matrix-not-enforced-presenting-tasks/)
+- [x] #265 Bug: state-machine composers under-render at PRESENTING_* (REQ-GH-253 regression) [github: GH-265] -> [requirements](docs/requirements/BUG-GH-265-traceability-matrix-not-enforced-presenting-tasks/) **Completed**
+  - Composers now inline rendering_mandate, content_coverage, template_ref body, accepted_payloads, and skill bodies per delivery_type. Rolling-state has accepted_payloads accumulator with applyAcceptedPayload writer + defensive init. Bridge propagates payloads via context. Article X preserved on every new file read. 199 tests pass. Provider parity automatic.
+  - **Completed:** 2026-04-26
 - [A] #263 Centralised Vector DB: carve out embedding server into separate repo [github: GH-263] -> [requirements](docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/)
 - [ ] #258 Live workflow dashboard: wire animated flow to state.json for real-time visualization [github: GH-258]
 - [ ] #257 Fisheye/Crucible integration: push AI review summaries into team code review workflow [github: GH-257]
