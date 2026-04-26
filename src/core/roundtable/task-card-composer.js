@@ -35,6 +35,15 @@ const MAX_TOTAL_LINES = 30;
 /** Priority boost for shipped (framework) skills in sorting */
 const SHIPPED_BOOST = 0.1;
 
+/** External skills directory probe roots, in priority order. */
+const EXTERNAL_SKILLS_ROOTS = ['.claude/skills/external', '.codex/skills/external'];
+
+/** Max chars to inline per skill body (Article X — bound size). */
+const SKILL_BODY_MAX_CHARS = 4000;
+
+/** Max chars for "key rules" extract (delivery_type=instruction). */
+const SKILL_RULES_MAX_CHARS = 800;
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -141,6 +150,8 @@ function mergeAndSortSkills(templateSkills, manifestSkills) {
     skillMap.set(id, {
       id,
       source,
+      // BUG-GH-265 T014 — preserve file path so renderSkillLine can load the body
+      file: skill.file || (existing && existing.file) || null,
       deliveryType: skill.deliveryType || skill.delivery_type || (existing ? existing.deliveryType : 'context'),
       priority: (existing ? existing.priority : 0.3) + boost,
     });
@@ -175,21 +186,92 @@ function resolveMaxSkills(activeSubTask, config) {
 }
 
 /**
+ * Attempt to load a skill body file by probing common locations.
+ * Returns null on any read failure (Article X fail-open).
+ *
+ * @param {string|null} file - Skill file path (relative to skills root)
+ * @param {string} [projectRoot] - Project root for path resolution
+ * @returns {string|null} File contents (truncated to SKILL_BODY_MAX_CHARS) or null
+ */
+function loadSkillBody(file, projectRoot) {
+  if (!file || typeof file !== 'string') return null;
+  const root = projectRoot || process.cwd();
+  for (const skillRoot of EXTERNAL_SKILLS_ROOTS) {
+    try {
+      const candidate = resolve(root, skillRoot, file);
+      if (existsSync(candidate)) {
+        const content = readFileSync(candidate, 'utf8');
+        if (content && content.trim()) {
+          return content.length > SKILL_BODY_MAX_CHARS
+            ? content.slice(0, SKILL_BODY_MAX_CHARS) + '\n[truncated]'
+            : content;
+        }
+      }
+    } catch {
+      // try next root
+    }
+  }
+  return null;
+}
+
+/**
+ * Extract a "key rules" excerpt from a skill body for delivery_type=instruction.
+ * Looks for ## Rules / ## How to use / ## Guidelines headers; falls back to
+ * the first non-frontmatter paragraph capped at SKILL_RULES_MAX_CHARS.
+ *
+ * @param {string} body - Skill body content
+ * @returns {string} Key-rules excerpt (or empty string)
+ */
+function extractKeyRules(body) {
+  if (!body || typeof body !== 'string') return '';
+  // Strip YAML frontmatter
+  const stripped = body.replace(/^---[\s\S]*?---\n/, '');
+  // Try to find a Rules / How to use / Guidelines section
+  const sectionMatch = stripped.match(/^##\s+(?:Rules|How to use|Guidelines|Usage)[\s\S]*?(?=^##\s|\Z)/im);
+  const candidate = sectionMatch ? sectionMatch[0] : stripped;
+  return candidate.length > SKILL_RULES_MAX_CHARS
+    ? candidate.slice(0, SKILL_RULES_MAX_CHARS) + '\n[truncated]'
+    : candidate.trim();
+}
+
+/**
  * Render a skill entry per delivery_type for the card text.
  *
- * delivery_type controls injection depth:
- * - context: full skill content injected (marked as [FULL])
- * - instruction: key rules injected (marked as [RULES])
+ * delivery_type controls injection depth (BUG-GH-265 T014 — FR-003):
+ * - context: full skill body inlined (marked as [FULL]) — body fallback to ID-only on read failure
+ * - instruction: key rules excerpt inlined (marked as [RULES])
  * - reference: pointer only (marked as [REF])
  *
- * @param {object} skill - Skill entry { id, source, deliveryType }
- * @returns {string} Formatted skill line
+ * @param {object} skill - Skill entry { id, source, deliveryType, file }
+ * @param {string} [projectRoot] - Project root for body path resolution
+ * @returns {string} Formatted skill block (may be multi-line for context/instruction)
  */
-function renderSkillLine(skill) {
+function renderSkillLine(skill, projectRoot) {
   const typeLabel = skill.deliveryType === 'context' ? 'FULL'
     : skill.deliveryType === 'instruction' ? 'RULES'
     : 'REF';
-  return `  ${skill.id} [${typeLabel}] (${skill.source})`;
+
+  const header = `  ${skill.id} [${typeLabel}] (${skill.source})`;
+
+  // BUG-GH-265 T014 — body inlining for context/instruction.
+  // Article X: any read failure returns null and we fall back to ID-only line.
+  if (skill.deliveryType === 'context' || skill.deliveryType === 'instruction') {
+    try {
+      const body = loadSkillBody(skill.file, projectRoot);
+      if (body) {
+        const content = skill.deliveryType === 'instruction' ? extractKeyRules(body) : body;
+        if (content) {
+          // Indent body by 4 spaces so it sits under the skill header
+          const indented = content.split('\n').map(l => '    ' + l).join('\n');
+          return `${header}\n${indented}`;
+        }
+      }
+    } catch {
+      // Article X — fall through to header-only
+    }
+  }
+
+  return header;
 }
 
 /**
@@ -211,11 +293,11 @@ function renderTaskCard(template, skills, activeSubTask) {
     lines.push(`Purpose: ${template.description}`);
   }
 
-  // Skills section
+  // Skills section (BUG-GH-265 T014 — pass projectRoot for body inlining)
   if (skills.length > 0) {
     lines.push('Skills:');
     for (const skill of skills) {
-      lines.push(renderSkillLine(skill));
+      lines.push(renderSkillLine(skill, activeSubTask && activeSubTask._projectRoot));
     }
   } else {
     lines.push('Skills: (none applicable)');

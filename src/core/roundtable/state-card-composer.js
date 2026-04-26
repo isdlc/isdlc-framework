@@ -27,8 +27,14 @@ const __dirname = dirname(__filename);
 /** Shipped state card templates: src/isdlc/config/roundtable/state-cards/ */
 const SHIPPED_STATE_CARDS_DIR = resolve(__dirname, '..', '..', 'isdlc', 'config', 'roundtable', 'state-cards');
 
-/** Maximum lines for composed state card output */
-const MAX_TOTAL_LINES = 40;
+/** Shipped domain templates: src/isdlc/config/templates/ (BUG-GH-265 T011). */
+const SHIPPED_TEMPLATES_DIR = resolve(__dirname, '..', '..', 'isdlc', 'config', 'templates');
+
+/** Maximum lines for composed state card output (BUG-GH-265 T013 — soft budget). */
+const MAX_TOTAL_LINES = 120;
+
+/** Per-section soft cap for inlined accepted-payload content (BUG-GH-265 T012). */
+const PAYLOAD_DIGEST_MAX_LINES = 25;
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -136,14 +142,95 @@ function renderCard(template, context) {
     lines.push(`Presenter: ${presenter}`);
   }
 
-  // Template reference
+  // Template reference + inlined body (BUG-GH-265 T011 — FR-001 AC-001-03)
+  // Load the referenced template file and inline its format spec, rendering
+  // rules, content guidance, and example. Article X: any read failure leaves
+  // the filename reference in place as fallback.
   if (template.template_ref) {
     lines.push(`Template: ${template.template_ref}`);
+    try {
+      const templateDir = context.templatesDir || SHIPPED_TEMPLATES_DIR;
+      const templateBody = safeReadJson(join(templateDir, template.template_ref));
+      if (templateBody && templateBody.format) {
+        const fmt = templateBody.format;
+        if (Array.isArray(fmt.columns) && fmt.columns.length > 0) {
+          const colNames = fmt.columns.map(c => c.header || c.key || String(c)).join(' | ');
+          lines.push(`  Columns: ${colNames}`);
+        }
+        if (fmt.rendering && typeof fmt.rendering === 'object') {
+          const r = fmt.rendering;
+          const renderBits = [];
+          if (r.table_style) renderBits.push(`style=${r.table_style}`);
+          if (r.cell_wrap !== undefined) renderBits.push(`cell_wrap=${r.cell_wrap}`);
+          if (r.row_separator !== undefined) renderBits.push(`row_separator=${r.row_separator}`);
+          if (r.empty_cell) renderBits.push(`empty_cell=${JSON.stringify(r.empty_cell)}`);
+          if (renderBits.length > 0) {
+            lines.push(`  Rendering: ${renderBits.join(', ')}`);
+          }
+        }
+        if (Array.isArray(fmt.post_table_sections) && fmt.post_table_sections.length > 0) {
+          lines.push(`  Post-table sections: ${fmt.post_table_sections.join(', ')}`);
+        }
+        if (fmt.content_guidance && typeof fmt.content_guidance === 'object') {
+          // Surface guidance keys + structure hints; full prose lives in the
+          // template file and would blow the budget if inlined verbatim.
+          for (const [colKey, guide] of Object.entries(fmt.content_guidance)) {
+            if (!guide || typeof guide !== 'object') continue;
+            const struct = guide.structure ? ` (structure: ${guide.structure})` : '';
+            const fmtLabel = guide.format ? ` (format: ${guide.format})` : '';
+            lines.push(`  Guidance ${colKey}${struct}${fmtLabel}`);
+            if (guide.example) {
+              const firstLine = String(guide.example).split('\n')[0];
+              if (firstLine && firstLine.length < 80) {
+                lines.push(`    Example: ${firstLine}`);
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Article X — keep filename reference, drop body inlining
+    }
   }
 
   // Required sections (for confirmation states)
   if (Array.isArray(template.required_sections) && template.required_sections.length > 0) {
     lines.push(`Sections: ${template.required_sections.join(', ')}`);
+  }
+
+  // Rendering mandate (BUG-GH-265 T010 — FR-001 AC-001-01)
+  // Inline format/columns/style/bans so the LLM receives the spec, not just a filename.
+  // Wrapped in try/catch per Article X — composition continues even if shape is unexpected.
+  try {
+    const mandate = template.rendering_mandate;
+    if (mandate && typeof mandate === 'object') {
+      lines.push('Rendering Mandate:');
+      if (mandate.format) lines.push(`  Format: ${mandate.format}`);
+      if (Array.isArray(mandate.columns) && mandate.columns.length > 0) {
+        lines.push(`  Columns: ${mandate.columns.join(' | ')}`);
+      }
+      if (mandate.style) lines.push(`  Style: ${mandate.style}`);
+      if (Array.isArray(mandate.bans) && mandate.bans.length > 0) {
+        lines.push(`  Bans: ${mandate.bans.join(', ')}`);
+      }
+    }
+  } catch {
+    // Article X fail-open — skip mandate block on any error
+  }
+
+  // Content coverage (BUG-GH-265 T010 — FR-001 AC-001-02)
+  // Inline the per-stage content requirements so the LLM knows what each
+  // confirmation must cover. Wrapped in try/catch per Article X.
+  try {
+    const coverage = template.content_coverage;
+    if (Array.isArray(coverage) && coverage.length > 0) {
+      lines.push('Content Coverage (must include):');
+      for (const item of coverage) {
+        lines.push(`  - ${item}`);
+      }
+    }
+  } catch {
+    // Article X fail-open — skip coverage block on any error
   }
 
   // Invariants
@@ -175,6 +262,37 @@ function renderCard(template, context) {
     lines.push(`Preferred tools: ${tools.map(t => t.tool || t.name || t).join(', ')}`);
   }
 
+  // Accepted payloads from prior PRESENTING_* stages (BUG-GH-265 T012 — FR-002)
+  // Inline accepted content so later stages can quote earlier work without
+  // recalling it from the conversation transcript.
+  try {
+    const payloads = context.acceptedPayloads;
+    if (payloads && typeof payloads === 'object') {
+      const priorStates = computePriorStates(stateName, payloads);
+      if (priorStates.length > 0) {
+        lines.push('');
+        lines.push('Prior accepted payloads:');
+        for (const priorState of priorStates) {
+          const payload = payloads[priorState];
+          if (!payload) continue;
+          const text = String(payload);
+          const payloadLines = text.split('\n');
+          const truncated = payloadLines.length > PAYLOAD_DIGEST_MAX_LINES
+            ? payloadLines.slice(0, PAYLOAD_DIGEST_MAX_LINES).concat(
+                [`  [truncated; full text in artifact folder]`]
+              )
+            : payloadLines;
+          lines.push(`  ${priorState}:`);
+          for (const pl of truncated) {
+            lines.push(`    ${pl}`);
+          }
+        }
+      }
+    }
+  } catch {
+    // Article X — skip payloads block on any error
+  }
+
   // Accept/amend prompt (for confirmation states)
   if (template.accept_amend_prompt) {
     lines.push('');
@@ -197,6 +315,59 @@ function renderCard(template, context) {
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Compute which prior PRESENTING_* states are relevant to inline for the
+ * current state. (BUG-GH-265 T012 — FR-002)
+ *
+ * For analyze flow:
+ *   PRESENTING_ARCHITECTURE -> [PRESENTING_REQUIREMENTS]
+ *   PRESENTING_DESIGN -> [PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE]
+ *   PRESENTING_TASKS -> [PRESENTING_REQUIREMENTS, PRESENTING_ARCHITECTURE, PRESENTING_DESIGN]
+ *
+ * For bug-gather flow:
+ *   PRESENTING_ROOT_CAUSE -> [PRESENTING_BUG_SUMMARY]
+ *   PRESENTING_FIX_STRATEGY -> [PRESENTING_BUG_SUMMARY, PRESENTING_ROOT_CAUSE]
+ *   PRESENTING_TASKS -> [PRESENTING_BUG_SUMMARY, PRESENTING_ROOT_CAUSE, PRESENTING_FIX_STRATEGY]
+ *
+ * Only returns states that have a non-null payload in the accepted_payloads map.
+ *
+ * @param {string} currentState
+ * @param {object} payloads
+ * @returns {string[]} Ordered list of prior states with payloads
+ */
+function computePriorStates(currentState, payloads) {
+  const ANALYZE_ORDER = [
+    'PRESENTING_REQUIREMENTS',
+    'PRESENTING_ARCHITECTURE',
+    'PRESENTING_DESIGN',
+    'PRESENTING_TASKS'
+  ];
+  const BUG_ORDER = [
+    'PRESENTING_BUG_SUMMARY',
+    'PRESENTING_ROOT_CAUSE',
+    'PRESENTING_FIX_STRATEGY',
+    'PRESENTING_TASKS'
+  ];
+
+  // Pick the lineage based on current state membership; PRESENTING_TASKS lives
+  // in both — prefer bug lineage if any bug payload is present.
+  const inAnalyze = ANALYZE_ORDER.includes(currentState);
+  const inBug = BUG_ORDER.includes(currentState);
+  if (!inAnalyze && !inBug) return [];
+
+  let order;
+  if (currentState === 'PRESENTING_TASKS') {
+    const hasBugPayload = BUG_ORDER.slice(0, 3).some(s => payloads[s]);
+    order = hasBugPayload ? BUG_ORDER : ANALYZE_ORDER;
+  } else {
+    order = inAnalyze ? ANALYZE_ORDER : BUG_ORDER;
+  }
+
+  const idx = order.indexOf(currentState);
+  if (idx <= 0) return [];
+  return order.slice(0, idx).filter(s => payloads[s]);
 }
 
 /**
